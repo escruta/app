@@ -31,7 +31,7 @@ export default function AccountSection() {
         console.error("Error updating name:", error);
       },
     },
-    false
+    false,
   );
 
   const { loading: isChangingPassword, refetch: changePassword } =
@@ -53,7 +53,7 @@ export default function AccountSection() {
           console.error("Error changing password:", error);
         },
       },
-      false
+      false,
     );
 
   const checkPasswordStrength = (password: string) => {

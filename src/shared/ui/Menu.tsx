@@ -23,7 +23,7 @@ export default function Menu({
 }: MenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const toggleMenu = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -32,10 +32,7 @@ export default function Menu({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        triggerRef.current &&
-        triggerRef.current.contains(event.target as Node)
-      ) {
+      if (triggerRef.current?.contains(event.target as Node)) {
         return;
       }
 
@@ -52,9 +49,9 @@ export default function Menu({
 
   return (
     <div className={cn("relative", className)}>
-      <div onClick={toggleMenu} ref={triggerRef}>
+      <button type="button" onClick={toggleMenu} ref={triggerRef}>
         {trigger}
-      </div>
+      </button>
 
       {isOpen && (
         <div
@@ -64,7 +61,7 @@ export default function Menu({
             {
               "right-0": align === "right",
               "left-0": align === "left",
-            }
+            },
           )}
         >
           <div className="py-1">
@@ -75,13 +72,14 @@ export default function Menu({
                   "flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700",
                   {
                     "text-red-600 dark:text-red-400": item.variant === "danger",
-                  }
+                  },
                 )}
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsOpen(false);
                   item.onClick();
                 }}
+                type="button"
               >
                 {item.icon && <span className="mr-2">{item.icon}</span>}
                 {item.label}

@@ -5,7 +5,7 @@ import { useCookie } from "@/hooks";
 const THEME_COOKIE_KEY = "themePreference";
 
 const determineEffectiveTheme = (
-  preference: ThemeOptions
+  preference: ThemeOptions,
 ): "light" | "dark" => {
   if (preference === ThemeOptions.Light) return "light";
   if (preference === ThemeOptions.Dark) return "dark";
@@ -33,7 +33,7 @@ const applyTheme = (theme: "light" | "dark") => {
 export default function ThemeProvider({ children }: { children: ReactNode }) {
   const [themePreference, setThemePreference] = useCookie<ThemeOptions>(
     THEME_COOKIE_KEY,
-    ThemeOptions.System
+    ThemeOptions.System,
   );
 
   const [effectiveTheme, setEffectiveTheme] = useState<"light" | "dark">(() => {

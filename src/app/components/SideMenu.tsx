@@ -30,7 +30,7 @@ function SideItemMenu({
               isActive,
             "bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700":
               !isActive,
-          }
+          },
         )}
         aria-label={label}
         type="button"

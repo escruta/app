@@ -64,7 +64,7 @@ export default function Modal({
               "max-w-lg": width === "md",
               "max-w-xl": width === "lg",
               "max-w-2xl": width === "xl",
-            }
+            },
           )}
           role="dialog"
           aria-modal="true"
@@ -100,6 +100,6 @@ export default function Modal({
         </motion.div>
       </div>
     </AnimatePresence>,
-    document.body
+    document.body,
   );
 }

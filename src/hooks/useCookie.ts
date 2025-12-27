@@ -9,7 +9,7 @@ const cookieOptions: Cookies.CookieAttributes = {
 export default function useCookie<T>(
   keyName: string,
   defaultValue?: T,
-  options: Cookies.CookieAttributes = cookieOptions
+  options: Cookies.CookieAttributes = cookieOptions,
 ): [T | undefined, (value: T) => void] {
   const [storedValue, setStoredValue] = useState<T | undefined>(() => {
     try {

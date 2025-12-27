@@ -74,7 +74,7 @@ export default function RegisterPage() {
       password === confirmPassword && confirmPassword !== "";
 
     setAllowSubmit(
-      isEmailValid && isFullNameValid && isPasswordValid && doPasswordsMatch
+      isEmailValid && isFullNameValid && isPasswordValid && doPasswordsMatch,
     );
   }, [fullName, email, password, confirmPassword]);
 
@@ -126,11 +126,11 @@ export default function RegisterPage() {
         setError(
           error.status === 409
             ? "This email is already registered."
-            : "Registration error. Please try again."
+            : "Registration error. Please try again.",
         );
       } else {
         setError(
-          "Cannot connect to the server. Please check your connection and try again."
+          "Cannot connect to the server. Please check your connection and try again.",
         );
       }
     } finally {
@@ -245,7 +245,7 @@ export default function RegisterPage() {
               {
                 "border-red-400": passwordError,
                 "border-gray-300 dark:border-gray-600": !passwordError,
-              }
+              },
             )}
             required
             autoComplete="new-password"
@@ -290,7 +290,7 @@ export default function RegisterPage() {
                 "border-gray-300 dark:border-gray-600": !(
                   password !== confirmPassword && confirmPassword
                 ),
-              }
+              },
             )}
             required
             autoComplete="new-password"
@@ -332,7 +332,7 @@ export default function RegisterPage() {
             {
               "bg-blue-500 hover:bg-blue-600": allowSubmit,
               "bg-blue-300 cursor-not-allowed": !allowSubmit,
-            }
+            },
           )}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

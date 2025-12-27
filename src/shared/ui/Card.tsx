@@ -25,7 +25,7 @@ export default function Card({
 }: ControlledProps | UncontrolledProps) {
   const baseClasses = cn(
     "bg-gray-50 dark:bg-gray-800/80 p-4 rounded-xs border border-gray-200 dark:border-gray-600",
-    className
+    className,
   );
 
   useEffect(() => {

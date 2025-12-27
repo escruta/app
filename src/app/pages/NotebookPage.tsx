@@ -45,7 +45,7 @@ export default function NotebookPage() {
   const [sourcesRefreshKey, setSourcesRefreshKey] = useState<number>(0);
   const [leftPanelWidth, setLeftPanelWidth] = useCookie<number>(
     "notebookLeftPanelWidth",
-    33
+    33,
   );
   const [isResizing, setIsResizing] = useState<boolean>(false);
   const tabsRef = useRef<TabsRef>(null);
@@ -77,7 +77,7 @@ export default function NotebookPage() {
       const containerWidth = window.innerWidth - 46;
       const newWidth = Math.min(
         Math.max(((e.clientX - 16) / containerWidth) * 100, 30),
-        64
+        64,
       );
       setLeftPanelWidth(newWidth);
     };
@@ -113,7 +113,7 @@ export default function NotebookPage() {
         title: newTitle,
       },
     },
-    false
+    false,
   );
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -129,7 +129,7 @@ export default function NotebookPage() {
     if (!newTitle.trim()) return;
     try {
       await renameNotebook();
-      notebook!.title = newTitle;
+      if (notebook) notebook.title = newTitle;
       setIsRenameModalOpen(false);
     } catch (error) {
       console.error("Error renaming notebook:", error);
@@ -360,10 +360,10 @@ export default function NotebookPage() {
                             setSelectedSource(source)
                           }
                           refreshTrigger={sourcesRefreshKey}
-                          onSourceAdded={function () {
+                          onSourceAdded={() => {
                             if (
                               notebook?.sources !== undefined &&
-                              notebook!.sources.length === 0
+                              notebook.sources.length === 0
                             ) {
                               refetchNotebook(true);
                               setSourcesRefreshKey((prev) => prev + 1);

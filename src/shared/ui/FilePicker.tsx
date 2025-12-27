@@ -69,7 +69,7 @@ export default function FilePicker({
         disabled,
       "border-blue-500 bg-blue-50 dark:bg-gray-700": dragOver,
     },
-    className
+    className,
   );
 
   return (

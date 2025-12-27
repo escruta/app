@@ -22,7 +22,7 @@ export interface TabsRef {
 const Tabs = forwardRef<TabsRef, TabsProps>(
   ({ items, defaultActiveTab, onChange, className = "" }, ref) => {
     const [activeTabId, setActiveTabId] = useState<string>(
-      defaultActiveTab || (items.length > 0 ? items[0].id : "")
+      defaultActiveTab || (items.length > 0 ? items[0].id : ""),
     );
 
     useImperativeHandle(ref, () => ({
@@ -74,8 +74,9 @@ const Tabs = forwardRef<TabsRef, TabsProps>(
                   "w-full px-6 py-1.5 text-sm font-medium rounded-xs transition-all duration-150 relative group-hover:scale-[1.02]",
                   {
                     "transform-none": activeTabId === tab.id,
-                  }
+                  },
                 )}
+                type="button"
               >
                 <span
                   className={cn("text-sm transition-all duration-150", {
@@ -110,7 +111,7 @@ const Tabs = forwardRef<TabsRef, TabsProps>(
         </div>
       </div>
     );
-  }
+  },
 );
 
 Tabs.displayName = "Tabs";

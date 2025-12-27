@@ -20,7 +20,7 @@ export default function NoteChip({ note, className, onSelect }: NoteChipProps) {
         "hover:bg-blue-50 dark:hover:bg-gray-700",
         "hover:border-blue-300 dark:hover:border-gray-500",
         "hover:scale-[101%]",
-        className
+        className,
       )}
       onClick={() => onSelect?.(note)}
       onKeyDown={(e) => {

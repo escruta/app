@@ -38,14 +38,18 @@ const router = createBrowserRouter([
   },
 ]);
 
-createRoot(document.getElementById("root")!).render(
-  <AuthProvider
-    children={
-      <ThemeProvider
-        children={
-          <ToastProvider children={<RouterProvider router={router} />} />
-        }
-      />
-    }
-  />
+const root = document.getElementById("root");
+
+if (!root) {
+  throw new Error("Root element not found");
+}
+
+createRoot(root).render(
+  <AuthProvider>
+    <ThemeProvider>
+      <ToastProvider>
+        <RouterProvider router={router} />
+      </ToastProvider>
+    </ThemeProvider>
+  </AuthProvider>,
 );

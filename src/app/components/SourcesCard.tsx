@@ -82,14 +82,12 @@ export default function SourcesCard({
         refetchSources(true);
         onSourceAdded?.();
       },
-      onError: (error) => {
+      onError: (error: Error) => {
         console.error("Error adding source:", error);
-        const errorMessage =
-          "response" in error ? (error as any).response?.data : error.message;
-        setNewSourceLinkError("Failed to add source. " + errorMessage);
+        setNewSourceLinkError("Failed to add source. " + error.message);
       },
     },
-    false
+    false,
   );
 
   async function handleAddSource() {
@@ -104,7 +102,7 @@ export default function SourcesCard({
       const maxFileSize = 50 * 1024 * 1024;
       if (newSourceFile.size > maxFileSize) {
         setNewSourceLinkError(
-          "File size exceeds the 50MB limit. Please select a smaller file."
+          "File size exceeds the 50MB limit. Please select a smaller file.",
         );
         return;
       }
@@ -116,7 +114,7 @@ export default function SourcesCard({
 
       if (sourceType === "Website" && !/^https?:\/\/.+/i.test(newSourceLink)) {
         setNewSourceLinkError(
-          "Please enter a valid URL starting with https://"
+          "Please enter a valid URL starting with https://",
         );
         return;
       }

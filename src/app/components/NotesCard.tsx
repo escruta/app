@@ -61,7 +61,7 @@ export default function NotesCard({
         console.error("Error adding note:", error);
       },
     },
-    false
+    false,
   );
 
   return (

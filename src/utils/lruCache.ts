@@ -48,20 +48,23 @@ function stableStringify(obj: unknown): string {
 
   const sorted = Object.keys(obj as object)
     .sort()
-    .reduce((acc, key) => {
-      acc[key] = stableStringify((obj as Record<string, unknown>)[key]);
-      return acc;
-    }, {} as Record<string, unknown>);
+    .reduce(
+      (acc, key) => {
+        acc[key] = stableStringify((obj as Record<string, unknown>)[key]);
+        return acc;
+      },
+      {} as Record<string, unknown>,
+    );
 
   return JSON.stringify(sorted);
 }
 
 export function generateCacheKey(
   endpoint: string,
-  options?: RequestConfig
+  options?: RequestConfig,
 ): string {
   const { method = "GET", params, body } = options || {};
   return `${method}:${endpoint}:${stableStringify(params)}:${stableStringify(
-    body
+    body,
   )}`;
 }

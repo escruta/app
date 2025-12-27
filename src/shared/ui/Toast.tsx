@@ -70,7 +70,7 @@ export default function Toast({
                   type === "warning",
                 "bg-blue-50 border-blue-500 text-blue-800 dark:bg-blue-900 dark:border-blue-600 dark:text-blue-200":
                   type === "info",
-              }
+              },
             )}
             role="alert"
           >

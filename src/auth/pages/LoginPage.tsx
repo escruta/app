@@ -8,13 +8,13 @@ import { cn } from "@/lib/utils";
 export default function LoginPage() {
   const [savedEmail, setSavedEmail] = useCookie<{ email: string }>(
     "savedEmail",
-    { email: "" }
+    { email: "" },
   );
-  const [email, setEmail] = useState(savedEmail!.email || "");
+  const [email, setEmail] = useState(savedEmail?.email || "");
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [passwordTouched, setPasswordTouched] = useState(false);
-  const [rememberEmail, setRememberEmail] = useState(!!savedEmail!.email);
+  const [rememberEmail, setRememberEmail] = useState(!!savedEmail?.email);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [allowSubmit, setAllowSubmit] = useState(false);
@@ -106,7 +106,7 @@ export default function LoginPage() {
       await login(email, password);
       if (rememberEmail) {
         setSavedEmail({ email });
-      } else if (savedEmail!.email) {
+      } else if (savedEmail?.email) {
         setSavedEmail({ email: "" });
       }
       navigate("/app");
@@ -116,11 +116,11 @@ export default function LoginPage() {
         setError(
           error.status === 401
             ? "Invalid email or password."
-            : "Login error. Please try again."
+            : "Login error. Please try again.",
         );
       } else {
         setError(
-          "Cannot connect to the server. Please check your connection and try again."
+          "Cannot connect to the server. Please check your connection and try again.",
         );
       }
     } finally {
@@ -209,7 +209,7 @@ export default function LoginPage() {
               {
                 "border-red-400": passwordError,
                 "border-gray-300 dark:border-gray-600": !passwordError,
-              }
+              },
             )}
             required
             ref={passwordInputRef}
@@ -270,7 +270,7 @@ export default function LoginPage() {
             {
               "bg-blue-500 hover:bg-blue-600": allowSubmit,
               "bg-blue-300 cursor-not-allowed": !allowSubmit,
-            }
+            },
           )}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

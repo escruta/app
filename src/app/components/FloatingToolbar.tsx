@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import Quill from "quill";
+import type Quill from "quill";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import {
@@ -30,7 +30,7 @@ export default function FloatingToolbar({
       if (selection && selection.length > 0 && quillInstance.hasFocus()) {
         const bounds = quillInstance.getBounds(
           selection.index,
-          selection.length
+          selection.length,
         );
         if (bounds) {
           const editorRect = quillInstance.root.getBoundingClientRect();
@@ -179,9 +179,10 @@ export default function FloatingToolbar({
                 "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400":
                   getFormatState("bold"),
                 "text-gray-600 dark:text-gray-400": !getFormatState("bold"),
-              }
+              },
             )}
             title="Bold"
+            type="button"
           >
             <BoldIcon className="w-4 h-4" />
           </button>
@@ -194,9 +195,10 @@ export default function FloatingToolbar({
                 "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400":
                   getFormatState("italic"),
                 "text-gray-600 dark:text-gray-400": !getFormatState("italic"),
-              }
+              },
             )}
             title="Italic"
+            type="button"
           >
             <ItalicIcon className="w-4 h-4" />
           </button>
@@ -210,9 +212,10 @@ export default function FloatingToolbar({
                   getFormatState("underline"),
                 "text-gray-600 dark:text-gray-400":
                   !getFormatState("underline"),
-              }
+              },
             )}
             title="Underline"
+            type="button"
           >
             <UnderlineIcon className="w-4 h-4" />
           </button>
@@ -227,9 +230,10 @@ export default function FloatingToolbar({
                 "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400":
                   getFormatState("list"),
                 "text-gray-600 dark:text-gray-400": !getFormatState("list"),
-              }
+              },
             )}
             title="List"
+            type="button"
           >
             <FormatListBulletedIcon className="w-4 h-4" />
           </button>
@@ -243,9 +247,10 @@ export default function FloatingToolbar({
                   getFormatState("code-block"),
                 "text-gray-600 dark:text-gray-400":
                   !getFormatState("code-block"),
-              }
+              },
             )}
             title="Code Block"
+            type="button"
           >
             <CodeIcon className="w-4 h-4" />
           </button>

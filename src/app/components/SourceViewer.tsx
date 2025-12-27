@@ -87,7 +87,7 @@ export default function SourceViewer({
         console.error("Error deleting source:", error);
       },
     },
-    false
+    false,
   );
 
   const {
@@ -103,7 +103,7 @@ export default function SourceViewer({
         console.error("Error fetching source summary:", error);
       },
     },
-    false
+    false,
   );
 
   const { loading: isRegenerating, refetch: regenerateSummary } =
@@ -118,7 +118,7 @@ export default function SourceViewer({
           console.error("Error regenerating source summary:", error);
         },
       },
-      false
+      false,
     );
 
   const { loading: isDeletingSummary, refetch: deleteSummary } = useFetch<void>(
@@ -132,7 +132,7 @@ export default function SourceViewer({
         console.error("Error deleting source summary:", error);
       },
     },
-    false
+    false,
   );
 
   useEffect(() => {
@@ -146,7 +146,7 @@ export default function SourceViewer({
         setIsExpanded={setIsExpanded}
         className={cn(
           "flex flex-col overflow-y-auto p-0 dark:bg-gray-800",
-          className
+          className,
         )}
       >
         <div className="sticky h-20 top-0 z-10 ">
@@ -208,7 +208,7 @@ export default function SourceViewer({
                         window.open(
                           fullSource?.link,
                           "_blank",
-                          "noopener noreferrer"
+                          "noopener noreferrer",
                         );
                       }}
                     />
@@ -278,7 +278,7 @@ export default function SourceViewer({
                               "success",
                               {
                                 duration: 1500,
-                              }
+                              },
                             );
                           }}
                         />
@@ -319,7 +319,7 @@ export default function SourceViewer({
                   <div className="text-red-500 text-sm">
                     Error: {summaryError.message}
                   </div>
-                ) : sourceSummary && sourceSummary.trim() ? (
+                ) : sourceSummary?.trim() ? (
                   <div className="prose dark:prose-invert prose-sm max-w-none select-text">
                     <Markdown
                       components={{
@@ -367,7 +367,7 @@ export default function SourceViewer({
                           components={{
                             code: ({ className, children }) => {
                               const match = /language-(\w+)/.exec(
-                                className || ""
+                                className || "",
                               );
                               const inline = !match;
                               return (

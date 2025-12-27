@@ -27,7 +27,7 @@ export default function Switch({
         {
           "opacity-50 cursor-not-allowed pointer-events-none": disabled,
         },
-        className
+        className,
       )}
       htmlFor={id}
     >
@@ -36,7 +36,7 @@ export default function Switch({
           className={cn(
             "text-base font-medium text-gray-700 dark:text-gray-300",
             "transition-colors duration-200",
-            "flex items-center"
+            "flex items-center",
           )}
         >
           {label}
@@ -61,7 +61,7 @@ export default function Switch({
             "bg-gray-100 dark:bg-gray-700",
             "peer-checked:bg-blue-500 peer-checked:dark:bg-blue-600",
             "peer-checked:border-transparent",
-            "peer-focus:ring-1 peer-focus:ring-blue-500 dark:peer-focus:ring-blue-400"
+            "peer-focus:ring-1 peer-focus:ring-blue-500 dark:peer-focus:ring-blue-400",
           )}
         />
 
@@ -74,7 +74,7 @@ export default function Switch({
             "w-5 h-5 top-1 left-1",
             "peer-checked:translate-x-5",
             "peer-checked:bg-white peer-checked:border-white",
-            "flex items-center justify-center"
+            "flex items-center justify-center",
           )}
         >
           <AnimatePresence mode="wait">

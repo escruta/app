@@ -30,7 +30,7 @@ async function sleep(ms: number): Promise<void> {
 export default function useFetch<T = unknown>(
   endpoint: string,
   options?: UseFetchOptions<T>,
-  immediate: boolean = true
+  immediate: boolean = true,
 ): UseFetchReturn<T> {
   const [token] = useCookie<Token>(AUTH_TOKEN_KEY);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -103,8 +103,8 @@ export default function useFetch<T = unknown>(
           const body = isFormData
             ? (currentOptions.data as FormData)
             : currentOptions?.data
-            ? JSON.stringify(currentOptions.data)
-            : currentOptions?.body;
+              ? JSON.stringify(currentOptions.data)
+              : currentOptions?.body;
 
           const response = await fetch(url.toString(), {
             ...currentOptions,
@@ -124,7 +124,7 @@ export default function useFetch<T = unknown>(
           const contentType = response.headers.get("Content-Type");
           let data: T;
 
-          if (contentType && contentType.includes("application/json")) {
+          if (contentType?.includes("application/json")) {
             data = await response.json();
           } else {
             data = (await response.text()) as unknown as T;
@@ -160,7 +160,7 @@ export default function useFetch<T = unknown>(
         currentOptions?.onError?.(lastError);
       }
     },
-    [endpoint, token, cacheTime, cacheKey, retry, retryDelay, baseURL]
+    [endpoint, token, cacheTime, cacheKey, retry, retryDelay, baseURL],
   );
 
   useEffect(() => {

@@ -22,7 +22,7 @@ export interface ToastContextType {
   showToast: (
     message: string,
     type?: ToastType,
-    options?: Partial<Omit<ToastData, "id" | "message" | "type">>
+    options?: Partial<Omit<ToastData, "id" | "message" | "type">>,
   ) => void;
   hideToast: (id: string) => void;
   clearToasts: () => void;

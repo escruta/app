@@ -16,7 +16,7 @@ export default function AuthProvider({
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useCookie<User | null>(
     "user",
-    null
+    null,
   ) as [User | null, (value: User | null) => void];
 
   const login = async (email: string, password: string) => {
@@ -51,7 +51,7 @@ export default function AuthProvider({
   const register = async (
     email: string,
     password: string,
-    fullName: string
+    fullName: string,
   ) => {
     const response = await fetch(`${BACKEND_BASE_URL}/register`, {
       method: "POST",
@@ -110,7 +110,7 @@ export default function AuthProvider({
     } else {
       setCurrentUser(null);
     }
-  }, [tokenCookie?.token]);
+  }, [tokenCookie?.token, setCurrentUser]);
 
   const isAuthenticated = useCallback(() => {
     return !!tokenCookie?.token;

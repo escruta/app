@@ -157,7 +157,7 @@ export default function Tooltip({
               {text}
             </motion.div>
           </AnimatePresence>,
-          document.body
+          document.body,
         )}
     </>
   );

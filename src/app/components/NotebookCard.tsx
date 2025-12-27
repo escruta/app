@@ -31,7 +31,7 @@ export default function NotebookCard({
         id: notebook.id,
       },
     },
-    false
+    false,
   );
 
   async function handleDeleteNotebook() {
@@ -72,7 +72,7 @@ export default function NotebookCard({
 
   return (
     <>
-      <div
+      <button
         className={cn(baseClasses, {
           [gridClasses]: viewMode === "grid",
           [listClasses]: viewMode === "list",
@@ -82,6 +82,7 @@ export default function NotebookCard({
           navigate(`/app/notebook/${notebook.id}`);
           window.scrollTo(0, 0);
         }}
+        type="button"
       >
         {viewMode === "grid" ? (
           <>
@@ -89,7 +90,7 @@ export default function NotebookCard({
               <div className="p-2 rounded-xs bg-blue-25 dark:bg-blue-900/30 text-blue-500 dark:text-blue-300">
                 <NotebookIcon className="w-5 h-5" />
               </div>
-              <div onClick={handleMenuClick}>
+              <button type="button" onClick={handleMenuClick}>
                 <Menu
                   items={[
                     {
@@ -107,7 +108,7 @@ export default function NotebookCard({
                     />
                   }
                 />
-              </div>
+              </button>
             </div>
 
             <div>
@@ -137,7 +138,7 @@ export default function NotebookCard({
               </div>
             </div>
 
-            <div onClick={handleMenuClick}>
+            <button type="button" onClick={handleMenuClick}>
               <Menu
                 items={[
                   {
@@ -155,10 +156,10 @@ export default function NotebookCard({
                   />
                 }
               />
-            </div>
+            </button>
           </>
         )}
-      </div>
+      </button>
 
       {/* Delete Modal */}
       <Modal

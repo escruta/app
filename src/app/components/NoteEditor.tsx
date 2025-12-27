@@ -97,7 +97,7 @@ export default function NoteEditor({
         console.error("Error updating note:", error);
       },
     },
-    false
+    false,
   );
 
   const { refetch: saveNoteContent } = useFetch<Note>(
@@ -118,7 +118,7 @@ export default function NoteEditor({
         setIsSaving(false);
       },
     },
-    false
+    false,
   );
 
   const {
@@ -138,7 +138,7 @@ export default function NoteEditor({
         console.error("Error deleting note:", error);
       },
     },
-    false
+    false,
   );
 
   return (
@@ -148,7 +148,7 @@ export default function NoteEditor({
         setIsExpanded={setIsExpanded}
         className={cn(
           "flex flex-col overflow-y-auto dark:bg-gray-800",
-          className
+          className,
         )}
       >
         <div className="flex justify-between items-center flex-shrink-0 mb-2">

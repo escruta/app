@@ -58,9 +58,9 @@ export default function Dropdown<T extends string>({
   return (
     <div className={cn("flex items-center gap-3", className)}>
       {label && (
-        <label className="text-base font-medium text-gray-700 dark:text-gray-200 select-none">
+        <p className="text-base font-medium text-gray-700 dark:text-gray-200 select-none">
           {label}
-        </label>
+        </p>
       )}
 
       <div className="relative" ref={dropdownRef}>
@@ -86,7 +86,7 @@ export default function Dropdown<T extends string>({
                 disabled,
               "ring-2 ring-blue-500 dark:ring-blue-400 border-blue-500 dark:border-blue-400":
                 isOpen && !disabled,
-            }
+            },
           )}
         >
           <span className="block truncate">
@@ -100,7 +100,7 @@ export default function Dropdown<T extends string>({
                 "w-5 h-5 text-gray-400 dark:text-gray-400 transition-transform duration-200",
                 {
                   "rotate-180": isOpen,
-                }
+                },
               )}
             />
           </span>
@@ -122,7 +122,7 @@ export default function Dropdown<T extends string>({
                 "bg-white dark:bg-gray-800",
                 "border border-gray-300 dark:border-gray-600",
                 "rounded-xs shadow-lg dark:shadow-gray-900/20",
-                "max-h-60 overflow-auto"
+                "max-h-60 overflow-auto",
               )}
             >
               <div className="py-1">
@@ -148,7 +148,7 @@ export default function Dropdown<T extends string>({
                       {
                         "bg-blue-100 dark:bg-gray-700 text-blue-700 dark:text-blue-300":
                           selectedOption === option,
-                      }
+                      },
                     )}
                   >
                     <span className="block truncate">{option}</span>

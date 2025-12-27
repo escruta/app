@@ -36,7 +36,8 @@ The application will be available at [localhost:5173](http://localhost:5173/) by
 
 - `npm run dev` - Start development server with hot reload
 - `npm run build` - Create production build
-- `npm run lint` - Run ESLint for code quality checks
+- `npm run lint` - Run Biome for code quality checks
+- `npm run format` - Run Biome for code formatting
 - `npm run preview` - Preview production build locally
 
 ## Configuration

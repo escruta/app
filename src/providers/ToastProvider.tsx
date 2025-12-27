@@ -24,7 +24,7 @@ export default function ToastProvider({ children }: ToastProviderProps) {
     (
       message: string,
       type: ToastType = "info",
-      options: Partial<Omit<ToastData, "id" | "message" | "type">> = {}
+      options: Partial<Omit<ToastData, "id" | "message" | "type">> = {},
     ) => {
       const id = Math.random().toString(36).substring(2, 9);
       const newToast: ToastData = {
@@ -44,7 +44,7 @@ export default function ToastProvider({ children }: ToastProviderProps) {
         }, newToast.duration);
       }
     },
-    [hideToast]
+    [hideToast],
   );
 
   const clearToasts = useCallback(() => {

@@ -1,12 +1,12 @@
 import { lazy } from "react";
-import { type RouteObject } from "react-router";
+import type { RouteObject } from "react-router";
 import AppLayout from "./layouts/AppLayout";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const NotebookPage = lazy(() => import("./pages/NotebookPage"));
 
-export default <RouteObject[]>[
+export default (<RouteObject[]>[
   {
     path: "app",
     Component: AppLayout,
@@ -32,4 +32,4 @@ export default <RouteObject[]>[
       },
     ],
   },
-];
+]);

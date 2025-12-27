@@ -30,11 +30,11 @@ export default function HomePage() {
   const { data, loading, error, refetch } = useFetch<Notebook[]>("/notebooks");
   const [sortBy, setSortBy] = useCookie<SortOptions>(
     "notebookSortPreference",
-    SortOptions.Newest
+    SortOptions.Newest,
   );
   const [viewMode, setViewMode] = useCookie<ViewMode>(
     "notebookViewMode",
-    "grid"
+    "grid",
   );
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newNotebookTitle, setNewNotebookTitle] = useState("");
@@ -57,7 +57,7 @@ export default function HomePage() {
         console.error("Error creating notebook:", error);
       },
     },
-    false
+    false,
   );
 
   if (loading) {
@@ -76,12 +76,12 @@ export default function HomePage() {
       case SortOptions.Newest:
         return sortedData.sort(
           (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         );
       case SortOptions.Oldest:
         return sortedData.sort(
           (a, b) =>
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
         );
       case SortOptions.Alphabetical:
         return sortedData.sort((a, b) => a.title.localeCompare(b.title));
@@ -151,7 +151,7 @@ export default function HomePage() {
 
               <Dropdown<SortOptions>
                 options={Object.values(SortOptions)}
-                selectedOption={sortBy!}
+                selectedOption={sortBy || SortOptions.Newest}
                 onSelect={(option) => setSortBy(option as SortOptions)}
                 label="Sort by:"
               />

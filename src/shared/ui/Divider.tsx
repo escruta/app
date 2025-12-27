@@ -16,7 +16,7 @@ export default function Divider({
       <div
         className={cn(
           "inline-block h-full w-px bg-gray-200 dark:bg-gray-700",
-          className
+          className,
         )}
       />
     );
@@ -38,7 +38,7 @@ export default function Divider({
     <hr
       className={cn(
         "border-t border-gray-200 dark:border-gray-700 my-2",
-        className
+        className,
       )}
     />
   );

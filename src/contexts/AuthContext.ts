@@ -7,12 +7,12 @@ interface AuthContextType {
   checkTokenValidity: () => boolean;
   login: (
     email: string,
-    password: string
+    password: string,
   ) => Promise<{ status: number; data: unknown }>;
   register: (
     email: string,
     password: string,
-    fullName: string
+    fullName: string,
   ) => Promise<{ status: number; data: unknown }>;
   logout: () => void;
   loading: boolean;

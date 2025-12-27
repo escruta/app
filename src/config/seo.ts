@@ -27,7 +27,7 @@ export function getRouteMetadata(path: string): RouteMetadata {
 
 export function generateNotebookMetadata(
   notebookTitle: string,
-  notebookId: string
+  notebookId: string,
 ): RouteMetadata {
   return {
     title: `${notebookTitle} - Escruta`,

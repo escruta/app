@@ -55,7 +55,7 @@ export default function IconButton({
         {
           [disabledStyles]: disabled,
         },
-        className
+        className,
       )}
       type="button"
       disabled={disabled}

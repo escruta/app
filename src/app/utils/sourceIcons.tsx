@@ -9,7 +9,6 @@ export function getSourceTypeIcon(sourceType: SourceType) {
       return <FileIcon />;
     case "YouTube Video":
       return <YouTubeIcon />;
-    case "Website":
     default:
       return <LinkIcon />;
   }

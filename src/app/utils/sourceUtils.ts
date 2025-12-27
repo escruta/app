@@ -25,7 +25,7 @@ export function getYouTubeVideoId(url: string): string | null {
 
   for (const regex of regexes) {
     const match = url.match(regex);
-    if (match && match[1]) {
+    if (match?.[1]) {
       return match[1];
     }
   }

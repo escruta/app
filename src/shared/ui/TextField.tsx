@@ -119,7 +119,7 @@ export default function TextField({
             e.target.style.height = "auto";
             e.target.style.height = e.target.scrollHeight + "px";
             (onChange as (e: React.ChangeEvent<HTMLTextAreaElement>) => void)(
-              e
+              e,
             );
           }}
           onKeyDown={

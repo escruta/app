@@ -15,6 +15,7 @@ const CodeBlock = lazy(() => import("./CodeBlock"));
 import { useEffect, useState, type ReactNode } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
+import ReactMarkdown from "react-markdown";
 
 type Sender = "user" | "ai";
 
@@ -59,9 +60,9 @@ function processMessage(message: Message): ReactNode {
   const codeBlockRegex = /```(\w+)?\n?([\s\S]*?)```/g;
   const parts = [];
   let lastIndex = 0;
-  let match;
+  let match = codeBlockRegex.exec(message.text);
 
-  while ((match = codeBlockRegex.exec(message.text)) !== null) {
+  while (match !== null) {
     if (match.index > lastIndex) {
       const beforeCode = message.text.slice(lastIndex, match.index);
       if (beforeCode.trim()) {
@@ -76,6 +77,7 @@ function processMessage(message: Message): ReactNode {
     });
 
     lastIndex = match.index + match[0].length;
+    match = codeBlockRegex.exec(message.text);
   }
 
   if (lastIndex < message.text.length) {
@@ -113,59 +115,39 @@ function processTextContent(text: string, sender: Sender) {
     ai: "text-blue-500 hover:text-blue-400",
   }[sender];
 
-  const processed = text
-    .replace(
-      /`([^`]+)`/g,
-      '<code class="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-1.5 py-0.5 rounded-xs text-sm font-mono">$1</code>'
-    )
-    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.*?)\*/g, "<em>$1</em>")
-    .replace(
-      /\[([^\]]+)\]\(https?:\/\/[^)]+\)/g,
-      `<a href="$2" target="_blank" rel="noopener noreferrer" class="${linkColorClass} underline">$1</a>`
-    );
-
-  const paragraphs = processed.split(/\n\s*\n/).filter((p) => p.trim());
-
-  return paragraphs.map((paragraph, idx) => {
-    if (paragraph.match(/^\s*[-*]\s/m)) {
-      const items = paragraph
-        .split(/\n(?=\s*[-*]\s)/)
-        .map((item) => item.replace(/^\s*[-*]\s/, "").trim())
-        .filter((item) => item);
-
-      return (
-        <ul key={idx} className="list-disc pl-5 my-2 space-y-1">
-          {items.map((item, itemIdx) => (
-            <li key={itemIdx} dangerouslySetInnerHTML={{ __html: item }} />
-          ))}
-        </ul>
-      );
-    }
-
-    if (paragraph.match(/^\s*\d+\.\s/m)) {
-      const items = paragraph
-        .split(/\n(?=\s*\d+\.\s)/)
-        .map((item) => item.replace(/^\s*\d+\.\s/, "").trim())
-        .filter((item) => item);
-
-      return (
-        <ol key={idx} className="list-decimal pl-5 my-2 space-y-1">
-          {items.map((item, itemIdx) => (
-            <li key={itemIdx} dangerouslySetInnerHTML={{ __html: item }} />
-          ))}
-        </ol>
-      );
-    }
-
-    return (
-      <p
-        key={idx}
-        className="my-2"
-        dangerouslySetInnerHTML={{ __html: paragraph.trim() }}
-      />
-    );
-  });
+  return (
+    <ReactMarkdown
+      components={{
+        p: ({ children }) => <p className="my-2">{children}</p>,
+        ul: ({ children }) => (
+          <ul className="list-disc pl-5 my-2 space-y-1">{children}</ul>
+        ),
+        ol: ({ children }) => (
+          <ol className="list-decimal pl-5 my-2 space-y-1">{children}</ol>
+        ),
+        li: ({ children }) => <li>{children}</li>,
+        code: ({ children }) => (
+          <code className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-1.5 py-0.5 rounded-xs text-sm font-mono">
+            {children}
+          </code>
+        ),
+        strong: ({ children }) => <strong>{children}</strong>,
+        em: ({ children }) => <em>{children}</em>,
+        a: ({ href, children }) => (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${linkColorClass} underline`}
+          >
+            {children}
+          </a>
+        ),
+      }}
+    >
+      {text}
+    </ReactMarkdown>
+  );
 }
 
 export default function ChatCard({
@@ -187,7 +169,7 @@ export default function ChatCard({
         console.error("Error fetching summary:", error);
       },
     },
-    false
+    false,
   );
 
   const { loading: isSummaryRegenerating, refetch: regenerateSummary } =
@@ -202,7 +184,7 @@ export default function ChatCard({
           console.error("Error refreshing summary:", error);
         },
       },
-      false
+      false,
     );
 
   useEffect(() => {
@@ -224,7 +206,7 @@ export default function ChatCard({
         console.error("Error fetching example questions:", error);
       },
     },
-    sourcesCount > 0
+    sourcesCount > 0,
   );
 
   const [messages, setMessages] = useState<Message[]>([]);
@@ -234,7 +216,7 @@ export default function ChatCard({
   const handleSourceClick = (sourceId: string) => {
     if (
       !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(
-        sourceId
+        sourceId,
       )
     ) {
       console.warn("Invalid source ID format:", sourceId);
@@ -288,7 +270,7 @@ export default function ChatCard({
           setMessages((prevMessages) => [...prevMessages, errorResponse]);
         },
       },
-      false
+      false,
     );
 
   return (
@@ -296,7 +278,7 @@ export default function ChatCard({
       <div className="flex flex-row justify-between items-center mb-2 flex-shrink-0">
         <h2 className="text-lg font-sans font-semibold">Chat</h2>
         <div className="flex gap-3">
-          {messages.length == 0 &&
+          {messages.length === 0 &&
           !isChatLoading &&
           !isSummaryLoading &&
           notebookSummary ? (
@@ -345,7 +327,7 @@ export default function ChatCard({
                         message.sender === "user",
                       "bg-gray-100/60 dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-medium mr-12":
                         message.sender === "ai",
-                    }
+                    },
                   )}
                 >
                   {processMessage(message)}
@@ -364,6 +346,7 @@ export default function ChatCard({
                               }}
                               className="text-xs bg-gray-200/50 dark:bg-gray-600 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-xs hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors cursor-pointer"
                               title={source.title}
+                              type="button"
                             >
                               {source.title || `Source ${index + 1}`}
                             </button>
@@ -433,8 +416,7 @@ export default function ChatCard({
                     <p className="text-sm text-red-500">
                       Error: {exampleQuestionsError.message}
                     </p>
-                  ) : exampleQuestions &&
-                    exampleQuestions.questions &&
+                  ) : exampleQuestions?.questions &&
                     exampleQuestions.questions.length > 0 ? (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">

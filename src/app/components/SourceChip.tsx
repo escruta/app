@@ -31,7 +31,7 @@ export default function SourceChip({
         "hover:bg-blue-50 dark:hover:bg-gray-700",
         "hover:border-blue-300 dark:hover:border-gray-500",
         "hover:scale-[101%]",
-        className
+        className,
       )}
       onClick={handleChipClick}
       onKeyDown={(e) => {
