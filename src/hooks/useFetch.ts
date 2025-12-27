@@ -19,53 +19,45 @@ interface UseFetchOptions<T> extends RequestConfig {
   retryDelay?: number;
 }
 
-interface UseFetchReturn<T> extends UseFetchState<T> {
-  refetch: (forcedUpdate?: boolean) => Promise<void>;
-}
-
-async function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 export default function useFetch<T = unknown>(
   endpoint: string,
   options?: UseFetchOptions<T>,
-  immediate: boolean = true,
-): UseFetchReturn<T> {
+  immediate = true,
+) {
   const [token] = useCookie<Token>(AUTH_TOKEN_KEY);
+  const [state, setState] = useState<UseFetchState<T>>({
+    data: null,
+    loading: immediate,
+    error: null,
+  });
+
   const abortControllerRef = useRef<AbortController | null>(null);
+  const optionsRef = useRef(options);
   const mountedRef = useRef(true);
 
-  const cacheTime = options?.cacheTime ?? 5 * 60 * 1000;
-  const retry = options?.retry ?? 0;
-  const retryDelay = options?.retryDelay ?? 1000;
-  const baseURL = options?.baseURL ?? BACKEND_BASE_URL;
+  useEffect(() => {
+    optionsRef.current = options;
+  });
 
-  const optionsRef = useRef(options);
-  optionsRef.current = options;
-
-  const cacheKey = generateCacheKey(endpoint, options);
-
-  const [state, setState] = useState<UseFetchState<T>>(() => {
-    const cached = cacheInstance.get<T>(cacheKey);
-    const isValid =
-      cached &&
-      Date.now() - cached.timestamp < cacheTime &&
-      !options?.skipCache &&
-      cacheTime > 0;
-
-    return {
-      data: isValid ? cached.data : null,
-      loading: immediate && !isValid,
-      error: null,
-    };
+  const dependencyKey = JSON.stringify({
+    endpoint,
+    method: options?.method,
+    params: options?.params,
+    body: options?.body,
+    cacheTime: options?.cacheTime,
   });
 
   const fetchData = useCallback(
     async (forcedUpdate = false) => {
       const currentOptions = optionsRef.current;
+      const cacheTime = currentOptions?.cacheTime ?? 5 * 60 * 1000;
+      const retryCount = currentOptions?.retry ?? 0;
+      const retryDelay = currentOptions?.retryDelay ?? 1000;
+      const baseURL = currentOptions?.baseURL ?? BACKEND_BASE_URL;
       const skipCache =
         forcedUpdate || currentOptions?.skipCache || cacheTime <= 0;
+
+      const cacheKey = generateCacheKey(endpoint, currentOptions);
       const cached = cacheInstance.get<T>(cacheKey);
       const now = Date.now();
 
@@ -80,7 +72,6 @@ export default function useFetch<T = unknown>(
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
-
       abortControllerRef.current = new AbortController();
 
       if (mountedRef.current) {
@@ -88,15 +79,14 @@ export default function useFetch<T = unknown>(
       }
 
       let lastError: Error | null = null;
-      const maxAttempts = retry + 1;
 
-      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      for (let attempt = 0; attempt <= retryCount; attempt++) {
         try {
           const url = new URL(endpoint, baseURL);
           if (currentOptions?.params) {
-            Object.entries(currentOptions.params).forEach(([key, value]) => {
-              url.searchParams.append(key, value);
-            });
+            Object.entries(currentOptions.params).map(([key, val]) =>
+              url.searchParams.append(key, String(val)),
+            );
           }
 
           const isFormData = currentOptions?.data instanceof FormData;
@@ -111,7 +101,7 @@ export default function useFetch<T = unknown>(
             body,
             signal: abortControllerRef.current.signal,
             headers: {
-              Authorization: `Bearer ${token?.token}`,
+              Authorization: token?.token ? `Bearer ${token.token}` : "",
               ...(isFormData ? {} : { "Content-Type": "application/json" }),
               ...currentOptions?.headers,
             },
@@ -122,35 +112,33 @@ export default function useFetch<T = unknown>(
           }
 
           const contentType = response.headers.get("Content-Type");
-          let data: T;
-
-          if (contentType?.includes("application/json")) {
-            data = await response.json();
-          } else {
-            data = (await response.text()) as unknown as T;
-          }
+          const result = (
+            contentType?.includes("application/json")
+              ? await response.json()
+              : await response.text()
+          ) as T;
 
           if (cacheTime > 0) {
-            cacheInstance.set(cacheKey, { data, timestamp: now });
+            cacheInstance.set(cacheKey, {
+              data: result,
+              timestamp: Date.now(),
+            });
           }
 
           if (mountedRef.current) {
-            setState({ data, loading: false, error: null });
-            currentOptions?.onSuccess?.(data);
+            setState({ data: result, loading: false, error: null });
+            currentOptions?.onSuccess?.(result);
           }
           return;
-        } catch (error) {
-          if (error instanceof Error && error.name === "AbortError") {
-            return;
-          }
-
+        } catch (err) {
+          if (err instanceof Error && err.name === "AbortError") return;
           lastError =
-            error instanceof Error
-              ? error
-              : new Error(`Unexpected error: ${error}`);
+            err instanceof Error ? err : new Error("An unknown error occurred");
 
-          if (attempt < maxAttempts - 1) {
-            await sleep(retryDelay * (attempt + 1));
+          if (attempt < retryCount) {
+            await new Promise((resolve) =>
+              setTimeout(resolve, retryDelay * (attempt + 1)),
+            );
           }
         }
       }
@@ -160,31 +148,24 @@ export default function useFetch<T = unknown>(
         currentOptions?.onError?.(lastError);
       }
     },
-    [endpoint, token, cacheTime, cacheKey, retry, retryDelay, baseURL],
+    [dependencyKey, token?.token],
   );
 
   useEffect(() => {
     mountedRef.current = true;
-
-    if (immediate && !cacheInstance.has(cacheKey)) {
-      fetchData(false);
+    if (immediate) {
+      fetchData();
     }
-
     return () => {
       mountedRef.current = false;
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
+      abortControllerRef.current?.abort();
     };
-  }, [immediate, cacheKey, fetchData]);
+  }, [fetchData, immediate]);
 
   return { ...state, refetch: fetchData };
 }
 
-useFetch.clearCache = (cacheKey?: string) => {
-  if (cacheKey) {
-    cacheInstance.delete(cacheKey);
-  } else {
-    cacheInstance.clear();
-  }
+useFetch.clearCache = (key?: string) => {
+  if (key) cacheInstance.delete(key);
+  else cacheInstance.clear();
 };

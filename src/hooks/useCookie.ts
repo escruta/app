@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Cookies from "js-cookie";
 
-const cookieOptions: Cookies.CookieAttributes = {
+const defaultOptions: Cookies.CookieAttributes = {
   expires: 30,
   secure: true,
 };
@@ -9,37 +9,39 @@ const cookieOptions: Cookies.CookieAttributes = {
 export default function useCookie<T>(
   keyName: string,
   defaultValue?: T,
-  options: Cookies.CookieAttributes = cookieOptions,
-): [T | undefined, (value: T) => void] {
+  options: Cookies.CookieAttributes = defaultOptions,
+) {
   const [storedValue, setStoredValue] = useState<T | undefined>(() => {
     try {
-      const value = Cookies.get(keyName);
-      if (value && value !== "undefined") {
-        return JSON.parse(value) as T;
-      } else {
-        if (defaultValue !== undefined) {
-          Cookies.set(keyName, JSON.stringify(defaultValue), options);
-        }
+      const item = Cookies.get(keyName);
+      if (item) {
+        return JSON.parse(item) as T;
+      }
+      if (defaultValue !== undefined) {
+        Cookies.set(keyName, JSON.stringify(defaultValue), options);
         return defaultValue;
       }
-    } catch (err: unknown) {
-      console.error("Error getting cookie:", err);
+      return undefined;
+    } catch (_) {
       return defaultValue;
     }
   });
 
-  const setValue = (newValue: T) => {
-    try {
-      if (newValue !== undefined) {
-        Cookies.set(keyName, JSON.stringify(newValue), options);
-      } else {
-        Cookies.remove(keyName);
+  const setValue = useCallback(
+    (newValue: T) => {
+      try {
+        if (newValue === undefined) {
+          Cookies.remove(keyName);
+        } else {
+          Cookies.set(keyName, JSON.stringify(newValue), options);
+        }
+        setStoredValue(newValue);
+      } catch (error) {
+        console.error(error);
       }
-    } catch (err: unknown) {
-      console.error("Error setting cookie:", err);
-    }
-    setStoredValue(newValue);
-  };
+    },
+    [keyName, options],
+  );
 
   return [storedValue, setValue] as const;
 }
