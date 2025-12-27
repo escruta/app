@@ -54,7 +54,7 @@ export default function HomePage() {
         setIsCreateModalOpen(false);
       },
       onError: (error) => {
-        console.error("Error creating notebook:", error);
+        console.error("Error creating notebook:", error.message);
       },
     },
     false,

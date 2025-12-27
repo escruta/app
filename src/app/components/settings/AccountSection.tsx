@@ -28,7 +28,7 @@ export default function AccountSection() {
       },
       onError: (error) => {
         setErrorNameMessage(error.message || "Unknown error");
-        console.error("Error updating name:", error);
+        console.error("Error updating name:", error.message);
       },
     },
     false,
@@ -50,7 +50,7 @@ export default function AccountSection() {
         },
         onError: (error) => {
           setErrorPasswordMessage(error.message || "Unknown error");
-          console.error("Error changing password:", error);
+          console.error("Error changing password:", error.message);
         },
       },
       false,

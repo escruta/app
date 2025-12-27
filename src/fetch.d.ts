@@ -3,3 +3,8 @@ declare interface RequestConfig extends RequestInit {
   params?: Record<string, string>;
   baseURL?: string;
 }
+
+declare interface FetchError extends Error {
+  status: number;
+  message: string;
+}

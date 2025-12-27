@@ -32,8 +32,8 @@ export default function NotebookPage() {
     error,
     refetch: refetchNotebook,
   } = useFetch<NotebookContent>(`/notebooks/${notebookId}`, {
-    onError: (err) => {
-      console.error("Error fetching notebook:", err);
+    onError: (error) => {
+      console.error("Error fetching notebook:", error.message);
     },
   });
 
@@ -137,7 +137,7 @@ export default function NotebookPage() {
   }
 
   if (error) {
-    if ("status" in error && error.status === 404) {
+    if (error.status === 404) {
       return (
         <div className="flex justify-center h-screen w-full flex-col">
           <div className="border-y border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 px-6 py-5">
@@ -167,7 +167,7 @@ export default function NotebookPage() {
       );
     }
 
-    if ("status" in error && error.status === 401) {
+    if (error.status === 401) {
       return (
         <div className="flex justify-center h-screen w-full flex-col">
           <div className="border-y border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 px-6 py-5">

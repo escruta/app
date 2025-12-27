@@ -7,12 +7,12 @@ import { cacheInstance, generateCacheKey } from "@/utils/lruCache";
 interface UseFetchState<T> {
   data: T | null;
   loading: boolean;
-  error: Error | null;
+  error: FetchError | null;
 }
 
 interface UseFetchOptions<T> extends RequestConfig {
   onSuccess?: (data: T) => void;
-  onError?: (error: Error) => void;
+  onError?: (error: FetchError) => void;
   cacheTime?: number;
   skipCache?: boolean;
   retry?: number;
@@ -78,7 +78,7 @@ export default function useFetch<T = unknown>(
         setState((prev) => ({ ...prev, loading: true, error: null }));
       }
 
-      let lastError: Error | null = null;
+      let lastError: FetchError | null = null;
 
       for (let attempt = 0; attempt <= retryCount; attempt++) {
         try {
@@ -108,7 +108,12 @@ export default function useFetch<T = unknown>(
           });
 
           if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorMessage = await response.text();
+            const fetchError = Object.assign(new Error(errorMessage), {
+              status: response.status,
+              message: errorMessage,
+            }) as FetchError;
+            throw fetchError;
           }
 
           const contentType = response.headers.get("Content-Type");
@@ -132,8 +137,17 @@ export default function useFetch<T = unknown>(
           return;
         } catch (err) {
           if (err instanceof Error && err.name === "AbortError") return;
-          lastError =
-            err instanceof Error ? err : new Error("An unknown error occurred");
+
+          if ((err as FetchError).status !== undefined) {
+            lastError = err as FetchError;
+          } else {
+            const message =
+              err instanceof Error ? err.message : "An unknown error occurred";
+            lastError = Object.assign(new Error(message), {
+              status: 0,
+              message,
+            }) as FetchError;
+          }
 
           if (attempt < retryCount) {
             await new Promise((resolve) =>

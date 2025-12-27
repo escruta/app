@@ -166,7 +166,7 @@ export default function ChatCard({
     {
       method: "GET",
       onError: (error) => {
-        console.error("Error fetching summary:", error);
+        console.error("Error fetching summary:", error.message);
       },
     },
     false,
@@ -181,7 +181,7 @@ export default function ChatCard({
           refetchSummary(true);
         },
         onError: (error) => {
-          console.error("Error refreshing summary:", error);
+          console.error("Error refreshing summary:", error.message);
         },
       },
       false,
@@ -203,7 +203,7 @@ export default function ChatCard({
     {
       method: "GET",
       onError: (error) => {
-        console.error("Error fetching example questions:", error);
+        console.error("Error fetching example questions:", error.message);
       },
     },
     sourcesCount > 0,
@@ -260,10 +260,10 @@ export default function ChatCard({
           setConversationId(response.conversationId);
         },
         onError: (error) => {
-          console.error("Error sending message:", error);
+          console.error("Error sending message:", error.message);
           const errorResponse: Message = {
             id: (Date.now() + 1).toString(),
-            text: "Sorry, I encountered an error while processing your request. Please try again.",
+            text: error.message,
             sender: "ai",
             error: true,
           };

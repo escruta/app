@@ -82,8 +82,8 @@ export default function SourcesCard({
         refetchSources(true);
         onSourceAdded?.();
       },
-      onError: (error: Error) => {
-        console.error("Error adding source:", error);
+      onError: (error) => {
+        console.error("Error adding source:", error.message);
         setNewSourceLinkError("Failed to add source. " + error.message);
       },
     },

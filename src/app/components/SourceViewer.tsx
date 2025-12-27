@@ -84,7 +84,7 @@ export default function SourceViewer({
         handleCloseSource();
       },
       onError: (error) => {
-        console.error("Error deleting source:", error);
+        console.error("Error deleting source:", error.message);
       },
     },
     false,
@@ -100,7 +100,7 @@ export default function SourceViewer({
     {
       method: "GET",
       onError: (error) => {
-        console.error("Error fetching source summary:", error);
+        console.error("Error fetching source summary:", error.message);
       },
     },
     false,
@@ -115,7 +115,7 @@ export default function SourceViewer({
           refetchSummary(true);
         },
         onError: (error) => {
-          console.error("Error regenerating source summary:", error);
+          console.error("Error regenerating source summary:", error.message);
         },
       },
       false,
@@ -129,7 +129,7 @@ export default function SourceViewer({
         refetchSummary(true);
       },
       onError: (error) => {
-        console.error("Error deleting source summary:", error);
+        console.error("Error deleting source summary:", error.message);
       },
     },
     false,

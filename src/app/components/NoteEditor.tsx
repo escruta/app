@@ -94,7 +94,7 @@ export default function NoteEditor({
         setNewTitle(note.title);
       },
       onError: (error) => {
-        console.error("Error updating note:", error);
+        console.error("Error updating note:", error.message);
       },
     },
     false,
@@ -114,7 +114,7 @@ export default function NoteEditor({
         refetchNote();
       },
       onError: (error) => {
-        console.error("Error saving note content:", error);
+        console.error("Error saving note content:", error.message);
         setIsSaving(false);
       },
     },
@@ -135,7 +135,7 @@ export default function NoteEditor({
         handleCloseNote();
       },
       onError: (error) => {
-        console.error("Error deleting note:", error);
+        console.error("Error deleting note:", error.message);
       },
     },
     false,

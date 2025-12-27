@@ -58,7 +58,7 @@ export default function NotesCard({
         refetchNotes(true);
       },
       onError: (error) => {
-        console.error("Error adding note:", error);
+        console.error("Error adding note:", error.message);
       },
     },
     false,
