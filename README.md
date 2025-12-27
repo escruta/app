@@ -16,7 +16,6 @@ _"Think, ask, learn"_
 - **Styling**: Tailwind CSS with custom design system components.
 - **Animations**: Motion library for smooth transitions and interactions.
 - **Rich Text**: Quill.js for advanced note editing capabilities.
-- **HTTP Client**: Axios for API communication.
 - **Code Highlighting**: highlight.js for syntax highlighting in code blocks.
 
 ## Getting Started

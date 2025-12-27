@@ -1,42 +1,30 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import useCookie from "./useCookie";
-import backendClient from "@/backend";
-import { type AxiosRequestConfig, type AxiosResponse, AxiosError } from "axios";
-import { AUTH_TOKEN_KEY } from "@/config";
+import { AUTH_TOKEN_KEY, BACKEND_BASE_URL } from "@/config";
 import type { Token } from "@/interfaces";
+import { cacheInstance, generateCacheKey } from "@/utils/lruCache";
 
 interface UseFetchState<T> {
   data: T | null;
   loading: boolean;
-  error: Error | AxiosError | null;
+  error: Error | null;
 }
 
-interface UseFetchOptions<T> extends AxiosRequestConfig {
+interface UseFetchOptions<T> extends RequestConfig {
   onSuccess?: (data: T) => void;
-  onError?: (error: Error | AxiosError) => void;
+  onError?: (error: Error) => void;
   cacheTime?: number;
   skipCache?: boolean;
+  retry?: number;
+  retryDelay?: number;
 }
 
 interface UseFetchReturn<T> extends UseFetchState<T> {
   refetch: (forcedUpdate?: boolean) => Promise<void>;
 }
 
-interface CacheItem<T> {
-  data: T;
-  timestamp: number;
-}
-
-const cache: Record<string, CacheItem<unknown>> = {};
-
-function generateCacheKey(
-  endpoint: string,
-  options?: AxiosRequestConfig
-): string {
-  const { method = "GET", params, data } = options || {};
-  return `${method}:${endpoint}:${JSON.stringify(
-    params || {}
-  )}:${JSON.stringify(data || {})}`;
+async function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export default function useFetch<T = unknown>(
@@ -45,12 +33,21 @@ export default function useFetch<T = unknown>(
   immediate: boolean = true
 ): UseFetchReturn<T> {
   const [token] = useCookie<Token>(AUTH_TOKEN_KEY);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const mountedRef = useRef(true);
 
   const cacheTime = options?.cacheTime ?? 5 * 60 * 1000;
+  const retry = options?.retry ?? 0;
+  const retryDelay = options?.retryDelay ?? 1000;
+  const baseURL = options?.baseURL ?? BACKEND_BASE_URL;
+
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
+
   const cacheKey = generateCacheKey(endpoint, options);
 
   const [state, setState] = useState<UseFetchState<T>>(() => {
-    const cached = cache[cacheKey];
+    const cached = cacheInstance.get<T>(cacheKey);
     const isValid =
       cached &&
       Date.now() - cached.timestamp < cacheTime &&
@@ -58,7 +55,7 @@ export default function useFetch<T = unknown>(
       cacheTime > 0;
 
     return {
-      data: isValid ? (cached.data as T) : null,
+      data: isValid ? cached.data : null,
       loading: immediate && !isValid,
       error: null,
     };
@@ -66,54 +63,116 @@ export default function useFetch<T = unknown>(
 
   const fetchData = useCallback(
     async (forcedUpdate = false) => {
-      const skipCache = forcedUpdate || options?.skipCache || cacheTime <= 0;
-      const cached = cache[cacheKey];
+      const currentOptions = optionsRef.current;
+      const skipCache =
+        forcedUpdate || currentOptions?.skipCache || cacheTime <= 0;
+      const cached = cacheInstance.get<T>(cacheKey);
       const now = Date.now();
 
       if (!skipCache && cached && now - cached.timestamp < cacheTime) {
-        setState({ data: cached.data as T, loading: false, error: null });
-        options?.onSuccess?.(cached.data as T);
+        if (mountedRef.current) {
+          setState({ data: cached.data, loading: false, error: null });
+          currentOptions?.onSuccess?.(cached.data);
+        }
         return;
       }
 
-      setState((prev) => ({ ...prev, loading: true, error: null }));
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
 
-      try {
-        const response: AxiosResponse<T> = await backendClient({
-          url: endpoint,
-          ...options,
-          headers: {
-            Authorization: `Bearer ${token!.token}`,
-            "Content-Type": "application/json",
-            ...options?.headers,
-          },
-        });
+      abortControllerRef.current = new AbortController();
 
-        if (cacheTime > 0) {
-          cache[cacheKey] = { data: response.data, timestamp: now };
+      if (mountedRef.current) {
+        setState((prev) => ({ ...prev, loading: true, error: null }));
+      }
+
+      let lastError: Error | null = null;
+      const maxAttempts = retry + 1;
+
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        try {
+          const url = new URL(endpoint, baseURL);
+          if (currentOptions?.params) {
+            Object.entries(currentOptions.params).forEach(([key, value]) => {
+              url.searchParams.append(key, value);
+            });
+          }
+
+          const body = currentOptions?.data
+            ? JSON.stringify(currentOptions.data)
+            : currentOptions?.body;
+
+          const response = await fetch(url.toString(), {
+            ...currentOptions,
+            body,
+            signal: abortControllerRef.current.signal,
+            headers: {
+              Authorization: `Bearer ${token?.token}`,
+              "Content-Type": "application/json",
+              ...currentOptions?.headers,
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const contentType = response.headers.get("Content-Type");
+          let data: T;
+
+          if (contentType && contentType.includes("application/json")) {
+            data = await response.json();
+          } else {
+            data = (await response.text()) as unknown as T;
+          }
+
+          if (cacheTime > 0) {
+            cacheInstance.set(cacheKey, { data, timestamp: now });
+          }
+
+          if (mountedRef.current) {
+            setState({ data, loading: false, error: null });
+            currentOptions?.onSuccess?.(data);
+          }
+          return;
+        } catch (error) {
+          if (error instanceof Error && error.name === "AbortError") {
+            return;
+          }
+
+          lastError =
+            error instanceof Error
+              ? error
+              : new Error(`Unexpected error: ${error}`);
+
+          if (attempt < maxAttempts - 1) {
+            await sleep(retryDelay * (attempt + 1));
+          }
         }
+      }
 
-        setState({ data: response.data, loading: false, error: null });
-        options?.onSuccess?.(response.data);
-      } catch (error) {
-        const errorObj =
-          error instanceof AxiosError
-            ? error
-            : new Error(
-                `An unexpected error occurred. Please try again. Error: ${error}`
-              );
-
-        setState({ data: null, loading: false, error: errorObj });
-        options?.onError?.(errorObj);
+      if (mountedRef.current && lastError) {
+        setState({ data: null, loading: false, error: lastError });
+        currentOptions?.onError?.(lastError);
       }
     },
-    [endpoint, token, cacheTime, cacheKey]
+    [endpoint, token, cacheTime, cacheKey, retry, retryDelay, baseURL]
   );
 
   useEffect(() => {
-    if (immediate && !cache[cacheKey]) {
+    mountedRef.current = true;
+
+    if (immediate && !cacheInstance.has(cacheKey)) {
       fetchData(false);
     }
+
+    return () => {
+      mountedRef.current = false;
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [immediate, cacheKey, fetchData]);
 
   return { ...state, refetch: fetchData };
@@ -121,8 +180,8 @@ export default function useFetch<T = unknown>(
 
 useFetch.clearCache = (cacheKey?: string) => {
   if (cacheKey) {
-    delete cache[cacheKey];
+    cacheInstance.delete(cacheKey);
   } else {
-    Object.keys(cache).forEach((key) => delete cache[key]);
+    cacheInstance.clear();
   }
 };

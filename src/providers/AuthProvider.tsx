@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { AuthService } from "@/services";
 import { useCookie, useFetch } from "@/hooks";
-import { AUTH_TOKEN_KEY } from "@/config";
+import { AUTH_TOKEN_KEY, BACKEND_BASE_URL } from "@/config";
 import { AuthContext } from "@/contexts";
 import type { Token, User } from "@/interfaces";
 
@@ -21,16 +20,32 @@ export default function AuthProvider({
   ) as [User | null, (value: User | null) => void];
 
   const login = async (email: string, password: string) => {
-    const response = await AuthService.login(email, password);
-    if (response.token) {
+    const response = await fetch(`${BACKEND_BASE_URL}/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw {
+        status: response.status,
+        message: data.message || response.statusText,
+      };
+    }
+
+    if (data.token) {
       setTokenCookie({
-        token: response.token,
-        expiresIn: response.expiresIn,
+        token: data.token,
+        expiresIn: data.expiresIn,
         createdAt: Date.now(),
       });
       await fetchUserData();
     }
-    return response;
+    return { status: response.status, data };
   };
 
   const register = async (
@@ -38,16 +53,32 @@ export default function AuthProvider({
     password: string,
     fullName: string
   ) => {
-    const response = await AuthService.register(email, password, fullName);
-    if (response.status === 201 && response.data.token) {
+    const response = await fetch(`${BACKEND_BASE_URL}/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password, fullName }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw {
+        status: response.status,
+        message: data.message || response.statusText,
+      };
+    }
+
+    if (response.status === 201 && data.token) {
       setTokenCookie({
-        token: response.data.token,
-        expiresIn: response.data.expiresIn,
+        token: data.token,
+        expiresIn: data.expiresIn,
         createdAt: Date.now(),
       });
       await fetchUserData();
     }
-    return response;
+    return { status: response.status, data };
   };
 
   const logout = () => {
@@ -59,8 +90,19 @@ export default function AuthProvider({
   const fetchUserData = useCallback(async () => {
     if (tokenCookie?.token) {
       try {
-        const userData = await AuthService.getUser();
-        setCurrentUser(userData);
+        const response = await fetch(`${BACKEND_BASE_URL}/users/me`, {
+          headers: {
+            Authorization: `Bearer ${tokenCookie.token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setCurrentUser(data);
+        } else {
+          setCurrentUser(null);
+        }
       } catch (err) {
         console.error("Error fetching user data:", err);
         setCurrentUser(null);
