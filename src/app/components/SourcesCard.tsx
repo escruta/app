@@ -73,9 +73,7 @@ export default function SourcesCard({
               link: newSourceLink,
             },
       headers:
-        sourceType === "File"
-          ? { "Content-Type": "multipart/form-data" }
-          : { "Content-Type": "application/json" },
+        sourceType === "File" ? {} : { "Content-Type": "application/json" },
       onSuccess: () => {
         setNewSourceLink("");
         setNewSourceFile(null);
@@ -87,7 +85,7 @@ export default function SourcesCard({
       onError: (error) => {
         console.error("Error adding source:", error);
         const errorMessage =
-          "response" in error ? error.response?.data : error.message;
+          "response" in error ? (error as any).response?.data : error.message;
         setNewSourceLinkError("Failed to add source. " + errorMessage);
       },
     },

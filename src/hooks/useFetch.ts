@@ -99,7 +99,10 @@ export default function useFetch<T = unknown>(
             });
           }
 
-          const body = currentOptions?.data
+          const isFormData = currentOptions?.data instanceof FormData;
+          const body = isFormData
+            ? (currentOptions.data as FormData)
+            : currentOptions?.data
             ? JSON.stringify(currentOptions.data)
             : currentOptions?.body;
 
@@ -109,7 +112,7 @@ export default function useFetch<T = unknown>(
             signal: abortControllerRef.current.signal,
             headers: {
               Authorization: `Bearer ${token?.token}`,
-              "Content-Type": "application/json",
+              ...(isFormData ? {} : { "Content-Type": "application/json" }),
               ...currentOptions?.headers,
             },
           });
