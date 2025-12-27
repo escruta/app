@@ -382,9 +382,9 @@ export default function ChatCard({
                 Summary of the notebook
               </h3>
               {isSummaryLoading ? (
-                <p className="mt-1 mb-1 text-base font-medium leading-6">
+                <div className="mt-1 mb-1 text-base font-medium leading-6">
                   <Spinner />
-                </p>
+                </div>
               ) : summaryError ? (
                 <p className="mt-1 mb-1 text-base font-medium leading-6">
                   Error: {summaryError.message}
@@ -409,9 +409,9 @@ export default function ChatCard({
               {messages.length === 0 && !isChatLoading && (
                 <div className="mt-6">
                   {isExampleQuestionsLoading ? (
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
                       <Spinner />
-                    </p>
+                    </div>
                   ) : exampleQuestionsError ? (
                     <p className="text-sm text-red-500">
                       Error: {exampleQuestionsError.message}

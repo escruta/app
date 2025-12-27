@@ -46,8 +46,9 @@ export default function Modal({
   if (!isOpen) return null;
 
   return createPortal(
-    <AnimatePresence mode="wait">
+    <AnimatePresence>
       <motion.div
+        key="modal-backdrop"
         className="fixed inset-0 bg-black/80 z-[99]"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -57,6 +58,7 @@ export default function Modal({
 
       <div className="fixed inset-0 flex items-center justify-center p-4 z-[100] pointer-events-none">
         <motion.div
+          key="modal-content"
           className={cn(
             "w-full bg-white dark:bg-gray-800 rounded-xs border border-gray-200 dark:border-gray-600 pointer-events-auto",
             {

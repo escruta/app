@@ -1,5 +1,14 @@
 import type { Notebook } from "@/interfaces";
-import { Button, Menu, Modal, IconButton, Spinner } from "@/shared/ui";
+import {
+  Button,
+  Menu,
+  Modal,
+  IconButton,
+  Spinner,
+  MenuTrigger,
+  MenuContent,
+  MenuItem,
+} from "@/shared/ui";
 import { NotebookIcon, DotsVerticalIcon } from "@/shared/icons";
 import { useState } from "react";
 import { useFetch } from "@/hooks";
@@ -62,27 +71,41 @@ export default function NotebookCard({
     return null;
   }
 
-  const baseClasses =
-    "rounded-xs border cursor-pointer bg-gray-50 hover:bg-blue-50/50 dark:bg-gray-800 dark:hover:bg-gray-700/50 border-gray-200 dark:border-gray-600 transition-all duration-200 ease-out";
+  const baseClasses = cn(
+    "rounded-xs border cursor-pointer bg-gray-50 hover:bg-blue-50/50 dark:bg-gray-800 dark:hover:bg-gray-700/50 border-gray-200 dark:border-gray-600 transition-all duration-200 ease-out",
+  );
 
-  const gridClasses =
-    "h-40 w-full p-4 flex flex-col justify-between hover:scale-[101.5%]";
-  const listClasses =
-    "h-20 w-full p-4 flex flex-row items-center justify-between hover:scale-[100.25%]";
+  const gridClasses = cn(
+    "h-40 w-full p-4 flex flex-col justify-between hover:scale-[101.5%]",
+  );
+  const listClasses = cn(
+    "h-20 w-full p-4 flex flex-row items-center justify-between hover:scale-[100.25%]",
+  );
+
+  const handleCardClick = () => {
+    navigate(`/app/notebook/${notebook.id}`);
+    window.scrollTo(0, 0);
+  };
+
+  const handleCardKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleCardClick();
+    }
+  };
 
   return (
     <>
-      <button
+      <div
+        role="button"
+        tabIndex={0}
         className={cn(baseClasses, {
           [gridClasses]: viewMode === "grid",
           [listClasses]: viewMode === "list",
           "min-w-44 max-w-52": viewMode === "grid",
         })}
-        onClick={() => {
-          navigate(`/app/notebook/${notebook.id}`);
-          window.scrollTo(0, 0);
-        }}
-        type="button"
+        onClick={handleCardClick}
+        onKeyDown={handleCardKeyDown}
       >
         {viewMode === "grid" ? (
           <>
@@ -90,25 +113,33 @@ export default function NotebookCard({
               <div className="p-2 rounded-xs bg-blue-25 dark:bg-blue-900/30 text-blue-500 dark:text-blue-300">
                 <NotebookIcon className="w-5 h-5" />
               </div>
-              <button type="button" onClick={handleMenuClick}>
-                <Menu
-                  items={[
-                    {
-                      label: "Delete",
-                      onClick: () => setIsDeleteModalOpen(true),
-                      variant: "danger",
-                    },
-                  ]}
-                  trigger={
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={handleMenuClick}
+                onKeyDown={(e) =>
+                  e.key === "Enter" &&
+                  handleMenuClick(e as unknown as React.MouseEvent)
+                }
+              >
+                <Menu>
+                  <MenuTrigger>
                     <IconButton
                       icon={<DotsVerticalIcon />}
                       size="sm"
                       ariaLabel="More options"
                       variant="ghost"
                     />
-                  }
-                />
-              </button>
+                  </MenuTrigger>
+                  <MenuContent>
+                    <MenuItem
+                      label="Delete"
+                      onClick={() => setIsDeleteModalOpen(true)}
+                      variant="danger"
+                    />
+                  </MenuContent>
+                </Menu>
+              </div>
             </div>
 
             <div>
@@ -138,28 +169,36 @@ export default function NotebookCard({
               </div>
             </div>
 
-            <button type="button" onClick={handleMenuClick}>
-              <Menu
-                items={[
-                  {
-                    label: "Delete",
-                    onClick: () => setIsDeleteModalOpen(true),
-                    variant: "danger",
-                  },
-                ]}
-                trigger={
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={handleMenuClick}
+              onKeyDown={(e) =>
+                e.key === "Enter" &&
+                handleMenuClick(e as unknown as React.MouseEvent)
+              }
+            >
+              <Menu>
+                <MenuTrigger>
                   <IconButton
                     icon={<DotsVerticalIcon />}
                     size="sm"
                     ariaLabel="More options"
                     variant="ghost"
                   />
-                }
-              />
-            </button>
+                </MenuTrigger>
+                <MenuContent>
+                  <MenuItem
+                    label="Delete"
+                    onClick={() => setIsDeleteModalOpen(true)}
+                    variant="danger"
+                  />
+                </MenuContent>
+              </Menu>
+            </div>
           </>
         )}
-      </button>
+      </div>
 
       {/* Delete Modal */}
       <Modal

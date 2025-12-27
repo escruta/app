@@ -1,93 +1,162 @@
-import { useRef, useState, useEffect } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  createContext,
+  useContext,
+  cloneElement,
+  type ReactNode,
+  type KeyboardEvent,
+  type ReactElement,
+  type HTMLAttributes,
+} from "react";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "motion/react";
 
-type MenuItem = {
-  label: string;
-  onClick: () => void;
-  icon?: React.ReactNode;
-  variant?: "default" | "danger";
+type MenuContextType = {
+  isOpen: boolean;
+  setIsOpen: (o: boolean) => void;
 };
 
-type MenuProps = {
-  items: MenuItem[];
-  trigger: React.ReactNode;
-  align?: "left" | "right";
+const MenuContext = createContext<MenuContextType | null>(null);
+
+export function Menu({
+  children,
+  className,
+}: {
+  children: ReactNode;
   className?: string;
-};
-
-export default function Menu({
-  items,
-  trigger,
-  align = "right",
-  className = "",
-}: MenuProps) {
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-
-  const toggleMenu = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsOpen(!isOpen);
-  };
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (triggerRef.current?.contains(event.target as Node)) {
-        return;
-      }
-
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setIsOpen(false);
       }
     };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+    if (isOpen) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen]);
 
   return (
-    <div className={cn("relative", className)}>
-      <button type="button" onClick={toggleMenu} ref={triggerRef}>
-        {trigger}
-      </button>
+    <MenuContext.Provider value={{ isOpen, setIsOpen }}>
+      <div className={cn("relative inline-block", className)} ref={menuRef}>
+        {children}
+      </div>
+    </MenuContext.Provider>
+  );
+}
 
-      {isOpen && (
-        <div
-          ref={menuRef}
+export function MenuTrigger({
+  children,
+}: {
+  children: ReactElement<HTMLAttributes<HTMLElement>>;
+}) {
+  const context = useContext(MenuContext);
+  if (!context) return null;
+
+  return cloneElement(children, {
+    onClick: (e: React.MouseEvent<HTMLElement>) => {
+      children.props.onClick?.(e);
+      context.setIsOpen(!context.isOpen);
+    },
+    onKeyDown: (e: KeyboardEvent<HTMLElement>) => {
+      children.props.onKeyDown?.(e);
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        context.setIsOpen(true);
+      }
+    },
+    "aria-haspopup": "menu",
+    "aria-expanded": context.isOpen,
+  });
+}
+
+export function MenuContent({
+  children,
+  align = "right",
+  className,
+}: {
+  children: ReactNode;
+  align?: "left" | "right";
+  className?: string;
+}) {
+  const context = useContext(MenuContext);
+
+  return (
+    <AnimatePresence>
+      {context?.isOpen && (
+        <motion.div
+          role="menu"
+          initial={{ opacity: 0, scale: 0.95, y: -4 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: -4 }}
+          transition={{ duration: 0.15, ease: "easeOut" }}
           className={cn(
-            "absolute z-10 mt-2 rounded-xs bg-white shadow-lg dark:bg-gray-800 border border-gray-200 dark:border-gray-600",
-            {
-              "right-0": align === "right",
-              "left-0": align === "left",
-            },
+            "absolute z-50 mt-2 min-w-[10rem] rounded-xs border border-gray-200 bg-white/95 p-1.5 shadow-lg backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/95 dark:shadow-gray-900/40",
+            align === "right" ? "right-0" : "left-0",
+            className,
           )}
         >
-          <div className="py-1">
-            {items.map((item, index) => (
-              <button
-                key={index}
-                className={cn(
-                  "flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700",
-                  {
-                    "text-red-600 dark:text-red-400": item.variant === "danger",
-                  },
-                )}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsOpen(false);
-                  item.onClick();
-                }}
-                type="button"
-              >
-                {item.icon && <span className="mr-2">{item.icon}</span>}
-                {item.label}
-              </button>
-            ))}
-          </div>
-        </div>
+          {children}
+        </motion.div>
       )}
-    </div>
+    </AnimatePresence>
+  );
+}
+
+export function MenuItem({
+  label,
+  onClick,
+  icon,
+  variant = "default",
+  className,
+}: {
+  label: string;
+  onClick: () => void;
+  icon?: ReactNode;
+  variant?: "default" | "danger";
+  className?: string;
+}) {
+  const context = useContext(MenuContext);
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onClick();
+      context?.setIsOpen(false);
+    }
+  };
+
+  const baseStyles =
+    "flex w-full items-center gap-2 rounded-xs px-3 py-2 text-sm transition-all duration-200 outline-none select-none";
+
+  const variantStyles = {
+    default:
+      "text-gray-700 dark:text-gray-200 hover:bg-blue-50/50 focus:bg-blue-50/50 dark:hover:bg-gray-700/50 dark:focus:bg-gray-700/50 hover:text-blue-600 dark:hover:text-blue-400",
+    danger:
+      "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10",
+  };
+
+  return (
+    <button
+      type="button"
+      role="menuitem"
+      className={cn(baseStyles, variantStyles[variant], className)}
+      onClick={() => {
+        onClick();
+        context?.setIsOpen(false);
+      }}
+      onKeyDown={handleKeyDown}
+    >
+      {icon && (
+        <span className="flex-shrink-0 size-4 flex items-center justify-center">
+          {icon}
+        </span>
+      )}
+      <span className="flex-1 text-left font-medium">{label}</span>
+    </button>
   );
 }
