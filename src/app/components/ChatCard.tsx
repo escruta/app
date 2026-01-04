@@ -12,7 +12,7 @@ import {
   Chip,
 } from "@/shared/ui";
 const CodeBlock = lazy(() => import("./CodeBlock"));
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, useRef, type ReactNode } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
@@ -212,6 +212,7 @@ export default function ChatCard({
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const handleSourceClick = (sourceId: string) => {
     if (
@@ -273,6 +274,24 @@ export default function ChatCard({
       false,
     );
 
+  useEffect(() => {
+    if (scrollContainerRef.current && messages.length > 0) {
+      const timer = setTimeout(() => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
+        const messageElements =
+          container.getElementsByClassName("message-item");
+        if (messageElements.length > 0) {
+          const lastMessage = messageElements[
+            messageElements.length - 1
+          ] as HTMLElement;
+          lastMessage.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [messages.length, isChatLoading]);
+
   return (
     <Card className="flex flex-col h-full overflow-hidden">
       <div className="flex flex-row justify-between items-center mb-2 flex-shrink-0">
@@ -304,7 +323,10 @@ export default function ChatCard({
       </div>
       <Divider className="mb-0" />
       {messages.length > 0 ? (
-        <div className="flex-1 overflow-y-auto p-4 space-y-2 min-h-0">
+        <div
+          ref={scrollContainerRef}
+          className="flex-1 overflow-y-auto p-4 space-y-2 min-h-0 scroll-smooth scroll-pt-4"
+        >
           <AnimatePresence>
             {messages.map((message) => (
               <motion.div
@@ -314,7 +336,7 @@ export default function ChatCard({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
-                className={cn("flex mb-3", {
+                className={cn("message-item scroll-mt-4 flex mb-3", {
                   "justify-end": message.sender === "user",
                   "justify-start": message.sender === "ai",
                 })}
@@ -344,7 +366,7 @@ export default function ChatCard({
                                 e.stopPropagation();
                                 handleSourceClick(source.id);
                               }}
-                              className="text-xs bg-gray-200/50 dark:bg-gray-600 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-xs hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors cursor-pointer"
+                              className="text-start text-xs bg-gray-200/50 dark:bg-gray-600 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-xs hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors cursor-pointer"
                               title={source.title}
                               type="button"
                             >
