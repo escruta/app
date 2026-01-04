@@ -1,22 +1,11 @@
 # Escruta - App
 
-_"Think, ask, learn"_
+Frontend application for the Escruta research platform. It provides a web interface for source management, notebook organization, and AI-assisted document analysis.
 
-**Escruta App** is the user interface component of the Escruta research assistant platform. Built with modern web technologies, it provides an intuitive and responsive experience for managing your research workflows, organizing sources, and interacting with AI-powered analysis tools.
+Built with React, TypeScript, Tailwind CSS, and Vite.
 
 > [!IMPORTANT]
 > This application is part of the Escruta ecosystem and requires the core service to be running for full functionality. The project is under development and may contain incomplete features or breaking changes.
-
-## Technology Stack
-
-- **Runtime**: Node.js with npm package management.
-- **Build Tool**: Vite for fast development and optimized production builds.
-- **Framework**: React 19 with TypeScript for type-safe development.
-- **Routing**: React Router for client-side navigation.
-- **Styling**: Tailwind CSS with custom design system components.
-- **Animations**: Motion library for smooth transitions and interactions.
-- **Rich Text**: Quill.js for advanced note editing capabilities.
-- **Code Highlighting**: highlight.js for syntax highlighting in code blocks.
 
 ## Getting Started
 
@@ -37,7 +26,9 @@ The application will be available at [localhost:5173](http://localhost:5173/) by
 - `npm run dev` - Start development server with hot reload
 - `npm run build` - Create production build
 - `npm run lint` - Run Biome for code quality checks
+- `npm run lint:fix` - Run Biome for code quality checks and fix issues
 - `npm run format` - Run Biome for code formatting
+- `npm run format:fix` - Run Biome for code formatting and fix issues
 - `npm run preview` - Preview production build locally
 
 ## Configuration
