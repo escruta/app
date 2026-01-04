@@ -5,7 +5,7 @@ import {
   type ToastData,
   type ToastContextType,
 } from "@/contexts";
-import { Toast } from "@/shared/ui";
+import { Toast } from "@/components/ui";
 
 type ToastType = "success" | "error" | "info" | "warning";
 

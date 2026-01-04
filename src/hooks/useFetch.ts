@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import useCookie from "./useCookie";
 import { AUTH_TOKEN_KEY, BACKEND_BASE_URL } from "@/config";
 import type { Token } from "@/interfaces";
-import { cacheInstance, generateCacheKey } from "@/utils/lruCache";
+import { cacheInstance, generateCacheKey } from "@/lib/lruCache";
 
 interface UseFetchState<T> {
   data: T | null;

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate, Link } from "react-router";
 import { useAuth, useToast } from "@/hooks";
 import { motion, AnimatePresence } from "motion/react";
-import SEOMetadata from "@/shared/SEOMetadata";
+import { SEOMetadata } from "@/components";
 import { cn } from "@/lib/utils";
 
 export default function RegisterPage() {

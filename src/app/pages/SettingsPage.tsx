@@ -1,6 +1,6 @@
-import { AccountSection, AppearanceSection } from "../components/settings";
+import { AccountSection, AppearanceSection } from "@/components/settings";
 import { motion } from "motion/react";
-import SEOMetadata from "@/shared/SEOMetadata";
+import { SEOMetadata } from "@/components";
 
 export default function SettingsPage() {
   return (

@@ -1,6 +1,6 @@
 import { Outlet, Link, Navigate } from "react-router";
 import { motion } from "motion/react";
-import Logotype from "@/shared/Logotype";
+import { Logotype } from "@/components";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks";
 import { websiteUrl } from "@/config";

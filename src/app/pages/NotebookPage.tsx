@@ -2,26 +2,28 @@ import { useEffect, useState, useRef } from "react";
 import { useLoaderData } from "react-router";
 import { useFetch, useCookie } from "@/hooks";
 import type { Note, Source, Notebook, NotebookContent } from "@/interfaces";
-import { EditIcon, NotebookIcon, FireIcon } from "@/shared/icons";
+import { EditIcon, NotebookIcon, FireIcon } from "@/components/icons";
 import {
   Tooltip,
   IconButton,
-  Tab,
+  Tabs,
   type TabsRef,
   TextField,
   Button,
   Modal,
   Spinner,
-} from "@/shared/ui";
+} from "@/components/ui";
 import { motion, AnimatePresence } from "motion/react";
-import SourcesCard from "../components/SourcesCard";
-import NotesCard from "../components/NotesCard";
-import ChatCard from "../components/ChatCard";
-import NoteEditor from "../components/NoteEditor";
-import SourceViewer from "../components/SourceViewer";
-import ToolsCard from "../components/ToolsCard";
-import SEOMetadata from "@/shared/SEOMetadata";
-import { generateNotebookMetadata } from "@/config/seo";
+import {
+  SourcesCard,
+  NotesCard,
+  ChatCard,
+  NoteEditor,
+  SourceViewer,
+  ToolsCard,
+  SEOMetadata,
+} from "@/components";
+import { generateNotebookMetadata } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 
 export default function NotebookPage() {
@@ -309,7 +311,7 @@ export default function NotebookPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: 0.05 }}
           >
-            <Tab
+            <Tabs
               ref={tabsRef}
               className="h-full"
               items={[

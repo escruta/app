@@ -8,13 +8,11 @@ import {
   TextField,
   SegmentedButtons,
   Spinner,
-} from "@/shared/ui";
-import NotebookCard from "../components/NotebookCard";
-import CommonBar from "../components/CommonBar";
-import { AddIcon, GridIcon, ListIcon } from "@/shared/icons";
+} from "@/components/ui";
+import { NotebookCard, CommonBar, SEOMetadata } from "@/components";
+import { AddIcon, GridIcon, ListIcon } from "@/components/icons";
 import { motion } from "motion/react";
-import SEOMetadata from "@/shared/SEOMetadata";
-import { getRouteMetadata } from "@/config/seo";
+import { getRouteMetadata } from "@/lib/seo";
 
 enum SortOptions {
   Newest = "Newest",

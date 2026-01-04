@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import SEOMetadata from "@/shared/SEOMetadata";
+import { SEOMetadata } from "@/components";
 
 export default function NotFound() {
   return (

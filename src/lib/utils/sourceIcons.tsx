@@ -1,0 +1,20 @@
+import { LinkIcon, FileIcon, YouTubeIcon } from "@/components/icons";
+import type { SourceType } from "./sourceUtils";
+import type { Source } from "@/interfaces";
+import { getSourceType } from "./sourceUtils";
+
+export function getSourceTypeIcon(sourceType: SourceType) {
+  switch (sourceType) {
+    case "File":
+      return <FileIcon />;
+    case "YouTube Video":
+      return <YouTubeIcon />;
+    default:
+      return <LinkIcon />;
+  }
+}
+
+export function getSourceIcon(source: Source) {
+  const sourceType = getSourceType(source);
+  return getSourceTypeIcon(sourceType);
+}
