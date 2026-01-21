@@ -26,7 +26,12 @@ html.light body {
 }
 
 *::selection {
-  background-color: var(--color-blue-500);
+  background-color: var(--color-blue-200);
+  color: var(--color-blue-950);
+}
+
+html.dark *::selection {
+  background-color: var(--color-blue-800);
   color: var(--color-white);
 }
 
