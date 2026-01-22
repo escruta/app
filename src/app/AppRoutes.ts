@@ -8,7 +8,6 @@ const NotebookPage = lazy(() => import("./pages/NotebookPage"));
 
 export default (<RouteObject[]>[
   {
-    path: "app",
     Component: AppLayout,
     children: [
       {

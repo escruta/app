@@ -49,13 +49,13 @@ export function SideMenu() {
 
   const handleLogout = () => {
     logout();
-    navigate("/app", { replace: true });
+    navigate("/", { replace: true });
     setShowLogoutModal(false);
   };
 
   return (
     <div className="flex h-screen flex-col justify-between border-e border-gray-900/20 dark:border-gray-100/20 transition-all duration-300 w-16 min-w-16 max-w-16">
-      <NavLink to="/app" className="w-16 h-16 grid place-items-center group">
+      <NavLink to="/" className="w-16 h-16 grid place-items-center group">
         <AppIcon className="h-10 w-10 fill-gray-800 dark:fill-gray-50 transition-all duration-300 group-hover:fill-blue-500 dark:group-hover:fill-blue-400" />
       </NavLink>
 
@@ -63,20 +63,19 @@ export function SideMenu() {
         <SideItemMenu
           icon={<HomeIcon />}
           label="Notebooks"
-          onClick={() => navigate("/app")}
-          isActive={location.pathname === "/app"}
+          onClick={() => navigate("/")}
+          isActive={location.pathname === "/"}
         />
         <SideItemMenu
           icon={<SettingsIcon />}
           label="Settings"
-          onClick={() => navigate("/app/settings")}
-          isActive={location.pathname === "/app/settings"}
+          onClick={() => navigate("/settings")}
+          isActive={location.pathname === "/settings"}
         />
         <SideItemMenu
           icon={<LogoutIcon />}
           label="Logout"
           onClick={() => setShowLogoutModal(true)}
-          isActive={location.pathname === "/app/logout"}
         />
       </div>
 

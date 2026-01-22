@@ -83,7 +83,7 @@ export function NotebookCard({
   );
 
   const handleCardClick = () => {
-    navigate(`/app/notebook/${notebook.id}`);
+    navigate(`/notebook/${notebook.id}`);
     window.scrollTo(0, 0);
   };
 

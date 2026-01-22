@@ -109,7 +109,7 @@ export default function LoginPage() {
       } else if (savedEmail?.email) {
         setSavedEmail({ email: "" });
       }
-      navigate("/app");
+      navigate("/");
     } catch (err: unknown) {
       const error = err as { status: number };
       if (error.status) {

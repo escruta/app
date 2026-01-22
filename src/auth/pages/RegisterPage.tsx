@@ -117,7 +117,7 @@ export default function RegisterPage() {
           duration: 1500,
         });
         setTimeout(() => {
-          navigate("/app");
+          navigate("/");
         }, 1500);
       }
     } catch (err: unknown) {

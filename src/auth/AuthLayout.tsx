@@ -19,7 +19,7 @@ export default function AuthLayout() {
   }, []);
 
   if (isAuthenticated()) {
-    return <Navigate to="/app" />;
+    return <Navigate to="/" />;
   }
 
   return (

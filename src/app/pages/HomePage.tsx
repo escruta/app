@@ -90,7 +90,7 @@ export default function HomePage() {
     }
   }
 
-  const metadata = getRouteMetadata("/app");
+  const metadata = getRouteMetadata("/");
 
   return (
     <div className="flex h-screen max-h-full w-full flex-col">

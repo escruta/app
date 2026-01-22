@@ -1,6 +1,6 @@
 import { lazy } from "react";
 import { createRoot } from "react-dom/client";
-import { createBrowserRouter, redirect, RouterProvider } from "react-router";
+import { createBrowserRouter, RouterProvider } from "react-router";
 import { AuthProvider, ThemeProvider, ToastProvider } from "./providers";
 
 import AuthLayout from "./auth/AuthLayout";
@@ -14,10 +14,6 @@ import NotFound from "./NotFound";
 import "./index.css";
 
 const router = createBrowserRouter([
-  {
-    path: "/",
-    loader: () => redirect("/app"),
-  },
   {
     path: "login",
     Component: AuthLayout,

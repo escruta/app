@@ -11,7 +11,7 @@ export default function ProtectedRoute() {
   const handleLogout = () => {
     setIsModalOpen(false);
     logout();
-    navigate("/app", { replace: true });
+    navigate("/", { replace: true });
   };
 
   useEffect(() => {
