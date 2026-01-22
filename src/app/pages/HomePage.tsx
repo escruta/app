@@ -11,7 +11,6 @@ import {
 } from "@/components/ui";
 import { NotebookCard, CommonBar, SEOMetadata } from "@/components";
 import { AddIcon, GridIcon, ListIcon } from "@/components/icons";
-import { motion } from "motion/react";
 import { getRouteMetadata } from "@/lib/seo";
 
 enum SortOptions {
@@ -101,12 +100,7 @@ export default function HomePage() {
         image={metadata.image}
         twitterCard={metadata.twitterCard}
       />
-      <motion.div
-        className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 px-6 py-5 z-30"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-      >
+      <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 px-6 py-5 z-30">
         <div className="flex justify-between items-center gap-4">
           <h1 className="flex flex-col items-start gap-1.5 min-w-0">
             <span className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
@@ -117,7 +111,7 @@ export default function HomePage() {
             </span>
           </h1>
         </div>
-      </motion.div>
+      </div>
 
       <div className="flex-1 p-4 bg-gray-50 dark:bg-gray-950 overflow-auto">
         <div className="pointer-events-none blur-xl fixed w-full h-16 bg-gradient-to-b from-blue-50 dark:from-gray-950 to-transparent z-10"></div>
