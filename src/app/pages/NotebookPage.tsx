@@ -341,6 +341,7 @@ export default function NotebookPage() {
                               handleCloseSource={() => setSelectedSource(null)}
                               onSourceDelete={() => {
                                 setSelectedSource(null);
+                                refetchNotebook(true, false);
                                 setSourcesRefreshKey((prev) => prev + 1);
                               }}
                               className="h-full"
@@ -363,13 +364,8 @@ export default function NotebookPage() {
                           }
                           refreshTrigger={sourcesRefreshKey}
                           onSourceAdded={() => {
-                            if (
-                              notebook?.sources !== undefined &&
-                              notebook.sources.length === 0
-                            ) {
-                              refetchNotebook(true);
-                              setSourcesRefreshKey((prev) => prev + 1);
-                            }
+                            refetchNotebook(true, false);
+                            setSourcesRefreshKey((prev) => prev + 1);
                           }}
                         />
                       </motion.div>

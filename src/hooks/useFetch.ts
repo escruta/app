@@ -44,18 +44,23 @@ export default function useFetch<T = unknown>(
     method: options?.method,
     params: options?.params,
     body: options?.body,
+    data: options?.data,
     cacheTime: options?.cacheTime,
   });
 
   const fetchData = useCallback(
-    async (forcedUpdate = false) => {
+    async (forcedUpdate = false, showLoading = true) => {
       const currentOptions = optionsRef.current;
       const cacheTime = currentOptions?.cacheTime ?? 5 * 60 * 1000;
       const retryCount = currentOptions?.retry ?? 0;
       const retryDelay = currentOptions?.retryDelay ?? 1000;
       const baseURL = currentOptions?.baseURL ?? BACKEND_BASE_URL;
+      const method = currentOptions?.method ?? "GET";
       const skipCache =
-        forcedUpdate || currentOptions?.skipCache || cacheTime <= 0;
+        forcedUpdate ||
+        currentOptions?.skipCache ||
+        cacheTime <= 0 ||
+        method !== "GET";
 
       const cacheKey = generateCacheKey(endpoint, currentOptions);
       const cached = cacheInstance.get<T>(cacheKey);
@@ -74,7 +79,7 @@ export default function useFetch<T = unknown>(
       }
       abortControllerRef.current = new AbortController();
 
-      if (mountedRef.current) {
+      if (mountedRef.current && showLoading) {
         setState((prev) => ({ ...prev, loading: true, error: null }));
       }
 
@@ -167,13 +172,19 @@ export default function useFetch<T = unknown>(
 
   useEffect(() => {
     mountedRef.current = true;
-    if (immediate) {
-      fetchData();
-    }
     return () => {
       mountedRef.current = false;
       abortControllerRef.current?.abort();
     };
+  }, []);
+
+  useEffect(() => {
+    if (immediate) {
+      fetchData();
+      return () => {
+        abortControllerRef.current?.abort();
+      };
+    }
   }, [fetchData, immediate]);
 
   return { ...state, refetch: fetchData };

@@ -191,6 +191,7 @@ export function ChatCard({
 
   useEffect(() => {
     refetchSummary(true);
+    refetchExampleQuestions(true);
   }, [refreshTrigger]);
 
   const {
@@ -349,7 +350,7 @@ export function ChatCard({
                     {
                       "bg-blue-500 dark:bg-blue-600 text-white font-medium ml-12 selection:bg-white selection:text-blue-600":
                         message.sender === "user",
-                      "bg-gray-100/60 dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-medium mr-12":
+                      "bg-gray-100/60 dark:bg-gray-700/60 text-gray-900 dark:text-gray-100 font-medium mr-12":
                         message.sender === "ai",
                     },
                   )}

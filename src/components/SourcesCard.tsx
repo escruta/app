@@ -33,7 +33,7 @@ export function SourcesCard({
 }: SourcesCardProps) {
   useEffect(() => {
     if (refreshTrigger !== undefined) {
-      refetchSources(true);
+      refetchSources(true, false);
     }
   }, [refreshTrigger]);
 
@@ -79,7 +79,7 @@ export function SourcesCard({
         setNewSourceFile(null);
         setSourceType("Website");
         setIsAddSourceModalOpen(false);
-        refetchSources(true);
+        refetchSources(true, false);
         onSourceAdded?.();
       },
       onError: (error) => {
