@@ -17,7 +17,10 @@ const CodeBlock = lazy(() =>
 import { useEffect, useState, useRef, type ReactNode } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
-import ReactMarkdown from "react-markdown";
+import Markdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 
 type Sender = "user" | "ai";
 
@@ -118,7 +121,9 @@ function processTextContent(text: string, sender: Sender) {
   }[sender];
 
   return (
-    <ReactMarkdown
+    <Markdown
+      remarkPlugins={[remarkMath]}
+      rehypePlugins={[rehypeKatex]}
       components={{
         p: ({ children }) => <p className="my-2">{children}</p>,
         ul: ({ children }) => (
@@ -148,7 +153,7 @@ function processTextContent(text: string, sender: Sender) {
       }}
     >
       {text}
-    </ReactMarkdown>
+    </Markdown>
   );
 }
 

@@ -3,6 +3,10 @@ import type { Source } from "@/interfaces";
 export type SourceType = "Website" | "YouTube Video" | "File";
 
 export function getSourceType(source: Source): SourceType {
+  if (!source.link) {
+    return "File";
+  }
+
   const youtubeRegex =
     /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)/i;
   if (youtubeRegex.test(source.link)) {

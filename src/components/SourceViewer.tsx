@@ -22,6 +22,9 @@ import {
   Spinner,
 } from "@/components/ui";
 import Markdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 const CodeBlock = lazy(() =>
   import("./CodeBlock").then((module) => ({ default: module.CodeBlock })),
 );
@@ -328,6 +331,8 @@ export function SourceViewer({
                 ) : sourceSummary?.trim() ? (
                   <div className="prose dark:prose-invert prose-sm max-w-none select-text">
                     <Markdown
+                      remarkPlugins={[remarkMath]}
+                      rehypePlugins={[rehypeKatex]}
                       components={{
                         code: ({ className, children }) => {
                           const match = /language-(\w+)/.exec(className || "");
@@ -370,6 +375,8 @@ export function SourceViewer({
                     <div className="overflow-auto text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words select-text">
                       <div className="prose dark:prose-invert max-w-none text-base">
                         <Markdown
+                          remarkPlugins={[remarkMath]}
+                          rehypePlugins={[rehypeKatex]}
                           components={{
                             code: ({ className, children }) => {
                               const match = /language-(\w+)/.exec(
@@ -397,6 +404,8 @@ export function SourceViewer({
                 <div className="h-auto min-h-[80%] w-full px-6 py-8 overflow-auto text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words select-text">
                   <div className="prose dark:prose-invert max-w-none text-base">
                     <Markdown
+                      remarkPlugins={[remarkMath]}
+                      rehypePlugins={[rehypeKatex]}
                       components={{
                         code: ({ className, children }) => {
                           const match = /language-(\w+)/.exec(className || "");
