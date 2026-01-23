@@ -83,13 +83,15 @@ export function Modal({
             >
               {title}
             </h2>
-            <IconButton
-              icon={<CloseIcon />}
-              onClick={onClose}
-              variant="ghost"
-              size="sm"
-              ariaLabel="Close modal"
-            />
+            {closeOnEscape === false && closeOnOutsideClick === false ? null : (
+              <IconButton
+                icon={<CloseIcon />}
+                onClick={onClose}
+                variant="ghost"
+                size="sm"
+                ariaLabel="Close modal"
+              />
+            )}
           </div>
 
           <div className="p-6 max-h-96 overflow-y-auto">{children}</div>
