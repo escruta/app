@@ -17,10 +17,7 @@ const CodeBlock = lazy(() =>
 import { useEffect, useState, useRef, type ReactNode } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
-import Markdown from "react-markdown";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
-import "katex/dist/katex.min.css";
+import { Markdown } from "@/components/Markdown";
 
 type Sender = "user" | "ai";
 
@@ -120,41 +117,7 @@ function processTextContent(text: string, sender: Sender) {
     ai: "text-blue-500 hover:text-blue-400",
   }[sender];
 
-  return (
-    <Markdown
-      remarkPlugins={[remarkMath]}
-      rehypePlugins={[rehypeKatex]}
-      components={{
-        p: ({ children }) => <p className="my-2">{children}</p>,
-        ul: ({ children }) => (
-          <ul className="list-disc pl-5 my-2 space-y-1">{children}</ul>
-        ),
-        ol: ({ children }) => (
-          <ol className="list-decimal pl-5 my-2 space-y-1">{children}</ol>
-        ),
-        li: ({ children }) => <li>{children}</li>,
-        code: ({ children }) => (
-          <code className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-1.5 py-0.5 rounded-xs text-sm font-mono">
-            {children}
-          </code>
-        ),
-        strong: ({ children }) => <strong>{children}</strong>,
-        em: ({ children }) => <em>{children}</em>,
-        a: ({ href, children }) => (
-          <a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`${linkColorClass} underline`}
-          >
-            {children}
-          </a>
-        ),
-      }}
-    >
-      {text}
-    </Markdown>
-  );
+  return <Markdown text={text} linkColorClass={linkColorClass} />;
 }
 
 export function ChatCard({
@@ -420,7 +383,7 @@ export function ChatCard({
                   Error: {summaryError.message}
                 </p>
               ) : notebookSummary ? (
-                <div className="prose dark:prose-invert prose-sm max-w-none select-text">
+                <div className="max-w-none select-text">
                   {processTextContent(notebookSummary, "ai")}
                 </div>
               ) : (

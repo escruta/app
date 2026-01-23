@@ -1,4 +1,3 @@
-import { lazy } from "react";
 import { useEffect, useState } from "react";
 import { useFetch, useToast } from "@/hooks";
 import type { Source } from "@/interfaces";
@@ -21,13 +20,7 @@ import {
   Divider,
   Spinner,
 } from "@/components/ui";
-import Markdown from "react-markdown";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
-import "katex/dist/katex.min.css";
-const CodeBlock = lazy(() =>
-  import("./CodeBlock").then((module) => ({ default: module.CodeBlock })),
-);
+import { Markdown } from "@/components/Markdown";
 import {
   cn,
   getSourceType,
@@ -329,24 +322,8 @@ export function SourceViewer({
                     Error: {summaryError.message}
                   </div>
                 ) : sourceSummary?.trim() ? (
-                  <div className="prose dark:prose-invert prose-sm max-w-none select-text">
-                    <Markdown
-                      remarkPlugins={[remarkMath]}
-                      rehypePlugins={[rehypeKatex]}
-                      components={{
-                        code: ({ className, children }) => {
-                          const match = /language-(\w+)/.exec(className || "");
-                          const inline = !match;
-                          return (
-                            <CodeBlock inline={inline} className={className}>
-                              {String(children).replace(/\n$/, "")}
-                            </CodeBlock>
-                          );
-                        },
-                      }}
-                    >
-                      {sourceSummary}
-                    </Markdown>
+                  <div className="max-w-none select-text">
+                    <Markdown text={sourceSummary} />
                   </div>
                 ) : (
                   <Button
@@ -373,53 +350,16 @@ export function SourceViewer({
                   </div>
                   {fullSource.content && (
                     <div className="overflow-auto text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words select-text">
-                      <div className="prose dark:prose-invert max-w-none text-base">
-                        <Markdown
-                          remarkPlugins={[remarkMath]}
-                          rehypePlugins={[rehypeKatex]}
-                          components={{
-                            code: ({ className, children }) => {
-                              const match = /language-(\w+)/.exec(
-                                className || "",
-                              );
-                              const inline = !match;
-                              return (
-                                <CodeBlock
-                                  inline={inline}
-                                  className={className}
-                                >
-                                  {String(children).replace(/\n$/, "")}
-                                </CodeBlock>
-                              );
-                            },
-                          }}
-                        >
-                          {fullSource.content}
-                        </Markdown>
+                      <div className="max-w-none text-base">
+                        <Markdown text={fullSource.content} />
                       </div>
                     </div>
                   )}
                 </div>
               ) : (
                 <div className="h-auto min-h-[80%] w-full px-6 py-8 overflow-auto text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words select-text">
-                  <div className="prose dark:prose-invert max-w-none text-base">
-                    <Markdown
-                      remarkPlugins={[remarkMath]}
-                      rehypePlugins={[rehypeKatex]}
-                      components={{
-                        code: ({ className, children }) => {
-                          const match = /language-(\w+)/.exec(className || "");
-                          const inline = !match;
-                          return (
-                            <CodeBlock inline={inline} className={className}>
-                              {String(children).replace(/\n$/, "")}
-                            </CodeBlock>
-                          );
-                        },
-                      }}
-                    >
-                      {fullSource.content}
-                    </Markdown>
+                  <div className="max-w-none text-base">
+                    <Markdown text={fullSource.content || ""} />
                   </div>
                 </div>
               )}
