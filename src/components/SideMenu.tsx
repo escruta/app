@@ -2,7 +2,7 @@ import { NavLink, useLocation, useNavigate } from "react-router";
 import { useAuth } from "@/hooks";
 import { Tooltip, Button, Modal } from "@/components/ui";
 import { HomeIcon, SettingsIcon, LogoutIcon } from "@/components/icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AppIcon } from "./AppIcon";
 import { cn } from "@/lib/utils";
 
@@ -11,6 +11,7 @@ interface SideItemMenuProps {
   label: string;
   onClick: () => void;
   isActive?: boolean;
+  position?: "right" | "bottom";
 }
 
 function SideItemMenu({
@@ -18,9 +19,10 @@ function SideItemMenu({
   label,
   onClick,
   isActive = false,
+  position = "right",
 }: SideItemMenuProps) {
   return (
-    <Tooltip text={label} position="right">
+    <Tooltip text={label} position={position}>
       <button
         onClick={onClick}
         className={cn(
@@ -46,6 +48,7 @@ export function SideMenu() {
   const location = useLocation();
   const { logout } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   const handleLogout = () => {
     logout();
@@ -54,28 +57,34 @@ export function SideMenu() {
   };
 
   return (
-    <div className="flex h-screen flex-col justify-between border-e border-gray-900/20 dark:border-gray-100/20 transition-all duration-300 w-16 min-w-16 max-w-16">
-      <NavLink to="/" className="w-16 h-16 grid place-items-center group">
+    <div className="flex h-auto md:h-screen flex-row md:flex-col justify-between items-center border-b md:border-b-0 md:border-e border-gray-900/20 dark:border-gray-100/20 transition-all duration-300 w-full md:w-16 md:min-w-16 md:max-w-16 bg-white dark:bg-black z-50">
+      <NavLink
+        to="/"
+        className="w-16 h-16 grid place-items-center group shrink-0"
+      >
         <AppIcon className="h-10 w-10 fill-gray-800 dark:fill-gray-50 transition-all duration-300 group-hover:fill-blue-500 dark:group-hover:fill-blue-400" />
       </NavLink>
 
-      <div className="mb-6 flex flex-col items-center justify-center gap-3">
+      <div className="flex flex-row md:flex-col items-center justify-center gap-3 mr-4 md:mr-0 md:mb-6">
         <SideItemMenu
           icon={<HomeIcon />}
           label="Notebooks"
           onClick={() => navigate("/")}
           isActive={location.pathname === "/"}
+          position={isMobile ? "bottom" : "right"}
         />
         <SideItemMenu
           icon={<SettingsIcon />}
           label="Settings"
           onClick={() => navigate("/settings")}
           isActive={location.pathname === "/settings"}
+          position={isMobile ? "bottom" : "right"}
         />
         <SideItemMenu
           icon={<LogoutIcon />}
           label="Logout"
           onClick={() => setShowLogoutModal(true)}
+          position={isMobile ? "bottom" : "right"}
         />
       </div>
 
@@ -104,4 +113,18 @@ export function SideMenu() {
       </Modal>
     </div>
   );
+}
+
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    if (media.matches !== matches) {
+      setMatches(media.matches);
+    }
+    const listener = () => setMatches(media.matches);
+    media.addEventListener("change", listener);
+    return () => media.removeEventListener("change", listener);
+  }, [matches, query]);
+  return matches;
 }

@@ -20,7 +20,7 @@ export function Button({
   icon,
 }: ButtonProps) {
   const baseStyles =
-    "group relative inline-flex h-10 items-center justify-center overflow-hidden rounded-xs px-4 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 select-none";
+    "group relative inline-flex h-10 items-center justify-center overflow-hidden rounded-xs px-4 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 select-none whitespace-nowrap";
 
   const variantStyles: Record<ButtonVariant, string> = {
     primary:

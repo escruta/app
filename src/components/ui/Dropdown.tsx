@@ -58,7 +58,7 @@ export function Dropdown<T extends string>({
   return (
     <div className={cn("flex items-center gap-3", className)}>
       {label && (
-        <p className="text-base font-medium text-gray-700 dark:text-gray-200 select-none">
+        <p className="text-base font-medium text-gray-700 dark:text-gray-200 select-none whitespace-nowrap">
           {label}
         </p>
       )}

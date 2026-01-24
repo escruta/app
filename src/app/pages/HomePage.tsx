@@ -184,29 +184,32 @@ export default function HomePage() {
         image={metadata.image}
         twitterCard={metadata.twitterCard}
       />
-      <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 px-6 py-5 z-30">
+      <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 px-4 py-4 md:px-6 md:py-5">
         <div className="flex justify-between items-center gap-4">
           <h1 className="flex flex-col items-start gap-1.5 min-w-0">
             <span className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
               Dashboard
             </span>
-            <span className="text-2xl font-bold truncate w-full text-gray-900 dark:text-white select-text flex flex-row gap-2 items-center justify-center">
+            <span className="text-2xl font-bold truncate w-full text-gray-900 dark:text-white select-text">
               Welcome, {currentUser?.fullName || "User"}!
             </span>
           </h1>
         </div>
       </div>
 
-      <div className="flex-1 p-4 bg-gray-50 dark:bg-gray-950 overflow-auto">
+      <div className="flex-1 p-3 md:p-4 bg-gray-50 dark:bg-gray-950 overflow-auto">
         <div className="pointer-events-none blur-xl fixed w-full h-16 bg-gradient-to-b from-blue-50 dark:from-gray-950 to-transparent z-10"></div>
 
-        <CommonBar className="justify-between items-center sticky top-0 z-20 mb-4 backdrop-blur-2xl bg-gray-50/60 dark:bg-gray-800/70">
-          <Button onClick={() => setIsCreateModalOpen(true)}>
+        <CommonBar className="flex-col md:flex-row justify-between items-stretch md:items-center sticky top-0 z-20 mb-4 backdrop-blur-2xl bg-gray-50/60 dark:bg-gray-800/70 gap-3 md:gap-0">
+          <Button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="w-full md:w-auto justify-center"
+          >
             Create notebook
           </Button>
 
           {data && data.length > 0 ? (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 md:gap-4 flex-wrap pb-1 md:pb-0 justify-between md:justify-end">
               <SegmentedButtons
                 options={[
                   {
@@ -241,7 +244,7 @@ export default function HomePage() {
           <div
             className={
               viewMode === "grid"
-                ? "flex flex-wrap gap-4 mb-8"
+                ? "grid grid-cols-2 md:flex md:flex-wrap gap-3 md:gap-4 mb-8"
                 : "flex flex-col gap-3 mb-8"
             }
           >

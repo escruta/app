@@ -127,6 +127,8 @@ export default function NotebookPage() {
     setLeftPanelWidth(50);
   };
 
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
   async function handleRenameNotebook() {
     if (!newTitle.trim()) return;
     try {
@@ -256,6 +258,105 @@ export default function NotebookPage() {
     ? generateNotebookMetadata(notebook.title, notebookId)
     : null;
 
+  const sourcesTabContent = (
+    <div className="relative h-full w-full">
+      <AnimatePresence>
+        {selectedSource ? (
+          <motion.div
+            key={selectedSource.id}
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -20 }}
+            transition={{
+              type: "spring",
+              stiffness: 300,
+              damping: 30,
+              duration: 0.3,
+            }}
+            className="absolute inset-0 z-10 h-[96%] self-end"
+          >
+            <SourceViewer
+              notebookId={notebookId}
+              source={selectedSource}
+              handleCloseSource={() => setSelectedSource(null)}
+              onSourceDelete={() => {
+                setSelectedSource(null);
+                refetchNotebook(true, false);
+                setSourcesRefreshKey((prev) => prev + 1);
+              }}
+              className="h-full"
+            />
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+      <motion.div
+        animate={{
+          opacity: selectedSource ? 0.5 : 1,
+          scale: selectedSource ? 0.98 : 1,
+        }}
+        transition={{ duration: 0.3 }}
+        className="h-full"
+      >
+        <SourcesCard
+          notebookId={notebookId}
+          onSourceSelect={(source: Source) => setSelectedSource(source)}
+          refreshTrigger={sourcesRefreshKey}
+          onSourceAdded={() => {
+            refetchNotebook(true, false);
+            setSourcesRefreshKey((prev) => prev + 1);
+          }}
+        />
+      </motion.div>
+    </div>
+  );
+
+  const notesTabContent = (
+    <div className="relative h-full w-full">
+      <AnimatePresence>
+        {selectedNote ? (
+          <motion.div
+            key={selectedNote.id}
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -20 }}
+            transition={{
+              type: "spring",
+              stiffness: 300,
+              damping: 30,
+              duration: 0.3,
+            }}
+            className="absolute inset-0 z-10 h-[96%] self-end"
+          >
+            <NoteEditor
+              notebookId={notebookId}
+              note={selectedNote}
+              className="h-full"
+              handleCloseNote={() => setSelectedNote(null)}
+              onNoteDeleted={() => {
+                setSelectedNote(null);
+                setNotesRefreshKey((prev) => prev + 1);
+              }}
+            />
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+      <motion.div
+        animate={{
+          opacity: selectedNote ? 0.5 : 1,
+          scale: selectedNote ? 0.98 : 1,
+        }}
+        transition={{ duration: 0.3 }}
+        className="h-full"
+      >
+        <NotesCard
+          notebookId={notebookId}
+          onNoteSelect={(note: Note) => setSelectedNote(note)}
+          refreshTrigger={notesRefreshKey}
+        />
+      </motion.div>
+    </div>
+  );
+
   return (
     <div className="flex h-screen max-h-full w-full flex-col">
       {metadata && (
@@ -267,7 +368,7 @@ export default function NotebookPage() {
           twitterCard={metadata.twitterCard}
         />
       )}
-      <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 px-6 py-5">
+      <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 px-4 py-4 md:px-6 md:py-5">
         <div className="flex justify-between items-center gap-4">
           <h1 className="flex flex-col items-start gap-1.5 min-w-0">
             <span className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
@@ -295,173 +396,116 @@ export default function NotebookPage() {
         </div>
       </div>
 
-      <div className="flex-1 p-4 bg-gray-50 dark:bg-gray-950 overflow-hidden">
-        <section className="flex h-full overflow-hidden gap-1">
-          <motion.div
-            className={cn("min-h-0 flex flex-col overflow-hidden", {
-              "transition-all duration-200 ease-out": !isResizing,
-            })}
-            style={{ width: `${leftPanelWidth ?? 33}%` }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.05 }}
-          >
-            <Tabs
-              ref={tabsRef}
-              className="h-full"
-              items={[
-                {
-                  id: "1",
-                  label: "Sources",
-                  content: (
-                    <div className="relative h-full w-full">
-                      <AnimatePresence>
-                        {selectedSource ? (
-                          <motion.div
-                            key={selectedSource.id}
-                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: -20 }}
-                            transition={{
-                              type: "spring",
-                              stiffness: 300,
-                              damping: 30,
-                              duration: 0.3,
-                            }}
-                            className="absolute inset-0 z-10 h-[96%] self-end"
-                          >
-                            <SourceViewer
-                              notebookId={notebookId}
-                              source={selectedSource}
-                              handleCloseSource={() => setSelectedSource(null)}
-                              onSourceDelete={() => {
-                                setSelectedSource(null);
-                                refetchNotebook(true, false);
-                                setSourcesRefreshKey((prev) => prev + 1);
-                              }}
-                              className="h-full"
-                            />
-                          </motion.div>
-                        ) : null}
-                      </AnimatePresence>
-                      <motion.div
-                        animate={{
-                          opacity: selectedSource ? 0.5 : 1,
-                          scale: selectedSource ? 0.98 : 1,
-                        }}
-                        transition={{ duration: 0.3 }}
-                        className="h-full"
-                      >
-                        <SourcesCard
-                          notebookId={notebookId}
-                          onSourceSelect={(source: Source) =>
-                            setSelectedSource(source)
-                          }
-                          refreshTrigger={sourcesRefreshKey}
-                          onSourceAdded={() => {
-                            refetchNotebook(true, false);
-                            setSourcesRefreshKey((prev) => prev + 1);
-                          }}
-                        />
-                      </motion.div>
-                    </div>
-                  ),
-                },
-                {
-                  id: "2",
-                  label: "Notes",
-                  content: (
-                    <div className="relative h-full w-full">
-                      <AnimatePresence>
-                        {selectedNote ? (
-                          <motion.div
-                            key={selectedNote.id}
-                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95, y: -20 }}
-                            transition={{
-                              type: "spring",
-                              stiffness: 300,
-                              damping: 30,
-                              duration: 0.3,
-                            }}
-                            className="absolute inset-0 z-10 h-[96%] self-end"
-                          >
-                            <NoteEditor
-                              notebookId={notebookId}
-                              note={selectedNote}
-                              className="h-full"
-                              handleCloseNote={() => setSelectedNote(null)}
-                              onNoteDeleted={() => {
-                                setSelectedNote(null);
-                                setNotesRefreshKey((prev) => prev + 1);
-                              }}
-                            />
-                          </motion.div>
-                        ) : null}
-                      </AnimatePresence>
-                      <motion.div
-                        animate={{
-                          opacity: selectedNote ? 0.5 : 1,
-                          scale: selectedNote ? 0.98 : 1,
-                        }}
-                        transition={{ duration: 0.3 }}
-                        className="h-full"
-                      >
-                        <NotesCard
-                          notebookId={notebookId}
-                          onNoteSelect={(note: Note) => setSelectedNote(note)}
-                          refreshTrigger={notesRefreshKey}
-                        />
-                      </motion.div>
-                    </div>
-                  ),
-                },
-                {
-                  id: "3",
-                  label: "Tools",
-                  content: <ToolsCard />,
-                },
-              ]}
-              defaultActiveTab="1"
-            />
-          </motion.div>
-
-          {/* Resizer */}
-          <motion.div
-            className="w-2 cursor-col-resize flex items-center justify-center group"
-            onMouseDown={handleMouseDown}
-            onDoubleClick={handleDoubleClick}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3, delay: 0.2 }}
-          >
-            <div
-              className={cn("w-1 h-8 rounded-xs transition-all duration-150", {
-                "bg-blue-500 dark:bg-blue-400": isResizing,
-                "bg-gray-300/60 dark:bg-gray-600 group-hover:bg-blue-400 dark:group-hover:bg-blue-500":
-                  !isResizing,
+      <div className="flex-1 p-3 md:p-4 bg-gray-50 dark:bg-gray-950 overflow-hidden">
+        {isMobile ? (
+          <Tabs
+            ref={tabsRef}
+            className="h-full"
+            defaultActiveTab="chat"
+            items={[
+              {
+                id: "chat",
+                label: "Chat",
+                content: (
+                  <ChatCard
+                    notebookId={notebookId}
+                    sourcesCount={notebook?.sources.length ?? 0}
+                    refreshTrigger={sourcesRefreshKey}
+                    onSourceSelect={handleSourceSelectFromChat}
+                  />
+                ),
+              },
+              {
+                id: "1",
+                label: "Sources",
+                content: sourcesTabContent,
+              },
+              {
+                id: "2",
+                label: "Notes",
+                content: notesTabContent,
+              },
+              {
+                id: "3",
+                label: "Tools",
+                content: <ToolsCard />,
+              },
+            ]}
+          />
+        ) : (
+          <section className="flex h-full overflow-hidden gap-1">
+            <motion.div
+              className={cn("min-h-0 flex flex-col overflow-hidden", {
+                "transition-all duration-200 ease-out": !isResizing,
               })}
-            />
-          </motion.div>
+              style={{ width: `${leftPanelWidth ?? 33}%` }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.05 }}
+            >
+              <Tabs
+                ref={tabsRef}
+                className="h-full"
+                items={[
+                  {
+                    id: "1",
+                    label: "Sources",
+                    content: sourcesTabContent,
+                  },
+                  {
+                    id: "2",
+                    label: "Notes",
+                    content: notesTabContent,
+                  },
+                  {
+                    id: "3",
+                    label: "Tools",
+                    content: <ToolsCard />,
+                  },
+                ]}
+                defaultActiveTab="1"
+              />
+            </motion.div>
 
-          <motion.div
-            className={cn("min-h-0 flex flex-col overflow-hidden", {
-              "transition-all duration-200 ease-out": !isResizing,
-            })}
-            style={{ width: `${100 - (leftPanelWidth ?? 33)}%` }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-          >
-            <ChatCard
-              notebookId={notebookId}
-              sourcesCount={notebook?.sources.length ?? 0}
-              refreshTrigger={sourcesRefreshKey}
-              onSourceSelect={handleSourceSelectFromChat}
-            />
-          </motion.div>
-        </section>
+            {/* Resizer */}
+            <motion.div
+              className="w-2 cursor-col-resize flex items-center justify-center group"
+              onMouseDown={handleMouseDown}
+              onDoubleClick={handleDoubleClick}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3, delay: 0.2 }}
+            >
+              <div
+                className={cn(
+                  "w-1 h-8 rounded-xs transition-all duration-150",
+                  {
+                    "bg-blue-500 dark:bg-blue-400": isResizing,
+                    "bg-gray-300/60 dark:bg-gray-600 group-hover:bg-blue-400 dark:group-hover:bg-blue-500":
+                      !isResizing,
+                  },
+                )}
+              />
+            </motion.div>
+
+            <motion.div
+              className={cn("min-h-0 flex flex-col overflow-hidden", {
+                "transition-all duration-200 ease-out": !isResizing,
+              })}
+              style={{ width: `${100 - (leftPanelWidth ?? 33)}%` }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+            >
+              <ChatCard
+                notebookId={notebookId}
+                sourcesCount={notebook?.sources.length ?? 0}
+                refreshTrigger={sourcesRefreshKey}
+                onSourceSelect={handleSourceSelectFromChat}
+              />
+            </motion.div>
+          </section>
+        )}
       </div>
 
       {/* Rename Modal */}
@@ -508,4 +552,18 @@ export default function NotebookPage() {
       </Modal>
     </div>
   );
+}
+
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    if (media.matches !== matches) {
+      setMatches(media.matches);
+    }
+    const listener = () => setMatches(media.matches);
+    media.addEventListener("change", listener);
+    return () => media.removeEventListener("change", listener);
+  }, [matches, query]);
+  return matches;
 }
