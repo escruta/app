@@ -1,6 +1,7 @@
 export { default as useAuth } from "./useAuth";
 export { default as useCookie } from "./useCookie";
 export { default as useFetch } from "./useFetch";
+export { default as useGenerationJob } from "./useGenerationJob";
 export { default as useIsMobile } from "./useIsMobile";
 export { default as useScroll } from "./useScroll";
 export { default as useTheme } from "./useTheme";

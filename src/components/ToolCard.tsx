@@ -1,4 +1,7 @@
 import { cn } from "@/lib/utils";
+import { Spinner } from "@/components/ui";
+import { CloseIcon } from "@/components/icons";
+import type { JobStatus } from "@/interfaces";
 
 interface ToolCardProps {
   icon: React.ReactNode;
@@ -7,6 +10,9 @@ interface ToolCardProps {
   onClick?: () => void;
   disabled?: boolean;
   className?: string;
+  status?: JobStatus | null;
+  hasResult?: boolean;
+  onViewResult?: () => void;
 }
 
 export function ToolCard({
@@ -16,7 +22,14 @@ export function ToolCard({
   onClick,
   disabled = false,
   className,
+  status,
+  hasResult,
+  onViewResult,
 }: ToolCardProps) {
+  const isLoading = status === "PENDING" || status === "PROCESSING";
+  const isCompleted = status === "COMPLETED";
+  const isFailed = status === "FAILED";
+
   const baseClasses = `
     group relative overflow-hidden rounded-xs border cursor-pointer 
     transition-all duration-300 ease-out select-none
@@ -36,42 +49,122 @@ export function ToolCard({
     !hover:border-gray-200 !dark:hover:border-gray-600
   `;
 
+  const loadingClasses = `
+    border-blue-300 dark:border-blue-600
+    bg-blue-50/50 dark:bg-blue-950/30
+  `;
+
+  const completedClasses = `
+    border-green-300 dark:border-green-600
+    bg-green-50/50 dark:bg-green-950/30
+  `;
+
+  const failedClasses = `
+    border-red-300 dark:border-red-600
+    bg-red-50/50 dark:bg-red-950/30
+  `;
+
+  function handleClick() {
+    if (disabled || isLoading) return;
+
+    if (hasResult && onViewResult) {
+      onViewResult();
+    } else {
+      onClick?.();
+    }
+  }
+
   return (
     <div
-      className={cn(baseClasses, { [disabledClasses]: disabled }, className)}
-      onClick={disabled ? undefined : onClick}
+      className={cn(
+        baseClasses,
+        {
+          [disabledClasses]: disabled || isLoading,
+          [loadingClasses]: isLoading,
+          [completedClasses]: isCompleted && hasResult,
+          [failedClasses]: isFailed,
+        },
+        className,
+      )}
+      onClick={handleClick}
       onKeyDown={(e) => {
-        if (!disabled && (e.key === "Enter" || e.key === " ")) {
+        if (!disabled && !isLoading && (e.key === "Enter" || e.key === " ")) {
           e.preventDefault();
-          onClick?.();
+          handleClick();
         }
       }}
-      tabIndex={disabled ? -1 : 0}
+      tabIndex={disabled || isLoading ? -1 : 0}
       role="button"
-      aria-disabled={disabled}
+      aria-disabled={disabled || isLoading}
     >
-      <div className="relative p-4 h-full flex flex-col">
-        {/* Icon container */}
-        <div className="flex items-start justify-between mb-3">
-          <div className="p-3 rounded-xs transition-all duration-300 bg-gray-100 dark:bg-gray-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-800">
-            <div className="w-5 h-5 transition-all duration-300 transform group-hover:scale-110 text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+      <div className="relative p-3 h-full flex items-center gap-3">
+        <div
+          className={cn("shrink-0 p-2 rounded-xs transition-all duration-300", {
+            "bg-gray-100 dark:bg-gray-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-800":
+              !isLoading && !isCompleted && !isFailed,
+            "bg-blue-100 dark:bg-blue-800": isLoading,
+            "bg-green-100 dark:bg-green-800": isCompleted && hasResult,
+            "bg-red-100 dark:bg-red-800": isFailed,
+          })}
+        >
+          {isLoading ? (
+            <Spinner size={16} className="text-blue-600 dark:text-blue-400" />
+          ) : isCompleted && hasResult ? (
+            <div className="size-4 text-green-600 dark:text-green-400">
               {icon}
             </div>
-          </div>
+          ) : isFailed ? (
+            <div className="size-4 text-red-600 dark:text-red-400">
+              <CloseIcon />
+            </div>
+          ) : (
+            <div
+              className={cn(
+                "size-4 transition-all duration-300 transform group-hover:scale-110",
+                "text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400",
+              )}
+            >
+              {icon}
+            </div>
+          )}
         </div>
 
         {/* Content */}
-        <div className="flex-1 flex flex-col justify-between">
-          <div>
-            <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-sm leading-tight mb-1 group-hover:text-blue-900 dark:group-hover:text-blue-100 transition-colors duration-300">
-              {title}
-            </h3>
-            {description && (
-              <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-300">
-                {description}
-              </p>
+        <div className="flex flex-1 justify-between items-center">
+          <h3
+            className={cn(
+              "font-medium text-sm leading-tight transition-colors duration-300 truncate",
+              {
+                "text-gray-900 dark:text-gray-100 group-hover:text-blue-900 dark:group-hover:text-blue-100":
+                  !isLoading && !isCompleted && !isFailed,
+                "text-blue-700 dark:text-blue-300": isLoading,
+                "text-green-700 dark:text-green-300": isCompleted && hasResult,
+                "text-red-700 dark:text-red-300": isFailed,
+              },
             )}
-          </div>
+          >
+            {title}
+          </h3>
+          <p
+            className={cn(
+              "text-[10px] leading-tight transition-colors duration-300 truncate",
+              {
+                "text-gray-500 dark:text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300":
+                  !isLoading && !isCompleted && !isFailed,
+                "text-blue-600 dark:text-blue-400": isLoading,
+                "text-green-600 dark:text-green-400": isCompleted && hasResult,
+                "text-red-600 dark:text-red-400": isFailed,
+              },
+            )}
+          >
+            {isLoading
+              ? "Generating..."
+              : isCompleted && hasResult
+                ? "Ready!"
+                : isFailed
+                  ? "Failed."
+                  : description}
+          </p>
         </div>
       </div>
     </div>

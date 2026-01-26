@@ -428,7 +428,7 @@ export default function NotebookPage() {
               {
                 id: "3",
                 label: "Tools",
-                content: <ToolsCard />,
+                content: <ToolsCard notebookId={notebookId} />,
               },
             ]}
           />
@@ -460,7 +460,7 @@ export default function NotebookPage() {
                   {
                     id: "3",
                     label: "Tools",
-                    content: <ToolsCard />,
+                    content: <ToolsCard notebookId={notebookId} />,
                   },
                 ]}
                 defaultActiveTab="1"

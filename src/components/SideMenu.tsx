@@ -57,7 +57,7 @@ export function SideMenu() {
   };
 
   return (
-    <div className="flex h-auto md:h-screen flex-row md:flex-col justify-between items-center border-b md:border-b-0 md:border-e border-gray-900/20 dark:border-gray-100/20 transition-all duration-300 w-full md:w-16 md:min-w-16 md:max-w-16 bg-white dark:bg-black z-50">
+    <div className="flex h-auto md:h-screen flex-row md:flex-col justify-between items-center border-b md:border-b-0 md:border-e border-gray-900/20 dark:border-gray-100/20 transition-all duration-300 w-full md:w-16 md:min-w-16 md:max-w-16 bg-white dark:bg-black">
       <NavLink
         to="/"
         className="w-16 h-16 grid place-items-center group shrink-0"

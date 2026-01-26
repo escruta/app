@@ -21,7 +21,8 @@
         "noSvgWithoutTitle": "off",
         "useSemanticElements": "off",
         "noStaticElementInteractions": "off",
-        "noAutofocus": "off"
+        "noAutofocus": "off",
+        "noNoninteractiveTabindex": "off"
       },
       "correctness": {
         "useExhaustiveDependencies": "off"
