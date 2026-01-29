@@ -387,22 +387,24 @@ export function MindMapViewer({ data, className }: MindMapViewerProps) {
               {/* Horizontal line from central to the vertical line */}
               <div className="absolute -left-12 top-1/2 -translate-y-1/2 w-12 h-px bg-green-300 dark:bg-green-600" />
 
-              {/* Vertical line connecting all branches */}
-              {branches.length > 1 && (
-                <div
-                  className="absolute left-0 top-[calc(50%/branches.length)] bottom-[calc(50%/branches.length)] w-px bg-green-300 dark:bg-green-600"
-                  style={{
-                    top: `calc(100% / ${branches.length * 2})`,
-                    bottom: `calc(100% / ${branches.length * 2})`,
-                  }}
-                />
-              )}
-
               {branches.map((branch, index) => (
                 <div
                   key={index}
                   className="relative flex items-center pl-8 py-2"
                 >
+                  {/* Vertical connector */}
+                  {branches.length > 1 && (
+                    <div
+                      className={cn(
+                        "absolute left-0 w-px bg-green-300 dark:bg-green-600",
+                        index === 0
+                          ? "top-1/2 bottom-0"
+                          : index === branches.length - 1
+                            ? "top-0 bottom-1/2"
+                            : "top-0 bottom-0",
+                      )}
+                    />
+                  )}
                   {/* Horizontal line from the vertical line to each branch */}
                   <div className="absolute left-0 w-8 h-px bg-green-300 dark:bg-green-600" />
                   <MainBranch branch={branch} />
