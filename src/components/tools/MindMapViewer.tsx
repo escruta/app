@@ -7,17 +7,30 @@ import type { MindMapResponse, Branch } from "@/interfaces";
 interface MindMapViewerProps {
   data: MindMapResponse;
   className?: string;
+  onNodeSelect?: (question: string) => void;
 }
 
 interface BranchNodeProps {
   branch: Branch;
   level: number;
+  path: string[];
+  onNodeSelect?: (question: string) => void;
 }
 
-function BranchNode({ branch, level }: BranchNodeProps) {
+function BranchNode({ branch, level, path, onNodeSelect }: BranchNodeProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const hasChildren = branch.children && branch.children.length > 0;
   const isLeaf = !hasChildren;
+
+  const handleNodeClick = () => {
+    if (hasChildren) {
+      setIsExpanded((prev) => !prev);
+    } else if (onNodeSelect) {
+      const context = path.join(" > ");
+      const question = `Tell me more about "${branch.label}" in the context of "${context}"`;
+      onNodeSelect(question);
+    }
+  };
 
   return (
     <div className="flex items-center py-1">
@@ -32,17 +45,17 @@ function BranchNode({ branch, level }: BranchNodeProps) {
             isLeaf
               ? "bg-green-50 dark:bg-green-900/30 border-green-300 dark:border-green-600 text-gray-700 dark:text-gray-200"
               : "bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600 text-gray-700 dark:text-gray-200",
-            hasChildren && "cursor-pointer",
+            (hasChildren || onNodeSelect) && "cursor-pointer",
           )}
-          onClick={() => hasChildren && setIsExpanded((prev) => !prev)}
+          onClick={handleNodeClick}
           onKeyDown={(e) => {
-            if (hasChildren && (e.key === "Enter" || e.key === " ")) {
+            if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
-              setIsExpanded((prev) => !prev);
+              handleNodeClick();
             }
           }}
-          tabIndex={hasChildren ? 0 : -1}
-          role={hasChildren ? "button" : undefined}
+          tabIndex={0}
+          role="button"
         >
           <span>{branch.label}</span>
           {hasChildren && (
@@ -94,7 +107,12 @@ function BranchNode({ branch, level }: BranchNodeProps) {
                       )}
                     />
                   )}
-                  <BranchNode branch={child} level={level + 1} />
+                  <BranchNode
+                    branch={child}
+                    level={level + 1}
+                    path={[...path, branch.label]}
+                    onNodeSelect={onNodeSelect}
+                  />
                 </div>
               ))}
             </motion.div>
@@ -105,9 +123,27 @@ function BranchNode({ branch, level }: BranchNodeProps) {
   );
 }
 
-function MainBranch({ branch }: { branch: Branch }) {
+function MainBranch({
+  branch,
+  path,
+  onNodeSelect,
+}: {
+  branch: Branch;
+  path: string[];
+  onNodeSelect?: (question: string) => void;
+}) {
   const [isExpanded, setIsExpanded] = useState(false);
   const hasChildren = branch.children && branch.children.length > 0;
+
+  function handleNodeClick() {
+    if (hasChildren) {
+      setIsExpanded((prev) => !prev);
+    } else if (onNodeSelect) {
+      const context = path.join(" > ");
+      const question = `Tell me more about "${branch.label}" in the context of "${context}"`;
+      onNodeSelect(question);
+    }
+  }
 
   return (
     <div className="flex items-center py-2">
@@ -118,17 +154,17 @@ function MainBranch({ branch }: { branch: Branch }) {
             "relative flex items-center gap-1.5 px-4 py-2 rounded-xs border select-none",
             "bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-600",
             "text-gray-800 dark:text-gray-100 font-medium whitespace-nowrap",
-            hasChildren && "cursor-pointer",
+            (hasChildren || onNodeSelect) && "cursor-pointer",
           )}
-          onClick={() => hasChildren && setIsExpanded((prev) => !prev)}
+          onClick={handleNodeClick}
           onKeyDown={(e) => {
-            if (hasChildren && (e.key === "Enter" || e.key === " ")) {
+            if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
-              setIsExpanded((prev) => !prev);
+              handleNodeClick();
             }
           }}
-          tabIndex={hasChildren ? 0 : -1}
-          role={hasChildren ? "button" : undefined}
+          tabIndex={0}
+          role="button"
         >
           <span>{branch.label}</span>
           {hasChildren && (
@@ -180,7 +216,12 @@ function MainBranch({ branch }: { branch: Branch }) {
                       )}
                     />
                   )}
-                  <BranchNode branch={child} level={1} />
+                  <BranchNode
+                    branch={child}
+                    level={1}
+                    path={[...path, branch.label]}
+                    onNodeSelect={onNodeSelect}
+                  />
                 </div>
               ))}
             </motion.div>
@@ -191,7 +232,11 @@ function MainBranch({ branch }: { branch: Branch }) {
   );
 }
 
-export function MindMapViewer({ data, className }: MindMapViewerProps) {
+export function MindMapViewer({
+  data,
+  className,
+  onNodeSelect,
+}: MindMapViewerProps) {
   const { central, branches } = data;
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -407,7 +452,11 @@ export function MindMapViewer({ data, className }: MindMapViewerProps) {
                   )}
                   {/* Horizontal line from the vertical line to each branch */}
                   <div className="absolute left-0 w-8 h-px bg-green-300 dark:bg-green-600" />
-                  <MainBranch branch={branch} />
+                  <MainBranch
+                    branch={branch}
+                    path={[central]}
+                    onNodeSelect={onNodeSelect}
+                  />
                 </div>
               ))}
             </div>

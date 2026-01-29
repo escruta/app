@@ -41,6 +41,7 @@ export default function NotebookPage() {
 
   const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
   const [newTitle, setNewTitle] = useState<string>("");
+  const [chatQuestion, setChatQuestion] = useState<string | null>(null);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [selectedSource, setSelectedSource] = useState<Source | null>(null);
   const [notesRefreshKey, setNotesRefreshKey] = useState<number>(0);
@@ -64,6 +65,13 @@ export default function NotebookPage() {
     };
     setSelectedSource(tempSource);
     tabsRef.current?.setActiveTab("1");
+  };
+
+  const handleNodeSelect = (question: string) => {
+    setChatQuestion(question);
+    if (isMobile) {
+      tabsRef.current?.setActiveTab("chat");
+    }
   };
 
   useEffect(() => {
@@ -412,6 +420,8 @@ export default function NotebookPage() {
                     sourcesCount={notebook?.sources.length ?? 0}
                     refreshTrigger={sourcesRefreshKey}
                     onSourceSelect={handleSourceSelectFromChat}
+                    externalQuestion={chatQuestion}
+                    onExternalQuestionHandled={() => setChatQuestion(null)}
                   />
                 ),
               },
@@ -428,7 +438,12 @@ export default function NotebookPage() {
               {
                 id: "3",
                 label: "Tools",
-                content: <ToolsCard notebookId={notebookId} />,
+                content: (
+                  <ToolsCard
+                    notebookId={notebookId}
+                    onNodeSelect={handleNodeSelect}
+                  />
+                ),
               },
             ]}
           />
@@ -460,7 +475,12 @@ export default function NotebookPage() {
                   {
                     id: "3",
                     label: "Tools",
-                    content: <ToolsCard notebookId={notebookId} />,
+                    content: (
+                      <ToolsCard
+                        notebookId={notebookId}
+                        onNodeSelect={handleNodeSelect}
+                      />
+                    ),
                   },
                 ]}
                 defaultActiveTab="1"
@@ -502,6 +522,8 @@ export default function NotebookPage() {
                 sourcesCount={notebook?.sources.length ?? 0}
                 refreshTrigger={sourcesRefreshKey}
                 onSourceSelect={handleSourceSelectFromChat}
+                externalQuestion={chatQuestion}
+                onExternalQuestionHandled={() => setChatQuestion(null)}
               />
             </motion.div>
           </section>

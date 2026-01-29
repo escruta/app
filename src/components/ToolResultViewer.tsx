@@ -33,6 +33,7 @@ interface ToolResultViewerProps {
   onClose: () => void;
   onRegenerate?: () => void;
   className?: string;
+  onNodeSelect?: (question: string) => void;
 }
 
 const toolIcons: Record<JobType, React.ReactNode> = {
@@ -69,6 +70,7 @@ export function ToolResultViewer({
   onClose,
   onRegenerate,
   className,
+  onNodeSelect,
 }: ToolResultViewerProps) {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
@@ -129,7 +131,12 @@ export function ToolResultViewer({
       case "STUDY_GUIDE":
         return <StudyGuideViewer data={parsedContent.data} />;
       case "MIND_MAP":
-        return <MindMapViewer data={parsedContent.data} />;
+        return (
+          <MindMapViewer
+            data={parsedContent.data}
+            onNodeSelect={onNodeSelect}
+          />
+        );
       default:
         return (
           <div className="flex-1 flex items-center justify-center p-6">

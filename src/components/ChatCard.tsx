@@ -45,6 +45,8 @@ interface ChatCardProps {
   sourcesCount: number;
   refreshTrigger?: number;
   onSourceSelect?: (sourceId: string) => void;
+  externalQuestion?: string | null;
+  onExternalQuestionHandled?: () => void;
 }
 
 function processMessage(message: Message): ReactNode {
@@ -125,6 +127,8 @@ export function ChatCard({
   sourcesCount,
   refreshTrigger,
   onSourceSelect,
+  externalQuestion,
+  onExternalQuestionHandled,
 }: ChatCardProps) {
   const {
     data: notebookSummary,
@@ -184,6 +188,13 @@ export function ChatCard({
   const [input, setInput] = useState<string>("");
   const [conversationId, setConversationId] = useState<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (externalQuestion) {
+      setInput(externalQuestion);
+      onExternalQuestionHandled?.();
+    }
+  }, [externalQuestion, onExternalQuestionHandled]);
 
   const handleSourceClick = (sourceId: string) => {
     if (

@@ -21,6 +21,7 @@ interface Tool {
 
 interface ToolsCardProps {
   notebookId: string;
+  onNodeSelect?: (question: string) => void;
 }
 
 interface SelectedTool {
@@ -31,7 +32,7 @@ interface SelectedTool {
   startGeneration: () => void;
 }
 
-export function ToolsCard({ notebookId }: ToolsCardProps) {
+export function ToolsCard({ notebookId, onNodeSelect }: ToolsCardProps) {
   const [selectedTool, setSelectedTool] = useState<SelectedTool | null>(null);
 
   const tools: Tool[] = [
@@ -104,6 +105,7 @@ export function ToolsCard({ notebookId }: ToolsCardProps) {
               onClose={handleCloseTool}
               onRegenerate={selectedTool.startGeneration}
               className="h-full"
+              onNodeSelect={onNodeSelect}
             />
           </motion.div>
         ) : null}
