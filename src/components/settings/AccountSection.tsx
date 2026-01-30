@@ -5,7 +5,7 @@ import { useAuth, useFetch } from "@/hooks";
 import { CheckIcon } from "@/components/icons";
 
 export function AccountSection() {
-  const { logout, currentUser: user, fetchUserData } = useAuth();
+  const { signOut, currentUser: user, fetchUserData } = useAuth();
 
   const [isNameModalOpen, setIsNameModalOpen] = useState(false);
   const [newFullName, setNewFullName] = useState(user?.fullName || "");
@@ -46,7 +46,7 @@ export function AccountSection() {
         onSuccess: () => {
           setIsPasswordModalOpen(false);
           resetPasswordFields();
-          logout();
+          signOut();
         },
         onError: (error) => {
           setErrorPasswordMessage(error.message || "Unknown error");

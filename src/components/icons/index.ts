@@ -22,7 +22,7 @@ export * from "./ItalicIcon";
 export * from "./LinkIcon";
 export * from "./ListIcon";
 export * from "./LoadingIcon";
-export * from "./LogoutIcon";
+export * from "./SignOutIcon";
 export * from "./MindMapIcon";
 export * from "./NotebookIcon";
 export * from "./QuestionnaireIcon";

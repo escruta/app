@@ -19,7 +19,7 @@ export default function AuthProvider({
     null,
   ) as [User | null, (value: User | null) => void];
 
-  const login = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string) => {
     const response = await fetch(`${BACKEND_BASE_URL}/login`, {
       method: "POST",
       headers: {
@@ -48,11 +48,7 @@ export default function AuthProvider({
     return { status: response.status, data };
   };
 
-  const register = async (
-    email: string,
-    password: string,
-    fullName: string,
-  ) => {
+  const signUp = async (email: string, password: string, fullName: string) => {
     const response = await fetch(`${BACKEND_BASE_URL}/register`, {
       method: "POST",
       headers: {
@@ -81,7 +77,7 @@ export default function AuthProvider({
     return { status: response.status, data };
   };
 
-  const logout = () => {
+  const signOut = () => {
     setTokenCookie({ token: null, expiresIn: 0, createdAt: undefined });
     setCurrentUser(null);
     useFetch.clearCache();
@@ -147,9 +143,9 @@ export default function AuthProvider({
         token: tokenCookie?.token || null,
         isAuthenticated,
         checkTokenValidity,
-        login,
-        register,
-        logout,
+        signIn,
+        signUp,
+        signOut,
         loading,
         currentUser,
         fetchUserData,

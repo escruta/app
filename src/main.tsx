@@ -1,13 +1,12 @@
-import { lazy } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import { AuthProvider, ThemeProvider, ToastProvider } from "./providers";
 
 import AuthLayout from "./auth/AuthLayout";
-const LoginPage = lazy(() => import("./auth/pages/LoginPage"));
-const RegisterPage = lazy(() => import("./auth/pages/RegisterPage"));
+import { SignInPage } from "./auth/pages/SignInPage";
+import { SignUpPage } from "./auth/pages/SignUpPage";
 import AppRoutes from "./app/AppRoutes";
-const ProtectedRoute = lazy(() => import("./auth/ProtectedRoute"));
+import { ProtectedRoute } from "./auth/ProtectedRoute";
 
 import NotFound from "./NotFound";
 
@@ -15,14 +14,14 @@ import "./index.css";
 
 const router = createBrowserRouter([
   {
-    path: "login",
+    path: "signin",
     Component: AuthLayout,
-    children: [{ index: true, Component: LoginPage }],
+    children: [{ index: true, Component: SignInPage }],
   },
   {
-    path: "register",
+    path: "signup",
     Component: AuthLayout,
-    children: [{ index: true, Component: RegisterPage }],
+    children: [{ index: true, Component: SignUpPage }],
   },
   {
     Component: ProtectedRoute,

@@ -5,16 +5,16 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: () => boolean;
   checkTokenValidity: () => boolean;
-  login: (
+  signIn: (
     email: string,
     password: string,
   ) => Promise<{ status: number; data: unknown }>;
-  register: (
+  signUp: (
     email: string,
     password: string,
     fullName: string,
   ) => Promise<{ status: number; data: unknown }>;
-  logout: () => void;
+  signOut: () => void;
   loading: boolean;
   currentUser: User | null;
   fetchUserData: () => Promise<void>;

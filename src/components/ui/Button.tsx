@@ -10,6 +10,7 @@ interface ButtonProps {
   disabled?: boolean;
   icon?: React.ReactNode;
   size?: "sm" | "md" | "lg";
+  type?: "button" | "submit" | "reset";
 }
 
 export function Button({
@@ -20,6 +21,7 @@ export function Button({
   disabled = false,
   icon,
   size = "md",
+  type = "button",
 }: ButtonProps) {
   const baseStyles =
     "group relative inline-flex items-center justify-center overflow-hidden rounded-xs font-medium transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 select-none whitespace-nowrap active:scale-95";
@@ -58,7 +60,7 @@ export function Button({
           [disabledStyles]: disabled,
         },
       )}
-      type="button"
+      type={type}
       disabled={disabled}
     >
       {icon && (

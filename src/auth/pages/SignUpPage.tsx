@@ -1,11 +1,12 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router";
 import { useAuth, useToast } from "@/hooks";
 import { motion, AnimatePresence } from "motion/react";
 import { SEOMetadata } from "@/components";
-import { cn } from "@/lib/utils";
+import { Button, TextField, Spinner } from "@/components/ui";
+import { getSignErrorMessage } from "@/lib/utils";
 
-export default function RegisterPage() {
+export function SignUpPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,11 +16,9 @@ export default function RegisterPage() {
   const [allowSubmit, setAllowSubmit] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
+  const { signUp } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
-
-  const fullNameInputRef = useRef<HTMLInputElement>(null);
 
   const checkPasswordStrength = (password: string) => {
     const criteria = [
@@ -46,16 +45,8 @@ export default function RegisterPage() {
     return {
       isValid: !failedCriterion,
       errorMessage: failedCriterion ? failedCriterion.message : "",
-      lengthCriteria: criteria[0].valid,
-      uppercaseCriteria: criteria[1].valid,
-      lowercaseCriteria: criteria[2].valid,
-      numberCriteria: criteria[3].valid,
     };
   };
-
-  useEffect(() => {
-    fullNameInputRef.current?.focus();
-  }, []);
 
   useEffect(() => {
     if (passwordTouched) {
@@ -111,7 +102,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const response = await register(email, password, fullName);
+      const response = await signUp(email, password, fullName);
       if (response.status === 201) {
         showToast("Registration successful! Redirecting...", "success", {
           duration: 1500,
@@ -123,11 +114,7 @@ export default function RegisterPage() {
     } catch (err: unknown) {
       const error = err as { status: number; message?: string };
       if (error.status) {
-        setError(
-          error.status === 409
-            ? "This email is already registered."
-            : "Registration error. Please try again.",
-        );
+        setError(error.message || getSignErrorMessage(error.status));
       } else {
         setError(
           "Cannot connect to the server. Please check your connection and try again.",
@@ -148,9 +135,9 @@ export default function RegisterPage() {
   return (
     <>
       <SEOMetadata
-        title="Register - Escruta"
+        title="Sign up - Escruta"
         description="Create your free Escruta account and start organizing your knowledge with AI-powered research tools."
-        url="https://escruta.com/register"
+        url="https://escruta.com/signup"
         image="https://escruta.com/OpenGraphImage.webp"
         twitterCard="summary_large_image"
       />
@@ -172,51 +159,37 @@ export default function RegisterPage() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, delay: 0.2 }}
         >
-          Register
+          Sign up
         </motion.h1>
 
         <motion.div
-          className="mb-4"
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3, delay: 0.3 }}
         >
-          <label
-            className="block text-gray-700 dark:text-gray-300 mb-2 select-none"
-            htmlFor="fullName"
-          >
-            Full Name
-          </label>
-          <input
-            type="text"
+          <TextField
             id="fullName"
+            label="Full Name"
+            type="text"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xs focus:outline-none focus:ring focus:ring-blue-500 dark:focus:ring-blue-400"
             placeholder="John Doe"
             required
-            ref={fullNameInputRef}
+            autoFocus
           />
         </motion.div>
 
         <motion.div
-          className="mb-4"
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3, delay: 0.4 }}
         >
-          <label
-            className="block text-gray-700 dark:text-gray-300 mb-2 select-none"
-            htmlFor="email"
-          >
-            Email
-          </label>
-          <input
-            type="email"
+          <TextField
             id="email"
+            label="Email"
+            type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-xs focus:outline-none focus:ring focus:ring-blue-500 dark:focus:ring-blue-400"
             placeholder="john@example.com"
             required
             autoComplete="email"
@@ -224,36 +197,24 @@ export default function RegisterPage() {
         </motion.div>
 
         <motion.div
-          className="mb-4"
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3, delay: 0.5 }}
         >
-          <label
-            className="block text-gray-700 dark:text-gray-300 mb-2 select-none"
-            htmlFor="password"
-          >
-            Password
-          </label>
-          <input
-            type="password"
+          <TextField
             id="password"
+            label="Password"
+            type="password"
             value={password}
             onChange={handlePasswordChange}
-            className={cn(
-              "w-full text-white px-4 py-2 border rounded-xs focus:outline-none focus:ring focus:ring-blue-500 dark:focus:ring-blue-400",
-              {
-                "border-red-400": passwordError,
-                "border-gray-300 dark:border-gray-600": !passwordError,
-              },
-            )}
             required
             autoComplete="new-password"
+            className={passwordError ? "border-red-400 mb-1" : ""}
           />
           <AnimatePresence mode="wait">
             {passwordError && (
               <motion.p
-                className="mt-1 text-sm text-red-500"
+                className="text-sm text-red-500 mb-4"
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
@@ -266,39 +227,28 @@ export default function RegisterPage() {
         </motion.div>
 
         <motion.div
-          className="mb-4"
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3, delay: 0.6 }}
         >
-          <label
-            className="block text-gray-700 dark:text-gray-300 mb-2 select-none"
-            htmlFor="confirmPassword"
-          >
-            Confirm Password
-          </label>
-          <input
-            type="password"
+          <TextField
             id="confirmPassword"
+            label="Confirm Password"
+            type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className={cn(
-              "w-full text-white px-4 py-2 border rounded-xs focus:outline-none focus:ring focus:ring-blue-500 dark:focus:ring-blue-400",
-              {
-                "border-red-400":
-                  password !== confirmPassword && confirmPassword,
-                "border-gray-300 dark:border-gray-600": !(
-                  password !== confirmPassword && confirmPassword
-                ),
-              },
-            )}
             required
             autoComplete="new-password"
+            className={
+              password !== confirmPassword && confirmPassword
+                ? "border-red-400 mb-1"
+                : ""
+            }
           />
           <AnimatePresence mode="wait">
             {password !== confirmPassword && confirmPassword && (
               <motion.p
-                className="mt-1 text-sm text-red-500"
+                className="text-sm text-red-500 mb-4"
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
@@ -324,47 +274,28 @@ export default function RegisterPage() {
           )}
         </AnimatePresence>
 
-        <motion.button
-          type="submit"
-          disabled={loading || !allowSubmit}
-          className={cn(
-            "w-full text-white px-4 py-2 rounded-xs transition duration-300 select-none disabled:bg-blue-300",
-            {
-              "bg-blue-500 hover:bg-blue-600": allowSubmit,
-              "bg-blue-300 cursor-not-allowed": !allowSubmit,
-            },
-          )}
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, delay: 0.7 }}
-          whileHover={{ scale: allowSubmit ? 1.02 : 1 }}
-          whileTap={{ scale: allowSubmit ? 0.98 : 1 }}
         >
-          {loading ? (
-            <span className="flex items-center justify-center">
-              <motion.span
-                className="inline-block h-4 w-4 mr-2 border-2 border-white border-t-transparent rounded-full"
-                animate={{ rotate: 360 }}
-                transition={{
-                  repeat: Infinity,
-                  duration: 1,
-                  ease: "linear",
-                }}
-              />
-              Registering...
-            </span>
-          ) : (
-            "Register"
-          )}
-        </motion.button>
+          <Button
+            type="submit"
+            disabled={loading || !allowSubmit}
+            className="w-full"
+            icon={loading ? <Spinner size={16} className="text-white" /> : null}
+          >
+            {loading ? "Signing up..." : "Sign up"}
+          </Button>
+        </motion.div>
 
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.5 }}
           transition={{ duration: 0.3, delay: 0.6 }}
-          className="flex items-center my-6"
+          className="flex items-center my-6 px-12"
         >
-          <div className="flex-grow h-px bg-gray-300 dark:bg-gray-600"></div>
+          <div className="flex-grow h-px bg-gray-300/65 dark:bg-gray-600/65"></div>
         </motion.div>
 
         <motion.div
@@ -377,10 +308,10 @@ export default function RegisterPage() {
             Already have an account?{" "}
           </span>
           <Link
-            to="/login"
-            className="text-sm text-blue-500 hover:text-blue-600 dark:hover:text-blue-400"
+            to="/signin"
+            className="text-sm text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"
           >
-            Log in
+            Sign in
           </Link>
         </motion.div>
       </motion.form>

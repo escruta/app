@@ -3,14 +3,14 @@ import { useAuth } from "@/hooks";
 import { useEffect, useState } from "react";
 import { Modal, Button } from "@/components/ui";
 
-export default function ProtectedRoute() {
+export function ProtectedRoute() {
   const navigate = useNavigate();
-  const { isAuthenticated, checkTokenValidity, logout } = useAuth();
+  const { isAuthenticated, checkTokenValidity, signOut } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleLogout = () => {
+  const handleSignOut = () => {
     setIsModalOpen(false);
-    logout();
+    signOut();
     navigate("/", { replace: true });
   };
 
@@ -36,7 +36,7 @@ export default function ProtectedRoute() {
   }, [isAuthenticated, checkTokenValidity]);
 
   if (!isAuthenticated()) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/signin" />;
   }
 
   return (
@@ -45,21 +45,21 @@ export default function ProtectedRoute() {
       {isModalOpen && (
         <Modal
           isOpen={isModalOpen}
-          onClose={handleLogout}
+          onClose={handleSignOut}
           closeOnOutsideClick={false}
           closeOnEscape={false}
           title="Session expired"
           width="sm"
           actions={
-            <Button onClick={handleLogout} variant="primary">
-              Login again
+            <Button onClick={handleSignOut} variant="primary">
+              Sign in again
             </Button>
           }
         >
           <div className="space-y-4">
             <p className="text-gray-700 dark:text-gray-300">
-              Your session has expired due to inactivity. Please log in again to
-              continue using the application.
+              Your session has expired due to inactivity. Please sign in again
+              to continue using the application.
             </p>
           </div>
         </Modal>

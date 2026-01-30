@@ -1,7 +1,7 @@
 import { NavLink, useLocation, useNavigate } from "react-router";
 import { useAuth } from "@/hooks";
 import { Tooltip, Button, Modal } from "@/components/ui";
-import { HomeIcon, SettingsIcon, LogoutIcon } from "@/components/icons";
+import { HomeIcon, SettingsIcon, SignOutIcon } from "@/components/icons";
 import { useEffect, useState } from "react";
 import { AppIcon } from "./AppIcon";
 import { cn } from "@/lib/utils";
@@ -46,14 +46,14 @@ function SideItemMenu({
 export function SideMenu() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout } = useAuth();
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const { signOut } = useAuth();
+  const [showSignOutModal, setShowSignOutModal] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
 
-  const handleLogout = () => {
-    logout();
+  const handleSignOut = () => {
+    signOut();
     navigate("/", { replace: true });
-    setShowLogoutModal(false);
+    setShowSignOutModal(false);
   };
 
   return (
@@ -81,34 +81,34 @@ export function SideMenu() {
           position={isMobile ? "bottom" : "right"}
         />
         <SideItemMenu
-          icon={<LogoutIcon />}
-          label="Logout"
-          onClick={() => setShowLogoutModal(true)}
+          icon={<SignOutIcon />}
+          label="Sign out"
+          onClick={() => setShowSignOutModal(true)}
           position={isMobile ? "bottom" : "right"}
         />
       </div>
 
       <Modal
-        isOpen={showLogoutModal}
-        onClose={() => setShowLogoutModal(false)}
-        title="Logout"
+        isOpen={showSignOutModal}
+        onClose={() => setShowSignOutModal(false)}
+        title="Sign out"
         width="sm"
         actions={
           <>
             <Button
-              onClick={() => setShowLogoutModal(false)}
+              onClick={() => setShowSignOutModal(false)}
               variant="secondary"
             >
               Cancel
             </Button>
-            <Button onClick={handleLogout} variant="danger">
-              Logout
+            <Button onClick={handleSignOut} variant="danger">
+              Sign out
             </Button>
           </>
         }
       >
         <p className="text-gray-700 dark:text-gray-300">
-          Are you sure you want to log out?
+          Are you sure you want to sign out?
         </p>
       </Modal>
     </div>
