@@ -54,7 +54,7 @@ export function SignInPage() {
     } catch (err: unknown) {
       const error = err as { status: number; message?: string };
       if (error.status) {
-        setError(error.message || getSignErrorMessage(error.status));
+        setError(error.message || getSignErrorMessage(error.status, "signin"));
       } else {
         setError(
           "Cannot connect to the server. Please check your connection and try again.",

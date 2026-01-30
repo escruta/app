@@ -1,19 +1,36 @@
-export function getSignErrorMessage(status: number) {
+export type SignContext = "signin" | "signup";
+
+export function getSignErrorMessage(
+  status: number,
+  context: SignContext = "signin",
+) {
+  const isSignUp = context === "signup";
+
   switch (status) {
     case 401:
-      return "Invalid email or password.";
+      return isSignUp
+        ? "Invalid credentials. Please check your information."
+        : "Invalid email or password.";
     case 403:
-      return "Forbidden. You do not have permission to sign in.";
+      return isSignUp
+        ? "Forbidden. You do not have permission to create an account."
+        : "Forbidden. You do not have permission to sign in.";
     case 404:
-      return "User not found.";
+      return isSignUp
+        ? "Registration service not available."
+        : "User not found.";
     case 405:
       return "Method not allowed.";
     case 408:
       return "Request timeout.";
     case 409:
-      return "Conflict. Account may be locked or disabled.";
+      return isSignUp
+        ? "An account with this email already exists."
+        : "Conflict. Account may be locked or disabled.";
     case 410:
-      return "Gone. Account may have been deleted.";
+      return isSignUp
+        ? "Registration is no longer available."
+        : "Gone. Account may have been deleted.";
     case 411:
       return "Length required.";
     case 412:
@@ -33,7 +50,9 @@ export function getSignErrorMessage(status: number) {
     case 421:
       return "Misdirected request.";
     case 422:
-      return "Unprocessable entity.";
+      return isSignUp
+        ? "Invalid registration data. Please check your information."
+        : "Unprocessable entity.";
     case 423:
       return "Locked.";
     case 424:
@@ -51,6 +70,8 @@ export function getSignErrorMessage(status: number) {
     case 451:
       return "Unavailable due to legal reasons.";
     default:
-      return "Sign in error. Please try again.";
+      return isSignUp
+        ? "Sign up error. Please try again."
+        : "Sign in error. Please try again.";
   }
 }
