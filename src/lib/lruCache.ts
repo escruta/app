@@ -31,6 +31,14 @@ class LRUCache {
     this.cache.delete(key);
   }
 
+  deleteByEndpoint(endpoint: string): void {
+    for (const key of this.cache.keys()) {
+      if (key.includes(`:${endpoint}:`) || key.endsWith(`:${endpoint}`)) {
+        this.cache.delete(key);
+      }
+    }
+  }
+
   clear(): void {
     this.cache.clear();
   }

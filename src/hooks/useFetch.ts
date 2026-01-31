@@ -191,6 +191,6 @@ export default function useFetch<T = unknown>(
 }
 
 useFetch.clearCache = (key?: string) => {
-  if (key) cacheInstance.delete(key);
+  if (key) cacheInstance.deleteByEndpoint(key);
   else cacheInstance.clear();
 };

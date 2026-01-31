@@ -48,6 +48,7 @@ export function NotebookCard({
       await deleteNotebook();
       setIsDeleted(true);
       setIsDeleteModalOpen(false);
+      useFetch.clearCache("/notebooks");
     } catch (error) {
       console.error("Error deleting notebook:", error);
     }
