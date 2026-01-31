@@ -300,6 +300,7 @@ export default function NotebookPage() {
       <motion.div
         animate={{
           opacity: selectedSource ? 0.5 : 1,
+          scale: selectedSource ? 0.98 : 1,
         }}
         transition={{ duration: 0.3 }}
         className="h-full"

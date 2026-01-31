@@ -110,6 +110,7 @@ export function ToolsCard({ notebookId, onNodeSelect }: ToolsCardProps) {
       <motion.div
         animate={{
           opacity: selectedTool ? 0.5 : 1,
+          scale: selectedTool ? 0.98 : 1,
         }}
         transition={{ duration: 0.3 }}
         className="h-full"
