@@ -60,15 +60,15 @@ export function Toast({
         >
           <div
             className={cn(
-              "flex items-center justify-between p-4 rounded-xs border shadow-lg",
+              "flex items-center justify-between p-4 rounded-xs border shadow-lg ring-1",
               {
-                "bg-green-50 border-green-500 text-green-800 dark:bg-green-900 dark:border-green-600 dark:text-green-200":
+                "bg-green-50 border-green-500 text-green-800 ring-green-500/20 shadow-green-500/10 dark:bg-green-900 dark:border-green-600 dark:text-green-200 dark:ring-green-500/30 dark:shadow-green-500/20":
                   type === "success",
-                "bg-red-50 border-red-500 text-red-800 dark:bg-red-900 dark:border-red-600 dark:text-red-200":
+                "bg-red-50 border-red-500 text-red-800 ring-red-500/20 shadow-red-500/10 dark:bg-red-900 dark:border-red-600 dark:text-red-200 dark:ring-red-500/30 dark:shadow-red-500/20":
                   type === "error",
-                "bg-yellow-50 border-yellow-500 text-yellow-800 dark:bg-yellow-900 dark:border-yellow-600 dark:text-yellow-200":
+                "bg-yellow-50 border-yellow-500 text-yellow-800 ring-yellow-500/20 shadow-yellow-500/10 dark:bg-yellow-900 dark:border-yellow-600 dark:text-yellow-200 dark:ring-yellow-500/30 dark:shadow-yellow-500/20":
                   type === "warning",
-                "bg-blue-50 border-blue-500 text-blue-800 dark:bg-blue-900 dark:border-blue-600 dark:text-blue-200":
+                "bg-blue-50 border-blue-500 text-blue-800 ring-blue-500/20 shadow-blue-500/10 dark:bg-blue-900 dark:border-blue-600 dark:text-blue-200 dark:ring-blue-500/30 dark:shadow-blue-500/20":
                   type === "info",
               },
             )}

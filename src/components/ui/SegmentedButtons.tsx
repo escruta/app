@@ -31,10 +31,10 @@ export function SegmentedButtons<T = string>({
   size = "md",
 }: SegmentedButtonsProps<T>) {
   const containerStyles =
-    "flex gap-1 border border-gray-300 dark:border-gray-600 rounded-xs bg-white dark:bg-gray-700 p-1";
+    "flex gap-1 border border-gray-300 dark:border-gray-600 rounded-xs bg-white dark:bg-gray-700 p-1 shadow-sm shadow-gray-500/5 dark:shadow-black/10";
 
   const buttonBaseStyles =
-    "flex items-center justify-center rounded-xs transition-all duration-200 select-none font-medium";
+    "flex items-center justify-center rounded-xs transition-all duration-200 select-none font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900";
 
   const sizeStyles = {
     sm: "h-8 px-3 text-sm",
@@ -48,9 +48,9 @@ export function SegmentedButtons<T = string>({
           key={index}
           onClick={() => onChange(option.value)}
           className={cn(buttonBaseStyles, sizeStyles[size], {
-            "bg-blue-100 dark:bg-gray-800 text-blue-700 dark:text-blue-300":
+            "bg-blue-100 dark:bg-gray-800 text-blue-700 dark:text-blue-300 ring-1 ring-blue-500/20 dark:ring-blue-500/30":
               value === option.value,
-            "text-gray-900 dark:text-gray-100 hover:bg-blue-50 dark:hover:bg-gray-600 active:bg-blue-100 dark:active:bg-gray-700":
+            "text-gray-900 dark:text-gray-100 hover:bg-blue-50 dark:hover:bg-gray-600 hover:ring-1 hover:ring-blue-300/50 active:bg-blue-100 dark:active:bg-gray-700":
               value !== option.value,
           })}
           aria-label={option.ariaLabel || option.label}

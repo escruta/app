@@ -148,10 +148,7 @@ export function NoteEditor({
       <Card
         isExpanded={isExpanded}
         setIsExpanded={setIsExpanded}
-        className={cn(
-          "flex flex-col overflow-y-auto dark:bg-gray-800",
-          className,
-        )}
+        className={cn("flex flex-col overflow-y-auto", className)}
       >
         <div className="flex justify-between items-center flex-shrink-0 mb-2">
           <h2 className="text-lg font-sans font-semibold truncate">

@@ -146,14 +146,11 @@ export function SourceViewer({
       <Card
         isExpanded={isExpanded}
         setIsExpanded={setIsExpanded}
-        className={cn(
-          "flex flex-col overflow-y-auto p-0 dark:bg-gray-800",
-          className,
-        )}
+        className={cn("flex flex-col overflow-y-auto p-0", className)}
       >
         <div className="sticky h-20 top-0 z-10 ">
-          <div className="h-6 bg-gray-50 dark:bg-gray-800 w-full flex-shrink-0" />
-          <div className="h-14 px-6 bg-gray-50 dark:bg-gray-800">
+          <div className="bg-white dark:bg-gray-900 h-6 w-full flex-shrink-0" />
+          <div className="bg-white dark:bg-gray-900 h-14 px-6">
             <div className="h-12 px-2 gap-3 flex justify-between items-center flex-shrink-0">
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <div className="text-gray-600 dark:text-gray-300 flex-shrink-0 w-5 h-5">
@@ -261,7 +258,7 @@ export function SourceViewer({
         {fullSource && !loading && !error && (
           <div className="flex-1 flex flex-col w-full max-w-5xl mx-auto">
             <div className="px-6 pt-4">
-              <Card className="bg-gray-100/60 dark:bg-gray-700">
+              <Card className="bg-gray-50 dark:bg-gray-800">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold">
                     Summary of this source

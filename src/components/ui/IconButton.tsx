@@ -22,17 +22,17 @@ export function IconButton({
   tabIndex,
 }: IconButtonProps) {
   const baseStyles =
-    "flex items-center justify-center rounded-xs transition-all duration-200 select-none focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900";
+    "flex items-center justify-center rounded-xs transition-all duration-200 select-none focus:outline-none";
 
   const variantStyles = {
     primary:
-      "bg-blue-500 text-white hover:bg-blue-600 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700",
+      "bg-blue-500 border-2 border-blue-600 text-white shadow-sm shadow-blue-500/30 hover:shadow-md hover:shadow-blue-500/40 hover:ring-2 hover:ring-blue-300 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-gray-900 active:bg-blue-600 focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 dark:bg-blue-600 dark:border-blue-500 dark:hover:ring-blue-500/50",
     secondary:
-      "bg-gray-100 text-gray-800 hover:bg-gray-200 focus:ring-gray-400 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700",
+      "bg-white border border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50 hover:ring-1 hover:ring-gray-200 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-gray-900 active:bg-gray-100 focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 dark:bg-gray-900/50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800/50 dark:hover:border-gray-600",
     danger:
-      "bg-red-500 text-white hover:bg-red-600 focus:ring-red-500 dark:bg-red-600 dark:hover:bg-red-700",
+      "bg-red-500 border-2 border-red-600 text-white shadow-sm shadow-red-500/30 hover:shadow-md hover:shadow-red-500/40 hover:ring-2 hover:ring-red-300 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-gray-900 active:bg-red-600 focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 dark:bg-red-600 dark:border-red-500 dark:hover:ring-red-500/50",
     ghost:
-      "bg-transparent text-gray-800 hover:bg-gray-100 focus:ring-gray-400 dark:text-gray-200 dark:hover:bg-gray-800",
+      "bg-transparent border border-gray-300 text-gray-600 hover:border-gray-500 hover:bg-gray-50 hover:ring-1 hover:ring-gray-400 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-gray-900 active:bg-gray-100 focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800/30 dark:hover:border-gray-500",
   };
 
   const sizeStyles = {

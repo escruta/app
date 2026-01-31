@@ -47,12 +47,12 @@ export const Tabs = forwardRef<TabsRef, TabsProps>(
 
     return (
       <div className={cn("w-full relative", className)}>
-        <div className="flex w-full overflow-x-auto no-scrollbar justify-start p-1 bg-gray-50 dark:bg-gray-800/80 rounded-xs border border-gray-200 dark:border-gray-600">
+        <div className="flex w-full overflow-x-auto no-scrollbar justify-start p-1 bg-gray-50 dark:bg-gray-900 rounded-xs border border-gray-200 dark:border-gray-600">
           {items.map((tab, index) => (
             <div key={index} className="relative flex-1 min-w-max group">
               {activeTabId === tab.id && (
                 <motion.div
-                  className="absolute inset-0 bg-white dark:bg-gray-700/90 rounded-xs border border-gray-200/50 dark:border-gray-600/50"
+                  className="absolute inset-0 bg-white dark:bg-gray-800 rounded-xs border border-gray-200/50 dark:border-gray-600/50"
                   layoutId="activeTab"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -71,9 +71,9 @@ export const Tabs = forwardRef<TabsRef, TabsProps>(
               <button
                 onClick={() => handleTabClick(tab.id)}
                 className={cn(
-                  "w-full px-6 py-1.5 text-sm font-medium rounded-xs transition-all duration-200 relative whitespace-nowrap",
+                  "w-full px-6 py-1.5 text-sm font-medium rounded-xs transition-all duration-200 relative whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-600 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900",
                   {
-                    "transform-none": activeTabId === tab.id,
+                    "": activeTabId === tab.id,
                   },
                 )}
                 type="button"

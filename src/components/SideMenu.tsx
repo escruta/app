@@ -26,11 +26,11 @@ function SideItemMenu({
       <button
         onClick={onClick}
         className={cn(
-          "w-10 h-10 p-2.5 rounded-xs flex items-center justify-center transition-all duration-300 select-none",
+          "w-10 h-10 p-2.5 rounded-xs flex items-center justify-center transition-all duration-200 select-none focus:outline-none",
           {
-            "bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700":
+            "bg-blue-500 border-2 border-blue-600 text-white shadow-sm shadow-blue-500/30 hover:shadow-md hover:shadow-blue-500/40 hover:ring-2 hover:ring-blue-300 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-gray-900 focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 dark:bg-blue-600 dark:border-blue-500 dark:hover:ring-blue-500/50":
               isActive,
-            "bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700":
+            "bg-white border border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50 hover:ring-1 hover:ring-gray-200 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-gray-900 focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 dark:bg-gray-900/50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800/50 dark:hover:border-gray-600":
               !isActive,
           },
         )}
@@ -57,7 +57,7 @@ export function SideMenu() {
   };
 
   return (
-    <div className="flex h-auto md:h-screen flex-row md:flex-col justify-between items-center border-b md:border-b-0 md:border-e border-gray-900/20 dark:border-gray-100/20 transition-all duration-300 w-full md:w-16 md:min-w-16 md:max-w-16 bg-white dark:bg-black z-10">
+    <div className="flex h-auto md:h-screen flex-row md:flex-col justify-between items-center border-b md:border-b-0 md:border-e border-gray-200 dark:border-gray-800 transition-all duration-300 w-full md:w-16 md:min-w-16 md:max-w-16 bg-white dark:bg-black z-10">
       <NavLink
         to="/"
         className="w-16 h-16 grid place-items-center group shrink-0"

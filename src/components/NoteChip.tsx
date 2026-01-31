@@ -15,9 +15,9 @@ export function NoteChip({ note, className, onSelect }: NoteChipProps) {
         "transition-all duration-300 ease-out select-none",
         "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1",
         "dark:focus:ring-offset-gray-900",
-        "bg-white dark:bg-gray-800",
+        "bg-white dark:bg-gray-900",
         "border-gray-200 dark:border-gray-600",
-        "hover:bg-blue-50 dark:hover:bg-gray-700",
+        "hover:bg-blue-50 dark:hover:bg-gray-800",
         "hover:border-blue-300 dark:hover:border-gray-500",
         className,
       )}

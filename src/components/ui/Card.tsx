@@ -58,7 +58,7 @@ export function Card({
       <motion.div
         layoutId={layoutId}
         className={cn(
-          "bg-gray-50 dark:bg-gray-800/80 p-4 rounded-xs border border-gray-200 dark:border-gray-600",
+          "bg-white dark:bg-gray-900 p-4 rounded-xs border border-gray-200 dark:border-gray-700 ring-1 ring-gray-500/5 dark:ring-gray-500/10",
           className,
           isExpanded && [
             "fixed",
@@ -68,8 +68,9 @@ export function Card({
             "max-w-[calc(100vw-12rem)]",
             "m-auto",
             "overflow-auto",
-            "shadow-2xl",
-            "dark:shadow-black/50",
+            "ring-2",
+            "ring-gray-500/10",
+            "dark:ring-gray-500/20",
           ],
         )}
         initial={{ opacity: 0, y: 8, scale: 0.98 }}

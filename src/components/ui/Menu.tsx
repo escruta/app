@@ -155,7 +155,7 @@ export function MenuContent({
               : { left: position.left }),
           }}
           className={cn(
-            "z-[9999] min-w-[10rem] rounded-xs border border-gray-200 bg-white/95 p-1.5 shadow-lg backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/95",
+            "z-[9999] min-w-[10rem] rounded-xs border border-gray-200 bg-white/95 p-1.5 shadow-lg shadow-gray-500/10 dark:shadow-black/20 ring-1 ring-gray-500/5 dark:ring-gray-500/10 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/95",
             className,
           )}
         >
@@ -192,13 +192,13 @@ export function MenuItem({
   };
 
   const baseStyles =
-    "flex w-full items-center gap-2 rounded-xs px-3 py-2 text-sm transition-all duration-200 outline-none select-none";
+    "flex w-full items-center gap-2 rounded-xs px-3 py-2 text-sm transition-all duration-200 outline-none select-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900";
 
   const variantStyles = {
     default:
-      "text-gray-700 dark:text-gray-200 hover:bg-blue-50 focus:bg-blue-50 dark:hover:bg-gray-700 dark:focus:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 active:bg-blue-100 dark:active:bg-gray-600",
+      "text-gray-700 dark:text-gray-200 hover:bg-blue-50 hover:ring-1 hover:ring-blue-300 focus:bg-blue-50 dark:hover:bg-gray-700 dark:focus:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 active:bg-blue-100 dark:active:bg-gray-600",
     danger:
-      "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/30",
+      "text-red-600 dark:text-red-400 hover:bg-red-50 hover:ring-1 hover:ring-red-300 dark:hover:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/30 focus:ring-red-500 dark:focus:ring-red-400",
   };
 
   return (

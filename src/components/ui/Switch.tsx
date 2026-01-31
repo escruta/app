@@ -61,7 +61,7 @@ export function Switch({
             "bg-gray-100 dark:bg-gray-700",
             "peer-checked:bg-blue-500 peer-checked:dark:bg-blue-600",
             "peer-checked:border-transparent",
-            "peer-focus:ring-1 peer-focus:ring-blue-500 dark:peer-focus:ring-blue-400",
+            "peer-focus:ring-2 peer-focus:ring-blue-400 peer-focus:ring-offset-2 peer-focus:ring-offset-white dark:peer-focus:ring-offset-gray-900",
           )}
         />
 
@@ -70,7 +70,7 @@ export function Switch({
           className={cn(
             "absolute rounded-full transition-all duration-200 ease-in-out",
             "bg-white dark:bg-gray-200",
-            "border border-gray-200 dark:border-gray-300",
+            "border border-gray-200 dark:border-gray-300 shadow-sm",
             "w-5 h-5 top-1 left-1",
             "peer-checked:translate-x-5",
             "peer-checked:bg-white peer-checked:border-white",

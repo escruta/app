@@ -73,7 +73,7 @@ export function NotebookCard({
   }
 
   const baseClasses = cn(
-    "z-10 rounded-xs border cursor-pointer bg-gray-50 hover:bg-blue-50/50 dark:bg-gray-800 dark:hover:bg-gray-700/50 border-gray-200 dark:border-gray-600 transition-all duration-200 ease-out",
+    "z-10 rounded-xs border cursor-pointer bg-white hover:bg-blue-50/50 dark:bg-gray-900 dark:hover:bg-gray-800/80 border-gray-200 dark:border-gray-700 transition-all duration-200 ease-out",
   );
 
   const gridClasses = cn("h-40 w-full p-4 flex flex-col justify-between");

@@ -11,7 +11,7 @@ export default function SettingsPage() {
         image="https://escruta.com/OpenGraphImage.webp"
         twitterCard="summary_large_image"
       />
-      <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 px-4 py-4 md:px-6 md:py-5">
+      <div className=" bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700 px-4 py-4 md:px-6 md:py-5">
         <div className="flex justify-between items-center gap-4">
           <h1 className="flex flex-col items-start gap-1.5 min-w-0">
             <span className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">

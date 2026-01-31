@@ -72,19 +72,19 @@ export function Dropdown<T extends string>({
           disabled={disabled}
           className={cn(
             "relative w-full min-w-[160px] h-10 px-3 pr-10 text-left",
-            "bg-white dark:bg-gray-700",
+            "bg-white dark:bg-gray-900",
             "border border-gray-300 dark:border-gray-600",
             "rounded-xs",
             "text-gray-900 dark:text-gray-100 text-sm",
-            "focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400",
+            "focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900",
             "transition-all duration-200 ease-in-out",
             "select-none",
             {
-              "hover:border-blue-500 dark:hover:border-blue-400 cursor-pointer":
+              "hover:border-blue-500 hover:ring-1 hover:ring-blue-300 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-gray-900 dark:hover:border-blue-400 cursor-pointer":
                 !disabled,
-              "opacity-50 cursor-not-allowed bg-gray-50 dark:bg-gray-900":
+              "opacity-50 cursor-not-allowed bg-gray-50 dark:bg-gray-900 hover:ring-0":
                 disabled,
-              "ring-2 ring-blue-500 dark:ring-blue-400 border-blue-500 dark:border-blue-400":
+              "ring-2 ring-blue-500 dark:ring-blue-400 border-blue-500 dark:border-blue-400 ring-offset-2 ring-offset-white dark:ring-offset-gray-900":
                 isOpen && !disabled,
             },
           )}
@@ -119,9 +119,9 @@ export function Dropdown<T extends string>({
               }}
               className={cn(
                 "absolute z-50 w-full mt-1.5",
-                "bg-white dark:bg-gray-800",
+                "bg-white dark:bg-gray-900",
                 "border border-gray-300 dark:border-gray-600",
-                "rounded-xs shadow-lg",
+                "rounded-xs shadow-lg shadow-gray-500/10 dark:shadow-black/20 ring-1 ring-gray-500/5 dark:ring-gray-500/10",
                 "max-h-60 overflow-auto",
               )}
             >
@@ -142,11 +142,11 @@ export function Dropdown<T extends string>({
                       "relative w-full px-3 py-2 text-left text-sm",
                       "text-gray-900 dark:text-gray-100",
                       "transition-colors duration-150",
-                      "hover:bg-blue-50 dark:hover:bg-gray-700",
-                      "focus:outline-none focus:bg-blue-50 dark:focus:bg-gray-700",
-                      "cursor-pointer select-none",
+                      "hover:bg-blue-50 dark:hover:bg-gray-800",
+                      "focus:outline-none focus:bg-blue-50 focus:ring-1 focus:ring-blue-300 dark:focus:bg-gray-800",
+                      "cursor-pointer select-none rounded-xs",
                       {
-                        "bg-blue-100 dark:bg-gray-700 text-blue-700 dark:text-blue-300":
+                        "bg-blue-100 dark:bg-gray-800 text-blue-700 dark:text-blue-300":
                           selectedOption === option,
                       },
                     )}

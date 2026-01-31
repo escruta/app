@@ -63,11 +63,13 @@ export function FilePicker({
   const baseStyles = cn(
     "relative w-full border-2 border-dashed rounded-xs transition-all duration-200 cursor-pointer",
     "border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800",
-    "hover:border-blue-400 hover:bg-blue-50 active:bg-blue-100 dark:hover:border-blue-500 dark:hover:bg-gray-700 dark:active:bg-gray-600",
+    "hover:border-blue-400 hover:bg-blue-50 hover:ring-1 hover:ring-blue-300 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-gray-900 active:bg-blue-100 dark:hover:border-blue-500 dark:hover:bg-gray-700 dark:active:bg-gray-600",
+    "shadow-sm shadow-gray-500/5 dark:shadow-black/10",
     {
-      "opacity-50 cursor-not-allowed hover:border-gray-300 hover:bg-gray-50 dark:hover:border-gray-600 dark:hover:bg-gray-800":
+      "opacity-50 cursor-not-allowed hover:border-gray-300 hover:bg-gray-50 hover:ring-0 dark:hover:border-gray-600 dark:hover:bg-gray-800":
         disabled,
-      "border-blue-500 bg-blue-50 dark:bg-gray-700": dragOver,
+      "border-blue-500 bg-blue-50 dark:bg-gray-700 ring-1 ring-blue-400 ring-offset-1 ring-offset-white dark:ring-offset-gray-900":
+        dragOver,
     },
     className,
   );

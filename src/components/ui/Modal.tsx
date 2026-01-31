@@ -83,7 +83,7 @@ export function Modal({
           <motion.div
             ref={scope}
             key="modal-content-mobile"
-            className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 border-x-0 border-b-0 pointer-events-auto flex flex-col"
+            className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 border-x-0 border-b-0 pointer-events-auto flex flex-col shadow-xl shadow-black/20 dark:shadow-black/40 ring-1 ring-gray-500/10 dark:ring-gray-500/20"
             style={{ maxHeight: maxHeight ?? "90vh" }}
             role="dialog"
             aria-modal="true"
@@ -137,7 +137,7 @@ export function Modal({
           <motion.div
             key="modal-content"
             className={cn(
-              "w-full bg-white dark:bg-gray-800 rounded-xs border border-gray-200 dark:border-gray-700 pointer-events-auto",
+              "w-full bg-white dark:bg-gray-900 rounded-xs border border-gray-200 dark:border-gray-800 pointer-events-auto shadow-xl shadow-gray-500/10 dark:shadow-black/30 ring-1 ring-gray-500/10 dark:ring-gray-500/20",
               {
                 "max-w-md": width === "sm",
                 "max-w-lg": width === "md",
