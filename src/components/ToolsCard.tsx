@@ -86,9 +86,9 @@ export function ToolsCard({ notebookId, onNodeSelect }: ToolsCardProps) {
         {selectedTool ? (
           <motion.div
             key={selectedTool.tool.type}
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -20 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
             transition={{
               type: "spring",
               stiffness: 300,
@@ -114,7 +114,6 @@ export function ToolsCard({ notebookId, onNodeSelect }: ToolsCardProps) {
       <motion.div
         animate={{
           opacity: selectedTool ? 0.5 : 1,
-          scale: selectedTool ? 0.98 : 1,
         }}
         transition={{ duration: 0.3 }}
         className="h-full"

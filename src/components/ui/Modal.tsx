@@ -148,9 +148,9 @@ export function Modal({
             role="dialog"
             aria-modal="true"
             aria-labelledby="modal-title"
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.95, opacity: 0 }}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.15 }}
           >
             <div className="flex items-center justify-between gap-4 p-6 border-b border-gray-200 dark:border-gray-700">

@@ -142,10 +142,10 @@ export function Tooltip({
           <AnimatePresence>
             <motion.div
               key="tooltip"
-              initial={{ opacity: 0, scale: 0.9, ...transformProps }}
-              animate={{ opacity: 1, scale: 1, ...transformProps }}
-              exit={{ opacity: 0, scale: 0.9, ...transformProps }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
+              initial={{ opacity: 0, ...transformProps }}
+              animate={{ opacity: 1, ...transformProps }}
+              exit={{ opacity: 0, ...transformProps }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
               style={{
                 position: "fixed",
                 left: coords.x,

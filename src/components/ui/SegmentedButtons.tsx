@@ -50,7 +50,7 @@ export function SegmentedButtons<T = string>({
           className={cn(buttonBaseStyles, sizeStyles[size], {
             "bg-blue-100 dark:bg-gray-800 text-blue-700 dark:text-blue-300":
               value === option.value,
-            "text-gray-900 dark:text-gray-100 hover:bg-blue-50 dark:hover:bg-gray-600":
+            "text-gray-900 dark:text-gray-100 hover:bg-blue-50 dark:hover:bg-gray-600 active:bg-blue-100 dark:active:bg-gray-700":
               value !== option.value,
           })}
           aria-label={option.ariaLabel || option.label}

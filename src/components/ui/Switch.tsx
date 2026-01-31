@@ -81,9 +81,9 @@ export function Switch({
             {checked ? (
               <motion.div
                 key="check"
-                initial={{ scale: 0.8, rotate: -20 }}
-                animate={{ scale: 1, rotate: 0 }}
-                exit={{ scale: 0.8, rotate: 20 }}
+                initial={{ opacity: 0, rotate: -20 }}
+                animate={{ opacity: 1, rotate: 0 }}
+                exit={{ opacity: 0, rotate: 20 }}
                 transition={{
                   duration: 0.15,
                   ease: "easeOut",
@@ -95,9 +95,9 @@ export function Switch({
             ) : (
               <motion.div
                 key="close"
-                initial={{ scale: 0.8, rotate: 20 }}
-                animate={{ scale: 1, rotate: 0 }}
-                exit={{ scale: 0.8, rotate: -20 }}
+                initial={{ opacity: 0, rotate: 20 }}
+                animate={{ opacity: 1, rotate: 0 }}
+                exit={{ opacity: 0, rotate: -20 }}
                 transition={{
                   duration: 0.15,
                   ease: "easeOut",

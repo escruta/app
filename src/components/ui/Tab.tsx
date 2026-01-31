@@ -71,7 +71,7 @@ export const Tabs = forwardRef<TabsRef, TabsProps>(
               <button
                 onClick={() => handleTabClick(tab.id)}
                 className={cn(
-                  "w-full px-6 py-1.5 text-sm font-medium rounded-xs transition-all duration-150 relative group-hover:scale-[1.02] whitespace-nowrap",
+                  "w-full px-6 py-1.5 text-sm font-medium rounded-xs transition-all duration-200 relative whitespace-nowrap",
                   {
                     "transform-none": activeTabId === tab.id,
                   },

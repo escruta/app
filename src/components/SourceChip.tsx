@@ -30,7 +30,6 @@ export function SourceChip({
         "border-gray-200 dark:border-gray-600",
         "hover:bg-blue-50 dark:hover:bg-gray-700",
         "hover:border-blue-300 dark:hover:border-gray-500",
-        "hover:scale-[101%]",
         className,
       )}
       onClick={handleChipClick}
@@ -45,7 +44,7 @@ export function SourceChip({
     >
       <div className="relative p-3 h-full flex items-center gap-3">
         <div className="shrink-0 p-2 rounded-xs transition-all duration-300 bg-gray-100 dark:bg-gray-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-800">
-          <div className="w-4 h-4 transition-all duration-300 transform group-hover:scale-110 text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+          <div className="w-4 h-4 transition-all duration-300 text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400">
             {getSourceIcon(source)}
           </div>
         </div>

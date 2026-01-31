@@ -75,11 +75,9 @@ export function NotebookCard({
     "rounded-xs border cursor-pointer bg-gray-50 hover:bg-blue-50/50 dark:bg-gray-800 dark:hover:bg-gray-700/50 border-gray-200 dark:border-gray-600 transition-all duration-200 ease-out",
   );
 
-  const gridClasses = cn(
-    "h-40 w-full p-4 flex flex-col justify-between hover:scale-[101.5%]",
-  );
+  const gridClasses = cn("h-40 w-full p-4 flex flex-col justify-between");
   const listClasses = cn(
-    "h-20 w-full p-4 flex flex-row items-center justify-between hover:scale-[100.25%]",
+    "h-20 w-full p-4 flex flex-row items-center justify-between",
   );
 
   const handleCardClick = () => {

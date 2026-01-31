@@ -90,12 +90,12 @@ export function MenuContent({
       {context?.isOpen && (
         <motion.div
           role="menu"
-          initial={{ opacity: 0, scale: 0.95, y: -4 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: -4 }}
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
           transition={{ duration: 0.15, ease: "easeOut" }}
           className={cn(
-            "absolute z-50 mt-2 min-w-[10rem] rounded-xs border border-gray-200 bg-white/95 p-1.5 shadow-lg backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/95 dark:shadow-gray-900/40",
+            "absolute z-50 mt-2 min-w-[10rem] rounded-xs border border-gray-200 bg-white/95 p-1.5 shadow-lg backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/95",
             align === "right" ? "right-0" : "left-0",
             className,
           )}
@@ -135,9 +135,9 @@ export function MenuItem({
 
   const variantStyles = {
     default:
-      "text-gray-700 dark:text-gray-200 hover:bg-blue-50/50 focus:bg-blue-50/50 dark:hover:bg-gray-700/50 dark:focus:bg-gray-700/50 hover:text-blue-600 dark:hover:text-blue-400",
+      "text-gray-700 dark:text-gray-200 hover:bg-blue-50 focus:bg-blue-50 dark:hover:bg-gray-700 dark:focus:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 active:bg-blue-100 dark:active:bg-gray-600",
     danger:
-      "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10",
+      "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/30",
   };
 
   return (

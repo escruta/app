@@ -39,14 +39,6 @@ export function ToolCard({
     border-gray-200 dark:border-gray-600
     hover:bg-blue-50 dark:hover:bg-gray-700
     hover:border-blue-300 dark:hover:border-gray-500
-    hover:scale-[101%]
-  `;
-
-  const disabledClasses = `
-    opacity-50 cursor-not-allowed 
-    !hover:scale-100
-    !hover:bg-white !dark:hover:bg-gray-800
-    !hover:border-gray-200 !dark:hover:border-gray-600
   `;
 
   const loadingClasses = `
@@ -62,6 +54,12 @@ export function ToolCard({
   const failedClasses = `
     border-red-300 dark:border-red-600
     bg-red-50/50 dark:bg-red-950/30
+  `;
+
+  const disabledClasses = `
+    opacity-50 cursor-not-allowed 
+    !hover:bg-white !dark:hover:bg-gray-800
+    !hover:border-gray-200 !dark:hover:border-gray-600
   `;
 
   function handleClick() {
@@ -120,7 +118,7 @@ export function ToolCard({
           ) : (
             <div
               className={cn(
-                "size-4 transition-all duration-300 transform group-hover:scale-110",
+                "size-4 transition-all duration-300",
                 "text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400",
               )}
             >

@@ -58,7 +58,7 @@ export function Dropdown<T extends string>({
   return (
     <div className={cn("flex items-center gap-3", className)}>
       {label && (
-        <p className="text-base font-medium text-gray-700 dark:text-gray-200 select-none whitespace-nowrap">
+        <p className="text-sm font-medium text-gray-700 dark:text-gray-200 select-none whitespace-nowrap">
           {label}
         </p>
       )}
@@ -75,7 +75,7 @@ export function Dropdown<T extends string>({
             "bg-white dark:bg-gray-700",
             "border border-gray-300 dark:border-gray-600",
             "rounded-xs",
-            "text-gray-900 dark:text-gray-100",
+            "text-gray-900 dark:text-gray-100 text-sm",
             "focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400",
             "transition-all duration-200 ease-in-out",
             "select-none",
@@ -110,9 +110,9 @@ export function Dropdown<T extends string>({
         <AnimatePresence>
           {isOpen && !disabled && (
             <motion.div
-              initial={{ opacity: 0, y: -10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
               transition={{
                 duration: 0.2,
                 ease: "easeOut",
@@ -121,7 +121,7 @@ export function Dropdown<T extends string>({
                 "absolute z-50 w-full mt-1.5",
                 "bg-white dark:bg-gray-800",
                 "border border-gray-300 dark:border-gray-600",
-                "rounded-xs shadow-lg dark:shadow-gray-900/20",
+                "rounded-xs shadow-lg",
                 "max-h-60 overflow-auto",
               )}
             >
@@ -139,7 +139,7 @@ export function Dropdown<T extends string>({
                     }}
                     onClick={() => handleSelect(option)}
                     className={cn(
-                      "relative w-full px-3 py-2 text-left",
+                      "relative w-full px-3 py-2 text-left text-sm",
                       "text-gray-900 dark:text-gray-100",
                       "transition-colors duration-150",
                       "hover:bg-blue-50 dark:hover:bg-gray-700",

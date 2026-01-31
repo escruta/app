@@ -45,9 +45,9 @@ export function Toast({
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          initial={{ opacity: 0, y: 20, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -20, scale: 0.95 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.2 }}
           className={cn("fixed z-50 max-w-sm w-full px-4", {
             "top-8 right-8": position === "top-right",
@@ -60,7 +60,7 @@ export function Toast({
         >
           <div
             className={cn(
-              "flex items-center justify-between p-4 rounded-xs border shadow-md",
+              "flex items-center justify-between p-4 rounded-xs border shadow-lg",
               {
                 "bg-green-50 border-green-500 text-green-800 dark:bg-green-900 dark:border-green-600 dark:text-green-200":
                   type === "success",
