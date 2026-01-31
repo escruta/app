@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import type { Notebook } from "@/interfaces";
 import { useAuth, useCookie, useFetch } from "@/hooks";
 import {
@@ -30,8 +31,9 @@ enum SortOptions {
 type ViewMode = "grid" | "list";
 
 export default function HomePage() {
+  const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const { data, loading, error, refetch } = useFetch<Notebook[]>("/notebooks");
+  const { data, loading, error } = useFetch<Notebook[]>("/notebooks");
   const [sortBy, setSortBy] = useCookie<SortOptions>(
     "notebookSortPreference",
     SortOptions.Newest,
@@ -52,10 +54,9 @@ export default function HomePage() {
     {
       method: "POST",
       data: { title: newNotebookTitle },
-      onSuccess: async () => {
-        await refetch(true);
-        setNewNotebookTitle("");
-        setIsCreateModalOpen(false);
+      onSuccess: async (notebook) => {
+        useFetch.clearCache("/notebooks");
+        navigate(`/notebook/${notebook.id}`);
       },
       onError: (error) => {
         console.error("Error creating notebook:", error.message);
