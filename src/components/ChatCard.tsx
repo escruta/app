@@ -279,30 +279,6 @@ export function ChatCard({
     <Card className="flex flex-col h-full overflow-hidden">
       <div className="flex flex-row justify-between items-center mb-2 flex-shrink-0">
         <h2 className="text-lg font-sans font-semibold">Chat</h2>
-        <div className="flex gap-3">
-          {messages.length === 0 &&
-          !isChatLoading &&
-          !isSummaryLoading &&
-          notebookSummary ? (
-            <Tooltip
-              text={
-                isSummaryRegenerating
-                  ? "Regenerating summary"
-                  : "Regenerate summary"
-              }
-              position="bottom"
-            >
-              <IconButton
-                icon={isSummaryRegenerating ? <Spinner /> : <RestartIcon />}
-                variant="ghost"
-                size="sm"
-                className="flex-shrink-0"
-                onClick={regenerateSummary}
-                disabled={isSummaryRegenerating}
-              />
-            </Tooltip>
-          ) : null}
-        </div>
       </div>
       <Divider className="mb-0" />
       {messages.length > 0 ? (
@@ -383,9 +359,31 @@ export function ChatCard({
         >
           {sourcesCount > 0 ? (
             <div className="text-muted-foreground lg:max-w-lg lg:min-w-lg mx-auto my-auto py-8">
-              <h3 className="text-xl font-semibold mb-3 text-foreground">
-                Summary of the notebook
-              </h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xl font-semibold text-foreground">
+                  Summary of the notebook
+                </h3>
+                {notebookSummary && !isSummaryLoading && (
+                  <Tooltip
+                    text={
+                      isSummaryRegenerating
+                        ? "Regenerating summary"
+                        : "Regenerate summary"
+                    }
+                    position="bottom"
+                  >
+                    <IconButton
+                      icon={
+                        isSummaryRegenerating ? <Spinner /> : <RestartIcon />
+                      }
+                      variant="ghost"
+                      size="sm"
+                      onClick={regenerateSummary}
+                      disabled={isSummaryRegenerating}
+                    />
+                  </Tooltip>
+                )}
+              </div>
               {isSummaryLoading || isSummaryRegenerating ? (
                 <div className="max-w-none mt-1 mb-1">
                   <Skeleton lines={4} className="w-full" />
