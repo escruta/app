@@ -39,29 +39,25 @@ export function ToolsCard({ notebookId, onNodeSelect }: ToolsCardProps) {
     {
       icon: <MindMapIcon />,
       title: "Mind Map",
-      description:
-        "Create a visual mind map to explore connections between concepts.",
+      description: "Visual map of concept connections",
       type: "MIND_MAP",
     },
     {
       icon: <StudyIcon />,
       title: "Study Guide",
-      description:
-        "Generate a comprehensive study guide with key points and questions.",
+      description: "Key points and questions",
       type: "STUDY_GUIDE",
     },
     {
       icon: <CardIcon />,
       title: "Flashcards",
-      description:
-        "Create flashcards from your notes for effective spaced repetition learning.",
+      description: "Spaced repetition cards",
       type: "FLASHCARDS",
     },
     {
       icon: <QuestionnaireIcon />,
       title: "Questionnaire",
-      description:
-        "Generate a questionnaire to test your understanding of the material.",
+      description: "Test your knowledge",
       type: "QUESTIONNAIRE",
     },
   ];
@@ -123,7 +119,7 @@ export function ToolsCard({ notebookId, onNodeSelect }: ToolsCardProps) {
             <h2 className="text-lg font-sans font-semibold">Tools</h2>
           </div>
           <Divider className="my-4" />
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
             {tools.map((tool) => (
               <ToolItem
                 key={tool.type}

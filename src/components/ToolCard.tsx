@@ -106,7 +106,9 @@ export function ToolCard({
           })}
         >
           {isLoading ? (
-            <Spinner size={16} className="text-blue-600 dark:text-blue-400" />
+            <div className="size-4">
+              <Spinner size={16} className="text-blue-600 dark:text-blue-400" />
+            </div>
           ) : isCompleted && hasResult ? (
             <div className="size-4 text-green-600 dark:text-green-400">
               {icon}
@@ -128,10 +130,10 @@ export function ToolCard({
         </div>
 
         {/* Content */}
-        <div className="flex flex-1 justify-between items-center">
+        <div className="flex flex-col flex-1 justify-center gap-0.5">
           <h3
             className={cn(
-              "font-medium text-sm leading-tight transition-colors duration-300 truncate",
+              "font-medium text-sm leading-tight transition-colors duration-300",
               {
                 "text-gray-900 dark:text-gray-100 group-hover:text-blue-900 dark:group-hover:text-blue-100":
                   !isLoading && !isCompleted && !isFailed,
@@ -145,7 +147,7 @@ export function ToolCard({
           </h3>
           <p
             className={cn(
-              "text-[10px] leading-tight transition-colors duration-300 truncate",
+              "text-xs leading-tight transition-colors duration-300 truncate",
               {
                 "text-gray-500 dark:text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300":
                   !isLoading && !isCompleted && !isFailed,
