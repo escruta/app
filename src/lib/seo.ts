@@ -12,7 +12,7 @@ export interface RouteMetadata {
 
 export const routeMetadata: Record<string, RouteMetadata> = {
   "/": {
-    title: "Dashboard - Escruta",
+    title: "Notebooks - Escruta",
     description:
       "Access your notebooks, sources, and AI-powered research tools in Escruta.",
     url: `${baseUrl}/`,

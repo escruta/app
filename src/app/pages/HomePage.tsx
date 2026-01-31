@@ -188,7 +188,7 @@ export default function HomePage() {
         <div className="flex justify-between items-center gap-4">
           <h1 className="flex flex-col items-start gap-1.5 min-w-0">
             <span className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-              Dashboard
+              Notebooks
             </span>
             <span className="text-2xl font-bold truncate w-full text-gray-900 dark:text-white select-text">
               Welcome, {currentUser?.fullName || "User"}!
