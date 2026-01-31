@@ -56,7 +56,7 @@ export function Switch({
         {/* Track/Background */}
         <div
           className={cn(
-            "absolute inset-0 rounded-full transition-all duration-200 ease-in-out",
+            "absolute inset-0 rounded-xs transition-all duration-200 ease-in-out",
             "border border-gray-300 dark:border-gray-600",
             "bg-gray-100 dark:bg-gray-700",
             "peer-checked:bg-blue-500 peer-checked:dark:bg-blue-600",
@@ -68,7 +68,7 @@ export function Switch({
         {/* Thumb */}
         <div
           className={cn(
-            "absolute rounded-full transition-all duration-200 ease-in-out",
+            "absolute rounded-xs transition-all duration-200 ease-in-out",
             "bg-white dark:bg-gray-200",
             "border border-gray-200 dark:border-gray-300 shadow-sm",
             "w-5 h-5 top-1 left-1",
