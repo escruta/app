@@ -259,9 +259,20 @@ export default function HomePage() {
             ))}
           </div>
         ) : (
-          <CommonBar className="text-center text-gray-500">
-            No notebooks available. Create one to get started!
-          </CommonBar>
+          <div className="flex flex-col items-center justify-center text-center py-16 px-4">
+            <div className="size-20 bg-blue-50 dark:bg-blue-950/30 rounded-xs flex items-center justify-center mb-5 shadow-sm border border-blue-300 dark:border-blue-700">
+              <div className="size-10 text-blue-500 dark:text-blue-400">
+                <NotebookIcon />
+              </div>
+            </div>
+            <h3 className="text-xl font-semibold text-foreground mb-3">
+              No notebooks yet
+            </h3>
+            <p className="text-base text-gray-500 dark:text-gray-400 max-w-md leading-relaxed mb-6">
+              Create your first notebook to start organizing your sources,
+              notes, and AI-powered insights.
+            </p>
+          </div>
         )}
 
         {/* Create Notebook Modal */}

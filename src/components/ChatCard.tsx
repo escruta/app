@@ -1,6 +1,6 @@
 import { lazy } from "react";
 import { useFetch } from "@/hooks";
-import { FireIcon, RestartIcon, SendIcon } from "@/components/icons";
+import { FileIcon, FireIcon, RestartIcon, SendIcon } from "@/components/icons";
 import {
   Card,
   Divider,
@@ -474,12 +474,18 @@ export function ChatCard({
               )}
             </div>
           ) : (
-            <div className="text-muted-foreground w-full max-w-lg mx-auto my-auto py-8">
-              <h3 className="text-xl font-semibold mb-3 text-foreground">
+            <div className="flex flex-col items-center justify-center text-center py-12 px-4 h-full">
+              <div className="size-20 bg-blue-50 dark:bg-blue-950/30 rounded-xs flex items-center justify-center mb-5 shadow-sm border border-blue-300 dark:border-blue-700">
+                <div className="size-10 text-blue-500 dark:text-blue-400">
+                  <FileIcon />
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-foreground mb-2">
                 This notebook is empty
               </h3>
-              <p className="mt-1 mb-1 text-base font-medium leading-6">
-                Add some sources to start chatting with your documents.
+              <p className="text-base text-gray-500 dark:text-gray-400 max-w-sm leading-relaxed">
+                Add sources to start chatting with your documents. You can
+                upload PDFs, paste text, or add web links.
               </p>
             </div>
           )}

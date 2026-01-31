@@ -1,5 +1,5 @@
 import type { Note } from "@/interfaces";
-import { AddIcon } from "@/components/icons";
+import { AddIcon, EditIcon } from "@/components/icons";
 import { NoteChip } from "./NoteChip";
 import {
   Card,
@@ -111,8 +111,19 @@ export function NotesCard({
             );
           }
           return (
-            <div className="text-gray-500 text-sm">
-              No notes found. Click the button above to add a note.
+            <div className="flex flex-col items-center justify-center text-center py-10 px-4">
+              <div className="size-20 bg-blue-50 dark:bg-blue-950/30 rounded-xs flex items-center justify-center mb-5 shadow-sm border border-blue-300 dark:border-blue-700">
+                <div className="size-10 text-blue-500 dark:text-blue-400">
+                  <EditIcon />
+                </div>
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                No notes yet
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs leading-relaxed">
+                Create your first note to start capturing ideas and insights
+                from your sources.
+              </p>
             </div>
           );
         })()}
