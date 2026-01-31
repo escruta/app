@@ -11,6 +11,7 @@ interface TextFieldBaseProps {
   disabled?: boolean;
   autoFocus?: boolean;
   autoComplete?: string;
+  maxRows?: number;
 }
 
 interface TextFieldSingleLineProps extends TextFieldBaseProps {
@@ -41,19 +42,26 @@ export function TextField({
   autoFocus = false,
   autoComplete,
   multiline = false,
+  maxRows,
 }: TextFieldSingleLineProps | TextFieldMultiLineProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (multiline && textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height =
-        textareaRef.current.scrollHeight + "px";
+      const textarea = textareaRef.current;
+      textarea.style.height = "auto";
+
+      const lineHeight =
+        parseInt(getComputedStyle(textarea).lineHeight, 10) || 20;
+      const maxHeight = maxRows ? lineHeight * maxRows : Infinity;
+
+      const newHeight = Math.min(textarea.scrollHeight, maxHeight);
+      textarea.style.height = newHeight + "px";
     }
-  }, [value, multiline]);
+  }, [value, multiline, maxRows]);
 
   const baseInputClassName =
-    "w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-xs focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 hover:border-gray-400 dark:hover:border-gray-500 transition-colors duration-200 resize-none";
+    "w-full px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-xs focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 hover:border-gray-400 dark:hover:border-gray-500 transition-colors duration-200 resize-none";
 
   const inputClassName = cn(baseInputClassName, className);
 
@@ -65,7 +73,14 @@ export function TextField({
         value={value}
         onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
           e.target.style.height = "auto";
-          e.target.style.height = e.target.scrollHeight + "px";
+
+          const lineHeight =
+            parseInt(getComputedStyle(e.target).lineHeight, 10) || 20;
+          const maxHeight = maxRows ? lineHeight * maxRows : Infinity;
+
+          const newHeight = Math.min(e.target.scrollHeight, maxHeight);
+          e.target.style.height = newHeight + "px";
+
           (onChange as (e: React.ChangeEvent<HTMLTextAreaElement>) => void)(e);
         }}
         onKeyDown={
@@ -105,7 +120,7 @@ export function TextField({
   return (
     <div className={cn("mb-4", className)}>
       <label
-        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 select-none"
+        className="block text-base font-medium text-gray-700 dark:text-gray-300 mb-2 select-none"
         htmlFor={id}
       >
         {label}
@@ -117,7 +132,14 @@ export function TextField({
           value={value}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
             e.target.style.height = "auto";
-            e.target.style.height = e.target.scrollHeight + "px";
+
+            const lineHeight =
+              parseInt(getComputedStyle(e.target).lineHeight, 10) || 20;
+            const maxHeight = maxRows ? lineHeight * maxRows : Infinity;
+
+            const newHeight = Math.min(e.target.scrollHeight, maxHeight);
+            e.target.style.height = newHeight + "px";
+
             (onChange as (e: React.ChangeEvent<HTMLTextAreaElement>) => void)(
               e,
             );

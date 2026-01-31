@@ -507,6 +507,7 @@ export function ChatCard({
             className="flex-grow"
             disabled={isChatLoading}
             autoFocus
+            maxRows={5}
             multiline
           />
           <IconButton
