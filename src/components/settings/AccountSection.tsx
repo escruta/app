@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button, Modal, Spinner, TextField } from "@/components/ui";
+import { Alert, Button, Modal, Spinner, TextField } from "@/components/ui";
 import { CommonBar } from "@/components";
 import { useAuth, useFetch } from "@/hooks";
 import { CheckIcon } from "@/components/icons";
@@ -16,6 +16,9 @@ export function AccountSection() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorPasswordMessage, setErrorPasswordMessage] = useState("");
   const [passwordTouched, setPasswordTouched] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [errorDeleteMessage, setErrorDeleteMessage] = useState("");
 
   const { loading: isUpdatingName, refetch: updateName } = useFetch<string>(
     "/users/change-name",
@@ -51,6 +54,24 @@ export function AccountSection() {
         onError: (error) => {
           setErrorPasswordMessage(error.message || "Unknown error");
           console.error("Error changing password:", error.message);
+        },
+      },
+      false,
+    );
+
+  const { loading: isDeletingAccount, refetch: executeDeleteAccount } =
+    useFetch<string>(
+      "/users/me",
+      {
+        method: "DELETE",
+        onSuccess: () => {
+          setIsDeleteModalOpen(false);
+          setDeleteConfirmation("");
+          signOut();
+        },
+        onError: (error) => {
+          setErrorDeleteMessage(error.message || "Unknown error");
+          console.error("Error deleting account:", error.message);
         },
       },
       false,
@@ -127,6 +148,14 @@ export function AccountSection() {
     setPasswordTouched(false);
   };
 
+  const handleDeleteAccount = () => {
+    if (deleteConfirmation !== "DELETE") {
+      setErrorDeleteMessage("Please type DELETE to confirm");
+      return;
+    }
+    executeDeleteAccount();
+  };
+
   const handleNewPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewPassword(e.target.value);
     if (!passwordTouched) {
@@ -137,7 +166,7 @@ export function AccountSection() {
   return (
     <CommonBar className="flex-col justify-center items-start">
       <h2 className="text-xl font-medium mb-4">Account</h2>
-      <div className="space-y-4">
+      <div className="space-y-4 w-full">
         {user && (
           <div className="mb-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -181,6 +210,18 @@ export function AccountSection() {
             onClick={() => setIsPasswordModalOpen(true)}
           >
             Change password
+          </Button>
+        </div>
+        <div className="pt-6 border-t border-gray-200 dark:border-gray-700 mt-6">
+          <h3 className="text-lg font-medium text-red-600 dark:text-red-400 mb-2">
+            Danger Zone
+          </h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            Once you delete your account, there is no going back. Please be
+            certain.
+          </p>
+          <Button variant="danger" onClick={() => setIsDeleteModalOpen(true)}>
+            Delete account
           </Button>
         </div>
       </div>
@@ -299,6 +340,63 @@ export function AccountSection() {
           </p>
           {errorPasswordMessage && (
             <div className="text-red-500 text-sm">{errorPasswordMessage}</div>
+          )}
+        </div>
+      </Modal>
+
+      {/* Delete Account Modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setDeleteConfirmation("");
+          setErrorDeleteMessage("");
+        }}
+        title="Delete account"
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setIsDeleteModalOpen(false);
+                setDeleteConfirmation("");
+                setErrorDeleteMessage("");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={handleDeleteAccount}
+              disabled={deleteConfirmation !== "DELETE" || isDeletingAccount}
+              icon={isDeletingAccount ? <Spinner /> : undefined}
+            >
+              {isDeletingAccount ? "Deleting" : "Delete account"}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <Alert
+            variant="danger"
+            title="Warning: This action cannot be undone"
+            message="This will permanently delete your account and all your data."
+          />
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Please type <span className="font-bold">DELETE</span> to confirm
+            account deletion.
+          </p>
+          <TextField
+            id="delete-confirmation"
+            label="Confirmation"
+            type="text"
+            value={deleteConfirmation}
+            onChange={(e) => setDeleteConfirmation(e.target.value)}
+            placeholder="Type DELETE to confirm"
+            autoFocus
+          />
+          {errorDeleteMessage && (
+            <div className="text-red-500 text-sm">{errorDeleteMessage}</div>
           )}
         </div>
       </Modal>
