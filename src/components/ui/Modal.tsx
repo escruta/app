@@ -70,7 +70,7 @@ export function Modal({
     <AnimatePresence>
       <motion.div
         key="modal-backdrop"
-        className="fixed inset-0 bg-black/80 z-[99]"
+        className="fixed inset-0 z-40 bg-black/30 dark:bg-black/60 backdrop-blur-[1px] opacity-60"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -79,7 +79,7 @@ export function Modal({
       />
 
       {isMobile ? (
-        <div className="fixed inset-x-0 bottom-0 z-[100] pointer-events-none">
+        <div className="fixed inset-x-0 bottom-0 z-100 pointer-events-none">
           <motion.div
             ref={scope}
             key="modal-content-mobile"

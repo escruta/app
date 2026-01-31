@@ -13,10 +13,10 @@ export default function SimpleBackground({ className }: SimpleBackgroundProps) {
       )}
     >
       <div
-        className="absolute inset-0 h-full w-full opacity-[0.05]"
+        className="absolute inset-0 h-full w-full opacity-[0.03]"
         style={{
           background:
-            "linear-gradient(180deg, #3b82f6 0%, #1e40af 50%, #1f2937 100%)",
+            "linear-gradient(180deg, #93c5fd 0%, #60a5fa 50%, #e2e8f0 100%)",
         }}
       />
     </div>

@@ -21,7 +21,6 @@ export default function NotFound() {
         twitterCard="summary_large_image"
       />
       <SimpleBackground />
-      <div className="absolute top-0 left-0 w-full h-full bg-white/65 dark:bg-gray-900/65" />
 
       <div className="relative z-10 flex flex-col items-center max-w-2xl mx-auto space-y-6">
         <motion.div

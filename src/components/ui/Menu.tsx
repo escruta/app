@@ -2,6 +2,7 @@ import {
   useState,
   useRef,
   useEffect,
+  useCallback,
   createContext,
   useContext,
   cloneElement,
@@ -10,13 +11,16 @@ import {
   type ReactElement,
   type HTMLAttributes,
 } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 
-type MenuContextType = {
+interface MenuContextType {
   isOpen: boolean;
   setIsOpen: (o: boolean) => void;
-};
+  triggerRef: React.RefObject<HTMLElement | null>;
+  contentRef: React.RefObject<HTMLElement | null>;
+}
 
 const MenuContext = createContext<MenuContextType | null>(null);
 
@@ -29,10 +33,15 @@ export function Menu({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLElement>(null);
+  const contentRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      const isInsideTrigger = menuRef.current?.contains(target);
+      const isInsideContent = contentRef.current?.contains(target);
+      if (!isInsideTrigger && !isInsideContent) {
         setIsOpen(false);
       }
     };
@@ -41,7 +50,7 @@ export function Menu({
   }, [isOpen]);
 
   return (
-    <MenuContext.Provider value={{ isOpen, setIsOpen }}>
+    <MenuContext.Provider value={{ isOpen, setIsOpen, triggerRef, contentRef }}>
       <div className={cn("relative inline-block", className)} ref={menuRef}>
         {children}
       </div>
@@ -55,23 +64,41 @@ export function MenuTrigger({
   children: ReactElement<HTMLAttributes<HTMLElement>>;
 }) {
   const context = useContext(MenuContext);
-  if (!context) return null;
+  const localRef = useRef<HTMLSpanElement>(null);
 
-  return cloneElement(children, {
-    onClick: (e: React.MouseEvent<HTMLElement>) => {
-      children.props.onClick?.(e);
-      context.setIsOpen(!context.isOpen);
-    },
-    onKeyDown: (e: KeyboardEvent<HTMLElement>) => {
-      children.props.onKeyDown?.(e);
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        context.setIsOpen(true);
+  const setRefs = useCallback(
+    (node: HTMLSpanElement | null) => {
+      localRef.current = node;
+      if (node && context) {
+        (
+          context.triggerRef as React.MutableRefObject<HTMLElement | null>
+        ).current = node.firstChild as HTMLElement;
       }
     },
-    "aria-haspopup": "menu",
-    "aria-expanded": context.isOpen,
-  });
+    [context],
+  );
+
+  if (!context) return null;
+
+  return (
+    <span ref={setRefs} className="inline-block">
+      {cloneElement(children, {
+        onClick: (e: React.MouseEvent<HTMLElement>) => {
+          children.props.onClick?.(e);
+          context.setIsOpen(!context.isOpen);
+        },
+        onKeyDown: (e: KeyboardEvent<HTMLElement>) => {
+          children.props.onKeyDown?.(e);
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            context.setIsOpen(true);
+          }
+        },
+        "aria-haspopup": "menu",
+        "aria-expanded": context.isOpen,
+      })}
+    </span>
+  );
 }
 
 export function MenuContent({
@@ -84,19 +111,51 @@ export function MenuContent({
   className?: string;
 }) {
   const context = useContext(MenuContext);
+  const [position, setPosition] = useState({ top: 0, left: 0, right: 0 });
 
-  return (
+  useEffect(() => {
+    if (context?.triggerRef?.current && context?.isOpen) {
+      const rect = context.triggerRef.current.getBoundingClientRect();
+      setPosition({
+        top: rect.bottom + window.scrollY + 8,
+        left: rect.left + window.scrollX,
+        right: window.innerWidth - rect.right - window.scrollX,
+      });
+    }
+  }, [context?.triggerRef, context?.isOpen]);
+
+  const setContentRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (node && context) {
+        (
+          context.contentRef as React.MutableRefObject<HTMLElement | null>
+        ).current = node;
+      }
+    },
+    [context],
+  );
+
+  if (!context?.isOpen) return null;
+
+  const menu = (
     <AnimatePresence>
       {context?.isOpen && (
         <motion.div
+          ref={setContentRef}
           role="menu"
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -4 }}
           transition={{ duration: 0.15, ease: "easeOut" }}
+          style={{
+            position: "fixed",
+            top: position.top,
+            ...(align === "right"
+              ? { right: position.right }
+              : { left: position.left }),
+          }}
           className={cn(
-            "absolute z-50 mt-2 min-w-[10rem] rounded-xs border border-gray-200 bg-white/95 p-1.5 shadow-lg backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/95",
-            align === "right" ? "right-0" : "left-0",
+            "z-[9999] min-w-[10rem] rounded-xs border border-gray-200 bg-white/95 p-1.5 shadow-lg backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/95",
             className,
           )}
         >
@@ -105,6 +164,8 @@ export function MenuContent({
       )}
     </AnimatePresence>
   );
+
+  return createPortal(menu, document.body);
 }
 
 export function MenuItem({

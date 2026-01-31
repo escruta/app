@@ -45,7 +45,7 @@ export function Card({
       {/* Backdrop */}
       {isExpanded && (
         <motion.div
-          className="fixed inset-0 z-40 bg-black/60 dark:bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-40 bg-black/30 dark:bg-black/60 backdrop-blur-[1px] opacity-60"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -63,8 +63,10 @@ export function Card({
           isExpanded && [
             "fixed",
             "z-50",
-            "inset-4",
-            "max-h-[calc(100vh-2rem)]",
+            "inset-12",
+            "max-h-[calc(100vh-6rem)]",
+            "max-w-[calc(100vw-12rem)]",
+            "m-auto",
             "overflow-auto",
             "shadow-2xl",
             "dark:shadow-black/50",
