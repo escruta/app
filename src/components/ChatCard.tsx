@@ -10,6 +10,7 @@ import {
   Button,
   Spinner,
   Chip,
+  Skeleton,
 } from "@/components/ui";
 const CodeBlock = lazy(() =>
   import("./CodeBlock").then((module) => ({ default: module.CodeBlock })),
@@ -381,13 +382,13 @@ export function ChatCard({
           className="flex flex-col flex-grow min-h-0 max-h-full overflow-y-auto"
         >
           {sourcesCount > 0 ? (
-            <div className="text-muted-foreground w-full max-w-lg mx-auto my-auto py-8">
+            <div className="text-muted-foreground lg:max-w-lg lg:min-w-lg mx-auto my-auto py-8">
               <h3 className="text-xl font-semibold mb-3 text-foreground">
                 Summary of the notebook
               </h3>
-              {isSummaryLoading ? (
-                <div className="mt-1 mb-1 text-base font-medium leading-6">
-                  <Spinner />
+              {isSummaryLoading || isSummaryRegenerating ? (
+                <div className="max-w-none mt-1 mb-1">
+                  <Skeleton lines={4} className="w-full" />
                 </div>
               ) : summaryError ? (
                 <p className="mt-1 mb-1 text-base font-medium leading-6">
@@ -400,58 +401,75 @@ export function ChatCard({
               ) : (
                 <Button
                   onClick={regenerateSummary}
-                  icon={isSummaryRegenerating ? <Spinner /> : null}
                   disabled={isSummaryRegenerating}
                 >
-                  {isSummaryRegenerating
-                    ? "Generating summary"
-                    : "Generate summary"}
+                  Generate summary
                 </Button>
               )}
 
               {/* Example questions */}
               {messages.length === 0 && !isChatLoading && (
                 <div className="mt-6">
-                  {isExampleQuestionsLoading ? (
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      <Spinner />
-                    </div>
-                  ) : exampleQuestionsError ? (
+                  {exampleQuestionsError ? (
                     <p className="text-sm text-red-500">
                       Error: {exampleQuestionsError.message}
                     </p>
-                  ) : exampleQuestions?.questions &&
-                    exampleQuestions.questions.length > 0 ? (
+                  ) : (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <h4 className="text-sm font-semibold text-foreground">
                           Example questions
                         </h4>
-                        <IconButton
-                          icon={<RestartIcon />}
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            refetchExampleQuestions(true);
-                          }}
-                        />
+                        <Tooltip
+                          text={
+                            isExampleQuestionsLoading
+                              ? "Refreshing questions"
+                              : "Refresh questions"
+                          }
+                          position="bottom"
+                        >
+                          <IconButton
+                            icon={
+                              isExampleQuestionsLoading ? (
+                                <Spinner />
+                              ) : (
+                                <RestartIcon />
+                              )
+                            }
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              refetchExampleQuestions(true);
+                            }}
+                            disabled={isExampleQuestionsLoading}
+                          />
+                        </Tooltip>
                       </div>
                       <div className="flex flex-col gap-2">
-                        {exampleQuestions.questions.map((question, index) => (
-                          <Chip
-                            key={index}
-                            onClick={() => {
-                              setInput(question);
-                            }}
-                            multiline
-                            className="w-full justify-start text-left"
-                          >
-                            {question}
-                          </Chip>
-                        ))}
+                        {isExampleQuestionsLoading ? (
+                          <>
+                            <div className="h-[34px] bg-gray-50/60 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xs animate-pulse" />
+                            <div className="h-[34px] bg-gray-50/60 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xs animate-pulse" />
+                            <div className="h-[34px] bg-gray-50/60 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xs animate-pulse" />
+                          </>
+                        ) : exampleQuestions?.questions &&
+                          exampleQuestions.questions.length > 0 ? (
+                          exampleQuestions.questions.map((question, index) => (
+                            <Chip
+                              key={index}
+                              onClick={() => {
+                                setInput(question);
+                              }}
+                              multiline
+                              className="w-full justify-start text-left"
+                            >
+                              {question}
+                            </Chip>
+                          ))
+                        ) : null}
                       </div>
                     </div>
-                  ) : null}
+                  )}
                 </div>
               )}
             </div>

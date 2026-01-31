@@ -9,6 +9,7 @@ export * from "./IconButton";
 export * from "./Menu";
 export * from "./Modal";
 export * from "./SegmentedButtons";
+export * from "./Skeleton";
 export * from "./Spinner";
 export * from "./Switch";
 export * from "./Tab";
