@@ -15,7 +15,14 @@ import {
 const CodeBlock = lazy(() =>
   import("./CodeBlock").then((module) => ({ default: module.CodeBlock })),
 );
-import { useEffect, useState, useRef, type ReactNode } from "react";
+import {
+  useEffect,
+  useState,
+  useRef,
+  useMemo,
+  useCallback,
+  type ReactNode,
+} from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { Markdown } from "@/components/Markdown";
@@ -131,6 +138,16 @@ export function ChatCard({
   externalQuestion,
   onExternalQuestionHandled,
 }: ChatCardProps) {
+  const summaryOptions = useMemo(
+    () => ({
+      method: "GET" as const,
+      onError: (error: FetchError) => {
+        console.error("Error fetching summary:", error.message);
+      },
+    }),
+    [],
+  );
+
   const {
     data: notebookSummary,
     loading: isSummaryLoading,
@@ -138,38 +155,43 @@ export function ChatCard({
     refetch: refetchSummary,
   } = useFetch<string>(
     `notebooks/${notebookId}/summary`,
-    {
-      method: "GET",
-      onError: (error) => {
-        console.error("Error fetching summary:", error.message);
-      },
-    },
+    summaryOptions,
     false,
+  );
+
+  const regenerateSummaryOptions = useMemo(
+    () => ({
+      method: "POST" as const,
+      onSuccess: () => {
+        refetchSummary(true);
+      },
+      onError: (error: FetchError) => {
+        console.error("Error refreshing summary:", error.message);
+      },
+    }),
+    [refetchSummary],
   );
 
   const { loading: isSummaryRegenerating, refetch: regenerateSummary } =
     useFetch<string>(
       `notebooks/${notebookId}/summary`,
-      {
-        method: "POST",
-        onSuccess: () => {
-          refetchSummary(true);
-        },
-        onError: (error) => {
-          console.error("Error refreshing summary:", error.message);
-        },
-      },
+      regenerateSummaryOptions,
       false,
     );
 
-  const { refetch: deleteSummary } = useFetch<void>(
-    `notebooks/${notebookId}/summary`,
-    {
-      method: "DELETE",
-      onError: (error) => {
+  const deleteSummaryOptions = useMemo(
+    () => ({
+      method: "DELETE" as const,
+      onError: (error: FetchError) => {
         console.error("Error deleting summary:", error.message);
       },
-    },
+    }),
+    [],
+  );
+
+  const { refetch: deleteSummary } = useFetch<void>(
+    `notebooks/${notebookId}/summary`,
+    deleteSummaryOptions,
     false,
   );
 
@@ -182,6 +204,16 @@ export function ChatCard({
   const [skipExampleQuestionsFetch, setSkipExampleQuestionsFetch] =
     useState(false);
 
+  const exampleQuestionsOptions = useMemo(
+    () => ({
+      method: "GET" as const,
+      onError: (error: FetchError) => {
+        console.error("Error fetching example questions:", error.message);
+      },
+    }),
+    [],
+  );
+
   const {
     data: exampleQuestions,
     loading: isExampleQuestionsLoading,
@@ -191,12 +223,7 @@ export function ChatCard({
     questions: string[];
   }>(
     `notebooks/${notebookId}/example-questions`,
-    {
-      method: "GET",
-      onError: (error) => {
-        console.error("Error fetching example questions:", error.message);
-      },
-    },
+    exampleQuestionsOptions,
     sourcesCount > 0 && !skipExampleQuestionsFetch,
   );
 
@@ -218,7 +245,6 @@ export function ChatCard({
           ]);
           await regenerateSummary(true);
           setSkipExampleQuestionsFetch(false);
-          setTimeout(() => refetchExampleQuestions(true), 100);
         } catch (error) {
           console.error("Error during auto-regeneration:", error);
         } finally {
@@ -280,38 +306,54 @@ export function ChatCard({
     await fetchChatResponse(true);
   };
 
-  const { loading: isChatLoading, refetch: fetchChatResponse } =
-    useFetch<ChatResponse>(
-      `notebooks/${notebookId}/chat`,
-      {
-        method: "POST",
-        data: {
-          userInput: input.trim(),
-          conversationId,
-        },
-        onSuccess: (response) => {
-          const aiResponse: Message = {
-            id: (Date.now() + 1).toString(),
-            text: response.content,
-            sender: "ai",
-            citedSources: response.citedSources,
-          };
-          setMessages((prevMessages) => [...prevMessages, aiResponse]);
-          setConversationId(response.conversationId);
-        },
-        onError: (error) => {
-          console.error("Error sending message:", error.message);
-          const errorResponse: Message = {
-            id: (Date.now() + 1).toString(),
-            text: error.message,
-            sender: "ai",
-            error: true,
-          };
-          setMessages((prevMessages) => [...prevMessages, errorResponse]);
-        },
+  const chatDataRef = useRef({
+    userInput: "",
+    conversationId: null as string | null,
+  });
+
+  const chatOptions = useMemo(
+    () => ({
+      method: "POST" as const,
+      get data() {
+        return chatDataRef.current;
       },
-      false,
-    );
+      onSuccess: (response: ChatResponse) => {
+        const aiResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          text: response.content,
+          sender: "ai",
+          citedSources: response.citedSources,
+        };
+        setMessages((prevMessages) => [...prevMessages, aiResponse]);
+        setConversationId(response.conversationId);
+      },
+      onError: (error: FetchError) => {
+        console.error("Error sending message:", error.message);
+        const errorResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          text: error.message,
+          sender: "ai",
+          error: true,
+        };
+        setMessages((prevMessages) => [...prevMessages, errorResponse]);
+      },
+    }),
+    [],
+  );
+
+  const { loading: isChatLoading, refetch: fetchChatResponseRaw } =
+    useFetch<ChatResponse>(`notebooks/${notebookId}/chat`, chatOptions, false);
+
+  const fetchChatResponse = useCallback(
+    async (forcedUpdate = false) => {
+      chatDataRef.current = {
+        userInput: input.trim(),
+        conversationId,
+      };
+      return fetchChatResponseRaw(forcedUpdate);
+    },
+    [input, conversationId, fetchChatResponseRaw],
+  );
 
   useEffect(() => {
     if (scrollContainerRef.current && messages.length > 0) {
