@@ -162,10 +162,25 @@ export function ChatCard({
       false,
     );
 
+  const { refetch: deleteSummary } = useFetch<void>(
+    `notebooks/${notebookId}/summary`,
+    {
+      method: "DELETE",
+      onError: (error) => {
+        console.error("Error deleting summary:", error.message);
+      },
+    },
+    false,
+  );
+
   useEffect(() => {
     refetchSummary(true);
     refetchExampleQuestions(true);
   }, [refreshTrigger]);
+
+  const [isAutoRegenerating, setIsAutoRegenerating] = useState(false);
+  const [skipExampleQuestionsFetch, setSkipExampleQuestionsFetch] =
+    useState(false);
 
   const {
     data: exampleQuestions,
@@ -182,8 +197,49 @@ export function ChatCard({
         console.error("Error fetching example questions:", error.message);
       },
     },
-    sourcesCount > 0,
+    sourcesCount > 0 && !skipExampleQuestionsFetch,
   );
+
+  const prevSourcesCountRef = useRef<number>(sourcesCount);
+
+  useEffect(() => {
+    const prevCount = prevSourcesCountRef.current;
+    const currentCount = sourcesCount;
+
+    if (currentCount > 0 && prevCount !== currentCount) {
+      setIsAutoRegenerating(true);
+      setSkipExampleQuestionsFetch(true);
+
+      const timer = setTimeout(async () => {
+        try {
+          await Promise.all([
+            deleteSummary(true),
+            new Promise((resolve) => setTimeout(resolve, 100)),
+          ]);
+          await regenerateSummary(true);
+          setSkipExampleQuestionsFetch(false);
+          setTimeout(() => refetchExampleQuestions(true), 100);
+        } catch (error) {
+          console.error("Error during auto-regeneration:", error);
+        } finally {
+          setIsAutoRegenerating(false);
+        }
+      }, 1000);
+
+      return () => {
+        clearTimeout(timer);
+        setIsAutoRegenerating(false);
+      };
+    }
+
+    prevSourcesCountRef.current = currentCount;
+  }, [
+    sourcesCount,
+    notebookId,
+    deleteSummary,
+    regenerateSummary,
+    refetchExampleQuestions,
+  ]);
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
@@ -362,28 +418,39 @@ export function ChatCard({
                 <h3 className="text-xl font-semibold text-foreground">
                   Summary of the notebook
                 </h3>
-                {notebookSummary && !isSummaryLoading && (
-                  <Tooltip
-                    text={
-                      isSummaryRegenerating
-                        ? "Regenerating summary"
-                        : "Regenerate summary"
-                    }
-                    position="bottom"
-                  >
-                    <IconButton
-                      icon={
-                        isSummaryRegenerating ? <Spinner /> : <RestartIcon />
+                {notebookSummary &&
+                  !isSummaryLoading &&
+                  !isAutoRegenerating && (
+                    <Tooltip
+                      text={
+                        isSummaryRegenerating
+                          ? "Regenerating summary"
+                          : "Regenerate summary"
                       }
-                      variant="ghost"
-                      size="sm"
-                      onClick={regenerateSummary}
-                      disabled={isSummaryRegenerating}
-                    />
+                      position="bottom"
+                    >
+                      <IconButton
+                        icon={
+                          isSummaryRegenerating ? <Spinner /> : <RestartIcon />
+                        }
+                        variant="ghost"
+                        size="sm"
+                        onClick={regenerateSummary}
+                        disabled={isSummaryRegenerating}
+                      />
+                    </Tooltip>
+                  )}
+                {isAutoRegenerating && (
+                  <Tooltip text="Auto-regenerating..." position="bottom">
+                    <div className="flex items-center justify-center w-8 h-8">
+                      <Spinner />
+                    </div>
                   </Tooltip>
                 )}
               </div>
-              {isSummaryLoading || isSummaryRegenerating ? (
+              {isSummaryLoading ||
+              isSummaryRegenerating ||
+              isAutoRegenerating ? (
                 <div className="max-w-none mt-1 mb-1">
                   <Skeleton lines={4} className="w-full" />
                 </div>
@@ -407,7 +474,7 @@ export function ChatCard({
               {/* Example questions */}
               {messages.length === 0 && !isChatLoading && (
                 <div className="mt-6">
-                  {exampleQuestionsError ? (
+                  {exampleQuestionsError && !skipExampleQuestionsFetch ? (
                     <p className="text-sm text-red-500">
                       Error: {exampleQuestionsError.message}
                     </p>
@@ -417,33 +484,46 @@ export function ChatCard({
                         <h4 className="text-sm font-semibold text-foreground">
                           Example questions
                         </h4>
-                        <Tooltip
-                          text={
-                            isExampleQuestionsLoading
-                              ? "Refreshing questions"
-                              : "Refresh questions"
-                          }
-                          position="bottom"
-                        >
-                          <IconButton
-                            icon={
-                              isExampleQuestionsLoading ? (
-                                <Spinner />
-                              ) : (
-                                <RestartIcon />
-                              )
+                        {isAutoRegenerating || skipExampleQuestionsFetch ? (
+                          <Tooltip
+                            text="Waiting for summary..."
+                            position="bottom"
+                          >
+                            <div className="flex items-center justify-center w-8 h-8">
+                              <Spinner />
+                            </div>
+                          </Tooltip>
+                        ) : (
+                          <Tooltip
+                            text={
+                              isExampleQuestionsLoading
+                                ? "Refreshing questions"
+                                : "Refresh questions"
                             }
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              refetchExampleQuestions(true);
-                            }}
-                            disabled={isExampleQuestionsLoading}
-                          />
-                        </Tooltip>
+                            position="bottom"
+                          >
+                            <IconButton
+                              icon={
+                                isExampleQuestionsLoading ? (
+                                  <Spinner />
+                                ) : (
+                                  <RestartIcon />
+                                )
+                              }
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                refetchExampleQuestions(true);
+                              }}
+                              disabled={isExampleQuestionsLoading}
+                            />
+                          </Tooltip>
+                        )}
                       </div>
                       <div className="flex flex-col gap-2">
-                        {isExampleQuestionsLoading ? (
+                        {isExampleQuestionsLoading ||
+                        isAutoRegenerating ||
+                        skipExampleQuestionsFetch ? (
                           <>
                             <div className="h-[34px] bg-gray-50/60 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xs animate-pulse" />
                             <div className="h-[34px] bg-gray-50/60 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xs animate-pulse" />
