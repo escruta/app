@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { useFetch, useToast } from "@/hooks";
 import type { Source } from "@/interfaces";
 import {
@@ -19,6 +20,7 @@ import {
   Tooltip,
   Divider,
   Spinner,
+  Skeleton,
 } from "@/components/ui";
 import { Markdown } from "@/components/Markdown";
 import {
@@ -108,7 +110,7 @@ export function SourceViewer({
     false,
   );
 
-  const { loading: isRegenerating, refetch: regenerateSummary } =
+  const { loading: isRegeneratingSummary, refetch: regenerateSummary } =
     useFetch<string>(
       `notebooks/${notebookId}/sources/${source.id}/summary`,
       {
@@ -297,40 +299,55 @@ export function SourceViewer({
                     {sourceSummary && (
                       <Tooltip text="Regenerate summary" position="bottom">
                         <IconButton
-                          icon={isRegenerating ? <Spinner /> : <RestartIcon />}
+                          icon={
+                            isRegeneratingSummary ? (
+                              <Spinner />
+                            ) : (
+                              <RestartIcon />
+                            )
+                          }
                           variant="ghost"
                           size="sm"
                           onClick={regenerateSummary}
-                          disabled={isRegenerating}
+                          disabled={isRegeneratingSummary}
                         />
                       </Tooltip>
                     )}
                   </div>
                 </div>
-                {isSummaryLoading ? (
-                  <div className="text-center py-4 text-gray-500">
-                    <div className="flex items-center justify-center gap-2">
-                      <Spinner />
-                      <span>Loading summary...</span>
-                    </div>
-                  </div>
-                ) : summaryError ? (
-                  <div className="text-red-500 text-sm">
-                    Error: {summaryError.message}
-                  </div>
-                ) : sourceSummary?.trim() ? (
-                  <div className="max-w-none select-text">
-                    <Markdown text={sourceSummary} />
-                  </div>
-                ) : (
-                  <Button
-                    onClick={regenerateSummary}
-                    icon={isRegenerating ? <Spinner /> : <RestartIcon />}
-                    disabled={isRegenerating}
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={
+                      isSummaryLoading || isRegeneratingSummary
+                        ? "loading"
+                        : summaryError
+                          ? "error"
+                          : sourceSummary?.trim()
+                            ? "summary"
+                            : "empty"
+                    }
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.15, ease: "easeInOut" }}
                   >
-                    {isRegenerating ? "Generating summary" : "Generate summary"}
-                  </Button>
-                )}
+                    {isSummaryLoading || isRegeneratingSummary ? (
+                      <Skeleton lines={8} />
+                    ) : summaryError ? (
+                      <div className="text-red-500 text-sm">
+                        Error: {summaryError.message}
+                      </div>
+                    ) : sourceSummary?.trim() ? (
+                      <div className="max-w-none select-text">
+                        <Markdown text={sourceSummary} />
+                      </div>
+                    ) : (
+                      <Button onClick={regenerateSummary} icon={<StarsIcon />}>
+                        Generate summary
+                      </Button>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
               </Card>
             </div>
             <div className="flex-1">
