@@ -567,9 +567,9 @@ export function ChatCard({
                         isAutoRegenerating ||
                         skipExampleQuestionsFetch ? (
                           <>
-                            <div className="h-[34px] bg-gray-50/60 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xs animate-pulse" />
-                            <div className="h-[34px] bg-gray-50/60 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xs animate-pulse" />
-                            <div className="h-[34px] bg-gray-50/60 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xs animate-pulse" />
+                            <Skeleton variant="rectangle" height={34} />
+                            <Skeleton variant="rectangle" height={34} />
+                            <Skeleton variant="rectangle" height={34} />
                           </>
                         ) : exampleQuestions?.questions &&
                           exampleQuestions.questions.length > 0 ? (
