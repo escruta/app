@@ -1,8 +1,8 @@
 import { NavLink, useLocation, useNavigate } from "react-router";
-import { useAuth } from "@/hooks";
+import { useAuth, useIsMobile } from "@/hooks";
 import { Tooltip, Button, Modal } from "@/components/ui";
 import { HomeIcon, SettingsIcon, SignOutIcon } from "@/components/icons";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AppIcon } from "./AppIcon";
 import { cn } from "@/lib/utils";
 
@@ -48,7 +48,7 @@ export function SideMenu() {
   const location = useLocation();
   const { signOut } = useAuth();
   const [showSignOutModal, setShowSignOutModal] = useState(false);
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useIsMobile();
 
   const handleSignOut = () => {
     signOut();
@@ -113,18 +113,4 @@ export function SideMenu() {
       </Modal>
     </div>
   );
-}
-
-function useMediaQuery(query: string) {
-  const [matches, setMatches] = useState(false);
-  useEffect(() => {
-    const media = window.matchMedia(query);
-    if (media.matches !== matches) {
-      setMatches(media.matches);
-    }
-    const listener = () => setMatches(media.matches);
-    media.addEventListener("change", listener);
-    return () => media.removeEventListener("change", listener);
-  }, [matches, query]);
-  return matches;
 }

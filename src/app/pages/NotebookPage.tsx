@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useLoaderData } from "react-router";
-import { useFetch, useCookie } from "@/hooks";
+import { useFetch, useCookie, useIsMobile } from "@/hooks";
 import type { Note, Source, Notebook, NotebookContent } from "@/interfaces";
 import { EditIcon, NotebookIcon, FireIcon } from "@/components/icons";
 import {
@@ -49,7 +49,7 @@ export default function NotebookPage() {
   const [sourcesRefreshKey, setSourcesRefreshKey] = useState<number>(0);
   const [leftPanelWidth, setLeftPanelWidth] = useCookie<number>(
     "notebookLeftPanelWidth",
-    33,
+    50,
   );
   const [isResizing, setIsResizing] = useState<boolean>(false);
   const tabsRef = useRef<TabsRef>(null);
@@ -87,7 +87,7 @@ export default function NotebookPage() {
 
       const containerWidth = window.innerWidth - 46;
       const newWidth = Math.min(
-        Math.max(((e.clientX - 16) / containerWidth) * 100, 30),
+        Math.max(((e.clientX - 16) / containerWidth) * 100, 36),
         64,
       );
       setLeftPanelWidth(newWidth);
@@ -136,7 +136,7 @@ export default function NotebookPage() {
     setLeftPanelWidth(50);
   };
 
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useIsMobile();
 
   async function handleRenameNotebook() {
     if (!newTitle.trim()) return;
@@ -273,15 +273,10 @@ export default function NotebookPage() {
         {selectedSource ? (
           <motion.div
             key={selectedSource.id}
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -20 }}
-            transition={{
-              type: "spring",
-              stiffness: 300,
-              damping: 30,
-              duration: 0.3,
-            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
             className="absolute inset-0 z-10 h-[96%] self-end"
           >
             <SourceViewer
@@ -298,13 +293,11 @@ export default function NotebookPage() {
           </motion.div>
         ) : null}
       </AnimatePresence>
-      <motion.div
-        animate={{
-          opacity: selectedSource ? 0.5 : 1,
-          scale: selectedSource ? 0.98 : 1,
-        }}
-        transition={{ duration: 0.3 }}
-        className="h-full"
+      <div
+        className={cn("h-full transition-all duration-200", {
+          "opacity-50 scale-[0.98]": selectedSource,
+          "opacity-100 scale-100": !selectedSource,
+        })}
       >
         <SourcesCard
           notebookId={notebookId}
@@ -315,7 +308,7 @@ export default function NotebookPage() {
             setSourcesRefreshKey((prev) => prev + 1);
           }}
         />
-      </motion.div>
+      </div>
     </div>
   );
 
@@ -325,15 +318,10 @@ export default function NotebookPage() {
         {selectedNote ? (
           <motion.div
             key={selectedNote.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{
-              type: "spring",
-              stiffness: 300,
-              damping: 30,
-              duration: 0.3,
-            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
             className="absolute inset-0 z-10 h-[96%] self-end"
           >
             <NoteEditor
@@ -349,20 +337,18 @@ export default function NotebookPage() {
           </motion.div>
         ) : null}
       </AnimatePresence>
-      <motion.div
-        animate={{
-          opacity: selectedNote ? 0.5 : 1,
-          scale: selectedNote ? 0.98 : 1,
-        }}
-        transition={{ duration: 0.3 }}
-        className="h-full"
+      <div
+        className={cn("h-full transition-all duration-200", {
+          "opacity-50 scale-[0.98]": selectedNote,
+          "opacity-100 scale-100": !selectedNote,
+        })}
       >
         <NotesCard
           notebookId={notebookId}
           onNoteSelect={(note: Note) => setSelectedNote(note)}
           refreshTrigger={notesRefreshKey}
         />
-      </motion.div>
+      </div>
     </div>
   );
 
@@ -451,14 +437,11 @@ export default function NotebookPage() {
           />
         ) : (
           <section className="flex h-full overflow-hidden gap-1">
-            <motion.div
+            <div
               className={cn("min-h-0 flex flex-col overflow-hidden", {
                 "transition-all duration-200 ease-out": !isResizing,
               })}
-              style={{ width: `${leftPanelWidth ?? 33}%` }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.05 }}
+              style={{ width: `${leftPanelWidth ?? 50}%` }}
             >
               <Tabs
                 ref={tabsRef}
@@ -487,16 +470,13 @@ export default function NotebookPage() {
                 ]}
                 defaultActiveTab="1"
               />
-            </motion.div>
+            </div>
 
             {/* Resizer */}
-            <motion.div
+            <div
               className="w-2 cursor-col-resize flex items-center justify-center group"
               onMouseDown={handleMouseDown}
               onDoubleClick={handleDoubleClick}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3, delay: 0.2 }}
             >
               <div
                 className={cn(
@@ -508,16 +488,13 @@ export default function NotebookPage() {
                   },
                 )}
               />
-            </motion.div>
+            </div>
 
-            <motion.div
+            <div
               className={cn("min-h-0 flex flex-col overflow-hidden", {
                 "transition-all duration-200 ease-out": !isResizing,
               })}
-              style={{ width: `${100 - (leftPanelWidth ?? 33)}%` }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
+              style={{ width: `${100 - (leftPanelWidth ?? 50)}%` }}
             >
               <ChatCard
                 notebookId={notebookId}
@@ -527,7 +504,7 @@ export default function NotebookPage() {
                 externalQuestion={chatQuestion}
                 onExternalQuestionHandled={() => setChatQuestion(null)}
               />
-            </motion.div>
+            </div>
           </section>
         )}
       </div>
@@ -576,18 +553,4 @@ export default function NotebookPage() {
       </Modal>
     </div>
   );
-}
-
-function useMediaQuery(query: string) {
-  const [matches, setMatches] = useState(false);
-  useEffect(() => {
-    const media = window.matchMedia(query);
-    if (media.matches !== matches) {
-      setMatches(media.matches);
-    }
-    const listener = () => setMatches(media.matches);
-    media.addEventListener("change", listener);
-    return () => media.removeEventListener("change", listener);
-  }, [matches, query]);
-  return matches;
 }

@@ -51,22 +51,10 @@ export const Tabs = forwardRef<TabsRef, TabsProps>(
           {items.map((tab, index) => (
             <div key={index} className="relative flex-1 min-w-max group">
               {activeTabId === tab.id && (
-                <motion.div
-                  className="absolute inset-0 bg-white dark:bg-gray-800 rounded-xs border border-gray-200/50 dark:border-gray-600/50"
-                  layoutId="activeTab"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.15, ease: "easeOut" }}
-                />
+                <div className="absolute inset-0 bg-white dark:bg-gray-800 rounded-xs border border-gray-200/50 dark:border-gray-600/50 transition-all duration-150 ease-out" />
               )}
               {activeTabId !== tab.id && (
-                <motion.div
-                  className="absolute inset-0 bg-gray-100/40 dark:bg-gray-700/40 rounded-xs opacity-0 group-hover:opacity-100"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0 }}
-                  whileHover={{ opacity: 1 }}
-                  transition={{ duration: 0.15 }}
-                />
+                <div className="absolute inset-0 bg-gray-100/40 dark:bg-gray-700/40 rounded-xs opacity-0 group-hover:opacity-100 transition-opacity duration-150" />
               )}
               <button
                 onClick={() => handleTabClick(tab.id)}

@@ -290,7 +290,6 @@ export function ChatCard({
             {messages.map((message) => (
               <motion.div
                 key={message.id}
-                layout
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
@@ -358,7 +357,7 @@ export function ChatCard({
           className="flex flex-col flex-grow min-h-0 max-h-full overflow-y-auto"
         >
           {sourcesCount > 0 ? (
-            <div className="text-muted-foreground lg:max-w-lg lg:min-w-lg mx-auto my-auto py-8">
+            <div className="text-muted-foreground w-full max-w-lg mx-auto my-auto py-8">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-xl font-semibold text-foreground">
                   Summary of the notebook

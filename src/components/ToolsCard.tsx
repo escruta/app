@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import {
   MindMapIcon,
   StudyIcon,
@@ -7,6 +8,7 @@ import {
   QuestionnaireIcon,
 } from "@/components/icons";
 import { Card, Divider } from "@/components/ui";
+import { cn } from "@/lib/utils";
 import { ToolCard } from "./ToolCard";
 import { ToolResultViewer } from "./ToolResultViewer";
 import { useGenerationJob } from "@/hooks";
@@ -82,15 +84,10 @@ export function ToolsCard({ notebookId, onNodeSelect }: ToolsCardProps) {
         {selectedTool ? (
           <motion.div
             key={selectedTool.tool.type}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{
-              type: "spring",
-              stiffness: 300,
-              damping: 30,
-              duration: 0.3,
-            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
             className="absolute inset-0 z-10 h-[96%] self-end"
           >
             <ToolResultViewer
@@ -107,13 +104,11 @@ export function ToolsCard({ notebookId, onNodeSelect }: ToolsCardProps) {
         ) : null}
       </AnimatePresence>
 
-      <motion.div
-        animate={{
-          opacity: selectedTool ? 0.5 : 1,
-          scale: selectedTool ? 0.98 : 1,
-        }}
-        transition={{ duration: 0.3 }}
-        className="h-full"
+      <div
+        className={cn("h-full transition-all duration-200", {
+          "opacity-50 scale-[0.98]": selectedTool,
+          "opacity-100 scale-100": !selectedTool,
+        })}
       >
         <Card className="h-full overflow-y-auto">
           <div className="flex flex-row justify-between items-center mb-2 flex-shrink-0">
@@ -131,7 +126,7 @@ export function ToolsCard({ notebookId, onNodeSelect }: ToolsCardProps) {
             ))}
           </div>
         </Card>
-      </motion.div>
+      </div>
     </div>
   );
 }
