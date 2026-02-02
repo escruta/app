@@ -274,6 +274,7 @@ export function SourceViewer({
                       <Tooltip text="Copy summary" position="bottom">
                         <IconButton
                           icon={<CopyIcon />}
+                          disabled={isSummaryLoading || isRegeneratingSummary}
                           variant="ghost"
                           size="sm"
                           onClick={() => {
@@ -296,7 +297,11 @@ export function SourceViewer({
                           variant="ghost"
                           size="sm"
                           onClick={deleteSummary}
-                          disabled={isDeletingSummary}
+                          disabled={
+                            isDeletingSummary ||
+                            isSummaryLoading ||
+                            isRegeneratingSummary
+                          }
                         />
                       </Tooltip>
                     )}

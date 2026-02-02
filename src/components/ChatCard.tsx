@@ -510,41 +510,62 @@ export function ChatCard({
                   </Tooltip>
                 )}
               </div>
-              {isSummaryLoading ||
-              isSummaryRegenerating ||
-              isAutoRegenerating ? (
-                <div className="max-w-none mt-1 mb-1">
-                  <Skeleton lines={4} className="w-full" />
-                </div>
-              ) : summaryGenerateError ? (
-                <div className="flex flex-col gap-3">
-                  <Alert
-                    title="Error"
-                    message={getHttpErrorMessage(summaryGenerateError.status)}
-                    variant="danger"
-                  />
-                  <Button
-                    onClick={regenerateSummary}
-                    disabled={isSummaryRegenerating}
-                    variant="ghost"
-                    size="sm"
-                    icon={<RestartIcon className="w-4 h-4" />}
-                  >
-                    Regenerate summary
-                  </Button>
-                </div>
-              ) : notebookSummary ? (
-                <div className="max-w-none select-text">
-                  {processTextContent(notebookSummary, "ai")}
-                </div>
-              ) : (
-                <Button
-                  onClick={regenerateSummary}
-                  disabled={isSummaryRegenerating}
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={
+                    isSummaryLoading ||
+                    isSummaryRegenerating ||
+                    isAutoRegenerating
+                      ? "loading"
+                      : summaryGenerateError
+                        ? "error"
+                        : notebookSummary?.trim()
+                          ? "summary"
+                          : "empty"
+                  }
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15, ease: "easeInOut" }}
+                  className="max-w-none mt-1 mb-1"
                 >
-                  Generate summary
-                </Button>
-              )}
+                  {isSummaryLoading ||
+                  isSummaryRegenerating ||
+                  isAutoRegenerating ? (
+                    <Skeleton lines={4} className="w-full" />
+                  ) : summaryGenerateError ? (
+                    <div className="flex flex-col gap-3">
+                      <Alert
+                        title="Error"
+                        message={getHttpErrorMessage(
+                          summaryGenerateError.status,
+                        )}
+                        variant="danger"
+                      />
+                      <Button
+                        onClick={regenerateSummary}
+                        disabled={isSummaryRegenerating}
+                        variant="ghost"
+                        size="sm"
+                        icon={<RestartIcon className="w-4 h-4" />}
+                      >
+                        Regenerate summary
+                      </Button>
+                    </div>
+                  ) : notebookSummary?.trim() ? (
+                    <div className="select-text">
+                      {processTextContent(notebookSummary, "ai")}
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={regenerateSummary}
+                      disabled={isSummaryRegenerating}
+                    >
+                      Generate summary
+                    </Button>
+                  )}
+                </motion.div>
+              </AnimatePresence>
 
               {/* Example questions */}
               {messages.length === 0 && !isChatLoading && (
@@ -611,29 +632,48 @@ export function ChatCard({
                         )}
                       </div>
                       <div className="flex flex-col gap-2">
-                        {isExampleQuestionsLoading ||
-                        isAutoRegenerating ||
-                        skipExampleQuestionsFetch ? (
-                          <>
-                            <Skeleton variant="rectangle" height={34} />
-                            <Skeleton variant="rectangle" height={34} />
-                            <Skeleton variant="rectangle" height={34} />
-                          </>
-                        ) : exampleQuestions?.questions &&
-                          exampleQuestions.questions.length > 0 ? (
-                          exampleQuestions.questions.map((question, index) => (
-                            <Chip
-                              key={index}
-                              onClick={() => {
-                                setInput(question);
-                              }}
-                              multiline
-                              className="w-full justify-start text-left"
-                            >
-                              {question}
-                            </Chip>
-                          ))
-                        ) : null}
+                        <AnimatePresence mode="wait" initial={false}>
+                          <motion.div
+                            key={
+                              isExampleQuestionsLoading ||
+                              isAutoRegenerating ||
+                              skipExampleQuestionsFetch
+                                ? "loading"
+                                : "questions"
+                            }
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.15, ease: "easeInOut" }}
+                            className="flex flex-col gap-2"
+                          >
+                            {isExampleQuestionsLoading ||
+                            isAutoRegenerating ||
+                            skipExampleQuestionsFetch ? (
+                              <>
+                                <Skeleton variant="rectangle" height={34} />
+                                <Skeleton variant="rectangle" height={34} />
+                                <Skeleton variant="rectangle" height={34} />
+                              </>
+                            ) : exampleQuestions?.questions &&
+                              exampleQuestions.questions.length > 0 ? (
+                              exampleQuestions.questions.map(
+                                (question, index) => (
+                                  <Chip
+                                    key={index}
+                                    onClick={() => {
+                                      setInput(question);
+                                    }}
+                                    multiline
+                                    className="w-full justify-start text-left"
+                                  >
+                                    {question}
+                                  </Chip>
+                                ),
+                              )
+                            ) : null}
+                          </motion.div>
+                        </AnimatePresence>
                       </div>
                     </div>
                   )}
