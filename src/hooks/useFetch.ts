@@ -43,9 +43,6 @@ export default function useFetch<T = unknown>(
     endpoint,
     method: options?.method,
     params: options?.params,
-    body: options?.body,
-    data: options?.data,
-    cacheTime: options?.cacheTime,
   });
 
   const fetchData = useCallback(
@@ -123,8 +120,7 @@ export default function useFetch<T = unknown>(
               } else if (errorJson.detail) {
                 errorMessage = errorJson.detail;
               }
-            } catch {
-            }
+            } catch {}
 
             const fetchError = Object.assign(new Error(errorMessage), {
               status: response.status,

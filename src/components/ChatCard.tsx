@@ -194,8 +194,8 @@ export function ChatCard({
     );
 
   useEffect(() => {
-    refetchSummary(true);
-    refetchExampleQuestions(true);
+    refetchSummary();
+    refetchExampleQuestions();
   }, [refreshTrigger]);
 
   const [isAutoRegenerating, setIsAutoRegenerating] = useState(false);
