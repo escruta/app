@@ -343,7 +343,7 @@ export function MindMapViewer({
   }
 
   return (
-    <div className={cn("relative w-full h-full min-h-[500px]", className)}>
+    <div className={cn("relative w-full h-full", className)}>
       {/* Controls */}
       <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
         <div className="flex items-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xs">
@@ -388,7 +388,7 @@ export function MindMapViewer({
       <div
         ref={containerRef}
         className={cn(
-          "w-full h-full overflow-hidden bg-gray-50 dark:bg-gray-900 rounded-xs touch-none",
+          "w-full h-full overflow-hidden bg-gray-50/60 dark:bg-gray-900/60 rounded-xs touch-none",
           isDragging ? "cursor-grabbing" : "cursor-grab",
         )}
         onPointerDown={handlePointerDown}
@@ -401,8 +401,8 @@ export function MindMapViewer({
           className="absolute inset-0 opacity-20 dark:opacity-10 pointer-events-none"
           style={{
             backgroundImage: `
-              linear-gradient(to right, rgb(156 163 175) 1px, transparent 1px),
-              linear-gradient(to bottom, rgb(156 163 175) 1px, transparent 1px)
+              linear-gradient(to right, rgb(150, 150, 150) 1px, transparent 1px),
+              linear-gradient(to bottom, rgb(150, 150, 150) 1px, transparent 1px)
             `,
             backgroundSize: `${24 * transform.scale}px ${24 * transform.scale}px`,
             backgroundPosition: `${transform.x % (24 * transform.scale)}px ${transform.y % (24 * transform.scale)}px`,
@@ -423,7 +423,7 @@ export function MindMapViewer({
         >
           <div className="flex items-center">
             {/* Central topic */}
-            <div className="px-5 py-3 rounded-xs bg-blue-100 dark:bg-blue-800/50 border border-blue-300 dark:border-blue-600 text-gray-800 dark:text-gray-100 font-semibold whitespace-nowrap select-none">
+            <div className="px-5 py-3 rounded-xs bg-blue-100/80 dark:bg-blue-800/50 border border-blue-300 dark:border-blue-600 text-gray-800 dark:text-gray-100 font-semibold whitespace-nowrap select-none">
               {central}
             </div>
 

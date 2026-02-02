@@ -200,16 +200,17 @@ export function ToolResultViewer({
               </Tooltip>
             </div>
           </div>
-          <Divider />
         </div>
       </div>
+
+      <Divider className="mb-0" />
 
       <div
         className={cn("flex-1 flex flex-col w-full mx-auto", {
           "max-w-5xl overflow-y-auto": !(
             ["MIND_MAP", "FLASHCARDS"] satisfies JobType[] as readonly JobType[]
           ).includes(type),
-          "overflow-hidden px-6": (
+          "overflow-hidden": (
             ["MIND_MAP", "FLASHCARDS"] satisfies JobType[] as readonly JobType[]
           ).includes(type),
         })}
