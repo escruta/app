@@ -113,7 +113,19 @@ export default function useFetch<T = unknown>(
           });
 
           if (!response.ok) {
-            const errorMessage = await response.text();
+            const responseText = await response.text();
+            let errorMessage = responseText;
+
+            try {
+              const errorJson = JSON.parse(responseText);
+              if (errorJson.message) {
+                errorMessage = errorJson.message;
+              } else if (errorJson.detail) {
+                errorMessage = errorJson.detail;
+              }
+            } catch {
+            }
+
             const fetchError = Object.assign(new Error(errorMessage), {
               status: response.status,
               message: errorMessage,

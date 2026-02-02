@@ -13,6 +13,7 @@ import {
   StarsIcon,
 } from "@/components/icons";
 import {
+  Alert,
   Button,
   Card,
   IconButton,
@@ -28,6 +29,7 @@ import {
   getSourceType,
   getYouTubeVideoId,
   getSourceTypeIcon,
+  getHttpErrorMessage,
 } from "@/lib/utils";
 
 interface SourceViewerProps {
@@ -46,6 +48,8 @@ export function SourceViewer({
   className,
 }: SourceViewerProps) {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [summaryGenerateError, setSummaryGenerateError] =
+    useState<FetchError | null>(null);
   const {
     data: fullSource,
     loading,
@@ -97,7 +101,6 @@ export function SourceViewer({
   const {
     data: sourceSummary,
     loading: isSummaryLoading,
-    error: summaryError,
     refetch: refetchSummary,
   } = useFetch<string>(
     `notebooks/${notebookId}/sources/${source.id}/summary`,
@@ -116,10 +119,16 @@ export function SourceViewer({
       {
         method: "POST",
         onSuccess: () => {
+          setSummaryGenerateError(null);
           refetchSummary(true);
         },
         onError: (error) => {
           console.error("Error regenerating source summary:", error.message);
+          useFetch.clearCache(
+            `notebooks/${notebookId}/sources/${source.id}/summary`,
+          );
+          refetchSummary(true);
+          setSummaryGenerateError(error);
         },
       },
       false,
@@ -320,8 +329,8 @@ export function SourceViewer({
                     key={
                       isSummaryLoading || isRegeneratingSummary
                         ? "loading"
-                        : summaryError
-                          ? "error"
+                        : summaryGenerateError
+                          ? "generateError"
                           : sourceSummary?.trim()
                             ? "summary"
                             : "empty"
@@ -333,9 +342,24 @@ export function SourceViewer({
                   >
                     {isSummaryLoading || isRegeneratingSummary ? (
                       <Skeleton lines={8} />
-                    ) : summaryError ? (
-                      <div className="text-red-500 text-sm">
-                        Error: {summaryError.message}
+                    ) : summaryGenerateError ? (
+                      <div className="flex flex-col gap-3">
+                        <Alert
+                          title="Error"
+                          message={getHttpErrorMessage(
+                            summaryGenerateError.status,
+                          )}
+                          variant="danger"
+                        />
+                        <Button
+                          onClick={regenerateSummary}
+                          disabled={isRegeneratingSummary}
+                          variant="ghost"
+                          size="sm"
+                          icon={<RestartIcon className="w-4 h-4" />}
+                        >
+                          Regenerate summary
+                        </Button>
                       </div>
                     ) : sourceSummary?.trim() ? (
                       <div className="max-w-none select-text">

@@ -2,6 +2,7 @@ import { lazy } from "react";
 import { useFetch } from "@/hooks";
 import { FileIcon, FireIcon, RestartIcon, SendIcon } from "@/components/icons";
 import {
+  Alert,
   Card,
   Divider,
   TextField,
@@ -24,7 +25,7 @@ import {
   type ReactNode,
 } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { cn } from "@/lib/utils";
+import { cn, getHttpErrorMessage } from "@/lib/utils";
 import { Markdown } from "@/components/Markdown";
 
 type Sender = "user" | "ai";
@@ -57,16 +58,23 @@ interface ChatCardProps {
   onExternalQuestionHandled?: () => void;
 }
 
-function processMessage(message: Message): ReactNode {
+function processMessage(message: Message, onRetry?: () => void): ReactNode {
   if (message.error) {
-    return [
-      <div
-        key="system-message"
-        className="italic text-gray-600 dark:text-gray-400 my-2"
-      >
-        {message.text}
-      </div>,
-    ];
+    return (
+      <div className="flex flex-col gap-3">
+        <Alert title="Error" message={message.text} variant="danger" />
+        {onRetry && (
+          <Button
+            onClick={onRetry}
+            variant="ghost"
+            size="sm"
+            icon={<RestartIcon className="w-4 h-4" />}
+          >
+            Retry message
+          </Button>
+        )}
+      </div>
+    );
   }
 
   const codeBlockRegex = /```(\w+)?\n?([\s\S]*?)```/g;
@@ -138,6 +146,9 @@ export function ChatCard({
   externalQuestion,
   onExternalQuestionHandled,
 }: ChatCardProps) {
+  const [summaryGenerateError, setSummaryGenerateError] =
+    useState<FetchError | null>(null);
+
   const summaryOptions = useMemo(
     () => ({
       method: "GET" as const,
@@ -151,7 +162,6 @@ export function ChatCard({
   const {
     data: notebookSummary,
     loading: isSummaryLoading,
-    error: summaryError,
     refetch: refetchSummary,
   } = useFetch<string>(
     `notebooks/${notebookId}/summary`,
@@ -163,13 +173,17 @@ export function ChatCard({
     () => ({
       method: "POST" as const,
       onSuccess: () => {
+        setSummaryGenerateError(null);
         refetchSummary(true);
       },
       onError: (error: FetchError) => {
-        console.error("Error refreshing summary:", error.message);
+        console.error("Error generating summary:", error.message);
+        useFetch.clearCache(`notebooks/${notebookId}/summary`);
+        refetchSummary(true);
+        setSummaryGenerateError(error);
       },
     }),
-    [refetchSummary],
+    [refetchSummary, notebookId],
   );
 
   const { loading: isSummaryRegenerating, refetch: regenerateSummary } =
@@ -178,22 +192,6 @@ export function ChatCard({
       regenerateSummaryOptions,
       false,
     );
-
-  const deleteSummaryOptions = useMemo(
-    () => ({
-      method: "DELETE" as const,
-      onError: (error: FetchError) => {
-        console.error("Error deleting summary:", error.message);
-      },
-    }),
-    [],
-  );
-
-  const { refetch: deleteSummary } = useFetch<void>(
-    `notebooks/${notebookId}/summary`,
-    deleteSummaryOptions,
-    false,
-  );
 
   useEffect(() => {
     refetchSummary(true);
@@ -236,13 +234,10 @@ export function ChatCard({
     if (currentCount > 0 && prevCount !== currentCount) {
       setIsAutoRegenerating(true);
       setSkipExampleQuestionsFetch(true);
+      setSummaryGenerateError(null);
 
       const timer = setTimeout(async () => {
         try {
-          await Promise.all([
-            deleteSummary(true),
-            new Promise((resolve) => setTimeout(resolve, 100)),
-          ]);
           await regenerateSummary(true);
           setSkipExampleQuestionsFetch(false);
         } catch (error) {
@@ -259,18 +254,13 @@ export function ChatCard({
     }
 
     prevSourcesCountRef.current = currentCount;
-  }, [
-    sourcesCount,
-    notebookId,
-    deleteSummary,
-    regenerateSummary,
-    refetchExampleQuestions,
-  ]);
+  }, [sourcesCount, notebookId, regenerateSummary, refetchExampleQuestions]);
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
   const [conversationId, setConversationId] = useState<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const pendingMessageRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (externalQuestion) {
@@ -294,14 +284,16 @@ export function ChatCard({
   const handleSendMessage = async () => {
     if (!input.trim()) return;
 
+    const userText = input.trim();
     const newMessage: Message = {
       id: Date.now().toString(),
-      text: input.trim(),
+      text: userText,
       sender: "user",
     };
 
     setMessages((prevMessages) => [...prevMessages, newMessage]);
     setInput("");
+    pendingMessageRef.current = userText;
 
     await fetchChatResponse(true);
   };
@@ -326,12 +318,13 @@ export function ChatCard({
         };
         setMessages((prevMessages) => [...prevMessages, aiResponse]);
         setConversationId(response.conversationId);
+        pendingMessageRef.current = null;
       },
       onError: (error: FetchError) => {
-        console.error("Error sending message:", error.message);
+        console.error("Error sending message:", error.status, error.message);
         const errorResponse: Message = {
           id: (Date.now() + 1).toString(),
-          text: error.message,
+          text: getHttpErrorMessage(error.status),
           sender: "ai",
           error: true,
         };
@@ -347,12 +340,32 @@ export function ChatCard({
   const fetchChatResponse = useCallback(
     async (forcedUpdate = false) => {
       chatDataRef.current = {
-        userInput: input.trim(),
+        userInput: pendingMessageRef.current || "",
         conversationId,
       };
       return fetchChatResponseRaw(forcedUpdate);
     },
-    [input, conversationId, fetchChatResponseRaw],
+    [conversationId, fetchChatResponseRaw],
+  );
+
+  const handleRetryFromError = useCallback(
+    (messageIndex: number) => {
+      setMessages((prevMessages) => {
+        const newMessages = prevMessages.slice(0, messageIndex);
+        return newMessages;
+      });
+
+      if (pendingMessageRef.current) {
+        const retryMessage: Message = {
+          id: Date.now().toString(),
+          text: pendingMessageRef.current,
+          sender: "user",
+        };
+        setMessages((prev) => [...prev, retryMessage]);
+        fetchChatResponse(true);
+      }
+    },
+    [fetchChatResponse],
   );
 
   useEffect(() => {
@@ -385,7 +398,7 @@ export function ChatCard({
           className="flex-1 overflow-y-auto p-4 space-y-2 min-h-0 scroll-smooth scroll-pt-4"
         >
           <AnimatePresence>
-            {messages.map((message) => (
+            {messages.map((message, index) => (
               <motion.div
                 key={message.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -403,12 +416,19 @@ export function ChatCard({
                     {
                       "bg-blue-500 dark:bg-blue-600 text-white font-medium ml-12 selection:bg-white selection:text-blue-600":
                         message.sender === "user",
+                      "bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-gray-900 dark:text-gray-100 font-medium mr-12":
+                        message.error,
                       "bg-gray-100/60 dark:bg-gray-700/60 text-gray-900 dark:text-gray-100 font-medium mr-12":
-                        message.sender === "ai",
+                        message.sender === "ai" && !message.error,
                     },
                   )}
                 >
-                  {processMessage(message)}
+                  {processMessage(
+                    message,
+                    message.error
+                      ? () => handleRetryFromError(index)
+                      : undefined,
+                  )}
                   {message.sender === "ai" &&
                     message.citedSources &&
                     message.citedSources.length > 0 && (
@@ -496,10 +516,23 @@ export function ChatCard({
                 <div className="max-w-none mt-1 mb-1">
                   <Skeleton lines={4} className="w-full" />
                 </div>
-              ) : summaryError ? (
-                <p className="mt-1 mb-1 text-base font-medium leading-6">
-                  Error: {summaryError.message}
-                </p>
+              ) : summaryGenerateError ? (
+                <div className="flex flex-col gap-3">
+                  <Alert
+                    title="Error"
+                    message={getHttpErrorMessage(summaryGenerateError.status)}
+                    variant="danger"
+                  />
+                  <Button
+                    onClick={regenerateSummary}
+                    disabled={isSummaryRegenerating}
+                    variant="ghost"
+                    size="sm"
+                    icon={<RestartIcon className="w-4 h-4" />}
+                  >
+                    Regenerate summary
+                  </Button>
+                </div>
               ) : notebookSummary ? (
                 <div className="max-w-none select-text">
                   {processTextContent(notebookSummary, "ai")}
@@ -517,9 +550,24 @@ export function ChatCard({
               {messages.length === 0 && !isChatLoading && (
                 <div className="mt-6">
                   {exampleQuestionsError && !skipExampleQuestionsFetch ? (
-                    <p className="text-sm text-red-500">
-                      Error: {exampleQuestionsError.message}
-                    </p>
+                    <div className="flex flex-col gap-3">
+                      <Alert
+                        title="Error"
+                        message={getHttpErrorMessage(
+                          exampleQuestionsError.status,
+                        )}
+                        variant="danger"
+                      />
+                      <Button
+                        onClick={() => refetchExampleQuestions(true)}
+                        disabled={isExampleQuestionsLoading}
+                        variant="ghost"
+                        size="sm"
+                        icon={<RestartIcon className="w-4 h-4" />}
+                      >
+                        Regenerate example questions
+                      </Button>
+                    </div>
                   ) : (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
