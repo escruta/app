@@ -54,7 +54,6 @@ export function SourceViewer({
     data: fullSource,
     loading,
     error,
-    refetch: refetchSource,
   } = useFetch<Source>(`notebooks/${notebookId}/sources/${source.id}`);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
@@ -73,10 +72,6 @@ export function SourceViewer({
       setCurrentSourceId(source.id);
     }
   }, [source.id, currentSourceId]);
-
-  useEffect(() => {
-    refetchSource(true);
-  }, [source.id]);
 
   const {
     loading: deletingSource,

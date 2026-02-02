@@ -66,10 +66,6 @@ export function NoteEditor({
   }, [note.id, currentNoteId]);
 
   useEffect(() => {
-    refetchNote(true);
-  }, [note.id]);
-
-  useEffect(() => {
     if (fullNote?.content !== undefined) {
       const noteContent = fullNote.content || "";
       setContent(noteContent);
