@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
-import { ChevronDownIcon } from "@/components/icons";
+import { ChevronIcon } from "@/components/icons";
 import type { MindMapResponse, Branch } from "@/interfaces";
 
 interface MindMapViewerProps {
@@ -59,13 +59,12 @@ function BranchNode({ branch, level, path, onNodeSelect }: BranchNodeProps) {
         >
           <span>{branch.label}</span>
           {hasChildren && (
-            <motion.span
-              animate={{ rotate: isExpanded ? 0 : -90 }}
-              transition={{ duration: 0.2 }}
-              className="w-4 h-4 flex items-center justify-center rounded-full bg-green-200 dark:bg-green-700 text-green-700 dark:text-green-200"
-            >
-              <ChevronDownIcon className="w-3 h-3" />
-            </motion.span>
+            <span className="size-4 flex items-center justify-center rounded-full bg-green-200 dark:bg-green-700 text-green-700 dark:text-green-200">
+              <ChevronIcon
+                direction={isExpanded ? "left" : "right"}
+                className="size-3 transition-transform duration-200"
+              />
+            </span>
           )}
         </div>
 
@@ -168,13 +167,12 @@ function MainBranch({
         >
           <span>{branch.label}</span>
           {hasChildren && (
-            <motion.span
-              animate={{ rotate: isExpanded ? 0 : -90 }}
-              transition={{ duration: 0.2 }}
-              className="w-5 h-5 flex items-center justify-center rounded-full bg-green-200 dark:bg-green-700 text-green-700 dark:text-green-200"
-            >
-              <ChevronDownIcon className="w-3.5 h-3.5" />
-            </motion.span>
+            <span className="size-5 flex items-center justify-center rounded-full bg-green-200 dark:bg-green-700 text-green-700 dark:text-green-200">
+              <ChevronIcon
+                direction={isExpanded ? "left" : "right"}
+                className="size-3.5 transition-transform duration-200"
+              />
+            </span>
           )}
         </div>
 

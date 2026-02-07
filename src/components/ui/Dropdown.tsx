@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
-import { CheckIcon, ChevronDownIcon } from "@/components/icons";
+import { CheckIcon, ChevronIcon } from "@/components/icons";
 
 type DropdownProps<T extends string> = {
   options: T[];
@@ -95,13 +95,9 @@ export function Dropdown<T extends string>({
 
           {/* Chevron Icon */}
           <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-            <ChevronDownIcon
-              className={cn(
-                "w-5 h-5 text-gray-400 dark:text-gray-400 transition-transform duration-200",
-                {
-                  "rotate-180": isOpen,
-                },
-              )}
+            <ChevronIcon
+              direction={isOpen ? "up" : "down"}
+              className="size-5 text-gray-400 dark:text-gray-400 transition-transform duration-200"
             />
           </span>
         </button>

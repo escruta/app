@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { ChevronDownIcon } from "@/components/icons";
+import { ChevronIcon } from "@/components/icons";
 import type { StudyGuideResponse } from "@/interfaces";
 
 interface StudyGuideViewerProps {
@@ -40,11 +40,9 @@ function CollapsibleSection({
             </span>
           )}
         </div>
-        <ChevronDownIcon
-          className={cn(
-            "w-5 h-5 text-gray-500 transition-transform duration-200",
-            isOpen && "rotate-180",
-          )}
+        <ChevronIcon
+          direction={isOpen ? "up" : "down"}
+          className="size-5 text-gray-500 transition-transform duration-200"
         />
       </button>
       <div

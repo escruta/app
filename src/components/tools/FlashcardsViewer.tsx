@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { IconButton, Tooltip, Button } from "@/components/ui";
-import { BackIcon, CheckIcon, RestartIcon } from "@/components/icons";
+import { ChevronIcon, CheckIcon, RestartIcon } from "@/components/icons";
 import type { FlashcardsResponse } from "@/interfaces";
 
 interface FlashcardsViewerProps {
@@ -317,7 +317,7 @@ export function FlashcardsViewer({
       >
         <div className="flex items-center gap-4">
           <IconButton
-            icon={<BackIcon className="size-4" />}
+            icon={<ChevronIcon direction="left" className="size-4" />}
             variant="ghost"
             size="md"
             onClick={handlePrev}
@@ -334,7 +334,7 @@ export function FlashcardsViewer({
             {knownCards.has(currentIndex) ? "Learned" : "Mark as learned"}
           </Button>
           <IconButton
-            icon={<BackIcon className="rotate-180 size-4" />}
+            icon={<ChevronIcon direction="right" className="size-4" />}
             variant="ghost"
             size="md"
             onClick={handleNext}
