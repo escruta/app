@@ -1,3 +1,1 @@
-declare interface IconProps {
-  className?: string;
-}
+declare interface IconProps extends React.SVGProps<SVGSVGElement> {}
