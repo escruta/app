@@ -34,7 +34,7 @@ export function SegmentedButtons<T = string>({
     "flex gap-1 border border-gray-300 dark:border-gray-600 rounded-xs bg-white dark:bg-gray-700 p-1 shadow-sm shadow-gray-500/5 dark:shadow-black/10";
 
   const buttonBaseStyles =
-    "flex items-center justify-center rounded-xs transition-all duration-200 select-none font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900";
+    "flex items-center justify-center rounded-xs transition-all duration-200 select-none font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 cursor-pointer";
 
   const sizeStyles = {
     sm: "h-8 px-3 text-sm",

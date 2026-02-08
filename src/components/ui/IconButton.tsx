@@ -22,7 +22,7 @@ export function IconButton({
   tabIndex,
 }: IconButtonProps) {
   const baseStyles =
-    "flex items-center justify-center rounded-xs transition-all duration-200 select-none focus:outline-none";
+    "flex items-center justify-center rounded-xs transition-all duration-200 select-none focus:outline-none cursor-pointer";
 
   const variantStyles = {
     primary:

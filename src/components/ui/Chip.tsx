@@ -45,7 +45,14 @@ export function Chip({
       onClick={onClick}
       onKeyDown={handleKeyDown}
       title={title}
-      className={cn(base, variantStyles[variant], className)}
+      className={cn(
+        base,
+        variantStyles[variant],
+        {
+          "cursor-pointer": onClick,
+        },
+        className,
+      )}
     >
       {icon && <span className="flex items-center">{icon}</span>}
       <span className={multiline ? "text-clip" : "truncate"}>{children}</span>

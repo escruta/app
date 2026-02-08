@@ -24,7 +24,7 @@ export function Button({
   type = "button",
 }: ButtonProps) {
   const baseStyles =
-    "inline-flex items-center justify-center rounded-xs font-semibold transition-all duration-200 focus:outline-none select-none whitespace-nowrap";
+    "inline-flex items-center justify-center rounded-xs font-semibold transition-all duration-200 focus:outline-none select-none whitespace-nowrap cursor-pointer";
 
   const sizeStyles: Record<"sm" | "md" | "lg", string> = {
     sm: "h-8 px-3 text-xs",

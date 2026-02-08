@@ -26,7 +26,7 @@ function SideItemMenu({
       <button
         onClick={onClick}
         className={cn(
-          "w-10 h-10 p-2.5 rounded-xs flex items-center justify-center transition-all duration-200 select-none focus:outline-none",
+          "w-10 h-10 p-2.5 rounded-xs flex items-center justify-center transition-all duration-200 select-none focus:outline-none cursor-pointer",
           {
             "bg-blue-500 border-2 border-blue-600 text-white shadow-sm shadow-blue-500/30 hover:shadow-md hover:shadow-blue-500/40 hover:ring-2 hover:ring-blue-300 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-gray-900 focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 dark:bg-blue-600 dark:border-blue-500 dark:hover:ring-blue-500/50":
               isActive,
