@@ -149,8 +149,8 @@ export function AccountSection() {
   };
 
   const handleDeleteAccount = () => {
-    if (deleteConfirmation !== "DELETE") {
-      setErrorDeleteMessage("Please type DELETE to confirm");
+    if (deleteConfirmation.toLowerCase() !== "delete my account") {
+      setErrorDeleteMessage("Please type 'delete my account' to confirm");
       return;
     }
     executeDeleteAccount();
@@ -368,7 +368,10 @@ export function AccountSection() {
             <Button
               variant="danger"
               onClick={handleDeleteAccount}
-              disabled={deleteConfirmation !== "DELETE" || isDeletingAccount}
+              disabled={
+                deleteConfirmation.toLowerCase() !== "delete my account" ||
+                isDeletingAccount
+              }
               icon={isDeletingAccount ? <Spinner /> : undefined}
             >
               {isDeletingAccount ? "Deleting" : "Delete account"}
@@ -383,8 +386,8 @@ export function AccountSection() {
             message="This will permanently delete your account and all your data."
           />
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Please type <span className="font-bold">DELETE</span> to confirm
-            account deletion.
+            Please type <span className="font-bold">delete my account</span> to
+            confirm account deletion.
           </p>
           <TextField
             id="delete-confirmation"
@@ -392,7 +395,7 @@ export function AccountSection() {
             type="text"
             value={deleteConfirmation}
             onChange={(e) => setDeleteConfirmation(e.target.value)}
-            placeholder="Type DELETE to confirm"
+            placeholder="Type 'delete my account' to confirm"
             autoFocus
           />
           {errorDeleteMessage && (

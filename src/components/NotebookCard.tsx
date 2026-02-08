@@ -1,10 +1,12 @@
 import type { Notebook } from "@/interfaces";
 import {
+  Alert,
   Button,
   Menu,
   Modal,
   IconButton,
   Spinner,
+  TextField,
   MenuTrigger,
   MenuContent,
   MenuItem,
@@ -25,6 +27,7 @@ export function NotebookCard({
   viewMode = "grid",
 }: NotebookCardProps) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<string>("");
   const [isDeleted, setIsDeleted] = useState<boolean>(false);
   const navigate = useNavigate();
 
@@ -48,6 +51,7 @@ export function NotebookCard({
       await deleteNotebook();
       setIsDeleted(true);
       setIsDeleteModalOpen(false);
+      setDeleteConfirmation("");
       useFetch.clearCache("/notebooks");
     } catch (error) {
       console.error("Error deleting notebook:", error);
@@ -202,7 +206,10 @@ export function NotebookCard({
       {/* Delete Modal */}
       <Modal
         isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setDeleteConfirmation("");
+        }}
         title={`Delete notebook "${notebook.title}"`}
         actions={
           <>
@@ -215,7 +222,10 @@ export function NotebookCard({
             <Button
               variant="danger"
               onClick={handleDeleteNotebook}
-              disabled={deletingNotebook}
+              disabled={
+                deleteConfirmation.toLowerCase() !== "delete this notebook" ||
+                deletingNotebook
+              }
               icon={deletingNotebook ? <Spinner /> : undefined}
             >
               {deletingNotebook ? "Deleting" : "Delete"}
@@ -224,11 +234,26 @@ export function NotebookCard({
         }
       >
         <div className="space-y-4">
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Are you sure you want to delete this notebook? This action cannot be
-            undone. All notes and data associated with this notebook will be
-            permanently deleted.
+          <Alert
+            variant="danger"
+            title="Warning: This action cannot be undone"
+            message={`Are you sure you want to delete "${notebook.title}"? All notes and data associated with this notebook will be permanently deleted.`}
+          />
+
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Please type <span className="font-bold">delete this notebook</span>{" "}
+            to confirm.
           </p>
+
+          <TextField
+            id="delete-confirmation"
+            label="Confirmation"
+            type="text"
+            value={deleteConfirmation}
+            onChange={(e) => setDeleteConfirmation(e.target.value)}
+            placeholder="Type 'delete this notebook' to confirm"
+            autoFocus
+          />
 
           {deleteError && (
             <div className="text-red-500 text-sm">
