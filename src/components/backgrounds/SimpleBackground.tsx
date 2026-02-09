@@ -8,17 +8,11 @@ export default function SimpleBackground({ className }: SimpleBackgroundProps) {
   return (
     <div
       className={cn(
-        "fixed inset-0 z-0 select-none pointer-events-none",
+        "fixed inset-0 z-0 bg-white dark:bg-gray-950 opacity-60",
         className,
       )}
     >
-      <div
-        className="absolute inset-0 h-full w-full opacity-[0.03]"
-        style={{
-          background:
-            "linear-gradient(180deg, #93c5fd 0%, #60a5fa 50%, #e2e8f0 100%)",
-        }}
-      />
+      <div className="absolute inset-0 bg-gradient-to-b from-blue-50/60 via-gray-50/30 to-blue-100/40 dark:from-blue-950/30 dark:via-gray-950/20 dark:to-blue-900/25" />
     </div>
   );
 }
