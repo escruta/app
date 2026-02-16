@@ -383,7 +383,7 @@ export function SourceViewer({
                       title={fullSource.title || "YouTube Video"}
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                       allowFullScreen
-                      className="w-full h-full rounded-lg"
+                      className="size-full"
                     />
                   </div>
                   {fullSource.content && (

@@ -8,7 +8,7 @@ export default function SimpleBackground({ className }: SimpleBackgroundProps) {
   return (
     <div
       className={cn(
-        "fixed inset-0 z-0 bg-white dark:bg-gray-950 opacity-60",
+        "fixed inset-0 z-0 bg-white dark:bg-gray-950 opacity-30",
         className,
       )}
     >
