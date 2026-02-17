@@ -108,9 +108,8 @@ export default function NotebookPage() {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isResizing) return;
 
-      const containerWidth = window.innerWidth - 46;
       const newWidth = Math.min(
-        Math.max(((e.clientX - 16) / containerWidth) * 100, 36),
+        Math.max((e.clientX / window.innerWidth) * 100, 36),
         64,
       );
       setLeftPanelWidth(newWidth);
@@ -502,13 +501,13 @@ export default function NotebookPage() {
 
             {/* Resizer */}
             <div
-              className="w-2 cursor-col-resize flex items-center justify-center group"
+              className="w-2 cursor-col-resize flex items-center justify-center group z-10"
               onMouseDown={handleMouseDown}
               onDoubleClick={handleDoubleClick}
             >
               <div
                 className={cn(
-                  "w-1 h-8 rounded-xs transition-all duration-150",
+                  "w-px h-1/12 rounded-xs transition-all duration-150",
                   {
                     "bg-blue-500 dark:bg-blue-400": isResizing,
                     "bg-gray-300/60 dark:bg-gray-600 group-hover:bg-blue-400 dark:group-hover:bg-blue-500":
