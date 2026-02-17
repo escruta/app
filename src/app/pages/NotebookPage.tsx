@@ -45,6 +45,7 @@ export default function NotebookPage() {
   const [chatQuestion, setChatQuestion] = useState<string | null>(null);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [selectedSource, setSelectedSource] = useState<Source | null>(null);
+  const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
   const [notesRefreshKey, setNotesRefreshKey] = useState<number>(0);
   const [sourcesRefreshKey, setSourcesRefreshKey] = useState<number>(0);
   const [leftPanelWidth, setLeftPanelWidth] = useCookie<number>(
@@ -53,6 +54,12 @@ export default function NotebookPage() {
   );
   const [isResizing, setIsResizing] = useState<boolean>(false);
   const tabsRef = useRef<TabsRef>(null);
+
+  useEffect(() => {
+    if (notebook?.sources) {
+      setSelectedSourceIds(notebook.sources.map((s) => s.id));
+    }
+  }, [notebook]);
 
   const handleSourceSelectFromChat = (sourceId: string) => {
     const tempSource: Source = {
@@ -66,6 +73,22 @@ export default function NotebookPage() {
     };
     setSelectedSource(tempSource);
     tabsRef.current?.setActiveTab("1");
+  };
+
+  const handleToggleSource = (sourceId: string) => {
+    setSelectedSourceIds((prev) =>
+      prev.includes(sourceId)
+        ? prev.filter((id) => id !== sourceId)
+        : [...prev, sourceId],
+    );
+  };
+
+  const handleSelectAllSources = (ids: string[]) => {
+    setSelectedSourceIds(ids);
+  };
+
+  const handleClearSourceSelection = () => {
+    setSelectedSourceIds([]);
   };
 
   const handleNodeSelect = (question: string) => {
@@ -302,6 +325,10 @@ export default function NotebookPage() {
         <SourcesCard
           notebookId={notebookId}
           onSourceSelect={(source: Source) => setSelectedSource(source)}
+          selectedSourceIds={selectedSourceIds}
+          onToggleSource={handleToggleSource}
+          onSelectAll={handleSelectAllSources}
+          onClearSelection={handleClearSourceSelection}
           refreshTrigger={sourcesRefreshKey}
           onSourceAdded={() => {
             refetchNotebook(true, false);
@@ -383,7 +410,7 @@ export default function NotebookPage() {
                 icon={<EditIcon />}
                 variant="ghost"
                 size="md"
-                className="flex-shrink-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
+                className="shrink-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
                 onClick={() => setIsRenameModalOpen(true)}
               />
             </Tooltip>
@@ -406,6 +433,7 @@ export default function NotebookPage() {
                   <ChatCard
                     notebookId={notebookId}
                     sourcesCount={notebook?.sources.length ?? 0}
+                    selectedSourceIds={selectedSourceIds}
                     refreshTrigger={sourcesRefreshKey}
                     onSourceSelect={handleSourceSelectFromChat}
                     externalQuestion={chatQuestion}
@@ -499,6 +527,7 @@ export default function NotebookPage() {
               <ChatCard
                 notebookId={notebookId}
                 sourcesCount={notebook?.sources.length ?? 0}
+                selectedSourceIds={selectedSourceIds}
                 refreshTrigger={sourcesRefreshKey}
                 onSourceSelect={handleSourceSelectFromChat}
                 externalQuestion={chatQuestion}

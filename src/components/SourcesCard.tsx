@@ -21,6 +21,10 @@ import type { SourceType } from "@/lib/utils/index";
 interface SourcesCardProps {
   notebookId: string;
   onSourceSelect?: (source: Source) => void;
+  selectedSourceIds?: string[];
+  onToggleSource?: (sourceId: string) => void;
+  onSelectAll?: (sourceIds: string[]) => void;
+  onClearSelection?: () => void;
   refreshTrigger?: number;
   onSourceAdded?: () => void;
 }
@@ -28,6 +32,10 @@ interface SourcesCardProps {
 export function SourcesCard({
   notebookId,
   onSourceSelect,
+  selectedSourceIds = [],
+  onToggleSource,
+  onSelectAll,
+  onClearSelection,
   refreshTrigger,
   onSourceAdded,
 }: SourcesCardProps) {
@@ -142,10 +150,23 @@ export function SourcesCard({
     }
   }
 
+  const isAllSelected =
+    sources &&
+    sources.length > 0 &&
+    selectedSourceIds.length === sources.length;
+
+  const handleSelectAllToggle = () => {
+    if (isAllSelected) {
+      onClearSelection?.();
+    } else if (sources) {
+      onSelectAll?.(sources.map((s) => s.id));
+    }
+  };
+
   return (
     <>
       <Card className="h-full overflow-y-auto">
-        <div className="flex flex-row justify-between items-center mb-2 flex-shrink-0">
+        <div className="flex flex-row justify-between items-center mb-2 shrink-0">
           <h2 className="text-lg font-sans font-semibold">Sources</h2>
           <div className="flex gap-3">
             {/* <Tooltip text="Find sources" position="bottom">
@@ -153,7 +174,7 @@ export function SourcesCard({
                 icon={<StarsIcon />}
                 variant="ghost"
                 size="sm"
-                className="flex-shrink-0"
+                className="shrink-0"
               />
             </Tooltip> */}
             <Tooltip text="Add source" position="bottom">
@@ -161,7 +182,7 @@ export function SourcesCard({
                 icon={<AddIcon />}
                 variant="primary"
                 size="sm"
-                className="flex-shrink-0"
+                className="shrink-0"
                 onClick={() => setIsAddSourceModalOpen(true)}
               />
             </Tooltip>
@@ -186,11 +207,22 @@ export function SourcesCard({
           if (sources && sources.length > 0) {
             return (
               <div className="flex flex-col gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleSelectAllToggle}
+                >
+                  {isAllSelected
+                    ? "Deselect all sources"
+                    : "Select all sources"}
+                </Button>
                 {sources.map((source) => (
                   <SourceChip
                     key={source.id}
                     source={source}
                     onSourceSelect={onSourceSelect}
+                    selected={selectedSourceIds.includes(source.id)}
+                    onToggle={() => onToggleSource?.(source.id)}
                   />
                 ))}
               </div>

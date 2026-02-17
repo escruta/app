@@ -36,6 +36,7 @@ interface Message {
   sender: Sender;
   citedSources?: CitedSource[];
   error?: true;
+  selectedSourcesCount?: number;
 }
 
 interface CitedSource {
@@ -52,6 +53,7 @@ interface ChatResponse {
 interface ChatCardProps {
   notebookId: string;
   sourcesCount: number;
+  selectedSourceIds?: string[];
   refreshTrigger?: number;
   onSourceSelect?: (sourceId: string) => void;
   externalQuestion?: string | null;
@@ -131,8 +133,8 @@ function processMessage(message: Message, onRetry?: () => void): ReactNode {
 
 function processTextContent(text: string, sender: Sender) {
   const linkColorClass = {
-    user: "text-blue-300 hover:text-blue-200",
-    ai: "text-blue-500 hover:text-blue-400",
+    user: "text-blue-600 dark:text-blue-400 hover:underline",
+    ai: "text-blue-600 dark:text-blue-400 hover:underline",
   }[sender];
 
   return <Markdown text={text} linkColorClass={linkColorClass} />;
@@ -141,6 +143,7 @@ function processTextContent(text: string, sender: Sender) {
 export function ChatCard({
   notebookId,
   sourcesCount,
+  selectedSourceIds = [],
   refreshTrigger,
   onSourceSelect,
   externalQuestion,
@@ -289,6 +292,7 @@ export function ChatCard({
       id: Date.now().toString(),
       text: userText,
       sender: "user",
+      selectedSourcesCount: selectedSourceIds.length,
     };
 
     setMessages((prevMessages) => [...prevMessages, newMessage]);
@@ -301,6 +305,7 @@ export function ChatCard({
   const chatDataRef = useRef({
     userInput: "",
     conversationId: null as string | null,
+    selectedSourceIds: [] as string[],
   });
 
   const chatOptions = useMemo(
@@ -342,10 +347,11 @@ export function ChatCard({
       chatDataRef.current = {
         userInput: pendingMessageRef.current || "",
         conversationId,
+        selectedSourceIds,
       };
       return fetchChatResponseRaw(forcedUpdate);
     },
-    [conversationId, fetchChatResponseRaw],
+    [conversationId, fetchChatResponseRaw, selectedSourceIds],
   );
 
   const handleRetryFromError = useCallback(
@@ -360,6 +366,7 @@ export function ChatCard({
           id: Date.now().toString(),
           text: pendingMessageRef.current,
           sender: "user",
+          selectedSourcesCount: selectedSourceIds.length,
         };
         setMessages((prev) => [...prev, retryMessage]);
         fetchChatResponse(true);
@@ -388,14 +395,14 @@ export function ChatCard({
 
   return (
     <Card className="flex flex-col h-full overflow-hidden">
-      <div className="flex flex-row justify-between items-center mb-2 flex-shrink-0">
+      <div className="flex flex-row justify-between items-center mb-2 shrink-0">
         <h2 className="text-lg font-sans font-semibold">Chat</h2>
       </div>
       <Divider className="mb-0" />
       {messages.length > 0 ? (
         <div
           ref={scrollContainerRef}
-          className="flex-1 overflow-y-auto p-4 space-y-2 min-h-0 scroll-smooth scroll-pt-4"
+          className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 scroll-smooth scroll-pt-4"
         >
           <AnimatePresence>
             {messages.map((message, index) => (
@@ -405,54 +412,75 @@ export function ChatCard({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
-                className={cn("message-item scroll-mt-4 flex mb-3", {
-                  "justify-end": message.sender === "user",
-                  "justify-start": message.sender === "ai",
+                className={cn("message-item scroll-mt-4 flex flex-col mb-4", {
+                  "justify-end items-end": message.sender === "user",
+                  "justify-start items-start": message.sender === "ai",
                 })}
               >
                 <div
                   className={cn(
-                    "max-w-xl flex flex-col gap-3 px-4 py-1 rounded-xs select-text shadow-sm transition-all duration-200",
+                    "w-full flex flex-col gap-4 select-text transition-all duration-200",
                     {
-                      "bg-blue-500 dark:bg-blue-600 text-white font-medium ml-12 selection:bg-white selection:text-blue-600":
+                      "max-w-xl bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 px-4 py-2.5 rounded-xs self-end ml-12 shadow-xs":
                         message.sender === "user",
-                      "bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-gray-900 dark:text-gray-100 font-medium mr-12":
-                        message.error,
-                      "bg-gray-100/60 dark:bg-gray-700/60 text-gray-900 dark:text-gray-100 font-medium mr-12":
+                      "max-w-3xl self-start mr-12 py-2":
                         message.sender === "ai" && !message.error,
+                      "max-w-2xl bg-red-50/10 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 px-5 py-4 rounded-xs self-start mr-12":
+                        message.error,
                     },
                   )}
                 >
-                  {processMessage(
-                    message,
-                    message.error
-                      ? () => handleRetryFromError(index)
-                      : undefined,
-                  )}
+                  <div
+                    className={cn("text-base font-medium leading-relaxed", {
+                      "text-blue-800 dark:text-blue-100":
+                        message.sender === "user",
+                      "text-gray-950 dark:text-gray-50":
+                        message.sender === "ai",
+                    })}
+                  >
+                    {processMessage(
+                      message,
+                      message.error
+                        ? () => handleRetryFromError(index)
+                        : undefined,
+                    )}
+                  </div>
+
                   {message.sender === "ai" &&
                     message.citedSources &&
                     message.citedSources.length > 0 && (
-                      <div className="py-3 border-t border-gray-200 dark:border-gray-600">
+                      <div className="pt-3 mt-1 border-t border-gray-200 dark:border-gray-800">
+                        <div className="text-[10px] uppercase tracking-widest text-gray-500 dark:text-gray-400 font-bold mb-3 select-none">
+                          Sources
+                        </div>
                         <div className="flex flex-wrap gap-2">
-                          {message.citedSources.map((source, index) => (
-                            <button
+                          {message.citedSources.map((source, idx) => (
+                            <Chip
                               key={source.id}
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleSourceClick(source.id);
-                              }}
-                              className="text-start text-xs bg-gray-200/50 dark:bg-gray-600 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-xs hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors cursor-pointer"
+                              onClick={() => handleSourceClick(source.id)}
                               title={source.title}
-                              type="button"
+                              className="text-xs py-0.5 px-2"
                             >
-                              {source.title || `Source ${index + 1}`}
-                            </button>
+                              <span className="opacity-50 mr-1.5 font-mono">
+                                {idx + 1}
+                              </span>
+                              <span className="truncate max-w-[180px]">
+                                {source.title || `Source ${idx + 1}`}
+                              </span>
+                            </Chip>
                           ))}
                         </div>
                       </div>
                     )}
                 </div>
+                {message.sender === "user" &&
+                  message.selectedSourcesCount !== undefined &&
+                  message.selectedSourcesCount > 0 && (
+                    <div className="text-xs text-gray-400 dark:text-gray-500 mt-1 mr-1">
+                      {message.selectedSourcesCount} source
+                      {message.selectedSourcesCount !== 1 ? "s" : ""} selected
+                    </div>
+                  )}
               </motion.div>
             ))}
           </AnimatePresence>
@@ -699,7 +727,7 @@ export function ChatCard({
         </motion.div>
       )}
       <Divider className="mt-0" />
-      <div className="pb-4 flex-shrink-0">
+      <div className="pb-4 shrink-0">
         {/* Chat input */}
         <div className="flex items-center gap-2 pt-1">
           {messages.length > 0 ? (
@@ -734,9 +762,13 @@ export function ChatCard({
                 handleSendMessage();
               }
             }}
-            placeholder="Ask a question..."
+            placeholder={
+              selectedSourceIds.length > 0
+                ? `Ask a question (${selectedSourceIds.length} source${selectedSourceIds.length !== 1 ? "s" : ""} selected)...`
+                : "Select sources to start chatting..."
+            }
             className="flex-grow"
-            disabled={isChatLoading}
+            disabled={isChatLoading || selectedSourceIds.length === 0}
             autoFocus
             maxRows={5}
             multiline
@@ -744,7 +776,9 @@ export function ChatCard({
           <IconButton
             icon={<SendIcon />}
             onClick={handleSendMessage}
-            disabled={isChatLoading || !input.trim()}
+            disabled={
+              isChatLoading || !input.trim() || selectedSourceIds.length === 0
+            }
             aria-label="Send message"
           />
         </div>

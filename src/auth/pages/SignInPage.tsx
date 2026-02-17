@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router";
 import { useAuth, useCookie } from "@/hooks";
 import { motion, AnimatePresence } from "motion/react";
 import { SEOMetadata } from "@/components";
-import { Button, TextField, Spinner } from "@/components/ui";
+import { Button, TextField, Spinner, Checkbox } from "@/components/ui";
 import { getSignErrorMessage } from "@/lib/utils";
 
 export function SignInPage() {
@@ -137,19 +137,12 @@ export function SignInPage() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, delay: 0.5 }}
         >
-          <input
-            type="checkbox"
+          <Checkbox
             id="rememberEmail"
             checked={rememberEmail}
-            onChange={(e) => setRememberEmail(e.target.checked)}
-            className="mr-2 size-4 text-blue-500 border-gray-300 rounded-xs shadow-none focus:ring-blue-500 dark:focus:ring-blue-400"
+            onChange={(checked) => setRememberEmail(checked)}
+            label="Remember my email"
           />
-          <label
-            htmlFor="rememberEmail"
-            className="text-gray-700 dark:text-gray-300 select-none text-sm cursor-pointer"
-          >
-            Remember my email
-          </label>
         </motion.div>
         <AnimatePresence mode="wait">
           {error && (
