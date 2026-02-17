@@ -449,9 +449,9 @@ export function ChatCard({
                   {message.sender === "ai" &&
                     message.citedSources &&
                     message.citedSources.length > 0 && (
-                      <div className="pt-3 mt-1 border-t border-gray-200 dark:border-gray-800">
+                      <div className="pt-4 border-t border-gray-200/65 dark:border-gray-800/65">
                         <div className="text-[10px] uppercase tracking-widest text-gray-500 dark:text-gray-400 font-bold mb-3 select-none">
-                          Sources
+                          Cited sources
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {message.citedSources.map((source, idx) => (
@@ -459,11 +459,8 @@ export function ChatCard({
                               key={source.id}
                               onClick={() => handleSourceClick(source.id)}
                               title={source.title}
-                              className="text-xs py-0.5 px-2"
+                              size="sm"
                             >
-                              <span className="opacity-50 mr-1.5 font-mono">
-                                {idx + 1}
-                              </span>
                               <span className="truncate max-w-[180px]">
                                 {source.title || `Source ${idx + 1}`}
                               </span>
