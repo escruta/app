@@ -25,12 +25,12 @@ html.light body {
 }
 
 *::selection {
-  background-color: var(--color-blue-200);
+  background-color: color-mix(in oklab, var(--color-blue-300) 39%, transparent);
   color: var(--color-blue-950);
 }
 
 html.dark *::selection {
-  background-color: var(--color-blue-800);
+  background-color: color-mix(in oklab, var(--color-blue-600) 39%, transparent);
   color: var(--color-white);
 }
 
