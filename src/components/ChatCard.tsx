@@ -737,7 +737,9 @@ export function ChatCard({
                   setInput("");
                   setConversationId(null);
                 }}
-                disabled={messages.length === 0 && !isChatLoading}
+                disabled={
+                  messages.length === 0 || isChatLoading || isAutoRegenerating
+                }
                 variant="ghost"
               />
             </Tooltip>
