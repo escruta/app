@@ -220,7 +220,7 @@ export function FlashcardsViewer({
                 x: { duration: 0.2, ease: "easeOut" },
                 opacity: { duration: 0.15 },
               }}
-              className="absolute inset-0 cursor-pointer perspective-1000"
+              className="absolute inset-0 cursor-pointer perspective-[1000px]"
               onClick={handleFlip}
             >
               <motion.div
