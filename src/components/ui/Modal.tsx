@@ -10,6 +10,7 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
+  subtitle?: string;
   children: React.ReactNode;
   actions?: React.ReactNode;
   width?: "sm" | "md" | "lg" | "xl";
@@ -22,6 +23,7 @@ export function Modal({
   isOpen,
   onClose,
   title,
+  subtitle,
   children,
   actions,
   width = "md",
@@ -108,12 +110,19 @@ export function Modal({
             }}
           >
             <div className="flex items-center justify-between gap-4 p-6 border-b border-gray-200 dark:border-gray-700">
-              <h2
-                id="modal-title"
-                className="text-xl font-medium text-gray-900 dark:text-white"
-              >
-                {title}
-              </h2>
+              <div className="flex flex-col gap-1">
+                <h2
+                  id="modal-title"
+                  className="text-xl font-medium text-gray-900 dark:text-white"
+                >
+                  {title}
+                </h2>
+                {subtitle && (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {subtitle}
+                  </p>
+                )}
+              </div>
               {!canDismiss ? null : (
                 <IconButton
                   icon={<CloseIcon />}
@@ -158,12 +167,19 @@ export function Modal({
             transition={{ duration: 0.15 }}
           >
             <div className="flex items-center justify-between gap-4 p-6 border-b border-gray-200 dark:border-gray-700">
-              <h2
-                id="modal-title"
-                className="text-xl font-medium text-gray-900 dark:text-white"
-              >
-                {title}
-              </h2>
+              <div className="flex flex-col gap-1">
+                <h2
+                  id="modal-title"
+                  className="text-xl font-medium text-gray-900 dark:text-white"
+                >
+                  {title}
+                </h2>
+                {subtitle && (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {subtitle}
+                  </p>
+                )}
+              </div>
               {!canDismiss ? null : (
                 <IconButton
                   icon={<CloseIcon />}

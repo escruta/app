@@ -96,7 +96,6 @@ export function ChatHistory({
     }
   }, [loading, hasMore]);
 
-  // Store latest values in refs for the observer callback
   const loadMoreCallbackRef = useRef(loadMore);
   loadMoreCallbackRef.current = loadMore;
 
@@ -105,7 +104,6 @@ export function ChatHistory({
 
     if (!node) return;
 
-    // Find the scrollable parent container
     let element = node.parentElement;
     while (element) {
       const style = window.getComputedStyle(element);
@@ -208,7 +206,8 @@ export function ChatHistory({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={`Chat history (${total} conversation${total !== 1 ? "s" : ""})`}
+      title="Chat history"
+      subtitle={`${total} conversation${total !== 1 ? "s" : ""} ${debouncedSearch ? "matching your search" : ""}`}
       width="xl"
       contentClassname="flex flex-col h-[28rem]"
       actions={
