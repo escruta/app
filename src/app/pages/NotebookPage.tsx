@@ -389,13 +389,13 @@ export default function NotebookPage() {
           twitterCard={metadata.twitterCard}
         />
       )}
-      <div className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700 px-4 py-4 md:px-6 md:py-5 z-10">
-        <div className="flex justify-between items-center gap-4">
-          <h1 className="flex flex-col items-start gap-1.5 min-w-0">
-            <span className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
-              Notebook
+      <div className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700 py-4 px-4 md:px-6 z-10">
+        <div className="flex justify-between items-center gap-2">
+          <h1 className="flex items-center gap-1.5 min-w-0 flex-1 *:leading-7 text-gray-900 dark:text-white select-text">
+            <span className="hidden md:block text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400 shrink-0">
+              Notebook /{" "}
             </span>
-            <span className="text-2xl font-bold truncate w-full text-gray-900 dark:text-white select-text">
+            <span className="truncate text-2xl font-bold">
               {notebook?.title}
             </span>
           </h1>
@@ -408,7 +408,7 @@ export default function NotebookPage() {
               <IconButton
                 icon={<EditIcon />}
                 variant="ghost"
-                size="md"
+                size="sm"
                 className="shrink-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
                 onClick={() => setIsRenameModalOpen(true)}
               />
