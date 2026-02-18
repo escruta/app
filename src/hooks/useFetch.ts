@@ -10,7 +10,7 @@ interface UseFetchState<T> {
   error: FetchError | null;
 }
 
-interface UseFetchOptions<T> extends RequestConfig {
+export interface UseFetchOptions<T> extends RequestConfig {
   onSuccess?: (data: T) => void;
   onError?: (error: FetchError) => void;
   cacheTime?: number;
@@ -120,7 +120,7 @@ export default function useFetch<T = unknown>(
               } else if (errorJson.detail) {
                 errorMessage = errorJson.detail;
               }
-            } catch {}
+            } catch { }
 
             const fetchError = Object.assign(new Error(errorMessage), {
               status: response.status,

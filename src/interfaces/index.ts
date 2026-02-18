@@ -1,3 +1,4 @@
+export type * from "./Conversation";
 export type { Flashcard, FlashcardsResponse } from "./FlashcardsResponse";
 export type {
   default as GenerationJob,

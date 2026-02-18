@@ -15,6 +15,7 @@ interface ModalProps {
   width?: "sm" | "md" | "lg" | "xl";
   closeOnOutsideClick?: boolean;
   closeOnEscape?: boolean;
+  contentClassname?: string;
 }
 
 export function Modal({
@@ -26,6 +27,7 @@ export function Modal({
   width = "md",
   closeOnOutsideClick = true,
   closeOnEscape = true,
+  contentClassname,
 }: ModalProps) {
   const isMobile = useIsMobile();
   const viewportHeight = useVisualViewportHeight();
@@ -123,7 +125,9 @@ export function Modal({
               )}
             </div>
 
-            <div className="p-6 overflow-y-auto flex-1">{children}</div>
+            <div className={cn("overflow-y-auto", contentClassname)}>
+              <div className="p-6">{children}</div>
+            </div>
 
             {actions && (
               <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
@@ -171,7 +175,9 @@ export function Modal({
               )}
             </div>
 
-            <div className="p-6 max-h-96 overflow-y-auto">{children}</div>
+            <div className={cn("max-h-96 overflow-y-auto", contentClassname)}>
+              <div className="p-6">{children}</div>
+            </div>
 
             {actions && (
               <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700">

@@ -1,6 +1,12 @@
 import { lazy } from "react";
 import { useFetch } from "@/hooks";
-import { FileIcon, FireIcon, RestartIcon, SendIcon } from "@/components/icons";
+import {
+  FileIcon,
+  RestartIcon,
+  SendIcon,
+  ChatHistoryIcon,
+  AddIcon,
+} from "@/components/icons";
 import {
   Alert,
   Card,
@@ -13,9 +19,8 @@ import {
   Chip,
   Skeleton,
 } from "@/components/ui";
-const CodeBlock = lazy(() =>
-  import("./CodeBlock").then((module) => ({ default: module.CodeBlock })),
-);
+import { ChatHistory } from "@/components/ChatHistory";
+import type { ConversationMessages } from "@/interfaces";
 import {
   useEffect,
   useState,
@@ -27,6 +32,10 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { cn, getHttpErrorMessage } from "@/lib/utils";
 import { Markdown } from "@/components/Markdown";
+
+const CodeBlock = lazy(() =>
+  import("./CodeBlock").then((module) => ({ default: module.CodeBlock })),
+);
 
 type Sender = "user" | "ai";
 
@@ -262,8 +271,47 @@ export function ChatCard({
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [conversationToLoadId, setConversationToLoadId] = useState<
+    string | null
+  >(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const pendingMessageRef = useRef<string | null>(null);
+
+  const loadConversationOptions = useMemo(
+    () => ({
+      method: "GET" as const,
+      skipCache: true,
+      onSuccess: (data: ConversationMessages) => {
+        const loadedMessages: Message[] = data.messages
+          .filter((m) => m.type === "USER" || m.type === "ASSISTANT")
+          .map((m, index) => ({
+            id: `${conversationToLoadId}-${index}`,
+            text: m.content,
+            sender: m.type === "USER" ? ("user" as Sender) : ("ai" as Sender),
+          }));
+
+        setMessages(loadedMessages);
+        setConversationId(conversationToLoadId);
+        setConversationToLoadId(null);
+      },
+      onError: (error: FetchError) => {
+        console.error("Error loading conversation:", error.message);
+        setConversationToLoadId(null);
+      },
+    }),
+    [conversationToLoadId],
+  );
+
+  const { loading: isLoadingConversation } = useFetch<ConversationMessages>(
+    `notebooks/${notebookId}/conversations/${conversationToLoadId}`,
+    loadConversationOptions,
+    conversationToLoadId !== null,
+  );
+
+  const loadConversation = useCallback((selectedConversationId: string) => {
+    setConversationToLoadId(selectedConversationId);
+  }, []);
 
   useEffect(() => {
     if (externalQuestion) {
@@ -393,11 +441,40 @@ export function ChatCard({
     }
   }, [messages.length, isChatLoading]);
 
+  const handleNewConversation = useCallback(() => {
+    setMessages([]);
+    setInput("");
+    setConversationId(null);
+  }, []);
+
   return (
     <Card className="flex flex-col h-full overflow-hidden">
       <div className="flex flex-row justify-between items-center mb-2 shrink-0">
         <h2 className="text-lg font-sans font-semibold">Chat</h2>
+        <Tooltip text="Chat history" position="bottom">
+          <IconButton
+            icon={<ChatHistoryIcon />}
+            ariaLabel="Chat history"
+            onClick={() => setIsHistoryOpen(true)}
+            variant="ghost"
+            size="sm"
+          />
+        </Tooltip>
       </div>
+      <ChatHistory
+        notebookId={notebookId}
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        onSelectConversation={(id) => {
+          loadConversation(id);
+          setIsHistoryOpen(false);
+        }}
+        onNewConversation={() => {
+          handleNewConversation();
+          setIsHistoryOpen(false);
+        }}
+        currentConversationId={conversationId}
+      />
       <Divider className="mb-0" />
       {messages.length > 0 ? (
         <div
@@ -460,6 +537,7 @@ export function ChatCard({
                               onClick={() => handleSourceClick(source.id)}
                               title={source.title}
                               size="sm"
+                              className="max-w-full"
                             >
                               <span className="truncate max-w-[180px]">
                                 {source.title || `Source ${idx + 1}`}
@@ -481,7 +559,7 @@ export function ChatCard({
               </motion.div>
             ))}
           </AnimatePresence>
-          {isChatLoading && (
+          {(isChatLoading || isLoadingConversation) && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -728,10 +806,10 @@ export function ChatCard({
         {/* Chat input */}
         <div className="flex items-center gap-2 pt-1">
           {messages.length > 0 ? (
-            <Tooltip text="Clear chat" position="top">
+            <Tooltip text="New conversation" position="top">
               <IconButton
-                icon={<FireIcon />}
-                ariaLabel="Clear chat"
+                icon={<AddIcon />}
+                ariaLabel="New conversation"
                 onClick={() => {
                   setMessages([]);
                   setInput("");

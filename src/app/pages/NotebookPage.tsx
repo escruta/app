@@ -501,7 +501,7 @@ export default function NotebookPage() {
 
             {/* Resizer */}
             <div
-              className="w-2 cursor-col-resize flex items-center justify-center group z-10"
+              className="w-2 cursor-col-resize flex items-center justify-center group z-5"
               onMouseDown={handleMouseDown}
               onDoubleClick={handleDoubleClick}
             >

@@ -1,5 +1,7 @@
 import { useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { SearchIcon, CloseIcon } from "@/components/icons";
+import { IconButton } from "./IconButton";
 
 interface TextFieldBaseProps {
   id: string;
@@ -12,6 +14,8 @@ interface TextFieldBaseProps {
   autoFocus?: boolean;
   autoComplete?: string;
   maxRows?: number;
+  search?: boolean;
+  onClear?: () => void;
 }
 
 interface TextFieldSingleLineProps extends TextFieldBaseProps {
@@ -43,6 +47,8 @@ export function TextField({
   autoComplete,
   multiline = false,
   maxRows,
+  search = false,
+  onClear,
 }: TextFieldSingleLineProps | TextFieldMultiLineProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -64,6 +70,7 @@ export function TextField({
     "w-full px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-xs focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200 resize-none shadow-sm shadow-gray-500/5 dark:shadow-black/10 disabled:opacity-50 disabled:cursor-not-allowed",
     !disabled &&
       "hover:border-blue-400 dark:hover:border-blue-500 hover:ring-1 hover:ring-blue-300 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-gray-900",
+    search && "pl-10 pr-10",
   );
 
   const inputClassName = cn(baseInputClassName, className);
@@ -100,23 +107,40 @@ export function TextField({
         style={{ minHeight: "42px" }}
       />
     ) : (
-      <input
-        type={type}
-        id={id}
-        value={value}
-        onChange={onChange as (e: React.ChangeEvent<HTMLInputElement>) => void}
-        onKeyDown={
-          onKeyDown as
-            | ((e: React.KeyboardEvent<HTMLInputElement>) => void)
-            | undefined
-        }
-        className={inputClassName}
-        placeholder={placeholder}
-        required={required}
-        disabled={disabled}
-        autoFocus={autoFocus}
-        autoComplete={autoComplete}
-      />
+      <div className="relative">
+        {search && (
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
+        )}
+        <input
+          type={type}
+          id={id}
+          value={value}
+          onChange={
+            onChange as (e: React.ChangeEvent<HTMLInputElement>) => void
+          }
+          onKeyDown={
+            onKeyDown as
+              | ((e: React.KeyboardEvent<HTMLInputElement>) => void)
+              | undefined
+          }
+          className={inputClassName}
+          placeholder={placeholder}
+          required={required}
+          disabled={disabled}
+          autoFocus={autoFocus}
+          autoComplete={autoComplete}
+        />
+        {value && onClear && (
+          <IconButton
+            icon={<CloseIcon />}
+            onClick={onClear}
+            size="xs"
+            variant="ghost"
+            className="absolute right-3 top-1/2 -translate-y-1/2"
+            aria-label="Clear input"
+          />
+        )}
+      </div>
     );
   }
 
@@ -161,25 +185,40 @@ export function TextField({
           style={{ minHeight: "42px" }}
         />
       ) : (
-        <input
-          type={type}
-          id={id}
-          value={value}
-          onChange={
-            onChange as (e: React.ChangeEvent<HTMLInputElement>) => void
-          }
-          onKeyDown={
-            onKeyDown as
-              | ((e: React.KeyboardEvent<HTMLInputElement>) => void)
-              | undefined
-          }
-          className={baseInputClassName}
-          placeholder={placeholder}
-          required={required}
-          disabled={disabled}
-          autoFocus={autoFocus}
-          autoComplete={autoComplete}
-        />
+        <div className="relative">
+          {search && (
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
+          )}
+          <input
+            type={type}
+            id={id}
+            value={value}
+            onChange={
+              onChange as (e: React.ChangeEvent<HTMLInputElement>) => void
+            }
+            onKeyDown={
+              onKeyDown as
+                | ((e: React.KeyboardEvent<HTMLInputElement>) => void)
+                | undefined
+            }
+            className={baseInputClassName}
+            placeholder={placeholder}
+            required={required}
+            disabled={disabled}
+            autoFocus={autoFocus}
+            autoComplete={autoComplete}
+          />
+          {value && onClear && (
+            <IconButton
+              icon={<CloseIcon />}
+              onClick={onClear}
+              size="xs"
+              variant="ghost"
+              className="absolute right-3 top-1/2 -translate-y-1/2"
+              aria-label="Clear input"
+            />
+          )}
+        </div>
       )}
     </div>
   );
