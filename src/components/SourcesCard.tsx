@@ -5,7 +5,6 @@ import {
   Card,
   Button,
   Divider,
-  IconButton,
   Modal,
   TextField,
   Tooltip,
@@ -177,14 +176,16 @@ export function SourcesCard({
                 className="shrink-0"
               />
             </Tooltip> */}
-            <Tooltip text="Add source" position="bottom">
-              <IconButton
+            <Tooltip text="Add a new source" position="bottom">
+              <Button
                 icon={<AddIcon />}
                 variant="primary"
                 size="sm"
                 className="shrink-0"
                 onClick={() => setIsAddSourceModalOpen(true)}
-              />
+              >
+                Add source
+              </Button>
             </Tooltip>
           </div>
         </div>
