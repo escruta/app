@@ -271,8 +271,14 @@ export function ChatCard({
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [conversationTitle, setConversationTitle] = useState<string | null>(
+    null,
+  );
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [conversationToLoadId, setConversationToLoadId] = useState<
+    string | null
+  >(null);
+  const [pendingConversationTitle, setPendingConversationTitle] = useState<
     string | null
   >(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -293,14 +299,17 @@ export function ChatCard({
 
         setMessages(loadedMessages);
         setConversationId(conversationToLoadId);
+        setConversationTitle(pendingConversationTitle);
         setConversationToLoadId(null);
+        setPendingConversationTitle(null);
       },
       onError: (error: FetchError) => {
         console.error("Error loading conversation:", error.message);
         setConversationToLoadId(null);
+        setPendingConversationTitle(null);
       },
     }),
-    [conversationToLoadId],
+    [conversationToLoadId, pendingConversationTitle],
   );
 
   const { loading: isLoadingConversation } = useFetch<ConversationMessages>(
@@ -309,9 +318,13 @@ export function ChatCard({
     conversationToLoadId !== null,
   );
 
-  const loadConversation = useCallback((selectedConversationId: string) => {
-    setConversationToLoadId(selectedConversationId);
-  }, []);
+  const loadConversation = useCallback(
+    (selectedConversationId: string, title: string) => {
+      setConversationToLoadId(selectedConversationId);
+      setPendingConversationTitle(title);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (externalQuestion) {
@@ -370,6 +383,14 @@ export function ChatCard({
           citedSources: response.citedSources,
         };
         setMessages((prevMessages) => [...prevMessages, aiResponse]);
+        if (!conversationId && response.conversationId) {
+          const firstMessage = pendingMessageRef.current || "";
+          const truncatedTitle =
+            firstMessage.length > 50
+              ? firstMessage.slice(0, 50) + "..."
+              : firstMessage;
+          setConversationTitle(truncatedTitle);
+        }
         setConversationId(response.conversationId);
         pendingMessageRef.current = null;
       },
@@ -445,12 +466,20 @@ export function ChatCard({
     setMessages([]);
     setInput("");
     setConversationId(null);
+    setConversationTitle(null);
   }, []);
 
   return (
     <Card className="flex flex-col h-full overflow-hidden">
       <div className="flex flex-row justify-between items-center mb-2 shrink-0">
-        <h2 className="text-lg font-sans font-semibold">Chat</h2>
+        <h2 className="flex items-baseline gap-1.5 min-w-0 flex-1">
+          <span className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400 shrink-0">
+            Chat /{" "}
+          </span>
+          <span className="truncate text-lg font-semibold select-text">
+            {conversationTitle || "New conversation"}
+          </span>
+        </h2>
         <Tooltip text="Chat history" position="bottom">
           <IconButton
             icon={<ChatHistoryIcon />}
@@ -465,8 +494,8 @@ export function ChatCard({
         notebookId={notebookId}
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
-        onSelectConversation={(id) => {
-          loadConversation(id);
+        onSelectConversation={(id, title) => {
+          loadConversation(id, title);
           setIsHistoryOpen(false);
         }}
         onNewConversation={() => {

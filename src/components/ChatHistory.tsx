@@ -20,7 +20,7 @@ interface ChatHistoryProps {
   notebookId: string;
   isOpen: boolean;
   onClose: () => void;
-  onSelectConversation: (conversationId: string) => void;
+  onSelectConversation: (conversationId: string, title: string) => void;
   onNewConversation: () => void;
   currentConversationId: string | null;
 }
@@ -167,8 +167,8 @@ export function ChatHistory({
   }, []);
 
   const handleSelect = useCallback(
-    (conversationId: string) => {
-      onSelectConversation(conversationId);
+    (conversationId: string, title: string) => {
+      onSelectConversation(conversationId, title);
       onClose();
     },
     [onSelectConversation, onClose],
@@ -263,7 +263,9 @@ export function ChatHistory({
                         conversation.id !== currentConversationId,
                     },
                   )}
-                  onClick={() => handleSelect(conversation.id)}
+                  onClick={() =>
+                    handleSelect(conversation.id, conversation.title)
+                  }
                 >
                   <div className="flex-1 min-w-0 mr-3">
                     <p className="text-sm font-medium text-gray-900 dark:text-white truncate">

@@ -28,7 +28,6 @@ import {
   cn,
   getSourceType,
   getYouTubeVideoId,
-  getSourceTypeIcon,
   getHttpErrorMessage,
 } from "@/lib/utils";
 
@@ -158,13 +157,13 @@ export function SourceViewer({
           <div className="bg-white dark:bg-gray-900 h-6 w-full flex-shrink-0" />
           <div className="bg-white dark:bg-gray-900 h-14 px-6">
             <div className="h-12 px-2 gap-3 flex justify-between items-center flex-shrink-0">
-              <div className="flex items-center gap-2 flex-1 min-w-0">
-                <div className="text-blue-500 dark:text-blue-400 flex-shrink-0 w-5 h-5">
-                  {getSourceTypeIcon(sourceType)}
-                </div>
-                <h2 className="truncate font-semibold">
+              <h2 className="flex items-baseline gap-1.5 flex-1 min-w-0">
+                <span className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400 shrink-0">
+                  Source /{" "}
+                </span>
+                <span className="truncate font-semibold">
                   {fullSource?.title || source.title || "Source viewer"}
-                </h2>
+                </span>
                 {(fullSource?.isConvertedByAi || source.isConvertedByAi) && (
                   <Tooltip text="Converted by AI" position="bottom">
                     <div className="flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-xs bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-200 border border-blue-200 dark:border-blue-700 select-none">
@@ -175,7 +174,7 @@ export function SourceViewer({
                     </div>
                   </Tooltip>
                 )}
-              </div>
+              </h2>
               <div className="flex gap-2">
                 <Tooltip
                   text={
@@ -266,7 +265,7 @@ export function SourceViewer({
             <div className="px-6 pt-4">
               <Card className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400">
+                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
                     Summary of this source
                   </h3>
                   <div className="flex gap-2">
