@@ -498,7 +498,7 @@ export function ChatCard({
                   className={cn(
                     "w-full flex flex-col gap-4 select-text transition-all duration-200",
                     {
-                      "max-w-xl bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 px-4 py-2.5 rounded-xs self-end ml-12 shadow-xs":
+                      "max-w-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 px-4 py-2.5 rounded-xs self-end ml-12 shadow-xs":
                         message.sender === "user",
                       "max-w-3xl self-start mr-12 py-2":
                         message.sender === "ai" && !message.error,
@@ -802,7 +802,7 @@ export function ChatCard({
         </motion.div>
       )}
       <Divider className="mt-0" />
-      <div className="pb-4 shrink-0">
+      <div className="shrink-0">
         {/* Chat input */}
         <div className="flex items-center gap-2 pt-1">
           {messages.length > 0 ? (

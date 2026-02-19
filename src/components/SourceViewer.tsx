@@ -159,7 +159,7 @@ export function SourceViewer({
           <div className="bg-white dark:bg-gray-900 h-14 px-6">
             <div className="h-12 px-2 gap-3 flex justify-between items-center flex-shrink-0">
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <div className="text-gray-600 dark:text-gray-300 flex-shrink-0 w-5 h-5">
+                <div className="text-blue-500 dark:text-blue-400 flex-shrink-0 w-5 h-5">
                   {getSourceTypeIcon(sourceType)}
                 </div>
                 <h2 className="truncate font-semibold">
@@ -264,9 +264,9 @@ export function SourceViewer({
         {fullSource && !loading && !error && (
           <div className="flex-1 flex flex-col w-full max-w-5xl mx-auto">
             <div className="px-6 pt-4">
-              <Card className="bg-gray-50 dark:bg-gray-800">
+              <Card className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold">
+                  <h3 className="text-lg font-semibold text-blue-600 dark:text-blue-400">
                     Summary of this source
                   </h3>
                   <div className="flex gap-2">
@@ -277,6 +277,7 @@ export function SourceViewer({
                           disabled={isSummaryLoading || isRegeneratingSummary}
                           variant="ghost"
                           size="sm"
+                          className="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:hover:bg-blue-800/30"
                           onClick={() => {
                             navigator.clipboard.writeText(sourceSummary);
                             showToast(
@@ -296,6 +297,7 @@ export function SourceViewer({
                           icon={<DeleteIcon />}
                           variant="ghost"
                           size="sm"
+                          className="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:hover:bg-blue-800/30"
                           onClick={deleteSummary}
                           disabled={
                             isDeletingSummary ||
@@ -317,6 +319,7 @@ export function SourceViewer({
                           }
                           variant="ghost"
                           size="sm"
+                          className="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:hover:bg-blue-800/30"
                           onClick={regenerateSummary}
                           disabled={isRegeneratingSummary}
                         />
@@ -341,7 +344,10 @@ export function SourceViewer({
                     transition={{ duration: 0.15, ease: "easeInOut" }}
                   >
                     {isSummaryLoading || isRegeneratingSummary ? (
-                      <Skeleton lines={8} />
+                      <Skeleton
+                        lines={8}
+                        className="[&>div]:!bg-blue-200/80 [&>div]:dark:!bg-blue-800/80"
+                      />
                     ) : summaryGenerateError ? (
                       <div className="flex flex-col gap-3">
                         <Alert
@@ -362,7 +368,7 @@ export function SourceViewer({
                         </Button>
                       </div>
                     ) : sourceSummary?.trim() ? (
-                      <div className="max-w-none select-text">
+                      <div className="max-w-none select-text text-blue-800 dark:text-blue-100">
                         <Markdown text={sourceSummary} />
                       </div>
                     ) : (
