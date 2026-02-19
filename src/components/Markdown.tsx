@@ -1,5 +1,6 @@
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
+import remarkGfm from "remark-gfm";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 import { cn } from "../lib/utils";
@@ -13,7 +14,7 @@ interface MarkdownProps {
 export function Markdown({ text, linkColorClass }: MarkdownProps) {
   return (
     <ReactMarkdown
-      remarkPlugins={[remarkMath]}
+      remarkPlugins={[remarkMath, remarkGfm]}
       rehypePlugins={[rehypeKatex]}
       components={{
         h1: ({ children }) => (
@@ -87,6 +88,28 @@ export function Markdown({ text, linkColorClass }: MarkdownProps) {
           >
             {children}
           </a>
+        ),
+        table: ({ children }) => (
+          <table className="w-full border-collapse my-2 text-sm">
+            {children}
+          </table>
+        ),
+        thead: ({ children }) => (
+          <thead className="bg-gray-100 dark:bg-gray-800">{children}</thead>
+        ),
+        tbody: ({ children }) => <tbody>{children}</tbody>,
+        tr: ({ children }) => (
+          <tr className="border-b border-gray-200 dark:border-gray-700">
+            {children}
+          </tr>
+        ),
+        th: ({ children }) => (
+          <th className="px-3 py-2 text-left font-semibold border-b border-gray-300 dark:border-gray-600">
+            {children}
+          </th>
+        ),
+        td: ({ children }) => (
+          <td className="px-3 py-2 align-top">{children}</td>
         ),
       }}
     >
