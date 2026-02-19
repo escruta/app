@@ -2,7 +2,12 @@ import { useEffect, useState, useRef } from "react";
 import { useLoaderData } from "react-router";
 import { useFetch, useCookie, useIsMobile } from "@/hooks";
 import type { Note, Source, Notebook, NotebookContent } from "@/interfaces";
-import { EditIcon, NotebookIcon, FireIcon } from "@/components/icons";
+import {
+  EditIcon,
+  NotebookIcon,
+  FireIcon,
+  ShareIcon,
+} from "@/components/icons";
 import {
   Tooltip,
   IconButton,
@@ -403,7 +408,11 @@ export default function NotebookPage() {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, delay: 0.2 }}
+            className="flex gap-3"
           >
+            <Button onClick={() => {}} size="sm" icon={<ShareIcon />}>
+              Share notebook
+            </Button>
             <Tooltip text="Edit title" position="left">
               <IconButton
                 icon={<EditIcon />}
