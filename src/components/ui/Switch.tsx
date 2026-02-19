@@ -58,7 +58,7 @@ export function Switch({
           className={cn(
             "absolute inset-0 rounded-xs transition-all duration-200 ease-in-out",
             "border border-gray-300 dark:border-gray-600",
-            "bg-gray-100 dark:bg-gray-700",
+            "bg-gray-50 dark:bg-gray-800",
             "peer-checked:bg-blue-500 peer-checked:dark:bg-blue-600",
             "peer-checked:border-transparent",
             "peer-focus:ring-2 peer-focus:ring-blue-400 peer-focus:ring-offset-2 peer-focus:ring-offset-white dark:peer-focus:ring-offset-gray-900",

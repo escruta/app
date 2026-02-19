@@ -47,7 +47,7 @@ export const Tabs = forwardRef<TabsRef, TabsProps>(
 
     return (
       <div className={cn("w-full relative", className)}>
-        <div className="flex w-full overflow-x-auto no-scrollbar justify-start p-1 bg-gray-50 dark:bg-gray-900 rounded-xs border border-gray-200 dark:border-gray-600">
+        <div className="flex w-full overflow-x-auto no-scrollbar justify-start p-1 bg-gray-50/65 dark:bg-gray-900/65 rounded-xs border border-gray-200 dark:border-gray-600">
           {items.map((tab, index) => (
             <div key={index} className="relative flex-1 min-w-max group">
               {activeTabId === tab.id && (

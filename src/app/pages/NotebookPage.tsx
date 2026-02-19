@@ -391,7 +391,7 @@ export default function NotebookPage() {
       )}
       <div className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700 py-4 px-4 md:px-6 z-10">
         <div className="flex justify-between items-center gap-2">
-          <h1 className="flex items-center gap-1.5 min-w-0 flex-1 *:leading-7 text-gray-900 dark:text-white select-text">
+          <h1 className="flex items-baseline gap-1.5 min-w-0 flex-1 text-gray-900 dark:text-white select-text">
             <span className="hidden md:block text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400 shrink-0">
               Notebook /{" "}
             </span>
