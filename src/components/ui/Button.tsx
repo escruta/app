@@ -48,7 +48,7 @@ export function Button({
     success:
       "bg-green-600 border-2 border-green-700 text-white shadow-sm shadow-green-600/30 hover:shadow-md hover:shadow-green-600/40 hover:ring-2 hover:ring-green-300 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-gray-900 active:bg-green-700 focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 dark:bg-green-600 dark:border-green-500 dark:hover:ring-green-500/50",
     ghost:
-      "bg-transparent border border-gray-300 text-gray-600 hover:border-gray-500 hover:bg-gray-50 hover:ring-1 hover:ring-gray-400 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-gray-900 active:bg-gray-100 dark:active:bg-gray-800/50 focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800/30 dark:hover:border-gray-500",
+      "bg-transparent border-0 text-gray-400 hover:bg-gray-800/30 hover:border-gray-500 hover:ring-1 hover:ring-gray-600 hover:ring-offset-1 hover:ring-offset-gray-900 active:bg-gray-800/50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900",
   };
 
   const disabledStyles =
