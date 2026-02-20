@@ -152,66 +152,77 @@ export function ToolResultViewer({
     <Card
       isExpanded={isExpanded}
       setIsExpanded={setIsExpanded}
-      className={cn("flex flex-col overflow-y-auto p-0", className)}
+      className={cn(
+        "flex flex-col overflow-y-auto p-0",
+        {
+          "lg:max-w-4/5 xl:max-w-3/4": isExpanded && type !== "MIND_MAP",
+        },
+        className,
+      )}
     >
-      <div className="sticky h-20 top-0 z-10">
-        <div className="h-6 w-full flex-shrink-0" />
-        <div className="h-14 px-6">
-          <div className="h-12 px-2 gap-3 flex justify-between items-center flex-shrink-0">
-            <div className="flex items-center gap-2 flex-1 min-w-0">
-              <div className="text-gray-600 dark:text-gray-300 flex-shrink-0 w-5 h-5">
-                {toolIcons[type]}
-              </div>
-              <h2 className="truncate font-semibold">{title}</h2>
+      <div className="sticky top-0 z-10 py-2">
+        <div className="h-12 px-6 gap-3 flex justify-between items-center flex-shrink-0">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <div className="text-gray-600 dark:text-gray-300 flex-shrink-0 w-5 h-5">
+              {toolIcons[type]}
             </div>
-            <div className="flex gap-2">
-              {onRegenerate && (
-                <Tooltip text="Regenerate" position="bottom">
-                  <IconButton
-                    icon={isLoading ? <Spinner size={16} /> : <RestartIcon />}
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      onRegenerate();
-                      onClose();
-                    }}
-                    disabled={isLoading}
-                  />
-                </Tooltip>
-              )}
-              <Tooltip
-                text={isExpanded ? "Restore size" : "Expand"}
-                position="bottom"
-              >
+            <h2 className="truncate font-semibold">{title}</h2>
+          </div>
+          <div className="flex gap-2">
+            {onRegenerate && (
+              <Tooltip text="Regenerate" position="bottom">
                 <IconButton
-                  icon={isExpanded ? <CompressIcon /> : <ExpandIcon />}
+                  icon={isLoading ? <Spinner size={16} /> : <RestartIcon />}
                   variant="ghost"
                   size="sm"
-                  onClick={() => setIsExpanded((s) => !s)}
+                  onClick={() => {
+                    onRegenerate();
+                    onClose();
+                  }}
+                  disabled={isLoading}
                 />
               </Tooltip>
-              <Tooltip text="Close" position="bottom">
-                <IconButton
-                  icon={<CloseIcon />}
-                  variant="ghost"
-                  size="sm"
-                  onClick={onClose}
-                />
-              </Tooltip>
-            </div>
+            )}
+            <Tooltip
+              text={isExpanded ? "Restore size" : "Expand"}
+              position="bottom"
+            >
+              <IconButton
+                icon={isExpanded ? <CompressIcon /> : <ExpandIcon />}
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsExpanded((s) => !s)}
+              />
+            </Tooltip>
+            <Tooltip text="Close" position="bottom">
+              <IconButton
+                icon={<CloseIcon />}
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+              />
+            </Tooltip>
           </div>
         </div>
       </div>
 
-      <Divider className="mb-0" />
+      <Divider className="my-0" />
 
       <div
         className={cn("flex-1 flex flex-col w-full mx-auto", {
           "max-w-5xl overflow-y-auto": !(
-            ["MIND_MAP", "FLASHCARDS"] satisfies JobType[] as readonly JobType[]
+            [
+              "MIND_MAP",
+              "FLASHCARDS",
+              "QUESTIONNAIRE",
+            ] satisfies JobType[] as readonly JobType[]
           ).includes(type),
           "overflow-hidden": (
-            ["MIND_MAP", "FLASHCARDS"] satisfies JobType[] as readonly JobType[]
+            [
+              "MIND_MAP",
+              "FLASHCARDS",
+              "QUESTIONNAIRE",
+            ] satisfies JobType[] as readonly JobType[]
           ).includes(type),
         })}
       >
