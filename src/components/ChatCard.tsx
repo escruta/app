@@ -471,8 +471,8 @@ export function ChatCard({
   }, []);
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden">
-      <div className="flex flex-row justify-between items-center mb-2 shrink-0">
+    <Card className="flex flex-col h-full overflow-hidden px-0">
+      <div className="flex flex-row justify-between items-center mb-2 px-4 shrink-0">
         <h2 className="flex items-baseline gap-1.5 min-w-0 flex-1">
           <span className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400 shrink-0">
             Chat /{" "}
@@ -511,7 +511,7 @@ export function ChatCard({
       {messages.length > 0 ? (
         <div
           ref={scrollContainerRef}
-          className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 scroll-smooth scroll-pt-4"
+          className="flex-1 overflow-y-auto py-4 px-4 md:px-6 space-y-4 min-h-0 scroll-smooth scroll-pt-4"
         >
           <AnimatePresence>
             {messages.map((message, index) => (
@@ -607,7 +607,7 @@ export function ChatCard({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="flex flex-col flex-grow min-h-0 max-h-full overflow-y-auto"
+          className="flex flex-col flex-grow min-h-0 px-4 max-h-full overflow-y-auto"
         >
           {sourcesCount > 0 ? (
             <div className="w-full py-8 px-4">
@@ -834,7 +834,7 @@ export function ChatCard({
         </motion.div>
       )}
       <Divider className="mt-0" />
-      <div className="shrink-0">
+      <div className="shrink-0 px-4">
         {/* Chat input */}
         <div className="flex items-center gap-2 pt-1">
           {messages.length > 0 ? (
