@@ -32,7 +32,7 @@ export function IconButton({
     danger:
       "bg-red-500 border-2 border-red-600 text-white shadow-sm shadow-red-500/30 hover:shadow-md hover:shadow-red-500/40 hover:ring-2 hover:ring-red-300 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-gray-900 active:bg-red-600 focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 dark:bg-red-600 dark:border-red-500 dark:hover:ring-red-500/50",
     ghost:
-      "bg-transparent border-0 text-gray-400 hover:bg-gray-800/30 hover:border-gray-500 hover:ring-1 hover:ring-gray-600 hover:ring-offset-1 hover:ring-offset-gray-900 active:bg-gray-800/50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900",
+      "bg-transparent border-0 text-gray-600 hover:bg-gray-100 hover:ring-1 hover:ring-gray-200 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-gray-900 active:bg-gray-200 focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 dark:text-gray-400 dark:hover:bg-gray-800/30 dark:hover:ring-gray-600 dark:active:bg-gray-800/50 dark:focus:ring-gray-500",
   };
 
   const sizeStyles = {
