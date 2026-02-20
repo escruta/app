@@ -7,32 +7,25 @@ import type { FlashcardsResponse } from "@/interfaces";
 
 interface FlashcardsViewerProps {
   data: FlashcardsResponse;
-  isExpanded?: boolean;
   className?: string;
 }
 
-const variants = {
+const slideVariants = {
   enter: (direction: number) => ({
-    x: direction === 0 ? 0 : direction > 0 ? 50 : -50,
+    x: direction === 0 ? 0 : direction > 0 ? 40 : -40,
     opacity: 0,
   }),
   center: {
-    zIndex: 1,
     x: 0,
     opacity: 1,
   },
   exit: (direction: number) => ({
-    zIndex: 0,
-    x: direction === 0 ? 0 : direction < 0 ? 50 : -50,
+    x: direction === 0 ? 0 : direction < 0 ? 40 : -40,
     opacity: 0,
   }),
 };
 
-export function FlashcardsViewer({
-  data,
-  isExpanded,
-  className,
-}: FlashcardsViewerProps) {
+export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [direction, setDirection] = useState(0);
@@ -41,7 +34,7 @@ export function FlashcardsViewer({
 
   useEffect(() => {
     containerRef.current?.focus();
-  }, [isExpanded]);
+  }, []);
 
   const { flashcards } = data;
   const currentCard = flashcards[currentIndex];
@@ -121,64 +114,53 @@ export function FlashcardsViewer({
     <div
       role="application"
       aria-label="Flashcards viewer"
-      className={cn(
-        "flex flex-col w-full focus:outline-none transition-all duration-300",
-        {
-          "h-full": isExpanded,
-          "mx-auto max-w-2xl gap-4 p-4": !isExpanded,
-        },
-        className,
-      )}
+      className={cn("flex flex-col h-full focus:outline-none", className)}
       ref={containerRef}
       onKeyDown={handleKeyDown}
       tabIndex={0}
     >
-      {/* Header with Stats */}
-      <div
-        className={cn("flex items-center justify-between", {
-          "p-4 flex-shrink-0": isExpanded,
-          "p-3 rounded-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600":
-            !isExpanded,
-        })}
-      >
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col">
-            <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-              Progress
-            </span>
-            <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-              {currentIndex + 1} / {totalCards}
-            </span>
-          </div>
-
-          <div className="h-8 w-px bg-gray-200 dark:bg-gray-600" />
-
-          <div className="flex flex-col">
-            <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-              Learned
-            </span>
-            <div className="flex items-center gap-1.5">
-              <CheckIcon className="size-3 text-green-500" />
-              <span className="text-sm font-semibold text-green-600 dark:text-green-400">
-                {knownCount}
+      {/* ── Top Bar (fixed) ── */}
+      <div className="flex-shrink-0 px-6 py-4 flex flex-col gap-3 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex flex-col">
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                Progress
+              </span>
+              <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+                {currentIndex + 1} / {totalCards}
               </span>
             </div>
+
+            <div className="h-8 w-px bg-gray-200 dark:bg-gray-600" />
+
+            <div className="flex flex-col">
+              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                Learned
+              </span>
+              <div className="flex items-center gap-1.5">
+                <CheckIcon className="size-3 text-green-500" />
+                <span className="text-sm font-semibold text-green-600 dark:text-green-400">
+                  {knownCount}
+                </span>
+              </div>
+            </div>
           </div>
+
+          {knownCount > 0 && (
+            <Tooltip text="Restart deck" position="bottom">
+              <IconButton
+                icon={<RestartIcon />}
+                variant="ghost"
+                size="xs"
+                onClick={handleRestart}
+                className="text-gray-500 hover:text-blue-500"
+              />
+            </Tooltip>
+          )}
         </div>
 
-        <Tooltip text="Restart deck" position="bottom">
-          <IconButton
-            icon={<RestartIcon />}
-            variant="ghost"
-            size="xs"
-            onClick={handleRestart}
-            className="text-gray-500 hover:text-blue-500"
-          />
-        </Tooltip>
-      </div>
-
-      {/* Progress Bar */}
-      <div className={cn({ "px-4 flex-shrink-0": isExpanded })}>
+        {/* Progress Bar */}
         <div className="relative h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
           <motion.div
             className="absolute inset-y-0 left-0 bg-blue-500"
@@ -195,24 +177,14 @@ export function FlashcardsViewer({
         </div>
       </div>
 
-      {/* Card Area */}
-      <div
-        className={cn("flex items-center justify-center overflow-hidden", {
-          "flex-1 px-6 py-4 min-h-0": isExpanded,
-          "relative w-full h-52": !isExpanded,
-        })}
-      >
-        <div
-          className={cn("relative w-full", {
-            "max-w-2xl h-full max-h-80": isExpanded,
-            "max-w-lg h-44": !isExpanded,
-          })}
-        >
-          <AnimatePresence initial={false} custom={direction}>
+      {/* ── Scrollable Content (middle) ── */}
+      <div className="flex-1 min-h-0 overflow-hidden flex items-center justify-center">
+        <div className="px-6 py-6 w-full max-w-2xl mx-auto">
+          <AnimatePresence initial={false} custom={direction} mode="wait">
             <motion.div
               key={currentIndex}
               custom={direction}
-              variants={variants}
+              variants={slideVariants}
               initial="enter"
               animate="center"
               exit="exit"
@@ -220,7 +192,7 @@ export function FlashcardsViewer({
                 x: { duration: 0.2, ease: "easeOut" },
                 opacity: { duration: 0.15 },
               }}
-              className="absolute inset-0 cursor-pointer perspective-[1000px]"
+              className="cursor-pointer perspective-[1000px]"
               onClick={handleFlip}
             >
               <motion.div
@@ -228,16 +200,12 @@ export function FlashcardsViewer({
                 animate={{ rotateY: isFlipped ? 180 : 0 }}
                 transition={{ duration: 0.25, ease: "easeInOut" }}
                 style={{ transformStyle: "preserve-3d" }}
-                className="relative w-full h-full"
+                className="relative w-full h-56"
               >
                 {/* Front - Question */}
                 <div
                   className={cn(
-                    "absolute inset-0 backface-hidden rounded-xs border-2",
-                    {
-                      "p-6": isExpanded,
-                      "p-5": !isExpanded,
-                    },
+                    "absolute inset-0 backface-hidden rounded-xs border-2 p-6",
                     "bg-white dark:bg-gray-800",
                     "flex flex-col items-center justify-center text-center",
                     knownCards.has(currentIndex)
@@ -250,24 +218,21 @@ export function FlashcardsViewer({
                       Question
                     </span>
                     {knownCards.has(currentIndex) && (
-                      <span className="px-2 py-0.5 rounded-xs text-[10px] font-medium flex items-center gap-1 bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-300">
+                      <motion.span
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className="px-2 py-0.5 rounded-xs text-[10px] font-medium flex items-center gap-1 bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-300"
+                      >
                         <CheckIcon className="size-3" />
                         Learned
-                      </span>
+                      </motion.span>
                     )}
                   </div>
                   <span className="absolute bottom-3 text-[10px] text-gray-400 dark:text-gray-500">
                     Click to flip
                   </span>
-                  <p
-                    className={cn(
-                      "font-semibold text-gray-800 dark:text-gray-100 leading-relaxed max-w-xl",
-                      {
-                        "text-lg": isExpanded,
-                        "text-base": !isExpanded,
-                      },
-                    )}
-                  >
+                  <p className="font-semibold text-gray-800 dark:text-gray-100 leading-relaxed max-w-xl text-base">
                     {currentCard.front}
                   </p>
                 </div>
@@ -275,11 +240,7 @@ export function FlashcardsViewer({
                 {/* Back - Answer */}
                 <div
                   className={cn(
-                    "absolute inset-0 backface-hidden rounded-xs rotate-y-180 border-2",
-                    {
-                      "p-6": isExpanded,
-                      "p-5": !isExpanded,
-                    },
+                    "absolute inset-0 backface-hidden rounded-xs rotate-y-180 border-2 p-6",
                     "bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-600",
                     "flex flex-col items-center justify-center text-center",
                   )}
@@ -290,15 +251,7 @@ export function FlashcardsViewer({
                   <span className="absolute bottom-3 text-[10px] text-blue-400 dark:text-blue-500">
                     Click to flip back
                   </span>
-                  <p
-                    className={cn(
-                      "text-gray-700 dark:text-gray-200 leading-relaxed max-w-xl",
-                      {
-                        "text-base": isExpanded,
-                        "text-sm": !isExpanded,
-                      },
-                    )}
-                  >
+                  <p className="text-gray-700 dark:text-gray-200 leading-relaxed max-w-xl text-sm">
                     {currentCard.back}
                   </p>
                 </div>
@@ -308,48 +261,50 @@ export function FlashcardsViewer({
         </div>
       </div>
 
-      {/* Controls */}
-      <div
-        className={cn("flex flex-col items-center gap-3", {
-          "px-4 pb-4 flex-shrink-0": isExpanded,
-          "w-full": !isExpanded,
-        })}
-      >
-        <div className="flex items-center gap-4">
-          <IconButton
-            icon={<ChevronIcon direction="left" className="size-4" />}
-            variant="ghost"
-            size="md"
-            onClick={handlePrev}
-            disabled={currentIndex === 0}
-            className="rounded-xs border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-30 disabled:hover:border-gray-200 dark:disabled:hover:border-gray-600 disabled:hover:bg-transparent"
-          />
-          <Button
-            onClick={handleMarkKnown}
-            variant={knownCards.has(currentIndex) ? "success" : "primary"}
-            size="md"
-            icon={knownCards.has(currentIndex) ? <CheckIcon /> : undefined}
-            className="min-w-[140px]"
-          >
-            {knownCards.has(currentIndex) ? "Learned" : "Mark as learned"}
-          </Button>
-          <IconButton
-            icon={<ChevronIcon direction="right" className="size-4" />}
-            variant="ghost"
-            size="md"
-            onClick={handleNext}
-            disabled={currentIndex === totalCards - 1}
-            className="rounded-xs border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-30 disabled:hover:border-gray-200 dark:disabled:hover:border-gray-600 disabled:hover:bg-transparent"
-          />
+      {/* ── Bottom Bar (fixed) ── */}
+      <div className="flex-shrink-0 px-6 py-3 border-t border-gray-200 dark:border-gray-700 flex flex-col items-center gap-3">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center w-full max-w-2xl mx-auto">
+          <div className="flex justify-start">
+            <Tooltip text="Previous card" position="top">
+              <IconButton
+                icon={<ChevronIcon direction="left" className="size-4" />}
+                variant="ghost"
+                size="sm"
+                onClick={handlePrev}
+                disabled={currentIndex === 0}
+                className="rounded-xs border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-30 disabled:hover:border-gray-200 dark:disabled:hover:border-gray-600 disabled:hover:bg-transparent"
+              />
+            </Tooltip>
+          </div>
+
+          <div className="flex items-center justify-center">
+            <Button
+              onClick={handleMarkKnown}
+              variant={knownCards.has(currentIndex) ? "success" : "primary"}
+              size="sm"
+              icon={knownCards.has(currentIndex) ? <CheckIcon /> : undefined}
+              className="min-w-[130px]"
+            >
+              {knownCards.has(currentIndex) ? "Learned" : "Mark as learned"}
+            </Button>
+          </div>
+
+          <div className="flex justify-end">
+            <Tooltip text="Next card" position="top">
+              <IconButton
+                icon={<ChevronIcon direction="right" className="size-4" />}
+                variant="ghost"
+                size="sm"
+                onClick={handleNext}
+                disabled={currentIndex === totalCards - 1}
+                className="rounded-xs border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-30 disabled:hover:border-gray-200 dark:disabled:hover:border-gray-600 disabled:hover:bg-transparent"
+              />
+            </Tooltip>
+          </div>
         </div>
 
-        {/* Card Dots */}
-        <div
-          className={cn("flex gap-1 justify-center flex-wrap", {
-            "max-w-md": isExpanded,
-            "max-w-sm": !isExpanded,
-          })}
-        >
+        {/* Dot indicators */}
+        <div className="flex gap-1 items-center">
           {flashcards.map((_, idx) => (
             <button
               type="button"
@@ -364,13 +319,14 @@ export function FlashcardsViewer({
             >
               <div
                 className={cn(
-                  "size-1 rounded-full transition-all duration-200",
-                  {
-                    "bg-blue-500 scale-125": idx === currentIndex,
-                    "bg-green-500": knownCards.has(idx) && idx !== currentIndex,
-                    "bg-gray-300 dark:bg-gray-600 group-hover:bg-gray-400 dark:group-hover:bg-gray-500":
-                      !knownCards.has(idx) && idx !== currentIndex,
-                  },
+                  "size-[5px] rounded-full transition-all duration-200",
+                  idx === currentIndex
+                    ? knownCards.has(idx)
+                      ? "bg-green-500 scale-125 ring-2 ring-green-500/30"
+                      : "bg-blue-500 scale-125 ring-2 ring-blue-500/30"
+                    : knownCards.has(idx)
+                      ? "bg-green-500"
+                      : "bg-gray-300 dark:bg-gray-600 group-hover:bg-gray-400 dark:group-hover:bg-gray-500",
                 )}
               />
             </button>

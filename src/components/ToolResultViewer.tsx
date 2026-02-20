@@ -123,9 +123,7 @@ export function ToolResultViewer({
 
     switch (parsedContent.type) {
       case "FLASHCARDS":
-        return (
-          <FlashcardsViewer data={parsedContent.data} isExpanded={isExpanded} />
-        );
+        return <FlashcardsViewer data={parsedContent.data} />;
       case "QUESTIONNAIRE":
         return <QuestionnaireViewer data={parsedContent.data} />;
       case "STUDY_GUIDE":
