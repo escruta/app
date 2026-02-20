@@ -197,7 +197,7 @@ export function ToolResultViewer({
 
       <div
         className={cn("flex-1 flex flex-col w-full mx-auto", {
-          "max-w-5xl overflow-y-auto": !(
+          "overflow-y-auto": !(
             [
               "MIND_MAP",
               "FLASHCARDS",
