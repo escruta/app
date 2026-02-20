@@ -4,10 +4,6 @@ import {
   RestartIcon,
   ExpandIcon,
   CompressIcon,
-  MindMapIcon,
-  StudyIcon,
-  CardIcon,
-  QuestionnaireIcon,
 } from "@/components/icons";
 import { Card, IconButton, Tooltip, Divider, Spinner } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -35,13 +31,6 @@ interface ToolResultViewerProps {
   className?: string;
   onNodeSelect?: (question: string) => void;
 }
-
-const toolIcons: Record<JobType, React.ReactNode> = {
-  MIND_MAP: <MindMapIcon />,
-  STUDY_GUIDE: <StudyIcon />,
-  FLASHCARDS: <CardIcon />,
-  QUESTIONNAIRE: <QuestionnaireIcon />,
-};
 
 type ParsedContent =
   | { type: "FLASHCARDS"; data: FlashcardsResponse }
@@ -160,12 +149,12 @@ export function ToolResultViewer({
     >
       <div className="sticky top-0 z-10 py-2">
         <div className="h-12 px-6 gap-3 flex justify-between items-center flex-shrink-0">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <div className="text-gray-600 dark:text-gray-300 flex-shrink-0 w-5 h-5">
-              {toolIcons[type]}
-            </div>
-            <h2 className="truncate font-semibold">{title}</h2>
-          </div>
+          <h2 className="flex items-baseline gap-1.5 flex-1 min-w-0">
+            <span className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400 shrink-0">
+              Tool /{" "}
+            </span>
+            <span className="truncate font-semibold">{title}</span>
+          </h2>
           <div className="flex gap-2">
             {onRegenerate && (
               <Tooltip text="Regenerate" position="bottom">

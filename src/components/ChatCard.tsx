@@ -56,6 +56,7 @@ interface CitedSource {
 interface ChatResponse {
   content: string;
   conversationId: string | null;
+  conversationTitle?: string;
   citedSources: CitedSource[];
 }
 
@@ -385,11 +386,11 @@ export function ChatCard({
         setMessages((prevMessages) => [...prevMessages, aiResponse]);
         if (!conversationId && response.conversationId) {
           const firstMessage = pendingMessageRef.current || "";
-          const truncatedTitle =
+          const defaultTitle =
             firstMessage.length > 50
               ? firstMessage.slice(0, 50) + "..."
               : firstMessage;
-          setConversationTitle(truncatedTitle);
+          setConversationTitle(response.conversationTitle || defaultTitle);
         }
         setConversationId(response.conversationId);
         pendingMessageRef.current = null;
