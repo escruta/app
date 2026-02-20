@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { useState, useRef, useLayoutEffect } from "react";
+import { useState, useRef, useLayoutEffect, isValidElement } from "react";
 import { cn } from "@/lib/utils";
 import { createPortal } from "react-dom";
 
@@ -125,13 +125,17 @@ export function Tooltip({
   };
 
   const transformProps = getTransformProps();
+  const isChildDisabled =
+    isValidElement<{ disabled?: boolean }>(children) && children.props.disabled;
 
   return (
     <>
       <div
         ref={triggerRef}
         className={cn("relative", className)}
-        onMouseEnter={() => setIsVisible(true)}
+        onMouseEnter={() => {
+          if (!isChildDisabled) setIsVisible(true);
+        }}
         onMouseLeave={() => setIsVisible(false)}
       >
         {children}
