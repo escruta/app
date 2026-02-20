@@ -153,102 +153,99 @@ export function SourceViewer({
         setIsExpanded={setIsExpanded}
         className={cn("flex flex-col overflow-y-auto p-0", className)}
       >
-        <div className="sticky h-20 top-0 z-10 ">
-          <div className="bg-white dark:bg-gray-900 h-6 w-full flex-shrink-0" />
-          <div className="bg-white dark:bg-gray-900 h-14 px-6">
-            <div className="h-12 px-2 gap-3 flex justify-between items-center flex-shrink-0">
-              <h2 className="flex items-baseline gap-1.5 flex-1 min-w-0">
-                <span className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400 shrink-0">
-                  Source /{" "}
-                </span>
-                <span className="truncate font-semibold">
-                  {fullSource?.title || source.title || "Source viewer"}
-                </span>
-                {(fullSource?.isConvertedByAi || source.isConvertedByAi) && (
-                  <Tooltip text="Converted by AI" position="bottom">
-                    <div className="flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-xs bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-200 border border-blue-200 dark:border-blue-700 select-none">
-                      <div className="w-3.5 h-3.5 flex-shrink-0">
-                        <StarsIcon />
-                      </div>
-                      <span className="text-xs font-semibold">AI</span>
+        <div className="sticky h-20 top-0 z-10 bg-white dark:bg-gray-900">
+          <div className="p-4 gap-3 flex justify-between items-center shrink-0">
+            <h2 className="flex items-baseline gap-1.5 flex-1 min-w-0 select-text">
+              <span className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400 shrink-0">
+                Source /{" "}
+              </span>
+              <span className="truncate font-semibold">
+                {fullSource?.title || source.title || "Source viewer"}
+              </span>
+              {(fullSource?.isConvertedByAi || source.isConvertedByAi) && (
+                <Tooltip text="Converted by AI" position="bottom">
+                  <div className="flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-xs bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-200 border border-blue-200 dark:border-blue-700 select-none">
+                    <div className="w-3.5 h-3.5 flex-shrink-0">
+                      <StarsIcon />
                     </div>
-                  </Tooltip>
-                )}
-              </h2>
-              <div className="flex gap-2">
-                <Tooltip
-                  text={
-                    sourceType === "YouTube Video"
-                      ? "Copy video URL"
-                      : "Copy source content"
-                  }
-                  position="bottom"
-                >
+                    <span className="text-xs font-semibold">AI</span>
+                  </div>
+                </Tooltip>
+              )}
+            </h2>
+            <div className="flex gap-2">
+              <Tooltip
+                text={
+                  sourceType === "YouTube Video"
+                    ? "Copy video URL"
+                    : "Copy source content"
+                }
+                position="bottom"
+              >
+                <IconButton
+                  icon={<CopyIcon />}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    const textToCopy =
+                      sourceType === "YouTube Video"
+                        ? fullSource?.link || source.link
+                        : fullSource?.content || "";
+                    const message =
+                      sourceType === "YouTube Video"
+                        ? "Video URL copied to clipboard"
+                        : "Source content copied to clipboard";
+                    navigator.clipboard.writeText(textToCopy);
+                    showToast(message, "success", { duration: 1500 });
+                  }}
+                />
+              </Tooltip>
+              {sourceType === "Website" && (
+                <Tooltip text="Open source" position="bottom">
                   <IconButton
-                    icon={<CopyIcon />}
+                    icon={<LinkIcon />}
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                      const textToCopy =
-                        sourceType === "YouTube Video"
-                          ? fullSource?.link || source.link
-                          : fullSource?.content || "";
-                      const message =
-                        sourceType === "YouTube Video"
-                          ? "Video URL copied to clipboard"
-                          : "Source content copied to clipboard";
-                      navigator.clipboard.writeText(textToCopy);
-                      showToast(message, "success", { duration: 1500 });
+                      window.open(
+                        fullSource?.link,
+                        "_blank",
+                        "noopener noreferrer",
+                      );
                     }}
                   />
                 </Tooltip>
-                {sourceType === "Website" && (
-                  <Tooltip text="Open source" position="bottom">
-                    <IconButton
-                      icon={<LinkIcon />}
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        window.open(
-                          fullSource?.link,
-                          "_blank",
-                          "noopener noreferrer",
-                        );
-                      }}
-                    />
-                  </Tooltip>
-                )}
-                <Tooltip text="Delete source" position="bottom">
-                  <IconButton
-                    icon={<DeleteIcon />}
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsDeleteModalOpen(true)}
-                  />
-                </Tooltip>
-                <Tooltip
-                  text={isExpanded ? "Restore size" : "Expand"}
-                  position="bottom"
-                >
-                  <IconButton
-                    icon={isExpanded ? <CompressIcon /> : <ExpandIcon />}
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsExpanded((s) => !s)}
-                  />
-                </Tooltip>
-                <Tooltip text="Close source" position="bottom">
-                  <IconButton
-                    icon={<CloseIcon />}
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleCloseSource}
-                  />
-                </Tooltip>
-              </div>
+              )}
+              <Tooltip text="Delete source" position="bottom">
+                <IconButton
+                  icon={<DeleteIcon />}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                />
+              </Tooltip>
+              <Tooltip
+                text={isExpanded ? "Restore size" : "Expand"}
+                position="bottom"
+              >
+                <IconButton
+                  icon={isExpanded ? <CompressIcon /> : <ExpandIcon />}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsExpanded((s) => !s)}
+                />
+              </Tooltip>
+              <Tooltip text="Close source" position="bottom">
+                <IconButton
+                  icon={<CloseIcon />}
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCloseSource}
+                />
+              </Tooltip>
             </div>
-            <Divider />
           </div>
+          <Divider className="my-0" />
         </div>
         {loading && (
           <div className="text-center text-gray-500 text-sm px-6">

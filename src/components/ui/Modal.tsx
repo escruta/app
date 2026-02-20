@@ -109,11 +109,11 @@ export function Modal({
               }
             }}
           >
-            <div className="flex items-center justify-between gap-4 p-6 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex flex-col gap-1">
+            <div className="flex items-center justify-between gap-4 p-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex flex-col gap-0.5">
                 <h2
                   id="modal-title"
-                  className="text-xl font-medium text-gray-900 dark:text-white"
+                  className="text-lg font-semibold text-gray-800 dark:text-white"
                 >
                   {title}
                 </h2>
@@ -135,11 +135,11 @@ export function Modal({
             </div>
 
             <div className={cn("overflow-y-auto", contentClassname)}>
-              <div className="p-6">{children}</div>
+              <div className="p-4">{children}</div>
             </div>
 
             {actions && (
-              <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
                 {actions}
               </div>
             )}
@@ -166,11 +166,11 @@ export function Modal({
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.15 }}
           >
-            <div className="flex items-center justify-between gap-4 p-6 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex flex-col gap-1">
+            <div className="flex items-center justify-between gap-4 p-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex flex-col gap-0.5">
                 <h2
                   id="modal-title"
-                  className="text-xl font-medium text-gray-900 dark:text-white"
+                  className="text-lg font-semibold text-gray-800 dark:text-white"
                 >
                   {title}
                 </h2>
@@ -192,11 +192,11 @@ export function Modal({
             </div>
 
             <div className={cn("max-h-96 overflow-y-auto", contentClassname)}>
-              <div className="p-6">{children}</div>
+              <div className="p-4">{children}</div>
             </div>
 
             {actions && (
-              <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
                 {actions}
               </div>
             )}

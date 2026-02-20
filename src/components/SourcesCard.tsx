@@ -165,7 +165,7 @@ export function SourcesCard({
   return (
     <>
       <Card className="h-full overflow-y-auto">
-        <div className="flex flex-row justify-between items-center mb-2 shrink-0">
+        <div className="flex flex-row justify-between items-center shrink-0">
           <h2 className="text-lg font-sans font-semibold">Sources</h2>
           <div className="flex gap-3">
             {/* <Tooltip text="Find sources" position="bottom">
