@@ -5,7 +5,6 @@ import {
   Card,
   Button,
   Divider,
-  IconButton,
   Modal,
   TextField,
   Tooltip,
@@ -69,14 +68,16 @@ export function NotesCard({
       <Card className="h-full overflow-y-auto">
         <div className="flex flex-row justify-between items-center mb-2 flex-shrink-0 h-8">
           <h2 className="text-lg font-sans font-semibold">Notes</h2>
-          <Tooltip text="Add note" position="bottom">
-            <IconButton
+          <Tooltip text="Add a new note" position="bottom">
+            <Button
               icon={<AddIcon />}
               variant="primary"
               size="sm"
               className="flex-shrink-0"
               onClick={() => setIsAddNoteModalOpen(true)}
-            />
+            >
+              Add note
+            </Button>
           </Tooltip>
         </div>
         <Divider className="my-4" />

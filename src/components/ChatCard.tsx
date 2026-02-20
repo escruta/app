@@ -480,15 +480,17 @@ export function ChatCard({
             {conversationTitle || "New conversation"}
           </span>
         </h2>
-        <Tooltip text="Chat history" position="bottom">
-          <IconButton
-            icon={<ChatHistoryIcon />}
-            ariaLabel="Chat history"
-            onClick={() => setIsHistoryOpen(true)}
-            variant="ghost"
-            size="sm"
-          />
-        </Tooltip>
+        {sourcesCount > 0 ? (
+          <Tooltip text="Chat history" position="bottom">
+            <IconButton
+              icon={<ChatHistoryIcon />}
+              ariaLabel="Chat history"
+              onClick={() => setIsHistoryOpen(true)}
+              variant="ghost"
+              size="sm"
+            />
+          </Tooltip>
+        ) : null}
       </div>
       <ChatHistory
         notebookId={notebookId}
