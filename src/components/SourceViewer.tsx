@@ -369,7 +369,7 @@ export function SourceViewer({
                           </Button>
                         </div>
                       ) : sourceSummary?.trim() ? (
-                        <div className="max-w-none select-text text-blue-800 dark:text-blue-100">
+                        <div className="leading-relaxed max-w-none select-text text-blue-800 dark:text-blue-100">
                           <Markdown text={sourceSummary} />
                         </div>
                       ) : (
@@ -398,7 +398,7 @@ export function SourceViewer({
                     </div>
                     {fullSource.content && (
                       <div className="overflow-auto text-gray-700 dark:text-gray-300 break-words select-text">
-                        <div className="max-w-none">
+                        <div className="max-w-none leading-relaxed">
                           <Markdown text={fullSource.content} />
                         </div>
                       </div>
@@ -406,7 +406,7 @@ export function SourceViewer({
                   </div>
                 ) : (
                   <div className="h-auto min-h-[80%] w-full px-6 py-8 overflow-auto text-gray-700 dark:text-gray-300 break-words select-text">
-                    <div className="max-w-none">
+                    <div className="max-w-none leading-relaxed">
                       <Markdown text={fullSource.content || ""} />
                     </div>
                   </div>
