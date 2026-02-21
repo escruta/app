@@ -31,7 +31,10 @@ import {
 } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn, getHttpErrorMessage } from "@/lib/utils";
-import { Markdown } from "@/components/Markdown";
+
+const Markdown = lazy(() =>
+  import("./Markdown").then((module) => ({ default: module.Markdown })),
+);
 
 const CodeBlock = lazy(() =>
   import("./CodeBlock").then((module) => ({ default: module.CodeBlock })),

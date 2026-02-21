@@ -159,7 +159,7 @@ export function NotesCard({
         <div className="space-y-4">
           <TextField
             id="note-title"
-            label="Note Title"
+            label="Title of the note"
             type="text"
             value={newNoteTitle}
             onChange={(e) => setNewNoteTitle(e.target.value)}

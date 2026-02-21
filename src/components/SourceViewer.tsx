@@ -23,13 +23,17 @@ import {
   Spinner,
   Skeleton,
 } from "@/components/ui";
-import { Markdown } from "@/components/Markdown";
+import { lazy } from "react";
 import {
   cn,
   getSourceType,
   getYouTubeVideoId,
   getHttpErrorMessage,
 } from "@/lib/utils";
+
+const Markdown = lazy(() =>
+  import("./Markdown").then((module) => ({ default: module.Markdown })),
+);
 
 interface SourceViewerProps {
   notebookId: string;
@@ -389,16 +393,16 @@ export function SourceViewer({
                     />
                   </div>
                   {fullSource.content && (
-                    <div className="overflow-auto text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words select-text">
-                      <div className="max-w-none text-base">
+                    <div className="overflow-auto text-gray-700 dark:text-gray-300 break-words select-text">
+                      <div className="max-w-none">
                         <Markdown text={fullSource.content} />
                       </div>
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="h-auto min-h-[80%] w-full px-6 py-8 overflow-auto text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words select-text">
-                  <div className="max-w-none text-base">
+                <div className="h-auto min-h-[80%] w-full px-6 py-8 overflow-auto text-gray-700 dark:text-gray-300 break-words select-text">
+                  <div className="max-w-none">
                     <Markdown text={fullSource.content || ""} />
                   </div>
                 </div>

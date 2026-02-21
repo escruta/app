@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { Note } from "@/interfaces";
+import { NoteIcon } from "@/components/icons";
 
 interface NoteChipProps {
   note: Note;
@@ -32,8 +33,19 @@ export function NoteChip({ note, className, onSelect }: NoteChipProps) {
       role="button"
     >
       <div className="relative p-3 h-full flex items-center gap-3">
-        <div className="flex-1 min-w-0">
-          <h2 className="text-sm font-medium text-gray-800 dark:text-gray-200 line-clamp-1 group-hover:text-blue-900 dark:group-hover:text-blue-100 transition-colors duration-300">
+        <div className="shrink-0 p-2 rounded-xs transition-all duration-300 bg-gray-100 dark:bg-gray-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-800">
+          {note.icon ? (
+            <span className="text-sm leading-none flex items-center justify-center size-4">
+              {note.icon}
+            </span>
+          ) : (
+            <div className="size-4 transition-all duration-300 text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+              <NoteIcon />
+            </div>
+          )}
+        </div>
+        <div className="flex flex-col flex-1 justify-center gap-0.5 min-w-0">
+          <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-1 group-hover:text-blue-900 dark:group-hover:text-blue-100 transition-colors duration-300">
             {note.title}
           </h2>
         </div>

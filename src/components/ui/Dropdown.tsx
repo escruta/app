@@ -11,6 +11,8 @@ type DropdownProps<T extends string> = {
   className?: string;
   placeholder?: string;
   disabled?: boolean;
+  size?: "sm" | "md";
+  onOpenChange?: (isOpen: boolean) => void;
 };
 
 export function Dropdown<T extends string>({
@@ -21,9 +23,18 @@ export function Dropdown<T extends string>({
   className = "",
   placeholder = "Select an option",
   disabled = false,
+  size = "md",
+  onOpenChange,
 }: DropdownProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const handleOpenChange = (newIsOpen: boolean) => {
+    setIsOpen(newIsOpen);
+    if (onOpenChange) {
+      onOpenChange(newIsOpen);
+    }
+  };
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -31,7 +42,7 @@ export function Dropdown<T extends string>({
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node)
       ) {
-        setIsOpen(false);
+        handleOpenChange(false);
       }
     }
 
@@ -41,7 +52,7 @@ export function Dropdown<T extends string>({
 
   const handleSelect = (option: T) => {
     onSelect(option);
-    setIsOpen(false);
+    handleOpenChange(false);
   };
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
@@ -49,9 +60,9 @@ export function Dropdown<T extends string>({
 
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      setIsOpen(!isOpen);
+      handleOpenChange(!isOpen);
     } else if (event.key === "Escape") {
-      setIsOpen(false);
+      handleOpenChange(false);
     }
   };
 
@@ -67,15 +78,17 @@ export function Dropdown<T extends string>({
         {/* Trigger Button */}
         <button
           type="button"
-          onClick={() => !disabled && setIsOpen(!isOpen)}
+          onClick={() => !disabled && handleOpenChange(!isOpen)}
           onKeyDown={handleKeyDown}
           disabled={disabled}
           className={cn(
-            "relative w-full min-w-[160px] h-10 px-3 pr-10 text-left",
+            "relative w-full text-left",
+            size === "sm" && "min-w-[120px] h-8 px-2 pr-7 text-xs",
+            size === "md" && "min-w-[160px] h-10 px-3 pr-10 text-sm",
             "bg-white dark:bg-gray-900",
             "border border-gray-300 dark:border-gray-600",
             "rounded-xs",
-            "text-gray-900 dark:text-gray-100 text-sm",
+            "text-gray-900 dark:text-gray-100",
             "focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900",
             "transition-all duration-200 ease-in-out",
             "select-none",
@@ -94,10 +107,18 @@ export function Dropdown<T extends string>({
           </span>
 
           {/* Chevron Icon */}
-          <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+          <span
+            className={cn(
+              "absolute inset-y-0 right-0 flex items-center pointer-events-none",
+              size === "sm" ? "pr-2" : "pr-3",
+            )}
+          >
             <ChevronIcon
               direction={isOpen ? "up" : "down"}
-              className="size-5 text-gray-400 dark:text-gray-400 transition-transform duration-200"
+              className={cn(
+                "text-gray-400 dark:text-gray-400 transition-transform duration-200",
+                size === "sm" ? "size-4" : "size-5",
+              )}
             />
           </span>
         </button>
@@ -129,13 +150,15 @@ export function Dropdown<T extends string>({
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{
-                      duration: 0.15,
-                      delay: index * 0.05,
+                      duration: 0.05,
+                      delay: index * 0.015,
                       ease: "easeOut",
                     }}
                     onClick={() => handleSelect(option)}
                     className={cn(
-                      "relative w-full px-3 py-2 text-left text-sm",
+                      "relative w-full text-left",
+                      size === "sm" && "px-2 py-1.5 text-xs",
+                      size === "md" && "px-3 py-2 text-sm",
                       "text-gray-900 dark:text-gray-100",
                       "transition-colors duration-150",
                       "hover:bg-blue-50 dark:hover:bg-gray-800",
@@ -149,8 +172,15 @@ export function Dropdown<T extends string>({
                   >
                     <span className="block truncate">{option}</span>
                     {selectedOption === option && (
-                      <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600 dark:text-blue-400">
-                        <CheckIcon className="w-5 h-5" />
+                      <span
+                        className={cn(
+                          "absolute inset-y-0 right-0 flex items-center text-blue-600 dark:text-blue-400",
+                          size === "sm" ? "pr-2" : "pr-3",
+                        )}
+                      >
+                        <CheckIcon
+                          className={size === "sm" ? "size-4" : "size-5"}
+                        />
                       </span>
                     )}
                   </motion.button>

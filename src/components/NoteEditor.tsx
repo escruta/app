@@ -10,11 +10,11 @@ import {
   DeleteIcon,
   EditIcon,
   ExpandIcon,
-  SaveIcon,
 } from "@/components/icons";
 import {
   Button,
   Card,
+  Divider,
   IconButton,
   Modal,
   Spinner,
@@ -109,7 +109,7 @@ export function NoteEditor({
       onSuccess: () => {
         setIsSaving(false);
         setOriginalContent(content);
-        refetchNote();
+        refetchNote(true, false);
       },
       onError: (error) => {
         console.error("Error saving note content:", error.message);
@@ -118,6 +118,17 @@ export function NoteEditor({
     },
     false,
   );
+
+  useEffect(() => {
+    if (content === originalContent || !fullNote || isSaving) return;
+
+    const timeoutId = setTimeout(() => {
+      setIsSaving(true);
+      saveNoteContent(false, false);
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
+  }, [content, originalContent, fullNote, isSaving, saveNoteContent]);
 
   const {
     loading: deletingNote,
@@ -144,31 +155,33 @@ export function NoteEditor({
       <Card
         isExpanded={isExpanded}
         setIsExpanded={setIsExpanded}
-        className={cn("flex flex-col overflow-y-auto", className)}
+        className={cn(
+          "flex flex-col overflow-hidden p-0",
+          {
+            "lg:max-w-3/4 xl:max-w-2/3": isExpanded,
+          },
+          className,
+        )}
       >
-        <div className="flex justify-between items-center flex-shrink-0 mb-2">
-          <h2 className="text-lg font-sans font-semibold truncate">
-            {note.title}
+        <div className="flex flex-row justify-between items-center mb-2 pt-4 px-4 shrink-0">
+          <h2 className="flex items-baseline gap-1.5 min-w-0 flex-1">
+            <span className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400 shrink-0">
+              Note /{" "}
+            </span>
+            <span className="truncate text-lg font-semibold select-text">
+              {note.title}
+            </span>
           </h2>
           <div className="flex gap-2">
-            <Tooltip text="Save note" position="bottom">
-              <IconButton
-                icon={<SaveIcon />}
-                variant="ghost"
-                size="sm"
-                disabled={
-                  isSaving ||
-                  updatingNote ||
-                  loading ||
-                  fullNote === undefined ||
-                  content === originalContent
-                }
-                onClick={async () => {
-                  setIsSaving(true);
-                  await saveNoteContent();
-                }}
-              />
-            </Tooltip>
+            {(isSaving || content !== originalContent) && (
+              <Tooltip
+                text="Saving..."
+                position="bottom"
+                className="flex items-center justify-center text-gray-600 dark:text-gray-400"
+              >
+                <Spinner />
+              </Tooltip>
+            )}
             <Tooltip text="Edit title" position="bottom">
               <IconButton
                 icon={<EditIcon />}
@@ -207,6 +220,9 @@ export function NoteEditor({
             </Tooltip>
           </div>
         </div>
+
+        <Divider className="mb-0" />
+
         {loading && (
           <div className="text-center text-gray-500 text-sm">
             Loading note...
@@ -218,7 +234,7 @@ export function NoteEditor({
           </div>
         )}
         {fullNote && !loading && !error && (
-          <div className="flex-1">
+          <div className="flex-1 overflow-hidden flex flex-col">
             <Editor
               initialContent={fullNote.content || ""}
               onContentChange={setContent}
@@ -258,7 +274,7 @@ export function NoteEditor({
         <div className="space-y-4">
           <TextField
             id="note-title"
-            label="Note Title"
+            label="Title of the note"
             type="text"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}

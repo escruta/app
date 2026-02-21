@@ -1,32 +1,11 @@
-import { useEffect, useRef } from "react";
-import hljs from "highlight.js/lib/core";
-import javascript from "highlight.js/lib/languages/javascript";
-import typescript from "highlight.js/lib/languages/typescript";
-import python from "highlight.js/lib/languages/python";
-import java from "highlight.js/lib/languages/java";
-import cpp from "highlight.js/lib/languages/cpp";
-import bash from "highlight.js/lib/languages/bash";
-import shell from "highlight.js/lib/languages/shell";
-import json from "highlight.js/lib/languages/json";
-import xml from "highlight.js/lib/languages/xml";
-import css from "highlight.js/lib/languages/css";
-import sql from "highlight.js/lib/languages/sql";
-import markdown from "highlight.js/lib/languages/markdown";
+import { useEffect, useRef, useState } from "react";
+import { createLowlight, common } from "lowlight";
 import { cn } from "@/lib/utils";
+import type { RootContent } from "hast";
+import { CopyIcon, CheckIcon } from "@/components/icons";
+import { IconButton } from "./ui";
 
-hljs.registerLanguage("javascript", javascript);
-hljs.registerLanguage("typescript", typescript);
-hljs.registerLanguage("python", python);
-hljs.registerLanguage("java", java);
-hljs.registerLanguage("cpp", cpp);
-hljs.registerLanguage("bash", bash);
-hljs.registerLanguage("shell", shell);
-hljs.registerLanguage("json", json);
-hljs.registerLanguage("xml", xml);
-hljs.registerLanguage("html", xml);
-hljs.registerLanguage("css", css);
-hljs.registerLanguage("sql", sql);
-hljs.registerLanguage("markdown", markdown);
+const lowlight = createLowlight(common);
 
 interface CodeBlockProps {
   children: React.ReactNode;
@@ -36,12 +15,56 @@ interface CodeBlockProps {
 
 export function CodeBlock({ children, className, inline }: CodeBlockProps) {
   const codeRef = useRef<HTMLElement>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    if (codeRef.current && !inline) {
-      hljs.highlightElement(codeRef.current);
+    if (codeRef.current && !inline && children) {
+      const text = String(children);
+      const match = /language-(\w+)/.exec(className || "");
+      const language = match ? match[1] : "";
+
+      let highlighted = null;
+      try {
+        if (language && lowlight.registered(language)) {
+          highlighted = lowlight.highlight(language, text);
+        } else {
+          highlighted = lowlight.highlightAuto(text);
+        }
+      } catch (e) {
+        console.warn("Failed to highlight code:", e);
+      }
+
+      if (highlighted) {
+        const toHtml = (node: RootContent): string => {
+          if (node.type === "text") return escapeHtml(node.value);
+          if (node.type === "element") {
+            const childrenHtml = node.children.map(toHtml).join("");
+            const classNameProp = node.properties?.className;
+            const classAttr = classNameProp
+              ? ` class="${Array.isArray(classNameProp) ? classNameProp.join(" ") : classNameProp}"`
+              : "";
+            return `<${node.tagName}${classAttr}>${childrenHtml}</${node.tagName}>`;
+          }
+          return "";
+        };
+
+        const escapeHtml = (unsafe: string) => {
+          return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+        };
+
+        const html = highlighted.children.map(toHtml).join("");
+        codeRef.current.innerHTML = html;
+        codeRef.current.classList.add("hljs");
+      } else {
+        codeRef.current.textContent = text;
+      }
     }
-  }, [children, inline]);
+  }, [children, className, inline]);
 
   if (inline) {
     return (
@@ -51,15 +74,42 @@ export function CodeBlock({ children, className, inline }: CodeBlockProps) {
     );
   }
 
+  const handleCopy = () => {
+    const text = String(children);
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
-    <code
-      ref={codeRef}
+    <div
       className={cn(
-        "block bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xs p-6 overflow-x-auto font-mono text-sm leading-relaxed whitespace-pre",
+        "relative group my-4 block bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xs overflow-hidden",
         className,
       )}
     >
-      {children}
-    </code>
+      <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+        <IconButton
+          icon={
+            copied ? (
+              <CheckIcon className="size-4" />
+            ) : (
+              <CopyIcon className="size-4" />
+            )
+          }
+          onClick={handleCopy}
+          size="xs"
+          variant="ghost"
+        />
+      </div>
+      <div className="overflow-x-auto p-4">
+        <code
+          ref={codeRef}
+          className="block font-mono text-sm font-medium leading-[1.5] whitespace-pre"
+        >
+          {children}
+        </code>
+      </div>
+    </div>
   );
 }
