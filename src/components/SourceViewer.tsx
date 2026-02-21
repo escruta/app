@@ -155,9 +155,9 @@ export function SourceViewer({
       <Card
         isExpanded={isExpanded}
         setIsExpanded={setIsExpanded}
-        className={cn("flex flex-col overflow-y-auto p-0", className)}
+        className={cn("flex flex-col overflow-hidden p-0", className)}
       >
-        <div className="sticky h-20 top-0 z-10 bg-white dark:bg-gray-900">
+        <div className="shrink-0 bg-white dark:bg-gray-900">
           <div className="p-4 gap-3 flex justify-between items-center shrink-0">
             <h2 className="flex items-baseline gap-1.5 flex-1 min-w-0 select-text">
               <span className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400 shrink-0">
@@ -262,151 +262,156 @@ export function SourceViewer({
           </div>
         )}
         {fullSource && !loading && !error && (
-          <div className="flex-1 flex flex-col w-full max-w-5xl mx-auto">
-            <div className="px-6 pt-4">
-              <Card className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
-                    Summary of this source
-                  </h3>
-                  <div className="flex gap-2">
-                    {sourceSummary && (
-                      <Tooltip text="Copy summary" position="bottom">
-                        <IconButton
-                          icon={<CopyIcon />}
-                          disabled={isSummaryLoading || isRegeneratingSummary}
-                          variant="ghost"
-                          size="sm"
-                          className="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:hover:bg-blue-800/30"
-                          onClick={() => {
-                            navigator.clipboard.writeText(sourceSummary);
-                            showToast(
-                              "Summary copied to clipboard",
-                              "success",
-                              {
-                                duration: 1500,
-                              },
-                            );
-                          }}
-                        />
-                      </Tooltip>
-                    )}
-                    {sourceSummary && (
-                      <Tooltip text="Delete summary" position="bottom">
-                        <IconButton
-                          icon={<DeleteIcon />}
-                          variant="ghost"
-                          size="sm"
-                          className="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:hover:bg-blue-800/30"
-                          onClick={deleteSummary}
-                          disabled={
-                            isDeletingSummary ||
-                            isSummaryLoading ||
-                            isRegeneratingSummary
-                          }
-                        />
-                      </Tooltip>
-                    )}
-                    {sourceSummary && (
-                      <Tooltip text="Regenerate summary" position="bottom">
-                        <IconButton
-                          icon={
-                            isRegeneratingSummary ? (
-                              <Spinner />
-                            ) : (
-                              <RestartIcon />
-                            )
-                          }
-                          variant="ghost"
-                          size="sm"
-                          className="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:hover:bg-blue-800/30"
-                          onClick={regenerateSummary}
-                          disabled={isRegeneratingSummary}
-                        />
-                      </Tooltip>
-                    )}
+          <div className="flex-1 overflow-y-auto w-full">
+            <div className="flex flex-col w-full max-w-5xl mx-auto">
+              <div className="px-6 pt-4">
+                <Card className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+                      Summary of this source
+                    </h3>
+                    <div className="flex gap-2">
+                      {sourceSummary && (
+                        <Tooltip text="Copy summary" position="bottom">
+                          <IconButton
+                            icon={<CopyIcon />}
+                            disabled={isSummaryLoading || isRegeneratingSummary}
+                            variant="ghost"
+                            size="sm"
+                            className="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:hover:bg-blue-800/30"
+                            onClick={() => {
+                              navigator.clipboard.writeText(sourceSummary);
+                              showToast(
+                                "Summary copied to clipboard",
+                                "success",
+                                {
+                                  duration: 1500,
+                                },
+                              );
+                            }}
+                          />
+                        </Tooltip>
+                      )}
+                      {sourceSummary && (
+                        <Tooltip text="Delete summary" position="bottom">
+                          <IconButton
+                            icon={<DeleteIcon />}
+                            variant="ghost"
+                            size="sm"
+                            className="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:hover:bg-blue-800/30"
+                            onClick={deleteSummary}
+                            disabled={
+                              isDeletingSummary ||
+                              isSummaryLoading ||
+                              isRegeneratingSummary
+                            }
+                          />
+                        </Tooltip>
+                      )}
+                      {sourceSummary && (
+                        <Tooltip text="Regenerate summary" position="bottom">
+                          <IconButton
+                            icon={
+                              isRegeneratingSummary ? (
+                                <Spinner />
+                              ) : (
+                                <RestartIcon />
+                              )
+                            }
+                            variant="ghost"
+                            size="sm"
+                            className="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:hover:bg-blue-800/30"
+                            onClick={regenerateSummary}
+                            disabled={isRegeneratingSummary}
+                          />
+                        </Tooltip>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={
-                      isSummaryLoading || isRegeneratingSummary
-                        ? "loading"
-                        : summaryGenerateError
-                          ? "generateError"
-                          : sourceSummary?.trim()
-                            ? "summary"
-                            : "empty"
-                    }
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.15, ease: "easeInOut" }}
-                  >
-                    {isSummaryLoading || isRegeneratingSummary ? (
-                      <Skeleton
-                        lines={8}
-                        className="[&>div]:!bg-blue-200/80 [&>div]:dark:!bg-blue-800/80"
-                      />
-                    ) : summaryGenerateError ? (
-                      <div className="flex flex-col gap-3">
-                        <Alert
-                          title="Error"
-                          message={getHttpErrorMessage(
-                            summaryGenerateError.status,
-                          )}
-                          variant="danger"
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.div
+                      key={
+                        isSummaryLoading || isRegeneratingSummary
+                          ? "loading"
+                          : summaryGenerateError
+                            ? "generateError"
+                            : sourceSummary?.trim()
+                              ? "summary"
+                              : "empty"
+                      }
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.15, ease: "easeInOut" }}
+                    >
+                      {isSummaryLoading || isRegeneratingSummary ? (
+                        <Skeleton
+                          lines={8}
+                          className="[&>div]:!bg-blue-200/80 [&>div]:dark:!bg-blue-800/80"
                         />
+                      ) : summaryGenerateError ? (
+                        <div className="flex flex-col gap-3">
+                          <Alert
+                            title="Error"
+                            message={getHttpErrorMessage(
+                              summaryGenerateError.status,
+                            )}
+                            variant="danger"
+                          />
+                          <Button
+                            onClick={regenerateSummary}
+                            disabled={isRegeneratingSummary}
+                            variant="ghost"
+                            size="sm"
+                            icon={<RestartIcon className="w-4 h-4" />}
+                          >
+                            Regenerate summary
+                          </Button>
+                        </div>
+                      ) : sourceSummary?.trim() ? (
+                        <div className="max-w-none select-text text-blue-800 dark:text-blue-100">
+                          <Markdown text={sourceSummary} />
+                        </div>
+                      ) : (
                         <Button
                           onClick={regenerateSummary}
-                          disabled={isRegeneratingSummary}
-                          variant="ghost"
-                          size="sm"
-                          icon={<RestartIcon className="w-4 h-4" />}
+                          icon={<StarsIcon />}
                         >
-                          Regenerate summary
+                          Generate summary
                         </Button>
-                      </div>
-                    ) : sourceSummary?.trim() ? (
-                      <div className="max-w-none select-text text-blue-800 dark:text-blue-100">
-                        <Markdown text={sourceSummary} />
-                      </div>
-                    ) : (
-                      <Button onClick={regenerateSummary} icon={<StarsIcon />}>
-                        Generate summary
-                      </Button>
-                    )}
-                  </motion.div>
-                </AnimatePresence>
-              </Card>
-            </div>
-            <div className="flex-1">
-              {sourceType === "YouTube Video" && youtubeVideoId ? (
-                <div className="h-auto min-h-[80%] w-full px-6 py-8">
-                  <div className="aspect-video w-full mb-6">
-                    <iframe
-                      src={`https://www.youtube.com/embed/${youtubeVideoId}`}
-                      title={fullSource.title || "YouTube Video"}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      allowFullScreen
-                      className="size-full"
-                    />
-                  </div>
-                  {fullSource.content && (
-                    <div className="overflow-auto text-gray-700 dark:text-gray-300 break-words select-text">
-                      <div className="max-w-none">
-                        <Markdown text={fullSource.content} />
-                      </div>
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
+                </Card>
+              </div>
+              <div className="flex-1">
+                {sourceType === "YouTube Video" && youtubeVideoId ? (
+                  <div className="h-auto min-h-[80%] w-full px-6 py-8">
+                    <div className="aspect-video w-full mb-6">
+                      <iframe
+                        src={`https://www.youtube.com/embed/${youtubeVideoId}`}
+                        title={fullSource.title || "YouTube Video"}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                        className="size-full"
+                      />
                     </div>
-                  )}
-                </div>
-              ) : (
-                <div className="h-auto min-h-[80%] w-full px-6 py-8 overflow-auto text-gray-700 dark:text-gray-300 break-words select-text">
-                  <div className="max-w-none">
-                    <Markdown text={fullSource.content || ""} />
+                    {fullSource.content && (
+                      <div className="overflow-auto text-gray-700 dark:text-gray-300 break-words select-text">
+                        <div className="max-w-none">
+                          <Markdown text={fullSource.content} />
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="h-auto min-h-[80%] w-full px-6 py-8 overflow-auto text-gray-700 dark:text-gray-300 break-words select-text">
+                    <div className="max-w-none">
+                      <Markdown text={fullSource.content || ""} />
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
