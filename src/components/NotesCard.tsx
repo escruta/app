@@ -65,69 +65,73 @@ export function NotesCard({
 
   return (
     <>
-      <Card className="h-full overflow-y-auto">
-        <div className="flex flex-row justify-between items-center mb-2 flex-shrink-0 h-8">
-          <h2 className="text-lg font-sans font-semibold">Notes</h2>
-          <Tooltip text="Add a new note" position="bottom">
-            <Button
-              icon={<AddIcon />}
-              variant="primary"
-              size="sm"
-              className="flex-shrink-0"
-              onClick={() => setIsAddNoteModalOpen(true)}
-            >
-              Add note
-            </Button>
-          </Tooltip>
+      <Card className="flex flex-col h-full overflow-hidden p-0">
+        <div className="shrink-0 bg-white dark:bg-gray-900 z-10 rounded-t-xs">
+          <div className="flex flex-row justify-between items-center p-4">
+            <h2 className="text-lg font-sans font-semibold">Notes</h2>
+            <Tooltip text="Add a new note" position="bottom">
+              <Button
+                icon={<AddIcon />}
+                variant="primary"
+                size="sm"
+                className="flex-shrink-0"
+                onClick={() => setIsAddNoteModalOpen(true)}
+              >
+                Add note
+              </Button>
+            </Tooltip>
+          </div>
+          <Divider className="my-0" />
         </div>
-        <Divider className="my-4" />
-        {(() => {
-          if (loading) {
-            return (
-              <div className="text-center text-gray-500 text-sm">
-                Loading notes...
-              </div>
-            );
-          }
-          if (error) {
-            return (
-              <div className="text-red-500 text-sm">
-                Error loading notes: {error.message}
-              </div>
-            );
-          }
-          if (notes && notes.length > 0) {
-            return (
-              <div className="flex flex-col gap-2">
-                {notes
-                  .sort((a, b) => a.title.localeCompare(b.title))
-                  .map((note) => (
-                    <NoteChip
-                      key={note.id}
-                      note={note}
-                      onSelect={onNoteSelect}
-                    />
-                  ))}
-              </div>
-            );
-          }
-          return (
-            <div className="flex flex-col items-center justify-center text-center py-10 px-4">
-              <div className="size-20 bg-blue-50 dark:bg-blue-950/30 rounded-xs flex items-center justify-center mb-5 shadow-sm border border-blue-300 dark:border-blue-700">
-                <div className="size-10 text-blue-500 dark:text-blue-400">
-                  <EditIcon />
+        <div className="flex-1 overflow-y-auto w-full p-4">
+          {(() => {
+            if (loading) {
+              return (
+                <div className="text-center text-gray-500 text-sm">
+                  Loading notes...
                 </div>
+              );
+            }
+            if (error) {
+              return (
+                <div className="text-red-500 text-sm">
+                  Error loading notes: {error.message}
+                </div>
+              );
+            }
+            if (notes && notes.length > 0) {
+              return (
+                <div className="flex flex-col gap-2">
+                  {notes
+                    .sort((a, b) => a.title.localeCompare(b.title))
+                    .map((note) => (
+                      <NoteChip
+                        key={note.id}
+                        note={note}
+                        onSelect={onNoteSelect}
+                      />
+                    ))}
+                </div>
+              );
+            }
+            return (
+              <div className="flex flex-col items-center justify-center text-center py-10 px-4">
+                <div className="size-20 bg-blue-50 dark:bg-blue-950/30 rounded-xs flex items-center justify-center mb-5 shadow-sm border border-blue-300 dark:border-blue-700">
+                  <div className="size-10 text-blue-500 dark:text-blue-400">
+                    <EditIcon />
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">
+                  No notes yet
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs leading-relaxed">
+                  Create your first note to start capturing ideas and insights
+                  from your sources.
+                </p>
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                No notes yet
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs leading-relaxed">
-                Create your first note to start capturing ideas and insights
-                from your sources.
-              </p>
-            </div>
-          );
-        })()}
+            );
+          })()}
+        </div>
       </Card>
 
       {/* Add Note Modal */}

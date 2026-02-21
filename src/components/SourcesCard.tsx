@@ -164,88 +164,92 @@ export function SourcesCard({
 
   return (
     <>
-      <Card className="h-full overflow-y-auto">
-        <div className="flex flex-row justify-between items-center shrink-0">
-          <h2 className="text-lg font-sans font-semibold">Sources</h2>
-          <div className="flex gap-3">
-            {/* <Tooltip text="Find sources" position="bottom">
-              <IconButton
-                icon={<StarsIcon />}
-                variant="ghost"
-                size="sm"
-                className="shrink-0"
-              />
-            </Tooltip> */}
-            <Tooltip text="Add a new source" position="bottom">
-              <Button
-                icon={<AddIcon />}
-                variant="primary"
-                size="sm"
-                className="shrink-0"
-                onClick={() => setIsAddSourceModalOpen(true)}
-              >
-                Add source
-              </Button>
-            </Tooltip>
-          </div>
-        </div>
-        <Divider className="my-4" />
-        {(() => {
-          if (loading) {
-            return (
-              <div className="text-center text-gray-500 text-sm">
-                Loading sources...
-              </div>
-            );
-          }
-          if (error) {
-            return (
-              <div className="text-red-500 text-sm">
-                Error loading sources: {error.message}
-              </div>
-            );
-          }
-          if (sources && sources.length > 0) {
-            return (
-              <div className="flex flex-col gap-2">
-                <Button
-                  variant="secondary"
+      <Card className="flex flex-col h-full overflow-hidden p-0">
+        <div className="shrink-0 bg-white dark:bg-gray-900 z-10 rounded-t-xs">
+          <div className="flex flex-row justify-between items-center p-4">
+            <h2 className="text-lg font-sans font-semibold">Sources</h2>
+            <div className="flex gap-3">
+              {/* <Tooltip text="Find sources" position="bottom">
+                <IconButton
+                  icon={<StarsIcon />}
+                  variant="ghost"
                   size="sm"
-                  onClick={handleSelectAllToggle}
+                  className="shrink-0"
+                />
+              </Tooltip> */}
+              <Tooltip text="Add a new source" position="bottom">
+                <Button
+                  icon={<AddIcon />}
+                  variant="primary"
+                  size="sm"
+                  className="shrink-0"
+                  onClick={() => setIsAddSourceModalOpen(true)}
                 >
-                  {isAllSelected
-                    ? "Deselect all sources"
-                    : "Select all sources"}
+                  Add source
                 </Button>
-                {sources.map((source) => (
-                  <SourceChip
-                    key={source.id}
-                    source={source}
-                    onSourceSelect={onSourceSelect}
-                    selected={selectedSourceIds.includes(source.id)}
-                    onToggle={() => onToggleSource?.(source.id)}
-                  />
-                ))}
+              </Tooltip>
+            </div>
+          </div>
+          <Divider className="my-0" />
+        </div>
+        <div className="flex-1 overflow-y-auto w-full p-4">
+          {(() => {
+            if (loading) {
+              return (
+                <div className="text-center text-gray-500 text-sm">
+                  Loading sources...
+                </div>
+              );
+            }
+            if (error) {
+              return (
+                <div className="text-red-500 text-sm">
+                  Error loading sources: {error.message}
+                </div>
+              );
+            }
+            if (sources && sources.length > 0) {
+              return (
+                <div className="flex flex-col gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleSelectAllToggle}
+                  >
+                    {isAllSelected
+                      ? "Deselect all sources"
+                      : "Select all sources"}
+                  </Button>
+                  {sources.map((source) => (
+                    <SourceChip
+                      key={source.id}
+                      source={source}
+                      onSourceSelect={onSourceSelect}
+                      selected={selectedSourceIds.includes(source.id)}
+                      onToggle={() => onToggleSource?.(source.id)}
+                    />
+                  ))}
+                </div>
+              );
+            }
+            return (
+              <div className="flex flex-col items-center justify-center text-center py-10 px-4">
+                <div className="size-20 bg-blue-50 dark:bg-blue-950/30 rounded-xs flex items-center justify-center mb-5 shadow-sm border border-blue-300 dark:border-blue-700">
+                  <div className="size-10 text-blue-500 dark:text-blue-400">
+                    <UploadIcon />
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">
+                  No sources yet
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs leading-relaxed">
+                  Add your first source to start gathering information. You can
+                  upload PDFs, add web links, or paste text.
+                </p>
               </div>
             );
-          }
-          return (
-            <div className="flex flex-col items-center justify-center text-center py-10 px-4">
-              <div className="size-20 bg-blue-50 dark:bg-blue-950/30 rounded-xs flex items-center justify-center mb-5 shadow-sm border border-blue-300 dark:border-blue-700">
-                <div className="size-10 text-blue-500 dark:text-blue-400">
-                  <UploadIcon />
-                </div>
-              </div>
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                No sources yet
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs leading-relaxed">
-                Add your first source to start gathering information. You can
-                upload PDFs, add web links, or paste text.
-              </p>
-            </div>
-          );
-        })()}
+          })()}
+        </div>
       </Card>
 
       {/* Add Source Modal */}

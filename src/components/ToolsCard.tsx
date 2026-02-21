@@ -110,20 +110,24 @@ export function ToolsCard({ notebookId, onNodeSelect }: ToolsCardProps) {
           "opacity-100 scale-100": !selectedTool,
         })}
       >
-        <Card className="h-full overflow-y-auto">
-          <div className="flex flex-row justify-between items-center mb-2 flex-shrink-0">
-            <h2 className="text-lg font-sans font-semibold">Tools</h2>
+        <Card className="flex flex-col h-full overflow-hidden p-0">
+          <div className="shrink-0 bg-white dark:bg-gray-900 z-10 rounded-t-xs">
+            <div className="flex flex-row justify-between items-center p-4">
+              <h2 className="text-lg font-sans font-semibold">Tools</h2>
+            </div>
+            <Divider className="my-0" />
           </div>
-          <Divider className="my-4" />
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
-            {tools.map((tool) => (
-              <ToolItem
-                key={tool.type}
-                tool={tool}
-                notebookId={notebookId}
-                onSelect={handleSelectTool}
-              />
-            ))}
+          <div className="flex-1 overflow-y-auto w-full p-4">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
+              {tools.map((tool) => (
+                <ToolItem
+                  key={tool.type}
+                  tool={tool}
+                  notebookId={notebookId}
+                  onSelect={handleSelectTool}
+                />
+              ))}
+            </div>
           </div>
         </Card>
       </div>
