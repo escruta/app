@@ -139,18 +139,11 @@ function processMessage(message: Message, onRetry?: () => void): ReactNode {
     }
 
     return (
-      <div key={index}>{processTextContent(part.content, message.sender)}</div>
+      <div key={index}>
+        <Markdown text={part.content} />
+      </div>
     );
   });
-}
-
-function processTextContent(text: string, sender: Sender) {
-  const linkColorClass = {
-    user: "text-blue-600 dark:text-blue-400 hover:underline",
-    ai: "text-blue-600 dark:text-blue-400 hover:underline",
-  }[sender];
-
-  return <Markdown text={text} linkColorClass={linkColorClass} />;
 }
 
 export function ChatCard({
@@ -670,7 +663,7 @@ export function ChatCard({
                   {isSummaryLoading ||
                   isSummaryRegenerating ||
                   isAutoRegenerating ? (
-                    <Skeleton lines={4} className="w-full" />
+                    <Skeleton lines={6} className="w-full" />
                   ) : summaryGenerateError ? (
                     <div className="flex flex-col gap-3">
                       <Alert
@@ -692,7 +685,7 @@ export function ChatCard({
                     </div>
                   ) : notebookSummary?.trim() ? (
                     <div className="select-text">
-                      {processTextContent(notebookSummary, "ai")}
+                      <Markdown text={notebookSummary} />
                     </div>
                   ) : (
                     <Button
@@ -849,6 +842,7 @@ export function ChatCard({
                   setMessages([]);
                   setInput("");
                   setConversationId(null);
+                  setConversationTitle(null);
                 }}
                 disabled={
                   messages.length === 0 || isChatLoading || isAutoRegenerating

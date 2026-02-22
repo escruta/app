@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import type { CSSProperties } from "react";
-import { motion, type Transition } from "motion/react";
 import { cn } from "@/lib/utils";
 
 interface SkeletonBaseProps {
@@ -27,18 +26,6 @@ interface SkeletonShapeProps extends SkeletonBaseProps {
 
 type SkeletonProps = SkeletonTextProps | SkeletonShapeProps;
 
-const pulseTransition: Transition = {
-  duration: 1.5,
-  repeat: Infinity,
-  ease: "easeInOut",
-};
-
-const shimmerTransition: Transition = {
-  duration: 1.5,
-  repeat: Infinity,
-  ease: "linear",
-};
-
 interface ShimmerProps {
   className?: string;
   animate?: boolean;
@@ -53,34 +40,29 @@ function Shimmer({
   style,
 }: ShimmerProps) {
   return (
-    <motion.div
+    <div
       className={cn(
         "relative overflow-hidden bg-gray-200/80 dark:bg-gray-800/80",
-        "rounded-xs",
+        "rounded-xs isolate",
+        animate && "animate-pulse",
         className,
       )}
-      initial={animate ? { opacity: 0.5 } : undefined}
-      animate={animate ? { opacity: [0.5, 0.8, 0.5] } : undefined}
-      transition={animate ? pulseTransition : undefined}
-      style={style}
+      style={{
+        ...style,
+        animationDelay: animate ? `${delay}s` : "0s",
+      }}
     >
       {animate && (
-        <motion.div
-          className="absolute inset-0"
+        <div
+          className="absolute inset-0 z-10 animate-shimmer"
           style={{
             background:
               "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)",
-            backgroundSize: "200% 100%",
-          }}
-          initial={{ backgroundPosition: "-200% 0" }}
-          animate={{ backgroundPosition: "200% 0" }}
-          transition={{
-            ...shimmerTransition,
-            delay,
+            animationDelay: `${delay}s`,
           }}
         />
       )}
-    </motion.div>
+    </div>
   );
 }
 

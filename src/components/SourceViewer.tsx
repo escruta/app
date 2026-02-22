@@ -346,7 +346,7 @@ export function SourceViewer({
                     >
                       {isSummaryLoading || isRegeneratingSummary ? (
                         <Skeleton
-                          lines={8}
+                          lines={6}
                           className="[&>div]:!bg-blue-200/80 [&>div]:dark:!bg-blue-800/80"
                         />
                       ) : summaryGenerateError ? (
@@ -369,8 +369,11 @@ export function SourceViewer({
                           </Button>
                         </div>
                       ) : sourceSummary?.trim() ? (
-                        <div className="leading-relaxed max-w-none select-text text-blue-800 dark:text-blue-100">
-                          <Markdown text={sourceSummary} />
+                        <div className="leading-relaxed max-w-none select-text text-blue-800 dark:text-blue-50">
+                          <Markdown
+                            text={sourceSummary}
+                            baseUrl={fullSource?.link || source.link}
+                          />
                         </div>
                       ) : (
                         <Button
@@ -397,17 +400,23 @@ export function SourceViewer({
                       />
                     </div>
                     {fullSource.content && (
-                      <div className="overflow-auto text-gray-700 dark:text-gray-300 break-words select-text">
+                      <div className="overflow-auto break-words select-text">
                         <div className="max-w-none leading-relaxed">
-                          <Markdown text={fullSource.content} />
+                          <Markdown
+                            text={fullSource.content}
+                            baseUrl={fullSource?.link || source.link}
+                          />
                         </div>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div className="h-auto min-h-[80%] w-full px-6 py-8 overflow-auto text-gray-700 dark:text-gray-300 break-words select-text">
+                  <div className="h-auto min-h-[80%] w-full px-6 py-8 overflow-auto break-words select-text">
                     <div className="max-w-none leading-relaxed">
-                      <Markdown text={fullSource.content || ""} />
+                      <Markdown
+                        text={fullSource.content || ""}
+                        baseUrl={fullSource?.link || source.link}
+                      />
                     </div>
                   </div>
                 )}

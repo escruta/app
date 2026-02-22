@@ -156,7 +156,7 @@ export function Tooltip({
                 top: coords.y,
                 zIndex: 99999,
               }}
-              className="select-text whitespace-nowrap rounded-xs bg-black/95 dark:bg-white/95 py-1.5 px-3 text-center text-sm font-medium text-white dark:text-black pointer-events-none shadow-lg shadow-black/20 dark:shadow-white/20 ring-1 ring-white/20 dark:ring-black/20"
+              className="select-text whitespace-nowrap rounded-xs bg-black dark:bg-white py-1.5 px-3 text-center text-sm font-medium text-white dark:text-black pointer-events-none shadow-lg shadow-black/20 dark:shadow-white/20 ring-1 ring-white/20 dark:ring-black/20"
             >
               {text}
             </motion.div>

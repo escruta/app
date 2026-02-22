@@ -62,7 +62,9 @@
 }
 
 .ProseMirror u {
-  text-decoration: underline;
+  text-decoration-line: underline;
+  text-decoration-color: color-mix(in oklab, var(--color-blue-500) 60%, transparent);
+  text-underline-offset: 4px;
   color: inherit;
 }
 

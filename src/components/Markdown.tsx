@@ -8,10 +8,10 @@ import { CodeBlock } from "./CodeBlock";
 
 interface MarkdownProps {
   text: string;
-  linkColorClass?: string;
+  baseUrl?: string;
 }
 
-export function Markdown({ text, linkColorClass }: MarkdownProps) {
+export function Markdown({ text, baseUrl }: MarkdownProps) {
   return (
     <ReactMarkdown
       remarkPlugins={[remarkMath, remarkGfm]}
@@ -102,21 +102,45 @@ export function Markdown({ text, linkColorClass }: MarkdownProps) {
           <em className="italic text-inherit">{children}</em>
         ),
         u: ({ children }) => (
-          <u className="underline text-inherit">{children}</u>
-        ),
-        a: ({ href, children }) => (
-          <a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={cn(
-              "text-blue-500 dark:text-blue-400 underline cursor-pointer",
-              linkColorClass,
-            )}
-          >
+          <u className="underline underline-offset-4 text-inherit decoration-blue-500/60">
             {children}
-          </a>
+          </u>
         ),
+        a: ({ href, children }) => {
+          let resolvedHref = href;
+          if (baseUrl && href) {
+            try {
+              resolvedHref = new URL(href, baseUrl).toString();
+            } catch (_) {}
+          }
+
+          return (
+            <a
+              href={resolvedHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 dark:text-blue-400 underline cursor-pointer"
+            >
+              {children}
+            </a>
+          );
+        },
+        img: ({ src, alt, title }) => {
+          let resolvedSrc = src;
+          if (baseUrl && src) {
+            try {
+              resolvedSrc = new URL(src, baseUrl).toString();
+            } catch (_) {}
+          }
+          return (
+            <img
+              src={resolvedSrc}
+              alt={alt}
+              title={title}
+              className="max-w-full h-auto rounded-md my-4"
+            />
+          );
+        },
         table: ({ children }) => (
           <table className="w-full border-collapse my-2 text-sm">
             {children}

@@ -59,6 +59,7 @@ export default function NotebookPage() {
   );
   const [isResizing, setIsResizing] = useState<boolean>(false);
   const tabsRef = useRef<TabsRef>(null);
+  const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     if (notebook?.sources) {
@@ -111,12 +112,12 @@ export default function NotebookPage() {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isResizing) return;
+      if (!isResizing || !sectionRef.current) return;
 
-      const newWidth = Math.min(
-        Math.max((e.clientX / window.innerWidth) * 100, 36),
-        64,
-      );
+      const rect = sectionRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+
+      const newWidth = Math.min(Math.max((x / rect.width) * 100, 36), 64);
       setLeftPanelWidth(newWidth);
     };
 
@@ -472,7 +473,10 @@ export default function NotebookPage() {
             ]}
           />
         ) : (
-          <section className="flex h-full overflow-hidden gap-1">
+          <section
+            ref={sectionRef}
+            className="flex h-full overflow-hidden gap-1"
+          >
             <div
               className={cn("min-h-0 flex flex-col overflow-hidden", {
                 "transition-all duration-200 ease-out": !isResizing,
