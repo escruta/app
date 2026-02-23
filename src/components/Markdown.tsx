@@ -12,6 +12,12 @@ interface MarkdownProps {
 }
 
 export function Markdown({ text, baseUrl }: MarkdownProps) {
+  const processedText = text
+    .replace(/\\\[/g, "$$$$")
+    .replace(/\\\]/g, "$$$$")
+    .replace(/\\\(/g, "$$")
+    .replace(/\\\)/g, "$$");
+
   return (
     <ReactMarkdown
       remarkPlugins={[remarkMath, remarkGfm]}
@@ -141,7 +147,7 @@ export function Markdown({ text, baseUrl }: MarkdownProps) {
         td: ({ children }) => <td className="px-3 py-2 align-top">{children}</td>,
       }}
     >
-      {text}
+      {processedText}
     </ReactMarkdown>
   );
 }
