@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { all, createLowlight } from "lowlight";
+import { createLowlight, common } from "lowlight";
 import { useEditor, EditorContent, ReactNodeViewRenderer } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
@@ -32,7 +32,7 @@ import { Divider, Tooltip } from "./ui";
 import "katex/dist/katex.min.css";
 import "./Editor.css";
 
-const lowlight = createLowlight(all);
+const lowlight = createLowlight(common);
 
 interface ToolbarButtonProps {
   isActive: boolean;
