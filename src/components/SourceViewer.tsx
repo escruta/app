@@ -24,16 +24,9 @@ import {
   Skeleton,
 } from "@/components/ui";
 import { lazy } from "react";
-import {
-  cn,
-  getSourceType,
-  getYouTubeVideoId,
-  getHttpErrorMessage,
-} from "@/lib/utils";
+import { cn, getSourceType, getYouTubeVideoId, getHttpErrorMessage } from "@/lib/utils";
 
-const Markdown = lazy(() =>
-  import("./Markdown").then((module) => ({ default: module.Markdown })),
-);
+const Markdown = lazy(() => import("./Markdown").then((module) => ({ default: module.Markdown })));
 
 interface SourceViewerProps {
   notebookId: string;
@@ -51,8 +44,7 @@ export function SourceViewer({
   className,
 }: SourceViewerProps) {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
-  const [summaryGenerateError, setSummaryGenerateError] =
-    useState<FetchError | null>(null);
+  const [summaryGenerateError, setSummaryGenerateError] = useState<FetchError | null>(null);
   const {
     data: fullSource,
     loading,
@@ -66,9 +58,7 @@ export function SourceViewer({
 
   const sourceType = getSourceType(fullSource || source);
   const youtubeVideoId =
-    sourceType === "YouTube Video"
-      ? getYouTubeVideoId(fullSource?.link || source.link)
-      : null;
+    sourceType === "YouTube Video" ? getYouTubeVideoId(fullSource?.link || source.link) : null;
 
   useEffect(() => {
     if (source.id !== currentSourceId) {
@@ -111,26 +101,23 @@ export function SourceViewer({
     false,
   );
 
-  const { loading: isRegeneratingSummary, refetch: regenerateSummary } =
-    useFetch<string>(
-      `notebooks/${notebookId}/sources/${source.id}/summary`,
-      {
-        method: "POST",
-        onSuccess: () => {
-          setSummaryGenerateError(null);
-          refetchSummary(true);
-        },
-        onError: (error) => {
-          console.error("Error regenerating source summary:", error.message);
-          useFetch.clearCache(
-            `notebooks/${notebookId}/sources/${source.id}/summary`,
-          );
-          refetchSummary(true);
-          setSummaryGenerateError(error);
-        },
+  const { loading: isRegeneratingSummary, refetch: regenerateSummary } = useFetch<string>(
+    `notebooks/${notebookId}/sources/${source.id}/summary`,
+    {
+      method: "POST",
+      onSuccess: () => {
+        setSummaryGenerateError(null);
+        refetchSummary(true);
       },
-      false,
-    );
+      onError: (error) => {
+        console.error("Error regenerating source summary:", error.message);
+        useFetch.clearCache(`notebooks/${notebookId}/sources/${source.id}/summary`);
+        refetchSummary(true);
+        setSummaryGenerateError(error);
+      },
+    },
+    false,
+  );
 
   const { loading: isDeletingSummary, refetch: deleteSummary } = useFetch<void>(
     `notebooks/${notebookId}/sources/${source.id}/summary`,
@@ -158,9 +145,9 @@ export function SourceViewer({
         className={cn("flex flex-col overflow-hidden p-0", className)}
       >
         <div className="shrink-0 bg-white dark:bg-gray-900">
-          <div className="p-4 gap-3 flex justify-between items-center shrink-0">
-            <h2 className="flex items-baseline gap-1.5 flex-1 min-w-0 select-text">
-              <span className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400 shrink-0">
+          <div className="flex shrink-0 items-center justify-between gap-3 p-4">
+            <h2 className="flex min-w-0 flex-1 items-baseline gap-1.5 select-text">
+              <span className="shrink-0 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
                 Source /{" "}
               </span>
               <span className="truncate font-semibold">
@@ -168,8 +155,8 @@ export function SourceViewer({
               </span>
               {(fullSource?.isConvertedByAi || source.isConvertedByAi) && (
                 <Tooltip text="Converted by AI" position="bottom">
-                  <div className="flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-xs bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-200 border border-blue-200 dark:border-blue-700 select-none">
-                    <div className="w-3.5 h-3.5 flex-shrink-0">
+                  <div className="flex flex-shrink-0 items-center gap-1.5 rounded-xs border border-blue-200 bg-blue-100 px-2.5 py-1 text-blue-700 select-none dark:border-blue-700 dark:bg-blue-900/50 dark:text-blue-200">
+                    <div className="h-3.5 w-3.5 flex-shrink-0">
                       <StarsIcon />
                     </div>
                     <span className="text-xs font-semibold">AI</span>
@@ -179,11 +166,7 @@ export function SourceViewer({
             </h2>
             <div className="flex gap-2">
               <Tooltip
-                text={
-                  sourceType === "YouTube Video"
-                    ? "Copy video URL"
-                    : "Copy source content"
-                }
+                text={sourceType === "YouTube Video" ? "Copy video URL" : "Copy source content"}
                 position="bottom"
               >
                 <IconButton
@@ -211,11 +194,7 @@ export function SourceViewer({
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                      window.open(
-                        fullSource?.link,
-                        "_blank",
-                        "noopener noreferrer",
-                      );
+                      window.open(fullSource?.link, "_blank", "noopener noreferrer");
                     }}
                   />
                 </Tooltip>
@@ -228,10 +207,7 @@ export function SourceViewer({
                   onClick={() => setIsDeleteModalOpen(true)}
                 />
               </Tooltip>
-              <Tooltip
-                text={isExpanded ? "Restore size" : "Expand"}
-                position="bottom"
-              >
+              <Tooltip text={isExpanded ? "Restore size" : "Expand"} position="bottom">
                 <IconButton
                   icon={isExpanded ? <CompressIcon /> : <ExpandIcon />}
                   variant="ghost"
@@ -251,22 +227,16 @@ export function SourceViewer({
           </div>
           <Divider className="my-0" />
         </div>
-        {loading && (
-          <div className="text-center text-gray-500 text-sm px-6">
-            Loading source...
-          </div>
-        )}
+        {loading && <div className="px-6 text-center text-sm text-gray-500">Loading source...</div>}
         {error && (
-          <div className="text-red-500 text-sm px-6">
-            Error loading source: {error.message}
-          </div>
+          <div className="px-6 text-sm text-red-500">Error loading source: {error.message}</div>
         )}
         {fullSource && !loading && !error && (
-          <div className="flex-1 overflow-y-auto w-full">
-            <div className="flex flex-col w-full max-w-5xl mx-auto">
+          <div className="w-full flex-1 overflow-y-auto">
+            <div className="mx-auto flex w-full max-w-5xl flex-col">
               <div className="px-6 pt-4">
-                <Card className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-                  <div className="flex items-center justify-between mb-4">
+                <Card className="border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20">
+                  <div className="mb-4 flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
                       Summary of this source
                     </h3>
@@ -278,16 +248,12 @@ export function SourceViewer({
                             disabled={isSummaryLoading || isRegeneratingSummary}
                             variant="ghost"
                             size="sm"
-                            className="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:hover:bg-blue-800/30"
+                            className="border-blue-300 text-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-800/30"
                             onClick={() => {
                               navigator.clipboard.writeText(sourceSummary);
-                              showToast(
-                                "Summary copied to clipboard",
-                                "success",
-                                {
-                                  duration: 1500,
-                                },
-                              );
+                              showToast("Summary copied to clipboard", "success", {
+                                duration: 1500,
+                              });
                             }}
                           />
                         </Tooltip>
@@ -298,12 +264,10 @@ export function SourceViewer({
                             icon={<DeleteIcon />}
                             variant="ghost"
                             size="sm"
-                            className="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:hover:bg-blue-800/30"
+                            className="border-blue-300 text-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-800/30"
                             onClick={deleteSummary}
                             disabled={
-                              isDeletingSummary ||
-                              isSummaryLoading ||
-                              isRegeneratingSummary
+                              isDeletingSummary || isSummaryLoading || isRegeneratingSummary
                             }
                           />
                         </Tooltip>
@@ -311,16 +275,10 @@ export function SourceViewer({
                       {sourceSummary && (
                         <Tooltip text="Regenerate summary" position="bottom">
                           <IconButton
-                            icon={
-                              isRegeneratingSummary ? (
-                                <Spinner />
-                              ) : (
-                                <RestartIcon />
-                              )
-                            }
+                            icon={isRegeneratingSummary ? <Spinner /> : <RestartIcon />}
                             variant="ghost"
                             size="sm"
-                            className="text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:hover:bg-blue-800/30"
+                            className="border-blue-300 text-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-800/30"
                             onClick={regenerateSummary}
                             disabled={isRegeneratingSummary}
                           />
@@ -353,9 +311,7 @@ export function SourceViewer({
                         <div className="flex flex-col gap-3">
                           <Alert
                             title="Error"
-                            message={getHttpErrorMessage(
-                              summaryGenerateError.status,
-                            )}
+                            message={getHttpErrorMessage(summaryGenerateError.status)}
                             variant="danger"
                           />
                           <Button
@@ -363,23 +319,20 @@ export function SourceViewer({
                             disabled={isRegeneratingSummary}
                             variant="ghost"
                             size="sm"
-                            icon={<RestartIcon className="w-4 h-4" />}
+                            icon={<RestartIcon className="h-4 w-4" />}
                           >
                             Regenerate summary
                           </Button>
                         </div>
                       ) : sourceSummary?.trim() ? (
-                        <div className="leading-relaxed max-w-none select-text text-blue-800 dark:text-blue-50">
+                        <div className="max-w-none leading-relaxed text-blue-800 select-text dark:text-blue-50">
                           <Markdown
                             text={sourceSummary}
                             baseUrl={fullSource?.link || source.link}
                           />
                         </div>
                       ) : (
-                        <Button
-                          onClick={regenerateSummary}
-                          icon={<StarsIcon />}
-                        >
+                        <Button onClick={regenerateSummary} icon={<StarsIcon />}>
                           Generate summary
                         </Button>
                       )}
@@ -390,7 +343,7 @@ export function SourceViewer({
               <div className="flex-1">
                 {sourceType === "YouTube Video" && youtubeVideoId ? (
                   <div className="h-auto min-h-[80%] w-full px-6 py-8">
-                    <div className="aspect-video w-full mb-6">
+                    <div className="mb-6 aspect-video w-full">
                       <iframe
                         src={`https://www.youtube.com/embed/${youtubeVideoId}`}
                         title={fullSource.title || "YouTube Video"}
@@ -411,7 +364,7 @@ export function SourceViewer({
                     )}
                   </div>
                 ) : (
-                  <div className="h-auto min-h-[80%] w-full px-6 py-8 overflow-auto break-words select-text">
+                  <div className="h-auto min-h-[80%] w-full overflow-auto px-6 py-8 break-words select-text">
                     <div className="max-w-none leading-relaxed">
                       <Markdown
                         text={fullSource.content || ""}
@@ -433,10 +386,7 @@ export function SourceViewer({
         title="Delete source"
         actions={
           <>
-            <Button
-              variant="secondary"
-              onClick={() => setIsDeleteModalOpen(false)}
-            >
+            <Button variant="secondary" onClick={() => setIsDeleteModalOpen(false)}>
               Cancel
             </Button>
             <Button
@@ -454,14 +404,9 @@ export function SourceViewer({
       >
         <div className="space-y-4">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Are you sure you want to delete this source? This action cannot be
-            undone.
+            Are you sure you want to delete this source? This action cannot be undone.
           </p>
-          {deleteError && (
-            <div className="text-red-500 text-sm">
-              Error: {deleteError.message}
-            </div>
-          )}
+          {deleteError && <div className="text-sm text-red-500">Error: {deleteError.message}</div>}
         </div>
       </Modal>
     </>

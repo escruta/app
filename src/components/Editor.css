@@ -186,20 +186,12 @@
   border-color: var(--color-blue-400);
 }
 
-.ProseMirror
-  ul[data-type="taskList"]
-  li
-  > label
-  input[type="checkbox"]:checked {
+.ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"]:checked {
   background-color: var(--color-blue-500);
   border-color: var(--color-blue-500);
 }
 
-.ProseMirror
-  ul[data-type="taskList"]
-  li
-  > label
-  input[type="checkbox"]:checked::before {
+.ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"]:checked::before {
   content: "";
   width: 0.4rem;
   height: 0.65rem;
@@ -232,11 +224,7 @@
     border-color: var(--color-gray-600);
   }
 
-  .ProseMirror
-    ul[data-type="taskList"]
-    li
-    > label
-    input[type="checkbox"]:checked {
+  .ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"]:checked {
     background-color: var(--color-blue-500);
     border-color: var(--color-blue-500);
   }

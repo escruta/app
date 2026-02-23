@@ -51,10 +51,8 @@ export function SourcesCard({
     refetch: refetchSources,
   } = useFetch<Source[]>(`notebooks/${notebookId}/sources`);
 
-  const [isAddSourceModalOpen, setIsAddSourceModalOpen] =
-    useState<boolean>(false);
-  const [isAIConverterEnabled, setIsAIConverterEnabled] =
-    useState<boolean>(false);
+  const [isAddSourceModalOpen, setIsAddSourceModalOpen] = useState<boolean>(false);
+  const [isAIConverterEnabled, setIsAIConverterEnabled] = useState<boolean>(false);
   const [sourceType, setSourceType] = useState<SourceType>("Website");
   const [newSourceLink, setNewSourceLink] = useState<string>("");
   const [newSourceFile, setNewSourceFile] = useState<File | null>(null);
@@ -79,8 +77,7 @@ export function SourcesCard({
           : {
               link: newSourceLink,
             },
-      headers:
-        sourceType === "File" ? {} : { "Content-Type": "application/json" },
+      headers: sourceType === "File" ? {} : { "Content-Type": "application/json" },
       onSuccess: () => {
         setNewSourceLink("");
         setNewSourceFile(null);
@@ -108,9 +105,7 @@ export function SourcesCard({
 
       const maxFileSize = 50 * 1024 * 1024;
       if (newSourceFile.size > maxFileSize) {
-        setNewSourceLinkError(
-          "File size exceeds the 50MB limit. Please select a smaller file.",
-        );
+        setNewSourceLinkError("File size exceeds the 50MB limit. Please select a smaller file.");
         return;
       }
     } else {
@@ -120,9 +115,7 @@ export function SourcesCard({
       }
 
       if (sourceType === "Website" && !/^https?:\/\/.+/i.test(newSourceLink)) {
-        setNewSourceLinkError(
-          "Please enter a valid URL starting with https://",
-        );
+        setNewSourceLinkError("Please enter a valid URL starting with https://");
         return;
       }
 
@@ -150,9 +143,7 @@ export function SourcesCard({
   }
 
   const isAllSelected =
-    sources &&
-    sources.length > 0 &&
-    selectedSourceIds.length === sources.length;
+    sources && sources.length > 0 && selectedSourceIds.length === sources.length;
 
   const handleSelectAllToggle = () => {
     if (isAllSelected) {
@@ -164,10 +155,10 @@ export function SourcesCard({
 
   return (
     <>
-      <Card className="flex flex-col h-full overflow-hidden p-0">
-        <div className="shrink-0 bg-white dark:bg-gray-900 z-10 rounded-t-xs">
-          <div className="flex flex-row justify-between items-center p-4">
-            <h2 className="text-lg font-sans font-semibold">Sources</h2>
+      <Card className="flex h-full flex-col overflow-hidden p-0">
+        <div className="z-10 shrink-0 rounded-t-xs bg-white dark:bg-gray-900">
+          <div className="flex flex-row items-center justify-between p-4">
+            <h2 className="font-sans text-lg font-semibold">Sources</h2>
             <div className="flex gap-3">
               {/* <Tooltip text="Find sources" position="bottom">
                 <IconButton
@@ -192,33 +183,21 @@ export function SourcesCard({
           </div>
           <Divider className="my-0" />
         </div>
-        <div className="flex-1 overflow-y-auto w-full p-4">
+        <div className="w-full flex-1 overflow-y-auto p-4">
           {(() => {
             if (loading) {
-              return (
-                <div className="text-center text-gray-500 text-sm">
-                  Loading sources...
-                </div>
-              );
+              return <div className="text-center text-sm text-gray-500">Loading sources...</div>;
             }
             if (error) {
               return (
-                <div className="text-red-500 text-sm">
-                  Error loading sources: {error.message}
-                </div>
+                <div className="text-sm text-red-500">Error loading sources: {error.message}</div>
               );
             }
             if (sources && sources.length > 0) {
               return (
                 <div className="flex flex-col gap-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={handleSelectAllToggle}
-                  >
-                    {isAllSelected
-                      ? "Deselect all sources"
-                      : "Select all sources"}
+                  <Button variant="secondary" size="sm" onClick={handleSelectAllToggle}>
+                    {isAllSelected ? "Deselect all sources" : "Select all sources"}
                   </Button>
                   {sources.map((source) => (
                     <SourceChip
@@ -233,18 +212,16 @@ export function SourcesCard({
               );
             }
             return (
-              <div className="flex flex-col items-center justify-center text-center py-10 px-4">
-                <div className="size-20 bg-blue-50 dark:bg-blue-950/30 rounded-xs flex items-center justify-center mb-5 shadow-sm border border-blue-300 dark:border-blue-700">
+              <div className="flex flex-col items-center justify-center px-4 py-10 text-center">
+                <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
                   <div className="size-10 text-blue-500 dark:text-blue-400">
                     <UploadIcon />
                   </div>
                 </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">
-                  No sources yet
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs leading-relaxed">
-                  Add your first source to start gathering information. You can
-                  upload PDFs, add web links, or paste text.
+                <h3 className="text-foreground mb-2 text-lg font-semibold">No sources yet</h3>
+                <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                  Add your first source to start gathering information. You can upload PDFs, add web
+                  links, or paste text.
                 </p>
               </div>
             );
@@ -261,7 +238,7 @@ export function SourcesCard({
           closeOnOutsideClick={!addingSource}
           closeOnEscape={!addingSource}
           actions={
-            <div className="flex justify-between w-full">
+            <div className="flex w-full justify-between">
               {sourceType === "Website" || sourceType === "File" ? (
                 <Tooltip
                   text="Enable AI to improve source readability."
@@ -286,9 +263,7 @@ export function SourcesCard({
                   variant="primary"
                   onClick={handleAddSource}
                   disabled={
-                    (sourceType === "File"
-                      ? !newSourceFile
-                      : !newSourceLink.trim()) || addingSource
+                    (sourceType === "File" ? !newSourceFile : !newSourceLink.trim()) || addingSource
                   }
                   icon={addingSource ? <Spinner /> : <AddIcon />}
                 >
@@ -335,9 +310,7 @@ export function SourcesCard({
               />
             )}
 
-            {newSourceLinkError && (
-              <div className="text-red-500 text-sm">{newSourceLinkError}</div>
-            )}
+            {newSourceLinkError && <div className="text-sm text-red-500">{newSourceLinkError}</div>}
           </div>
         </Modal>
       )}

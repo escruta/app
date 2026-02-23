@@ -4,20 +4,16 @@ import { AUTH_TOKEN_KEY, BACKEND_BASE_URL } from "@/config";
 import { AuthContext } from "@/contexts";
 import type { Token, User } from "@/interfaces";
 
-export default function AuthProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AuthProvider({ children }: { children: React.ReactNode }) {
   const [tokenCookie, setTokenCookie] = useCookie<Token>(AUTH_TOKEN_KEY, {
     token: null,
     expiresIn: 0,
   });
   const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useCookie<User | null>(
-    "user",
-    null,
-  ) as [User | null, (value: User | null) => void];
+  const [currentUser, setCurrentUser] = useCookie<User | null>("user", null) as [
+    User | null,
+    (value: User | null) => void,
+  ];
 
   const signIn = async (email: string, password: string) => {
     const response = await fetch(`${BACKEND_BASE_URL}/login`, {
@@ -113,11 +109,7 @@ export default function AuthProvider({
   }, [tokenCookie]);
 
   const checkTokenValidity = useCallback(() => {
-    if (
-      tokenCookie?.expiresIn &&
-      tokenCookie?.token &&
-      tokenCookie?.createdAt
-    ) {
+    if (tokenCookie?.expiresIn && tokenCookie?.token && tokenCookie?.createdAt) {
       return Date.now() - (tokenCookie.createdAt || 0) < tokenCookie.expiresIn;
     }
     return false;

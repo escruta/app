@@ -1,10 +1,5 @@
 import { useState, useMemo } from "react";
-import {
-  CloseIcon,
-  RestartIcon,
-  ExpandIcon,
-  CompressIcon,
-} from "@/components/icons";
+import { CloseIcon, RestartIcon, ExpandIcon, CompressIcon } from "@/components/icons";
 import { Card, IconButton, Tooltip, Divider, Spinner } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import type {
@@ -63,23 +58,16 @@ export function ToolResultViewer({
 }: ToolResultViewerProps) {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
-  const parsedContent = useMemo(
-    () => parseContent(content, type),
-    [content, type],
-  );
+  const parsedContent = useMemo(() => parseContent(content, type), [content, type]);
 
   function renderContent() {
     if (isLoading) {
       return (
-        <div className="flex-1 flex items-center justify-center p-6">
+        <div className="flex flex-1 items-center justify-center p-6">
           <div className="text-center">
             <Spinner size={32} className="mx-auto mb-4" />
-            <p className="text-gray-500 dark:text-gray-400">
-              Generating {title.toLowerCase()}...
-            </p>
-            <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
-              This may take a moment
-            </p>
+            <p className="text-gray-500 dark:text-gray-400">Generating {title.toLowerCase()}...</p>
+            <p className="mt-2 text-sm text-gray-400 dark:text-gray-500">This may take a moment</p>
           </div>
         </div>
       );
@@ -87,21 +75,17 @@ export function ToolResultViewer({
 
     if (!parsedContent) {
       return (
-        <div className="flex-1 flex items-center justify-center p-6">
-          <p className="text-gray-500 dark:text-gray-400">
-            No content available
-          </p>
+        <div className="flex flex-1 items-center justify-center p-6">
+          <p className="text-gray-500 dark:text-gray-400">No content available</p>
         </div>
       );
     }
 
     if (parsedContent.type === "error") {
       return (
-        <div className="flex-1 flex items-center justify-center p-6">
+        <div className="flex flex-1 items-center justify-center p-6">
           <div className="text-center">
-            <p className="text-red-500 dark:text-red-400 mb-2">
-              {parsedContent.error}
-            </p>
+            <p className="mb-2 text-red-500 dark:text-red-400">{parsedContent.error}</p>
             <p className="text-sm text-gray-400 dark:text-gray-500">
               The content could not be displayed properly
             </p>
@@ -118,18 +102,11 @@ export function ToolResultViewer({
       case "STUDY_GUIDE":
         return <StudyGuideViewer data={parsedContent.data} />;
       case "MIND_MAP":
-        return (
-          <MindMapViewer
-            data={parsedContent.data}
-            onNodeSelect={onNodeSelect}
-          />
-        );
+        return <MindMapViewer data={parsedContent.data} onNodeSelect={onNodeSelect} />;
       default:
         return (
-          <div className="flex-1 flex items-center justify-center p-6">
-            <p className="text-gray-500 dark:text-gray-400">
-              Unknown content type
-            </p>
+          <div className="flex flex-1 items-center justify-center p-6">
+            <p className="text-gray-500 dark:text-gray-400">Unknown content type</p>
           </div>
         );
     }
@@ -148,9 +125,9 @@ export function ToolResultViewer({
       )}
     >
       <div className="sticky top-0 z-10 py-2">
-        <div className="h-12 px-6 gap-3 flex justify-between items-center flex-shrink-0">
-          <h2 className="flex items-baseline gap-1.5 flex-1 min-w-0">
-            <span className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400 shrink-0">
+        <div className="flex h-12 flex-shrink-0 items-center justify-between gap-3 px-6">
+          <h2 className="flex min-w-0 flex-1 items-baseline gap-1.5">
+            <span className="shrink-0 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
               Tool /{" "}
             </span>
             <span className="truncate font-semibold">{title}</span>
@@ -170,10 +147,7 @@ export function ToolResultViewer({
                 />
               </Tooltip>
             )}
-            <Tooltip
-              text={isExpanded ? "Restore size" : "Expand"}
-              position="bottom"
-            >
+            <Tooltip text={isExpanded ? "Restore size" : "Expand"} position="bottom">
               <IconButton
                 icon={isExpanded ? <CompressIcon /> : <ExpandIcon />}
                 variant="ghost"
@@ -182,12 +156,7 @@ export function ToolResultViewer({
               />
             </Tooltip>
             <Tooltip text="Close" position="bottom">
-              <IconButton
-                icon={<CloseIcon />}
-                variant="ghost"
-                size="sm"
-                onClick={onClose}
-              />
+              <IconButton icon={<CloseIcon />} variant="ghost" size="sm" onClick={onClose} />
             </Tooltip>
           </div>
         </div>
@@ -198,18 +167,10 @@ export function ToolResultViewer({
       <div
         className={cn("flex-1 flex flex-col w-full mx-auto", {
           "overflow-y-auto": !(
-            [
-              "MIND_MAP",
-              "FLASHCARDS",
-              "QUESTIONNAIRE",
-            ] satisfies JobType[] as readonly JobType[]
+            ["MIND_MAP", "FLASHCARDS", "QUESTIONNAIRE"] satisfies JobType[] as readonly JobType[]
           ).includes(type),
           "overflow-hidden": (
-            [
-              "MIND_MAP",
-              "FLASHCARDS",
-              "QUESTIONNAIRE",
-            ] satisfies JobType[] as readonly JobType[]
+            ["MIND_MAP", "FLASHCARDS", "QUESTIONNAIRE"] satisfies JobType[] as readonly JobType[]
           ).includes(type),
         })}
       >

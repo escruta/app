@@ -24,8 +24,8 @@ export default function AuthLayout() {
 
   return (
     <main>
-      <div className="flex h-dvh sm:h-screen justify-center">
-        <div className="z-10 flex flex-1 sm:items-center justify-center p-8 pt-12 sm:pt-8 bg-white dark:bg-gray-900">
+      <div className="flex h-dvh justify-center sm:h-screen">
+        <div className="z-10 flex flex-1 justify-center bg-white p-8 pt-12 sm:items-center sm:pt-8 dark:bg-gray-900">
           <div className="w-full max-w-sm">
             <Outlet />
           </div>
@@ -33,7 +33,7 @@ export default function AuthLayout() {
       </div>
 
       {isKeyboardOpen ? null : (
-        <div className="absolute lg:top-8 bottom-8 z-20 lg:left-8 left-1/2 transform lg:transform-none -translate-x-1/2 lg:translate-x-0">
+        <div className="absolute bottom-8 left-1/2 z-20 -translate-x-1/2 transform lg:top-8 lg:left-8 lg:translate-x-0 lg:transform-none">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}

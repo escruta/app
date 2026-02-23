@@ -1,12 +1,6 @@
 import { lazy } from "react";
 import { useFetch } from "@/hooks";
-import {
-  FileIcon,
-  RestartIcon,
-  SendIcon,
-  ChatHistoryIcon,
-  AddIcon,
-} from "@/components/icons";
+import { FileIcon, RestartIcon, SendIcon, ChatHistoryIcon, AddIcon } from "@/components/icons";
 import {
   Alert,
   Card,
@@ -21,20 +15,11 @@ import {
 } from "@/components/ui";
 import { ChatHistory } from "@/components/ChatHistory";
 import type { ConversationMessages } from "@/interfaces";
-import {
-  useEffect,
-  useState,
-  useRef,
-  useMemo,
-  useCallback,
-  type ReactNode,
-} from "react";
+import { useEffect, useState, useRef, useMemo, useCallback, type ReactNode } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn, getHttpErrorMessage } from "@/lib/utils";
 
-const Markdown = lazy(() =>
-  import("./Markdown").then((module) => ({ default: module.Markdown })),
-);
+const Markdown = lazy(() => import("./Markdown").then((module) => ({ default: module.Markdown })));
 
 const CodeBlock = lazy(() =>
   import("./CodeBlock").then((module) => ({ default: module.CodeBlock })),
@@ -83,7 +68,7 @@ function processMessage(message: Message, onRetry?: () => void): ReactNode {
             onClick={onRetry}
             variant="ghost"
             size="sm"
-            icon={<RestartIcon className="w-4 h-4" />}
+            icon={<RestartIcon className="h-4 w-4" />}
           >
             Retry message
           </Button>
@@ -129,10 +114,7 @@ function processMessage(message: Message, onRetry?: () => void): ReactNode {
   return parts.map((part, index) => {
     if (part.type === "code") {
       return (
-        <CodeBlock
-          key={index}
-          className={part.language ? `language-${part.language}` : ""}
-        >
+        <CodeBlock key={index} className={part.language ? `language-${part.language}` : ""}>
           {part.content}
         </CodeBlock>
       );
@@ -155,8 +137,7 @@ export function ChatCard({
   externalQuestion,
   onExternalQuestionHandled,
 }: ChatCardProps) {
-  const [summaryGenerateError, setSummaryGenerateError] =
-    useState<FetchError | null>(null);
+  const [summaryGenerateError, setSummaryGenerateError] = useState<FetchError | null>(null);
 
   const summaryOptions = useMemo(
     () => ({
@@ -172,11 +153,7 @@ export function ChatCard({
     data: notebookSummary,
     loading: isSummaryLoading,
     refetch: refetchSummary,
-  } = useFetch<string>(
-    `notebooks/${notebookId}/summary`,
-    summaryOptions,
-    false,
-  );
+  } = useFetch<string>(`notebooks/${notebookId}/summary`, summaryOptions, false);
 
   const regenerateSummaryOptions = useMemo(
     () => ({
@@ -195,12 +172,11 @@ export function ChatCard({
     [refetchSummary, notebookId],
   );
 
-  const { loading: isSummaryRegenerating, refetch: regenerateSummary } =
-    useFetch<string>(
-      `notebooks/${notebookId}/summary`,
-      regenerateSummaryOptions,
-      false,
-    );
+  const { loading: isSummaryRegenerating, refetch: regenerateSummary } = useFetch<string>(
+    `notebooks/${notebookId}/summary`,
+    regenerateSummaryOptions,
+    false,
+  );
 
   useEffect(() => {
     refetchSummary();
@@ -208,8 +184,7 @@ export function ChatCard({
   }, [refreshTrigger]);
 
   const [isAutoRegenerating, setIsAutoRegenerating] = useState(false);
-  const [skipExampleQuestionsFetch, setSkipExampleQuestionsFetch] =
-    useState(false);
+  const [skipExampleQuestionsFetch, setSkipExampleQuestionsFetch] = useState(false);
 
   const exampleQuestionsOptions = useMemo(
     () => ({
@@ -268,16 +243,10 @@ export function ChatCard({
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
   const [conversationId, setConversationId] = useState<string | null>(null);
-  const [conversationTitle, setConversationTitle] = useState<string | null>(
-    null,
-  );
+  const [conversationTitle, setConversationTitle] = useState<string | null>(null);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [conversationToLoadId, setConversationToLoadId] = useState<
-    string | null
-  >(null);
-  const [pendingConversationTitle, setPendingConversationTitle] = useState<
-    string | null
-  >(null);
+  const [conversationToLoadId, setConversationToLoadId] = useState<string | null>(null);
+  const [pendingConversationTitle, setPendingConversationTitle] = useState<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const pendingMessageRef = useRef<string | null>(null);
 
@@ -315,13 +284,10 @@ export function ChatCard({
     conversationToLoadId !== null,
   );
 
-  const loadConversation = useCallback(
-    (selectedConversationId: string, title: string) => {
-      setConversationToLoadId(selectedConversationId);
-      setPendingConversationTitle(title);
-    },
-    [],
-  );
+  const loadConversation = useCallback((selectedConversationId: string, title: string) => {
+    setConversationToLoadId(selectedConversationId);
+    setPendingConversationTitle(title);
+  }, []);
 
   useEffect(() => {
     if (externalQuestion) {
@@ -331,11 +297,7 @@ export function ChatCard({
   }, [externalQuestion, onExternalQuestionHandled]);
 
   const handleSourceClick = (sourceId: string) => {
-    if (
-      !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(
-        sourceId,
-      )
-    ) {
+    if (!/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(sourceId)) {
       console.warn("Invalid source ID format:", sourceId);
       return;
     }
@@ -383,9 +345,7 @@ export function ChatCard({
         if (!conversationId && response.conversationId) {
           const firstMessage = pendingMessageRef.current || "";
           const defaultTitle =
-            firstMessage.length > 50
-              ? firstMessage.slice(0, 50) + "..."
-              : firstMessage;
+            firstMessage.length > 50 ? firstMessage.slice(0, 50) + "..." : firstMessage;
           setConversationTitle(response.conversationTitle || defaultTitle);
         }
         setConversationId(response.conversationId);
@@ -405,8 +365,11 @@ export function ChatCard({
     [],
   );
 
-  const { loading: isChatLoading, refetch: fetchChatResponseRaw } =
-    useFetch<ChatResponse>(`notebooks/${notebookId}/chat`, chatOptions, false);
+  const { loading: isChatLoading, refetch: fetchChatResponseRaw } = useFetch<ChatResponse>(
+    `notebooks/${notebookId}/chat`,
+    chatOptions,
+    false,
+  );
 
   const fetchChatResponse = useCallback(
     async (forcedUpdate = false) => {
@@ -446,12 +409,9 @@ export function ChatCard({
       const timer = setTimeout(() => {
         const container = scrollContainerRef.current;
         if (!container) return;
-        const messageElements =
-          container.getElementsByClassName("message-item");
+        const messageElements = container.getElementsByClassName("message-item");
         if (messageElements.length > 0) {
-          const lastMessage = messageElements[
-            messageElements.length - 1
-          ] as HTMLElement;
+          const lastMessage = messageElements[messageElements.length - 1] as HTMLElement;
           lastMessage.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       }, 100);
@@ -467,10 +427,10 @@ export function ChatCard({
   }, []);
 
   return (
-    <Card className="flex flex-col h-full overflow-hidden px-0">
-      <div className="flex flex-row justify-between items-center mb-2 px-4 shrink-0">
-        <h2 className="flex items-baseline gap-1.5 min-w-0 flex-1">
-          <span className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400 shrink-0">
+    <Card className="flex h-full flex-col overflow-hidden px-0">
+      <div className="mb-2 flex shrink-0 flex-row items-center justify-between px-4">
+        <h2 className="flex min-w-0 flex-1 items-baseline gap-1.5">
+          <span className="shrink-0 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
             Chat /{" "}
           </span>
           <span className="truncate text-lg font-semibold select-text">
@@ -507,7 +467,7 @@ export function ChatCard({
       {messages.length > 0 ? (
         <div
           ref={scrollContainerRef}
-          className="flex-1 overflow-y-auto py-4 px-4 md:px-6 space-y-4 min-h-0 scroll-smooth scroll-pt-4"
+          className="min-h-0 flex-1 scroll-pt-4 space-y-4 overflow-y-auto scroll-smooth px-4 py-4 md:px-6"
         >
           <AnimatePresence>
             {messages.map((message, index) => (
@@ -528,8 +488,7 @@ export function ChatCard({
                     {
                       "max-w-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 px-4 py-2.5 rounded-xs self-end ml-12 shadow-xs":
                         message.sender === "user",
-                      "max-w-3xl self-start mr-12 py-2":
-                        message.sender === "ai" && !message.error,
+                      "max-w-3xl self-start mr-12 py-2": message.sender === "ai" && !message.error,
                       "max-w-2xl bg-red-50/10 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 px-5 py-4 rounded-xs self-start mr-12":
                         message.error,
                     },
@@ -537,25 +496,21 @@ export function ChatCard({
                 >
                   <div
                     className={cn("text-base font-medium leading-relaxed", {
-                      "text-blue-800 dark:text-blue-100":
-                        message.sender === "user",
-                      "text-gray-950 dark:text-gray-50":
-                        message.sender === "ai",
+                      "text-blue-800 dark:text-blue-100": message.sender === "user",
+                      "text-gray-950 dark:text-gray-50": message.sender === "ai",
                     })}
                   >
                     {processMessage(
                       message,
-                      message.error
-                        ? () => handleRetryFromError(index)
-                        : undefined,
+                      message.error ? () => handleRetryFromError(index) : undefined,
                     )}
                   </div>
 
                   {message.sender === "ai" &&
                     message.citedSources &&
                     message.citedSources.length > 0 && (
-                      <div className="pt-4 border-t border-gray-200/65 dark:border-gray-800/65">
-                        <div className="text-[10px] uppercase tracking-widest text-gray-500 dark:text-gray-400 font-bold mb-3 select-none">
+                      <div className="border-t border-gray-200/65 pt-4 dark:border-gray-800/65">
+                        <div className="mb-3 text-[10px] font-bold tracking-widest text-gray-500 uppercase select-none dark:text-gray-400">
                           Cited sources
                         </div>
                         <div className="flex flex-wrap gap-2">
@@ -567,7 +522,7 @@ export function ChatCard({
                               size="sm"
                               className="max-w-full"
                             >
-                              <span className="truncate max-w-[180px]">
+                              <span className="max-w-[180px] truncate">
                                 {source.title || `Source ${idx + 1}`}
                               </span>
                             </Chip>
@@ -579,7 +534,7 @@ export function ChatCard({
                 {message.sender === "user" &&
                   message.selectedSourcesCount !== undefined &&
                   message.selectedSourcesCount > 0 && (
-                    <div className="text-xs text-gray-400 dark:text-gray-500 mt-1 mr-1">
+                    <div className="mt-1 mr-1 text-xs text-gray-400 dark:text-gray-500">
                       {message.selectedSourcesCount} source
                       {message.selectedSourcesCount !== 1 ? "s" : ""} selected
                     </div>
@@ -603,39 +558,29 @@ export function ChatCard({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="flex flex-col flex-grow min-h-0 px-4 max-h-full overflow-y-auto"
+          className="flex max-h-full min-h-0 flex-grow flex-col overflow-y-auto px-4"
         >
           {sourcesCount > 0 ? (
-            <div className="w-full py-8 px-4">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xl font-semibold">
-                  Summary of the notebook
-                </h3>
-                {notebookSummary &&
-                  !isSummaryLoading &&
-                  !isAutoRegenerating && (
-                    <Tooltip
-                      text={
-                        isSummaryRegenerating
-                          ? "Regenerating summary"
-                          : "Regenerate summary"
-                      }
-                      position="bottom"
-                    >
-                      <IconButton
-                        icon={
-                          isSummaryRegenerating ? <Spinner /> : <RestartIcon />
-                        }
-                        variant="ghost"
-                        size="sm"
-                        onClick={regenerateSummary}
-                        disabled={isSummaryRegenerating}
-                      />
-                    </Tooltip>
-                  )}
+            <div className="w-full px-4 py-8">
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="text-xl font-semibold">Summary of the notebook</h3>
+                {notebookSummary && !isSummaryLoading && !isAutoRegenerating && (
+                  <Tooltip
+                    text={isSummaryRegenerating ? "Regenerating summary" : "Regenerate summary"}
+                    position="bottom"
+                  >
+                    <IconButton
+                      icon={isSummaryRegenerating ? <Spinner /> : <RestartIcon />}
+                      variant="ghost"
+                      size="sm"
+                      onClick={regenerateSummary}
+                      disabled={isSummaryRegenerating}
+                    />
+                  </Tooltip>
+                )}
                 {isAutoRegenerating && (
                   <Tooltip text="Auto-regenerating..." position="bottom">
-                    <div className="flex items-center justify-center w-8 h-8">
+                    <div className="flex h-8 w-8 items-center justify-center">
                       <Spinner />
                     </div>
                   </Tooltip>
@@ -644,9 +589,7 @@ export function ChatCard({
               <AnimatePresence mode="wait" initial={false}>
                 <motion.div
                   key={
-                    isSummaryLoading ||
-                    isSummaryRegenerating ||
-                    isAutoRegenerating
+                    isSummaryLoading || isSummaryRegenerating || isAutoRegenerating
                       ? "loading"
                       : summaryGenerateError
                         ? "error"
@@ -658,19 +601,15 @@ export function ChatCard({
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.15, ease: "easeInOut" }}
-                  className="max-w-none mt-1 mb-1"
+                  className="mt-1 mb-1 max-w-none"
                 >
-                  {isSummaryLoading ||
-                  isSummaryRegenerating ||
-                  isAutoRegenerating ? (
+                  {isSummaryLoading || isSummaryRegenerating || isAutoRegenerating ? (
                     <Skeleton lines={6} className="w-full" />
                   ) : summaryGenerateError ? (
                     <div className="flex flex-col gap-3">
                       <Alert
                         title="Error"
-                        message={getHttpErrorMessage(
-                          summaryGenerateError.status,
-                        )}
+                        message={getHttpErrorMessage(summaryGenerateError.status)}
                         variant="danger"
                       />
                       <Button
@@ -678,7 +617,7 @@ export function ChatCard({
                         disabled={isSummaryRegenerating}
                         variant="ghost"
                         size="sm"
-                        icon={<RestartIcon className="w-4 h-4" />}
+                        icon={<RestartIcon className="h-4 w-4" />}
                       >
                         Regenerate summary
                       </Button>
@@ -688,10 +627,7 @@ export function ChatCard({
                       <Markdown text={notebookSummary} />
                     </div>
                   ) : (
-                    <Button
-                      onClick={regenerateSummary}
-                      disabled={isSummaryRegenerating}
-                    >
+                    <Button onClick={regenerateSummary} disabled={isSummaryRegenerating}>
                       Generate summary
                     </Button>
                   )}
@@ -705,9 +641,7 @@ export function ChatCard({
                     <div className="flex flex-col gap-3">
                       <Alert
                         title="Error"
-                        message={getHttpErrorMessage(
-                          exampleQuestionsError.status,
-                        )}
+                        message={getHttpErrorMessage(exampleQuestionsError.status)}
                         variant="danger"
                       />
                       <Button
@@ -715,7 +649,7 @@ export function ChatCard({
                         disabled={isExampleQuestionsLoading}
                         variant="ghost"
                         size="sm"
-                        icon={<RestartIcon className="w-4 h-4" />}
+                        icon={<RestartIcon className="h-4 w-4" />}
                       >
                         Regenerate example questions
                       </Button>
@@ -723,15 +657,10 @@ export function ChatCard({
                   ) : (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <h4 className="text-sm font-semibold text-foreground">
-                          Example questions
-                        </h4>
+                        <h4 className="text-foreground text-sm font-semibold">Example questions</h4>
                         {isAutoRegenerating || skipExampleQuestionsFetch ? (
-                          <Tooltip
-                            text="Waiting for summary..."
-                            position="bottom"
-                          >
-                            <div className="flex items-center justify-center w-8 h-8">
+                          <Tooltip text="Waiting for summary..." position="bottom">
+                            <div className="flex h-8 w-8 items-center justify-center">
                               <Spinner />
                             </div>
                           </Tooltip>
@@ -745,13 +674,7 @@ export function ChatCard({
                             position="bottom"
                           >
                             <IconButton
-                              icon={
-                                isExampleQuestionsLoading ? (
-                                  <Spinner />
-                                ) : (
-                                  <RestartIcon />
-                                )
-                              }
+                              icon={isExampleQuestionsLoading ? <Spinner /> : <RestartIcon />}
                               variant="ghost"
                               size="sm"
                               onClick={() => {
@@ -788,20 +711,18 @@ export function ChatCard({
                               </>
                             ) : exampleQuestions?.questions &&
                               exampleQuestions.questions.length > 0 ? (
-                              exampleQuestions.questions.map(
-                                (question, index) => (
-                                  <Chip
-                                    key={index}
-                                    onClick={() => {
-                                      setInput(question);
-                                    }}
-                                    multiline
-                                    className="w-full justify-start text-left"
-                                  >
-                                    {question}
-                                  </Chip>
-                                ),
-                              )
+                              exampleQuestions.questions.map((question, index) => (
+                                <Chip
+                                  key={index}
+                                  onClick={() => {
+                                    setInput(question);
+                                  }}
+                                  multiline
+                                  className="w-full justify-start text-left"
+                                >
+                                  {question}
+                                </Chip>
+                              ))
                             ) : null}
                           </motion.div>
                         </AnimatePresence>
@@ -812,18 +733,16 @@ export function ChatCard({
               )}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center text-center py-12 px-4 h-full">
-              <div className="size-20 bg-blue-50 dark:bg-blue-950/30 rounded-xs flex items-center justify-center mb-5 shadow-sm border border-blue-300 dark:border-blue-700">
+            <div className="flex h-full flex-col items-center justify-center px-4 py-12 text-center">
+              <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
                 <div className="size-10 text-blue-500 dark:text-blue-400">
                   <FileIcon />
                 </div>
               </div>
-              <h3 className="text-xl font-semibold text-foreground mb-2">
-                This notebook is empty
-              </h3>
-              <p className="text-base text-gray-500 dark:text-gray-400 max-w-sm leading-relaxed">
-                Add sources to start chatting with your documents. You can
-                upload PDFs, paste text, or add web links.
+              <h3 className="text-foreground mb-2 text-xl font-semibold">This notebook is empty</h3>
+              <p className="max-w-sm text-base leading-relaxed text-gray-500 dark:text-gray-400">
+                Add sources to start chatting with your documents. You can upload PDFs, paste text,
+                or add web links.
               </p>
             </div>
           )}
@@ -844,9 +763,7 @@ export function ChatCard({
                   setConversationId(null);
                   setConversationTitle(null);
                 }}
-                disabled={
-                  messages.length === 0 || isChatLoading || isAutoRegenerating
-                }
+                disabled={messages.length === 0 || isChatLoading || isAutoRegenerating}
                 variant="ghost"
               />
             </Tooltip>
@@ -854,16 +771,9 @@ export function ChatCard({
           <TextField
             id="chat-input"
             value={input}
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-              setInput(e.target.value)
-            }
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setInput(e.target.value)}
             onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-              if (
-                e.key === "Enter" &&
-                !e.shiftKey &&
-                !isChatLoading &&
-                input.trim()
-              ) {
+              if (e.key === "Enter" && !e.shiftKey && !isChatLoading && input.trim()) {
                 e.preventDefault();
                 handleSendMessage();
               }
@@ -882,9 +792,7 @@ export function ChatCard({
           <IconButton
             icon={<SendIcon />}
             onClick={handleSendMessage}
-            disabled={
-              isChatLoading || !input.trim() || selectedSourceIds.length === 0
-            }
+            disabled={isChatLoading || !input.trim() || selectedSourceIds.length === 0}
             aria-label="Send message"
           />
         </div>

@@ -47,14 +47,14 @@ export const Tabs = forwardRef<TabsRef, TabsProps>(
 
     return (
       <div className={cn("w-full relative", className)}>
-        <div className="flex w-full overflow-x-auto no-scrollbar justify-start p-1 bg-gray-50/65 dark:bg-gray-900/65 rounded-xs border border-gray-200 dark:border-gray-600">
+        <div className="no-scrollbar flex w-full justify-start overflow-x-auto rounded-xs border border-gray-200 bg-gray-50/65 p-1 dark:border-gray-600 dark:bg-gray-900/65">
           {items.map((tab, index) => (
-            <div key={index} className="relative flex-1 min-w-max group">
+            <div key={index} className="group relative min-w-max flex-1">
               {activeTabId === tab.id && (
-                <div className="absolute inset-0 bg-white dark:bg-gray-800 rounded-xs border border-gray-200/50 dark:border-gray-600/50 transition-all duration-150 ease-out" />
+                <div className="absolute inset-0 rounded-xs border border-gray-200/50 bg-white transition-all duration-150 ease-out dark:border-gray-600/50 dark:bg-gray-800" />
               )}
               {activeTabId !== tab.id && (
-                <div className="absolute inset-0 bg-gray-100/40 dark:bg-gray-700/40 rounded-xs opacity-0 group-hover:opacity-100 transition-opacity duration-150" />
+                <div className="absolute inset-0 rounded-xs bg-gray-100/40 opacity-0 transition-opacity duration-150 group-hover:opacity-100 dark:bg-gray-700/40" />
               )}
               <button
                 onClick={() => handleTabClick(tab.id)}
@@ -68,8 +68,7 @@ export const Tabs = forwardRef<TabsRef, TabsProps>(
               >
                 <span
                   className={cn("text-sm transition-all duration-150", {
-                    "text-gray-800 dark:text-gray-100 font-semibold":
-                      activeTabId === tab.id,
+                    "text-gray-800 dark:text-gray-100 font-semibold": activeTabId === tab.id,
                     "text-gray-600 dark:text-gray-400 font-medium group-hover:text-gray-800 dark:group-hover:text-gray-200":
                       activeTabId !== tab.id,
                   })}
@@ -80,7 +79,7 @@ export const Tabs = forwardRef<TabsRef, TabsProps>(
             </div>
           ))}
         </div>
-        <div className="h-[calc(100%-3.5rem)] absolute inset-x-0 bottom-0 flex-grow max-h-full overflow-hidden mt-2">
+        <div className="absolute inset-x-0 bottom-0 mt-2 h-[calc(100%-3.5rem)] max-h-full flex-grow overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTabId}

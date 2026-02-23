@@ -68,7 +68,7 @@ export function CodeBlock({ children, className, inline }: CodeBlockProps) {
 
   if (inline) {
     return (
-      <code className="bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-1.5 py-0.5 rounded-xs text-sm font-mono">
+      <code className="rounded-xs bg-gray-100 px-1.5 py-0.5 font-mono text-sm text-gray-800 dark:bg-gray-800 dark:text-gray-200">
         {children}
       </code>
     );
@@ -88,15 +88,9 @@ export function CodeBlock({ children, className, inline }: CodeBlockProps) {
         className,
       )}
     >
-      <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+      <div className="absolute top-2 right-2 z-10 opacity-0 transition-opacity group-hover:opacity-100">
         <IconButton
-          icon={
-            copied ? (
-              <CheckIcon className="size-4" />
-            ) : (
-              <CopyIcon className="size-4" />
-            )
-          }
+          icon={copied ? <CheckIcon className="size-4" /> : <CopyIcon className="size-4" />}
           onClick={handleCopy}
           size="xs"
           variant="ghost"
@@ -105,7 +99,7 @@ export function CodeBlock({ children, className, inline }: CodeBlockProps) {
       <div className="overflow-x-auto p-4">
         <code
           ref={codeRef}
-          className="block font-mono text-sm font-medium leading-[1.5] whitespace-pre"
+          className="block font-mono text-sm leading-[1.5] font-medium whitespace-pre"
         >
           {children}
         </code>

@@ -37,7 +37,7 @@ export function Card({
       {isExpanded && (
         <button
           type="button"
-          className="fixed inset-0 z-40 bg-black/30 dark:bg-black/60 backdrop-blur-[1px] animate-in fade-in duration-200 cursor-default"
+          className="animate-in fade-in fixed inset-0 z-40 cursor-default bg-black/30 backdrop-blur-[1px] duration-200 dark:bg-black/60"
           onClick={() => setIsExpanded?.(false)}
           aria-label="Close expanded view"
         />
@@ -50,10 +50,8 @@ export function Card({
           className,
           {
             "fixed z-50 m-auto overflow-auto inset-0": isExpanded,
-            "sm:inset-4 sm:max-h-[calc(100vh-4rem)] sm:max-w-[calc(100vw-4rem)]":
-              isExpanded,
-            "lg:inset-12 lg:max-h-[calc(100vh-6rem)] lg:max-w-[calc(100vw-12rem)]":
-              isExpanded,
+            "sm:inset-4 sm:max-h-[calc(100vh-4rem)] sm:max-w-[calc(100vw-4rem)]": isExpanded,
+            "lg:inset-12 lg:max-h-[calc(100vh-6rem)] lg:max-w-[calc(100vw-12rem)]": isExpanded,
           },
         )}
         style={{

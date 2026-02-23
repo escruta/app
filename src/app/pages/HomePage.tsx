@@ -2,22 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import type { Notebook } from "@/interfaces";
 import { useAuth, useCookie, useFetch } from "@/hooks";
-import {
-  Button,
-  Dropdown,
-  Modal,
-  TextField,
-  SegmentedButtons,
-  Spinner,
-} from "@/components/ui";
+import { Button, Dropdown, Modal, TextField, SegmentedButtons, Spinner } from "@/components/ui";
 import { NotebookCard, CommonBar, SEOMetadata } from "@/components";
-import {
-  AddIcon,
-  GridIcon,
-  ListIcon,
-  FireIcon,
-  NotebookIcon,
-} from "@/components/icons";
+import { AddIcon, GridIcon, ListIcon, FireIcon, NotebookIcon } from "@/components/icons";
 import { getRouteMetadata } from "@/lib/seo";
 import { motion } from "motion/react";
 import SimpleBackground from "@/components/backgrounds/SimpleBackground";
@@ -35,14 +22,8 @@ export default function HomePage() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { data, loading, error } = useFetch<Notebook[]>("/notebooks");
-  const [sortBy, setSortBy] = useCookie<SortOptions>(
-    "notebookSortPreference",
-    SortOptions.Newest,
-  );
-  const [viewMode, setViewMode] = useCookie<ViewMode>(
-    "notebookViewMode",
-    "grid",
-  );
+  const [sortBy, setSortBy] = useCookie<SortOptions>("notebookSortPreference", SortOptions.Newest);
+  const [viewMode, setViewMode] = useCookie<ViewMode>("notebookViewMode", "grid");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newNotebookTitle, setNewNotebookTitle] = useState("");
 
@@ -68,9 +49,9 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center h-screen w-full flex-col">
-        <div className="border-y border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 px-6 py-5">
-          <div className="flex justify-center items-center py-12">
+      <div className="flex h-screen w-full flex-col justify-center">
+        <div className="border-y border-gray-200 bg-gray-50 px-6 py-5 dark:border-gray-700 dark:bg-gray-950">
+          <div className="flex items-center justify-center py-12">
             <motion.div
               className="text-center"
               initial={{ opacity: 0, y: 20 }}
@@ -78,13 +59,11 @@ export default function HomePage() {
               transition={{ duration: 0.3 }}
             >
               <motion.div
-                className="inline-block w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mb-4"
+                className="mb-4 inline-block h-8 w-8 rounded-full border-2 border-blue-500 border-t-transparent"
                 animate={{ rotate: 360 }}
                 transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
               />
-              <p className="text-gray-600 dark:text-gray-400 font-medium">
-                Loading notebooks...
-              </p>
+              <p className="font-medium text-gray-600 dark:text-gray-400">Loading notebooks...</p>
             </motion.div>
           </div>
         </div>
@@ -95,26 +74,25 @@ export default function HomePage() {
   if (error) {
     if (error.status === 401) {
       return (
-        <div className="flex justify-center h-screen w-full flex-col">
-          <div className="border-y border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 px-6 py-5">
+        <div className="flex h-screen w-full flex-col justify-center">
+          <div className="border-y border-gray-200 bg-gray-50 px-6 py-5 dark:border-gray-700 dark:bg-gray-950">
             <motion.div
-              className="flex justify-center items-center py-12"
+              className="flex items-center justify-center py-12"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
             >
               <div className="text-center">
-                <div className="w-16 h-16 bg-yellow-50 dark:bg-yellow-950 rounded-xs flex items-center justify-center mb-4 mx-auto">
-                  <div className="w-8 h-8 text-yellow-500">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-xs bg-yellow-50 dark:bg-yellow-950">
+                  <div className="h-8 w-8 text-yellow-500">
                     <NotebookIcon />
                   </div>
                 </div>
-                <h1 className="text-xl font-medium text-yellow-600 dark:text-yellow-400 mb-2">
+                <h1 className="mb-2 text-xl font-medium text-yellow-600 dark:text-yellow-400">
                   Access denied
                 </h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                  You do not have permission to view these notebooks. Try
-                  logging in again.
+                <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+                  You do not have permission to view these notebooks. Try logging in again.
                 </p>
               </div>
             </motion.div>
@@ -124,24 +102,24 @@ export default function HomePage() {
     }
 
     return (
-      <div className="flex justify-center h-screen w-full flex-col">
-        <div className="border-y border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 px-6 py-5">
+      <div className="flex h-screen w-full flex-col justify-center">
+        <div className="border-y border-gray-200 bg-gray-50 px-6 py-5 dark:border-gray-700 dark:bg-gray-950">
           <motion.div
-            className="flex justify-center items-center py-12"
+            className="flex items-center justify-center py-12"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="text-center max-w-md">
-              <div className="w-16 h-16 bg-red-50 dark:bg-red-950 rounded-xs flex items-center justify-center mb-4 mx-auto">
-                <div className="w-8 h-8 text-red-500">
+            <div className="max-w-md text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-xs bg-red-50 dark:bg-red-950">
+                <div className="h-8 w-8 text-red-500">
                   <FireIcon />
                 </div>
               </div>
-              <h1 className="text-lg font-medium text-red-600 dark:text-red-400 mb-2">
+              <h1 className="mb-2 text-lg font-medium text-red-600 dark:text-red-400">
                 Error loading notebooks
               </h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+              <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
                 {error.message}
               </p>
             </div>
@@ -158,13 +136,11 @@ export default function HomePage() {
     switch (sortBy) {
       case SortOptions.Newest:
         return sortedData.sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         );
       case SortOptions.Oldest:
         return sortedData.sort(
-          (a, b) =>
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+          (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
         );
       case SortOptions.Alphabetical:
         return sortedData.sort((a, b) => a.title.localeCompare(b.title));
@@ -186,9 +162,9 @@ export default function HomePage() {
         image={metadata.image}
         twitterCard={metadata.twitterCard}
       />
-      <div className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700 px-4 py-4 md:px-6 z-20">
-        <div className="flex justify-between items-center gap-2">
-          <h1 className="flex items-center gap-1.5 min-w-0 flex-1 *:leading-7 text-gray-900 dark:text-white select-text">
+      <div className="z-20 border-b border-gray-200 bg-white px-4 py-4 md:px-6 dark:border-gray-700 dark:bg-black">
+        <div className="flex items-center justify-between gap-2">
+          <h1 className="flex min-w-0 flex-1 items-center gap-1.5 text-gray-900 select-text *:leading-7 dark:text-white">
             <span className="truncate text-2xl font-bold">
               Welcome, {currentUser?.fullName || "User"}!
             </span>
@@ -196,19 +172,19 @@ export default function HomePage() {
         </div>
       </div>
 
-      <div className="flex-1 p-3 md:p-4 overflow-auto">
+      <div className="flex-1 overflow-auto p-3 md:p-4">
         <SimpleBackground />
 
-        <CommonBar className="flex-col md:flex-row justify-between items-stretch md:items-center sticky top-0 z-20 mb-4 gap-3 md:gap-0">
+        <CommonBar className="sticky top-0 z-20 mb-4 flex-col items-stretch justify-between gap-3 md:flex-row md:items-center md:gap-0">
           <Button
             onClick={() => setIsCreateModalOpen(true)}
-            className="w-full md:w-auto justify-center"
+            className="w-full justify-center md:w-auto"
           >
             Create notebook
           </Button>
 
           {data && data.length > 0 ? (
-            <div className="flex items-center gap-2 md:gap-4 flex-wrap pb-1 md:pb-0 justify-between md:justify-end">
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-1 md:justify-end md:gap-4 md:pb-0">
               <SegmentedButtons
                 options={[
                   {
@@ -243,31 +219,25 @@ export default function HomePage() {
           <div
             className={
               viewMode === "grid"
-                ? "grid grid-cols-2 md:flex md:flex-wrap gap-3 md:gap-4 mb-8"
-                : "flex flex-col gap-3 mb-8"
+                ? "mb-8 grid grid-cols-2 gap-3 md:flex md:flex-wrap md:gap-4"
+                : "mb-8 flex flex-col gap-3"
             }
           >
             {getSortedNotebooks().map((notebook: Notebook) => (
-              <NotebookCard
-                key={notebook.id}
-                notebook={notebook}
-                viewMode={viewMode}
-              />
+              <NotebookCard key={notebook.id} notebook={notebook} viewMode={viewMode} />
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center text-center py-16 px-4">
-            <div className="size-20 bg-blue-50 dark:bg-blue-950/30 rounded-xs flex items-center justify-center mb-5 shadow-sm border border-blue-300 dark:border-blue-700">
+          <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
+            <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
               <div className="size-10 text-blue-500 dark:text-blue-400">
                 <NotebookIcon />
               </div>
             </div>
-            <h3 className="text-xl font-semibold text-foreground mb-3">
-              No notebooks yet
-            </h3>
-            <p className="text-base text-gray-500 dark:text-gray-400 max-w-md leading-relaxed mb-6">
-              Create your first notebook to start organizing your sources,
-              notes, and AI-powered insights.
+            <h3 className="text-foreground mb-3 text-xl font-semibold">No notebooks yet</h3>
+            <p className="mb-6 max-w-md text-base leading-relaxed text-gray-500 dark:text-gray-400">
+              Create your first notebook to start organizing your sources, notes, and AI-powered
+              insights.
             </p>
           </div>
         )}
@@ -308,9 +278,7 @@ export default function HomePage() {
               autoFocus
             />
             {createError && (
-              <div className="text-red-500 text-sm">
-                Error: {createError.message}
-              </div>
+              <div className="text-sm text-red-500">Error: {createError.message}</div>
             )}
           </div>
         </Modal>

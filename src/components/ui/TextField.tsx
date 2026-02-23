@@ -57,8 +57,7 @@ export function TextField({
       const textarea = textareaRef.current;
       textarea.style.height = "auto";
 
-      const lineHeight =
-        parseInt(getComputedStyle(textarea).lineHeight, 10) || 20;
+      const lineHeight = parseInt(getComputedStyle(textarea).lineHeight, 10) || 20;
       const maxHeight = maxRows ? lineHeight * maxRows : Infinity;
 
       const newHeight = Math.min(textarea.scrollHeight, maxHeight);
@@ -84,8 +83,7 @@ export function TextField({
         onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
           e.target.style.height = "auto";
 
-          const lineHeight =
-            parseInt(getComputedStyle(e.target).lineHeight, 10) || 20;
+          const lineHeight = parseInt(getComputedStyle(e.target).lineHeight, 10) || 20;
           const maxHeight = maxRows ? lineHeight * maxRows : Infinity;
 
           const newHeight = Math.min(e.target.scrollHeight, maxHeight);
@@ -93,11 +91,7 @@ export function TextField({
 
           (onChange as (e: React.ChangeEvent<HTMLTextAreaElement>) => void)(e);
         }}
-        onKeyDown={
-          onKeyDown as
-            | ((e: React.KeyboardEvent<HTMLTextAreaElement>) => void)
-            | undefined
-        }
+        onKeyDown={onKeyDown as ((e: React.KeyboardEvent<HTMLTextAreaElement>) => void) | undefined}
         className={inputClassName}
         placeholder={placeholder}
         required={required}
@@ -109,20 +103,14 @@ export function TextField({
     ) : (
       <div className="relative">
         {search && (
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
+          <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
         )}
         <input
           type={type}
           id={id}
           value={value}
-          onChange={
-            onChange as (e: React.ChangeEvent<HTMLInputElement>) => void
-          }
-          onKeyDown={
-            onKeyDown as
-              | ((e: React.KeyboardEvent<HTMLInputElement>) => void)
-              | undefined
-          }
+          onChange={onChange as (e: React.ChangeEvent<HTMLInputElement>) => void}
+          onKeyDown={onKeyDown as ((e: React.KeyboardEvent<HTMLInputElement>) => void) | undefined}
           className={inputClassName}
           placeholder={placeholder}
           required={required}
@@ -136,7 +124,7 @@ export function TextField({
             onClick={onClear}
             size="xs"
             variant="ghost"
-            className="absolute right-3 top-1/2 -translate-y-1/2"
+            className="absolute top-1/2 right-3 -translate-y-1/2"
             aria-label="Clear input"
           />
         )}
@@ -147,7 +135,7 @@ export function TextField({
   return (
     <div className={cn("mb-4", className)}>
       <label
-        className="block text-base font-medium text-gray-700 dark:text-gray-300 mb-2 select-none"
+        className="mb-2 block text-base font-medium text-gray-700 select-none dark:text-gray-300"
         htmlFor={id}
       >
         {label}
@@ -160,21 +148,16 @@ export function TextField({
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
             e.target.style.height = "auto";
 
-            const lineHeight =
-              parseInt(getComputedStyle(e.target).lineHeight, 10) || 20;
+            const lineHeight = parseInt(getComputedStyle(e.target).lineHeight, 10) || 20;
             const maxHeight = maxRows ? lineHeight * maxRows : Infinity;
 
             const newHeight = Math.min(e.target.scrollHeight, maxHeight);
             e.target.style.height = newHeight + "px";
 
-            (onChange as (e: React.ChangeEvent<HTMLTextAreaElement>) => void)(
-              e,
-            );
+            (onChange as (e: React.ChangeEvent<HTMLTextAreaElement>) => void)(e);
           }}
           onKeyDown={
-            onKeyDown as
-              | ((e: React.KeyboardEvent<HTMLTextAreaElement>) => void)
-              | undefined
+            onKeyDown as ((e: React.KeyboardEvent<HTMLTextAreaElement>) => void) | undefined
           }
           className={baseInputClassName}
           placeholder={placeholder}
@@ -187,19 +170,15 @@ export function TextField({
       ) : (
         <div className="relative">
           {search && (
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
+            <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
           )}
           <input
             type={type}
             id={id}
             value={value}
-            onChange={
-              onChange as (e: React.ChangeEvent<HTMLInputElement>) => void
-            }
+            onChange={onChange as (e: React.ChangeEvent<HTMLInputElement>) => void}
             onKeyDown={
-              onKeyDown as
-                | ((e: React.KeyboardEvent<HTMLInputElement>) => void)
-                | undefined
+              onKeyDown as ((e: React.KeyboardEvent<HTMLInputElement>) => void) | undefined
             }
             className={baseInputClassName}
             placeholder={placeholder}
@@ -214,7 +193,7 @@ export function TextField({
               onClick={onClear}
               size="xs"
               variant="ghost"
-              className="absolute right-3 top-1/2 -translate-y-1/2"
+              className="absolute top-1/2 right-3 -translate-y-1/2"
               aria-label="Clear input"
             />
           )}

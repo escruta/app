@@ -1,12 +1,7 @@
 import { useState } from "react";
 import { AnimatePresence } from "motion/react";
 import { motion } from "motion/react";
-import {
-  MindMapIcon,
-  StudyIcon,
-  CardIcon,
-  QuestionnaireIcon,
-} from "@/components/icons";
+import { MindMapIcon, StudyIcon, CardIcon, QuestionnaireIcon } from "@/components/icons";
 import { Card, Divider } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { ToolCard } from "./ToolCard";
@@ -110,15 +105,15 @@ export function ToolsCard({ notebookId, onNodeSelect }: ToolsCardProps) {
           "opacity-100 scale-100": !selectedTool,
         })}
       >
-        <Card className="flex flex-col h-full overflow-hidden p-0">
-          <div className="shrink-0 bg-white dark:bg-gray-900 z-10 rounded-t-xs">
-            <div className="flex flex-row justify-between items-center p-4">
-              <h2 className="text-lg font-sans font-semibold">Tools</h2>
+        <Card className="flex h-full flex-col overflow-hidden p-0">
+          <div className="z-10 shrink-0 rounded-t-xs bg-white dark:bg-gray-900">
+            <div className="flex flex-row items-center justify-between p-4">
+              <h2 className="font-sans text-lg font-semibold">Tools</h2>
             </div>
             <Divider className="my-0" />
           </div>
-          <div className="flex-1 overflow-y-auto w-full p-4">
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
+          <div className="w-full flex-1 overflow-y-auto p-4">
+            <div className="grid grid-cols-1 gap-2 xl:grid-cols-2">
               {tools.map((tool) => (
                 <ToolItem
                   key={tool.type}
@@ -148,8 +143,10 @@ interface ToolItemProps {
 }
 
 function ToolItem({ tool, notebookId, onSelect }: ToolItemProps) {
-  const { job, isLoading, isCompleted, isFailed, result, startGeneration } =
-    useGenerationJob(notebookId, tool.type);
+  const { job, isLoading, isCompleted, isFailed, result, startGeneration } = useGenerationJob(
+    notebookId,
+    tool.type,
+  );
 
   function handleClick() {
     if (isFailed) {

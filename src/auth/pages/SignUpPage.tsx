@@ -59,14 +59,10 @@ export function SignUpPage() {
     const isEmailValid = email.trim() !== "" && /\S+@\S+\.\S+/.test(email);
     const isFullNameValid = fullName.trim() !== "";
     const passwordValidation = checkPasswordStrength(password);
-    const isPasswordValid =
-      passwordValidation.isValid && password.trim() !== "";
-    const doPasswordsMatch =
-      password === confirmPassword && confirmPassword !== "";
+    const isPasswordValid = passwordValidation.isValid && password.trim() !== "";
+    const doPasswordsMatch = password === confirmPassword && confirmPassword !== "";
 
-    setAllowSubmit(
-      isEmailValid && isFullNameValid && isPasswordValid && doPasswordsMatch,
-    );
+    setAllowSubmit(isEmailValid && isFullNameValid && isPasswordValid && doPasswordsMatch);
   }, [fullName, email, password, confirmPassword]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -116,9 +112,7 @@ export function SignUpPage() {
       if (error.status) {
         setError(error.message || getSignErrorMessage(error.status, "signup"));
       } else {
-        setError(
-          "Cannot connect to the server. Please check your connection and try again.",
-        );
+        setError("Cannot connect to the server. Please check your connection and try again.");
       }
     } finally {
       setLoading(false);
@@ -143,7 +137,7 @@ export function SignUpPage() {
       />
       <motion.form
         onSubmit={handleSubmit}
-        className="relative w-full bg-transparent text-gray-800 dark:text-gray-200 pb-6"
+        className="relative w-full bg-transparent pb-6 text-gray-800 dark:text-gray-200"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{
@@ -154,7 +148,7 @@ export function SignUpPage() {
         }}
       >
         <motion.h1
-          className="text-2xl font-bold mb-6 select-none"
+          className="mb-6 text-2xl font-bold select-none"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, delay: 0.2 }}
@@ -209,12 +203,12 @@ export function SignUpPage() {
             onChange={handlePasswordChange}
             required
             autoComplete="new-password"
-            className={passwordError ? "border-red-400 mb-1" : ""}
+            className={passwordError ? "mb-1 border-red-400" : ""}
           />
           <AnimatePresence mode="wait">
             {passwordError && (
               <motion.p
-                className="text-sm text-red-500 mb-4"
+                className="mb-4 text-sm text-red-500"
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
@@ -239,16 +233,12 @@ export function SignUpPage() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
             autoComplete="new-password"
-            className={
-              password !== confirmPassword && confirmPassword
-                ? "border-red-400 mb-1"
-                : ""
-            }
+            className={password !== confirmPassword && confirmPassword ? "mb-1 border-red-400" : ""}
           />
           <AnimatePresence mode="wait">
             {password !== confirmPassword && confirmPassword && (
               <motion.p
-                className="text-sm text-red-500 mb-4"
+                className="mb-4 text-sm text-red-500"
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
@@ -263,7 +253,7 @@ export function SignUpPage() {
         <AnimatePresence mode="wait">
           {error && (
             <motion.div
-              className="mb-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded-xs overflow-hidden"
+              className="mb-4 overflow-hidden rounded-xs border border-red-400 bg-red-100 p-2 text-red-700"
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
@@ -293,9 +283,9 @@ export function SignUpPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.5 }}
           transition={{ duration: 0.3, delay: 0.6 }}
-          className="flex items-center my-6 px-12"
+          className="my-6 flex items-center px-12"
         >
-          <div className="flex-grow h-px bg-gray-300/65 dark:bg-gray-600/65"></div>
+          <div className="h-px flex-grow bg-gray-300/65 dark:bg-gray-600/65"></div>
         </motion.div>
 
         <motion.div
@@ -309,7 +299,7 @@ export function SignUpPage() {
           </span>
           <Link
             to="/signin"
-            className="text-sm text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"
+            className="text-sm font-medium text-blue-500 transition-colors hover:text-blue-600 dark:hover:text-blue-400"
           >
             Sign in
           </Link>

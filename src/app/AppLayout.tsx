@@ -19,7 +19,7 @@ export default function AppLayout() {
   }, [fetchUserData]);
 
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-white text-black dark:bg-black dark:text-white select-none">
+    <div className="flex h-screen flex-col bg-white text-black select-none md:flex-row dark:bg-black dark:text-white">
       <SideMenu />
       <div className="flex-grow overflow-hidden">
         <Outlet />

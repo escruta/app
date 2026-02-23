@@ -77,10 +77,7 @@ export function FilePicker({
   return (
     <div className={label ? "mb-4" : ""}>
       {label && (
-        <label
-          className="block text-gray-700 dark:text-gray-300 mb-2 select-none"
-          htmlFor={id}
-        >
+        <label className="mb-2 block text-gray-700 select-none dark:text-gray-300" htmlFor={id}>
           {label}
         </label>
       )}
@@ -95,22 +92,20 @@ export function FilePicker({
           type="file"
           id={id}
           onChange={handleFileChange}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+          className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
           disabled={disabled}
           accept={accept}
           multiple={multiple}
         />
 
-        <div className="p-6 text-center pointer-events-none">
+        <div className="pointer-events-none p-6 text-center">
           <div className="mb-2">
             <UploadIcon className="mx-auto h-8 w-8 text-gray-400" />
           </div>
 
           {value ? (
             <div className="text-sm">
-              <div className="font-medium text-gray-900 dark:text-gray-100">
-                {value.name}
-              </div>
+              <div className="font-medium text-gray-900 dark:text-gray-100">{value.name}</div>
               <div className="text-gray-500 dark:text-gray-400">
                 {(value.size / 1024 / 1024).toFixed(2)} MB
               </div>
@@ -120,9 +115,7 @@ export function FilePicker({
               <div className="font-medium text-gray-900 dark:text-gray-100">
                 Click to upload or drag and drop
               </div>
-              <div className="text-gray-500 dark:text-gray-400">
-                {placeholder}
-              </div>
+              <div className="text-gray-500 dark:text-gray-400">{placeholder}</div>
             </div>
           )}
         </div>

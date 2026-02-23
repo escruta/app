@@ -1,9 +1,5 @@
 import { useState } from "react";
-import {
-  NodeViewContent,
-  NodeViewWrapper,
-  type NodeViewProps,
-} from "@tiptap/react";
+import { NodeViewContent, NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { cn } from "@/lib/utils";
 import { Dropdown, IconButton } from "./ui";
 import { CopyIcon, CheckIcon } from "@/components/icons";
@@ -64,13 +60,10 @@ export function EditorCodeBlock({ node, updateAttributes }: NodeViewProps) {
   };
 
   const currentLanguageLabel =
-    languages.find((l) => l.value === (node.attrs.language || "plaintext"))
-      ?.label || "Plain Text";
+    languages.find((l) => l.value === (node.attrs.language || "plaintext"))?.label || "Plain Text";
 
   return (
-    <NodeViewWrapper
-      className={cn("relative group my-4", isDropdownOpen && "z-50")}
-    >
+    <NodeViewWrapper className={cn("relative group my-4", isDropdownOpen && "z-50")}>
       <div
         className={cn(
           "absolute right-2 top-2 transition-opacity z-10 flex gap-2 items-center",
@@ -79,13 +72,7 @@ export function EditorCodeBlock({ node, updateAttributes }: NodeViewProps) {
         contentEditable={false}
       >
         <IconButton
-          icon={
-            copied ? (
-              <CheckIcon className="size-4" />
-            ) : (
-              <CopyIcon className="size-4" />
-            )
-          }
+          icon={copied ? <CheckIcon className="size-4" /> : <CopyIcon className="size-4" />}
           onClick={handleCopy}
           size="xs"
           variant="ghost"
@@ -95,8 +82,7 @@ export function EditorCodeBlock({ node, updateAttributes }: NodeViewProps) {
           options={languages.map((l) => l.label)}
           selectedOption={currentLanguageLabel}
           onSelect={(label) => {
-            const value =
-              languages.find((l) => l.label === label)?.value || "plaintext";
+            const value = languages.find((l) => l.label === label)?.value || "plaintext";
             updateAttributes({ language: value });
           }}
           onOpenChange={setIsDropdownOpen}
@@ -109,9 +95,7 @@ export function EditorCodeBlock({ node, updateAttributes }: NodeViewProps) {
       >
         <NodeViewContent
           as={"code" as "div"}
-          className={
-            node.attrs.language ? `language-${node.attrs.language}` : ""
-          }
+          className={node.attrs.language ? `language-${node.attrs.language}` : ""}
         />
       </pre>
     </NodeViewWrapper>

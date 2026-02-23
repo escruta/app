@@ -29,12 +29,11 @@ export default function useGenerationJob(
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
   const mountedRef = useRef(true);
 
-  const { data: existingJob, refetch: checkExistingJob } =
-    useFetch<GenerationJob>(
-      `/notebooks/${notebookId}/tools/jobs/latest/${toolType}`,
-      { skipCache: true },
-      true,
-    );
+  const { data: existingJob, refetch: checkExistingJob } = useFetch<GenerationJob>(
+    `/notebooks/${notebookId}/tools/jobs/latest/${toolType}`,
+    { skipCache: true },
+    true,
+  );
 
   useEffect(() => {
     if (existingJob) {
@@ -109,17 +108,14 @@ export default function useGenerationJob(
     setError(null);
 
     try {
-      const response = await fetch(
-        `${BACKEND_BASE_URL}/notebooks/${notebookId}/tools/generate`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token.token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ type: toolType }),
+      const response = await fetch(`${BACKEND_BASE_URL}/notebooks/${notebookId}/tools/generate`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token.token}`,
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({ type: toolType }),
+      });
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -150,11 +146,7 @@ export default function useGenerationJob(
   }, [notebookId, toolType, token?.token, startPolling]);
 
   useEffect(() => {
-    if (
-      job &&
-      (job.status === "PENDING" || job.status === "PROCESSING") &&
-      !pollingRef.current
-    ) {
+    if (job && (job.status === "PENDING" || job.status === "PROCESSING") && !pollingRef.current) {
       startPolling(job.id);
     }
 
@@ -172,8 +164,7 @@ export default function useGenerationJob(
   }, [stopPolling]);
 
   const isLoading =
-    isStarting ||
-    (job !== null && (job.status === "PENDING" || job.status === "PROCESSING"));
+    isStarting || (job !== null && (job.status === "PENDING" || job.status === "PROCESSING"));
 
   const isCompleted = job?.status === "COMPLETED";
   const isFailed = job?.status === "FAILED";

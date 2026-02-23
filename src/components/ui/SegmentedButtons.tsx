@@ -57,7 +57,7 @@ export function SegmentedButtons<T = string>({
           type="button"
         >
           {option.icon ? (
-            <span className="w-4 h-4 flex items-center justify-center [&>svg]:w-full [&>svg]:h-full">
+            <span className="flex h-4 w-4 items-center justify-center [&>svg]:h-full [&>svg]:w-full">
               {option.icon}
             </span>
           ) : (

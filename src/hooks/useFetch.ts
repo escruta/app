@@ -54,10 +54,7 @@ export default function useFetch<T = unknown>(
       const baseURL = currentOptions?.baseURL ?? BACKEND_BASE_URL;
       const method = currentOptions?.method ?? "GET";
       const skipCache =
-        forcedUpdate ||
-        currentOptions?.skipCache ||
-        cacheTime <= 0 ||
-        method !== "GET";
+        forcedUpdate || currentOptions?.skipCache || cacheTime <= 0 || method !== "GET";
 
       const cacheKey = generateCacheKey(endpoint, currentOptions);
       const cached = cacheInstance.get<T>(cacheKey);
@@ -120,7 +117,7 @@ export default function useFetch<T = unknown>(
               } else if (errorJson.detail) {
                 errorMessage = errorJson.detail;
               }
-            } catch { }
+            } catch {}
 
             const fetchError = Object.assign(new Error(errorMessage), {
               status: response.status,
@@ -154,8 +151,7 @@ export default function useFetch<T = unknown>(
           if ((err as FetchError).status !== undefined) {
             lastError = err as FetchError;
           } else {
-            const message =
-              err instanceof Error ? err.message : "An unknown error occurred";
+            const message = err instanceof Error ? err.message : "An unknown error occurred";
             lastError = Object.assign(new Error(message), {
               status: 0,
               message,
@@ -163,9 +159,7 @@ export default function useFetch<T = unknown>(
           }
 
           if (attempt < retryCount) {
-            await new Promise((resolve) =>
-              setTimeout(resolve, retryDelay * (attempt + 1)),
-            );
+            await new Promise((resolve) => setTimeout(resolve, retryDelay * (attempt + 1)));
           }
         }
       }

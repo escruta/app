@@ -22,10 +22,7 @@ interface NotebookCardProps {
   viewMode?: "grid" | "list";
 }
 
-export function NotebookCard({
-  notebook,
-  viewMode = "grid",
-}: NotebookCardProps) {
+export function NotebookCard({ notebook, viewMode = "grid" }: NotebookCardProps) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState<string>("");
   const [isDeleted, setIsDeleted] = useState<boolean>(false);
@@ -81,9 +78,7 @@ export function NotebookCard({
   );
 
   const gridClasses = cn("h-40 w-full p-4 flex flex-col justify-between");
-  const listClasses = cn(
-    "h-20 w-full p-4 flex flex-row items-center justify-between",
-  );
+  const listClasses = cn("h-20 w-full p-4 flex flex-row items-center justify-between");
 
   const handleCardClick = () => {
     navigate(`/notebook/${notebook.id}`);
@@ -112,17 +107,16 @@ export function NotebookCard({
       >
         {viewMode === "grid" ? (
           <>
-            <div className="flex justify-between items-start">
-              <div className="p-2 rounded-xs bg-blue-25 dark:bg-blue-900/30 text-blue-500 dark:text-blue-300">
-                <NotebookIcon className="w-5 h-5" />
+            <div className="flex items-start justify-between">
+              <div className="bg-blue-25 rounded-xs p-2 text-blue-500 dark:bg-blue-900/30 dark:text-blue-300">
+                <NotebookIcon className="h-5 w-5" />
               </div>
               <div
                 role="button"
                 tabIndex={0}
                 onClick={handleMenuClick}
                 onKeyDown={(e) =>
-                  e.key === "Enter" &&
-                  handleMenuClick(e as unknown as React.MouseEvent)
+                  e.key === "Enter" && handleMenuClick(e as unknown as React.MouseEvent)
                 }
               >
                 <Menu>
@@ -146,7 +140,7 @@ export function NotebookCard({
             </div>
 
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1 line-clamp-2">
+              <h2 className="mb-1 line-clamp-2 text-lg font-semibold text-gray-900 dark:text-white">
                 {notebook.title}
               </h2>
               <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -156,14 +150,14 @@ export function NotebookCard({
           </>
         ) : (
           <>
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className="p-2 rounded-xs bg-blue-25 dark:bg-blue-900/30 text-blue-500 dark:text-blue-300">
-                <div className="w-6 h-6 flex items-center justify-center [&>svg]:w-full [&>svg]:h-full">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <div className="bg-blue-25 rounded-xs p-2 text-blue-500 dark:bg-blue-900/30 dark:text-blue-300">
+                <div className="flex h-6 w-6 items-center justify-center [&>svg]:h-full [&>svg]:w-full">
                   <NotebookIcon />
                 </div>
               </div>
               <div className="min-w-0 flex-1">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+                <h2 className="truncate text-lg font-semibold text-gray-900 dark:text-white">
                   {notebook.title}
                 </h2>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -177,8 +171,7 @@ export function NotebookCard({
               tabIndex={0}
               onClick={handleMenuClick}
               onKeyDown={(e) =>
-                e.key === "Enter" &&
-                handleMenuClick(e as unknown as React.MouseEvent)
+                e.key === "Enter" && handleMenuClick(e as unknown as React.MouseEvent)
               }
             >
               <Menu>
@@ -213,18 +206,14 @@ export function NotebookCard({
         title={`Delete notebook "${notebook.title}"`}
         actions={
           <>
-            <Button
-              variant="secondary"
-              onClick={() => setIsDeleteModalOpen(false)}
-            >
+            <Button variant="secondary" onClick={() => setIsDeleteModalOpen(false)}>
               Cancel
             </Button>
             <Button
               variant="danger"
               onClick={handleDeleteNotebook}
               disabled={
-                deleteConfirmation.toLowerCase() !== "delete this notebook" ||
-                deletingNotebook
+                deleteConfirmation.toLowerCase() !== "delete this notebook" || deletingNotebook
               }
               icon={deletingNotebook ? <Spinner /> : undefined}
             >
@@ -241,8 +230,7 @@ export function NotebookCard({
           />
 
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Please type <span className="font-bold">delete this notebook</span>{" "}
-            to confirm.
+            Please type <span className="font-bold">delete this notebook</span> to confirm.
           </p>
 
           <TextField
@@ -255,11 +243,7 @@ export function NotebookCard({
             autoFocus
           />
 
-          {deleteError && (
-            <div className="text-red-500 text-sm">
-              Error: {deleteError.message}
-            </div>
-          )}
+          {deleteError && <div className="text-sm text-red-500">Error: {deleteError.message}</div>}
         </div>
       </Modal>
     </>

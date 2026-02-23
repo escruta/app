@@ -73,19 +73,13 @@ export function Tooltip({
         if (position === "top" || position === "bottom") {
           if (position === "top" && y - tooltipHeight < 8) {
             y = rect.bottom + 8;
-          } else if (
-            position === "bottom" &&
-            y + tooltipHeight > viewportHeight - 8
-          ) {
+          } else if (position === "bottom" && y + tooltipHeight > viewportHeight - 8) {
             y = rect.top - 8;
           }
         } else {
           if (position === "left" && x - tooltipWidth < 8) {
             x = rect.right + 8;
-          } else if (
-            position === "right" &&
-            x + tooltipWidth > viewportWidth - 8
-          ) {
+          } else if (position === "right" && x + tooltipWidth > viewportWidth - 8) {
             x = rect.left - 8;
           }
         }
@@ -156,7 +150,7 @@ export function Tooltip({
                 top: coords.y,
                 zIndex: 99999,
               }}
-              className="select-text whitespace-nowrap rounded-xs bg-black dark:bg-white py-1.5 px-3 text-center text-sm font-medium text-white dark:text-black pointer-events-none shadow-lg shadow-black/20 dark:shadow-white/20 ring-1 ring-white/20 dark:ring-black/20"
+              className="pointer-events-none rounded-xs bg-black px-3 py-1.5 text-center text-sm font-medium whitespace-nowrap text-white shadow-lg ring-1 shadow-black/20 ring-white/20 select-text dark:bg-white dark:text-black dark:shadow-white/20 dark:ring-black/20"
             >
               {text}
             </motion.div>

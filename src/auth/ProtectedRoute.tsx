@@ -58,8 +58,8 @@ export function ProtectedRoute() {
         >
           <div className="space-y-4">
             <p className="text-gray-700 dark:text-gray-300">
-              Your session has expired due to inactivity. Please sign in again
-              to continue using the application.
+              Your session has expired due to inactivity. Please sign in again to continue using the
+              application.
             </p>
           </div>
         </Modal>

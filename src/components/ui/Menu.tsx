@@ -24,13 +24,7 @@ interface MenuContextType {
 
 const MenuContext = createContext<MenuContextType | null>(null);
 
-export function Menu({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
+export function Menu({ children, className }: { children: ReactNode; className?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLElement>(null);
@@ -58,11 +52,7 @@ export function Menu({
   );
 }
 
-export function MenuTrigger({
-  children,
-}: {
-  children: ReactElement<HTMLAttributes<HTMLElement>>;
-}) {
+export function MenuTrigger({ children }: { children: ReactElement<HTMLAttributes<HTMLElement>> }) {
   const context = useContext(MenuContext);
   const localRef = useRef<HTMLSpanElement>(null);
 
@@ -70,9 +60,8 @@ export function MenuTrigger({
     (node: HTMLSpanElement | null) => {
       localRef.current = node;
       if (node && context) {
-        (
-          context.triggerRef as React.MutableRefObject<HTMLElement | null>
-        ).current = node.firstChild as HTMLElement;
+        (context.triggerRef as React.MutableRefObject<HTMLElement | null>).current =
+          node.firstChild as HTMLElement;
       }
     },
     [context],
@@ -127,9 +116,7 @@ export function MenuContent({
   const setContentRef = useCallback(
     (node: HTMLDivElement | null) => {
       if (node && context) {
-        (
-          context.contentRef as React.MutableRefObject<HTMLElement | null>
-        ).current = node;
+        (context.contentRef as React.MutableRefObject<HTMLElement | null>).current = node;
       }
     },
     [context],
@@ -150,9 +137,7 @@ export function MenuContent({
           style={{
             position: "fixed",
             top: position.top,
-            ...(align === "right"
-              ? { right: position.right }
-              : { left: position.left }),
+            ...(align === "right" ? { right: position.right } : { left: position.left }),
           }}
           className={cn(
             "z-[9999] min-w-[10rem] rounded-xs border border-gray-200 bg-white/95 p-1.5 shadow-lg shadow-gray-500/10 dark:shadow-black/20 ring-1 ring-gray-500/5 dark:ring-gray-500/10 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/95",
@@ -213,9 +198,7 @@ export function MenuItem({
       onKeyDown={handleKeyDown}
     >
       {icon && (
-        <span className="flex-shrink-0 size-4 flex items-center justify-center">
-          {icon}
-        </span>
+        <span className="flex size-4 flex-shrink-0 items-center justify-center">{icon}</span>
       )}
       <span className="flex-1 text-left font-medium">{label}</span>
     </button>

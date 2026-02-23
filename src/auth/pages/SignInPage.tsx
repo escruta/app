@@ -7,10 +7,7 @@ import { Button, TextField, Spinner, Checkbox } from "@/components/ui";
 import { getSignErrorMessage } from "@/lib/utils";
 
 export function SignInPage() {
-  const [savedEmail, setSavedEmail] = useCookie<{ email: string }>(
-    "savedEmail",
-    { email: "" },
-  );
+  const [savedEmail, setSavedEmail] = useCookie<{ email: string }>("savedEmail", { email: "" });
   const [email, setEmail] = useState(savedEmail?.email || "");
   const [password, setPassword] = useState("");
   const [rememberEmail, setRememberEmail] = useState(!!savedEmail?.email);
@@ -56,9 +53,7 @@ export function SignInPage() {
       if (error.status) {
         setError(error.message || getSignErrorMessage(error.status, "signin"));
       } else {
-        setError(
-          "Cannot connect to the server. Please check your connection and try again.",
-        );
+        setError("Cannot connect to the server. Please check your connection and try again.");
       }
     } finally {
       setLoading(false);
@@ -80,7 +75,7 @@ export function SignInPage() {
       />
       <motion.form
         onSubmit={handleSubmit}
-        className="relative w-full bg-transparent text-gray-800 dark:text-gray-200 pb-6"
+        className="relative w-full bg-transparent pb-6 text-gray-800 dark:text-gray-200"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{
@@ -91,7 +86,7 @@ export function SignInPage() {
         }}
       >
         <motion.h1
-          className="text-2xl font-bold mb-6 select-none"
+          className="mb-6 text-2xl font-bold select-none"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, delay: 0.2 }}
@@ -147,7 +142,7 @@ export function SignInPage() {
         <AnimatePresence mode="wait">
           {error && (
             <motion.div
-              className="mb-4 p-2 bg-red-100 border border-red-400 text-red-700 rounded-xs overflow-hidden"
+              className="mb-4 overflow-hidden rounded-xs border border-red-400 bg-red-100 p-2 text-red-700"
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
@@ -176,9 +171,9 @@ export function SignInPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.5 }}
           transition={{ duration: 0.3, delay: 0.6 }}
-          className="flex items-center my-6 px-12"
+          className="my-6 flex items-center px-12"
         >
-          <div className="flex-grow h-px bg-gray-300/65 dark:bg-gray-600/65"></div>
+          <div className="h-px flex-grow bg-gray-300/65 dark:bg-gray-600/65"></div>
         </motion.div>
 
         <motion.div
@@ -187,12 +182,10 @@ export function SignInPage() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, delay: 0.7 }}
         >
-          <span className="text-sm text-gray-600 dark:text-gray-400">
-            Don't have an account?{" "}
-          </span>
+          <span className="text-sm text-gray-600 dark:text-gray-400">Don't have an account? </span>
           <Link
             to="/signup"
-            className="text-sm text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"
+            className="text-sm font-medium text-blue-500 transition-colors hover:text-blue-600 dark:hover:text-blue-400"
           >
             Sign up
           </Link>

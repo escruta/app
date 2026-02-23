@@ -134,18 +134,14 @@ export function ChatHistory({
     };
   }, []);
 
-  const [conversationToDeleteId, setConversationToDeleteId] = useState<
-    string | null
-  >(null);
+  const [conversationToDeleteId, setConversationToDeleteId] = useState<string | null>(null);
 
   const deleteOptions = useMemo(
     () => ({
       method: "DELETE" as const,
       onSuccess: () => {
         setConversationToDeleteId(null);
-        setConversations((prev) =>
-          prev.filter((c) => c.id !== conversationToDeleteId),
-        );
+        setConversations((prev) => prev.filter((c) => c.id !== conversationToDeleteId));
         setTotal((prev) => prev - 1);
       },
       onError: (error: FetchError) => {
@@ -222,9 +218,7 @@ export function ChatHistory({
           search
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder={
-            total > 0 ? `Search conversations...` : "No conversations yet"
-          }
+          placeholder={total > 0 ? `Search conversations...` : "No conversations yet"}
           onClear={() => setSearchQuery("")}
           autoFocus
         />
@@ -232,7 +226,7 @@ export function ChatHistory({
 
       <Divider className="my-4" />
 
-      <div className="flex flex-col flex-1 min-h-0 space-y-2">
+      <div className="flex min-h-0 flex-1 flex-col space-y-2">
         {isInitialLoading ? (
           <>
             <Skeleton variant="rectangle" height={56} />
@@ -240,10 +234,8 @@ export function ChatHistory({
             <Skeleton variant="rectangle" height={56} />
           </>
         ) : conversations.length === 0 ? (
-          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-            {debouncedSearch
-              ? "No conversations match your search"
-              : "No conversations yet"}
+          <div className="py-8 text-center text-gray-500 dark:text-gray-400">
+            {debouncedSearch ? "No conversations match your search" : "No conversations yet"}
           </div>
         ) : (
           <>
@@ -263,12 +255,10 @@ export function ChatHistory({
                         conversation.id !== currentConversationId,
                     },
                   )}
-                  onClick={() =>
-                    handleSelect(conversation.id, conversation.title)
-                  }
+                  onClick={() => handleSelect(conversation.id, conversation.title)}
                 >
-                  <div className="flex-1 min-w-0 mr-3">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                  <div className="mr-3 min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
                       {conversation.title}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -294,10 +284,7 @@ export function ChatHistory({
                         icon={<DeleteIcon />}
                         variant="ghost"
                         size="sm"
-                        disabled={
-                          isDeleting &&
-                          conversationToDeleteId === conversation.id
-                        }
+                        disabled={isDeleting && conversationToDeleteId === conversation.id}
                         ariaLabel="Delete conversation"
                       />
                     </div>
@@ -305,10 +292,7 @@ export function ChatHistory({
                 </motion.div>
               ))}
             </AnimatePresence>
-            <div
-              ref={setLoadMoreRef}
-              className={cn("h-4", !hasMore && "hidden")}
-            />
+            <div ref={setLoadMoreRef} className={cn("h-4", !hasMore && "hidden")} />
             {isLoadingMore && (
               <div className="flex justify-center py-2">
                 <Spinner />

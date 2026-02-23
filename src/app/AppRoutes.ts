@@ -6,7 +6,7 @@ const HomePage = lazy(() => import("./pages/HomePage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const NotebookPage = lazy(() => import("./pages/NotebookPage"));
 
-export default (<RouteObject[]>[
+export default <RouteObject[]>[
   {
     Component: AppLayout,
     children: [
@@ -31,4 +31,4 @@ export default (<RouteObject[]>[
       },
     ],
   },
-]);
+];

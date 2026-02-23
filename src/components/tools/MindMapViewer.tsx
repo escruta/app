@@ -35,7 +35,7 @@ function BranchNode({ branch, level, path, onNodeSelect }: BranchNodeProps) {
   return (
     <div className="flex items-center py-1">
       {/* Connection line from parent */}
-      <div className="w-8 h-px bg-green-300 dark:bg-green-600 flex-shrink-0" />
+      <div className="h-px w-8 flex-shrink-0 bg-green-300 dark:bg-green-600" />
 
       <div className="flex items-center">
         {/* Node */}
@@ -59,7 +59,7 @@ function BranchNode({ branch, level, path, onNodeSelect }: BranchNodeProps) {
         >
           <span>{branch.label}</span>
           {hasChildren && (
-            <span className="size-4 flex items-center justify-center rounded-full bg-green-200 dark:bg-green-700 text-green-700 dark:text-green-200">
+            <span className="flex size-4 items-center justify-center rounded-full bg-green-200 text-green-700 dark:bg-green-700 dark:text-green-200">
               <ChevronIcon
                 direction={isExpanded ? "left" : "right"}
                 className="size-3 transition-transform duration-200"
@@ -76,7 +76,7 @@ function BranchNode({ branch, level, path, onNodeSelect }: BranchNodeProps) {
               animate={{ opacity: 1, width: 24 }}
               exit={{ opacity: 0, width: 0 }}
               transition={{ duration: 0.2, ease: "easeInOut" }}
-              className="h-px bg-green-300 dark:bg-green-600 flex-shrink-0"
+              className="h-px flex-shrink-0 bg-green-300 dark:bg-green-600"
             />
           )}
         </AnimatePresence>
@@ -167,7 +167,7 @@ function MainBranch({
         >
           <span>{branch.label}</span>
           {hasChildren && (
-            <span className="size-5 flex items-center justify-center rounded-full bg-green-200 dark:bg-green-700 text-green-700 dark:text-green-200">
+            <span className="flex size-5 items-center justify-center rounded-full bg-green-200 text-green-700 dark:bg-green-700 dark:text-green-200">
               <ChevronIcon
                 direction={isExpanded ? "left" : "right"}
                 className="size-3.5 transition-transform duration-200"
@@ -184,7 +184,7 @@ function MainBranch({
               animate={{ opacity: 1, width: 32 }}
               exit={{ opacity: 0, width: 0 }}
               transition={{ duration: 0.2, ease: "easeInOut" }}
-              className="h-px bg-green-300 dark:bg-green-600 flex-shrink-0"
+              className="h-px flex-shrink-0 bg-green-300 dark:bg-green-600"
             />
           )}
         </AnimatePresence>
@@ -230,11 +230,7 @@ function MainBranch({
   );
 }
 
-export function MindMapViewer({
-  data,
-  className,
-  onNodeSelect,
-}: MindMapViewerProps) {
+export function MindMapViewer({ data, className, onNodeSelect }: MindMapViewerProps) {
   const { central, branches } = data;
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -344,7 +340,7 @@ export function MindMapViewer({
     <div className={cn("relative w-full h-full", className)}>
       {/* Controls */}
       <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
-        <div className="flex items-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xs">
+        <div className="flex items-center rounded-xs border border-gray-200 bg-white dark:border-gray-600 dark:bg-gray-800">
           <button
             type="button"
             onClick={() =>
@@ -353,11 +349,11 @@ export function MindMapViewer({
                 scale: Math.min(prev.scale * 1.2, 2),
               }))
             }
-            className="px-2.5 py-1 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors rounded-l-xs"
+            className="rounded-l-xs px-2.5 py-1 text-sm text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
           >
             +
           </button>
-          <span className="px-2 py-1 text-xs text-gray-500 dark:text-gray-400 min-w-[48px] text-center border-x border-gray-200 dark:border-gray-600">
+          <span className="min-w-[48px] border-x border-gray-200 px-2 py-1 text-center text-xs text-gray-500 dark:border-gray-600 dark:text-gray-400">
             {Math.round(transform.scale * 100)}%
           </span>
           <button
@@ -368,7 +364,7 @@ export function MindMapViewer({
                 scale: Math.max(prev.scale * 0.8, 0.25),
               }))
             }
-            className="px-2.5 py-1 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors rounded-r-xs"
+            className="rounded-r-xs px-2.5 py-1 text-sm text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
           >
             -
           </button>
@@ -376,7 +372,7 @@ export function MindMapViewer({
         <button
           type="button"
           onClick={resetView}
-          className="px-2.5 py-1 text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xs text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          className="rounded-xs border border-gray-200 bg-white px-2.5 py-1 text-xs text-gray-600 transition-colors hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
         >
           Reset
         </button>
@@ -396,7 +392,7 @@ export function MindMapViewer({
       >
         {/* Grid pattern */}
         <div
-          className="absolute inset-0 opacity-20 dark:opacity-10 pointer-events-none"
+          className="pointer-events-none absolute inset-0 opacity-20 dark:opacity-10"
           style={{
             backgroundImage: `
               linear-gradient(to right, rgb(150, 150, 150) 1px, transparent 1px),
@@ -421,20 +417,17 @@ export function MindMapViewer({
         >
           <div className="flex items-center">
             {/* Central topic */}
-            <div className="px-5 py-3 rounded-xs bg-blue-100/80 dark:bg-blue-800/50 border border-blue-300 dark:border-blue-600 text-gray-800 dark:text-gray-100 font-semibold whitespace-nowrap select-none">
+            <div className="rounded-xs border border-blue-300 bg-blue-100/80 px-5 py-3 font-semibold whitespace-nowrap text-gray-800 select-none dark:border-blue-600 dark:bg-blue-800/50 dark:text-gray-100">
               {central}
             </div>
 
             {/* Branches */}
-            <div className="flex flex-col justify-center ml-12 relative">
+            <div className="relative ml-12 flex flex-col justify-center">
               {/* Horizontal line from central to the vertical line */}
-              <div className="absolute -left-12 top-1/2 -translate-y-1/2 w-12 h-px bg-green-300 dark:bg-green-600" />
+              <div className="absolute top-1/2 -left-12 h-px w-12 -translate-y-1/2 bg-green-300 dark:bg-green-600" />
 
               {branches.map((branch, index) => (
-                <div
-                  key={index}
-                  className="relative flex items-center pl-8 py-2"
-                >
+                <div key={index} className="relative flex items-center py-2 pl-8">
                   {/* Vertical connector */}
                   {branches.length > 1 && (
                     <div
@@ -449,12 +442,8 @@ export function MindMapViewer({
                     />
                   )}
                   {/* Horizontal line from the vertical line to each branch */}
-                  <div className="absolute left-0 w-8 h-px bg-green-300 dark:bg-green-600" />
-                  <MainBranch
-                    branch={branch}
-                    path={[central]}
-                    onNodeSelect={onNodeSelect}
-                  />
+                  <div className="absolute left-0 h-px w-8 bg-green-300 dark:bg-green-600" />
+                  <MainBranch branch={branch} path={[central]} onNodeSelect={onNodeSelect} />
                 </div>
               ))}
             </div>

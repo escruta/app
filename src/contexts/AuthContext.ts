@@ -5,10 +5,7 @@ interface AuthContextType {
   token: string | null;
   isAuthenticated: () => boolean;
   checkTokenValidity: () => boolean;
-  signIn: (
-    email: string,
-    password: string,
-  ) => Promise<{ status: number; data: unknown }>;
+  signIn: (email: string, password: string) => Promise<{ status: number; data: unknown }>;
   signUp: (
     email: string,
     password: string,

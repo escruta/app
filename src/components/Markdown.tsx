@@ -18,43 +18,29 @@ export function Markdown({ text, baseUrl }: MarkdownProps) {
       rehypePlugins={[rehypeKatex]}
       components={{
         h1: ({ children }) => (
-          <h1 className="text-[1.875rem] font-semibold my-4 leading-[1.2]">
-            {children}
-          </h1>
+          <h1 className="my-4 text-[1.875rem] leading-[1.2] font-semibold">{children}</h1>
         ),
         h2: ({ children }) => (
-          <h2 className="text-[1.5rem] font-semibold my-4 leading-[1.3]">
-            {children}
-          </h2>
+          <h2 className="my-4 text-[1.5rem] leading-[1.3] font-semibold">{children}</h2>
         ),
         h3: ({ children }) => (
-          <h3 className="text-[1.25rem] font-semibold my-4 leading-[1.4]">
-            {children}
-          </h3>
+          <h3 className="my-4 text-[1.25rem] leading-[1.4] font-semibold">{children}</h3>
         ),
         h4: ({ children }) => (
-          <h4 className="text-base font-semibold my-4 leading-[1.5]">
-            {children}
-          </h4>
+          <h4 className="my-4 text-base leading-[1.5] font-semibold">{children}</h4>
         ),
         h5: ({ children }) => (
-          <h5 className="text-base font-semibold my-4 leading-[1.5]">
-            {children}
-          </h5>
+          <h5 className="my-4 text-base leading-[1.5] font-semibold">{children}</h5>
         ),
         h6: ({ children }) => (
-          <h6 className="text-base font-semibold my-4 leading-[1.5]">
-            {children}
-          </h6>
+          <h6 className="my-4 text-base leading-[1.5] font-semibold">{children}</h6>
         ),
         p: ({ children }) => <p className="my-2">{children}</p>,
         ul: ({ className, children }) => (
           <ul
             className={cn(
               "my-4 pl-6",
-              className?.includes("contains-task-list")
-                ? "list-none pl-0"
-                : "list-disc",
+              className?.includes("contains-task-list") ? "list-none pl-0" : "list-disc",
               className,
             )}
           >
@@ -62,9 +48,7 @@ export function Markdown({ text, baseUrl }: MarkdownProps) {
           </ul>
         ),
         ol: ({ className, children }) => (
-          <ol className={cn("list-decimal my-4 pl-6", className)}>
-            {children}
-          </ol>
+          <ol className={cn("list-decimal my-4 pl-6", className)}>{children}</ol>
         ),
         li: ({ className, children }) => (
           <li
@@ -78,7 +62,7 @@ export function Markdown({ text, baseUrl }: MarkdownProps) {
           </li>
         ),
         blockquote: ({ children }) => (
-          <blockquote className="border-l-4 border-gray-200 dark:border-gray-700 pl-4 my-4 text-gray-600 dark:text-gray-400">
+          <blockquote className="my-4 border-l-4 border-gray-200 pl-4 text-gray-600 dark:border-gray-700 dark:text-gray-400">
             {children}
           </blockquote>
         ),
@@ -92,17 +76,13 @@ export function Markdown({ text, baseUrl }: MarkdownProps) {
           );
         },
         pre: ({ children }) => <>{children}</>,
-        hr: () => (
-          <hr className="border-0 border-t border-gray-200 dark:border-gray-700 my-8" />
-        ),
+        hr: () => <hr className="my-8 border-0 border-t border-gray-200 dark:border-gray-700" />,
         strong: ({ children }) => (
           <strong className="font-semibold text-inherit">{children}</strong>
         ),
-        em: ({ children }) => (
-          <em className="italic text-inherit">{children}</em>
-        ),
+        em: ({ children }) => <em className="text-inherit italic">{children}</em>,
         u: ({ children }) => (
-          <u className="underline underline-offset-4 text-inherit decoration-blue-500/60">
+          <u className="text-inherit underline decoration-blue-500/60 underline-offset-4">
             {children}
           </u>
         ),
@@ -111,7 +91,9 @@ export function Markdown({ text, baseUrl }: MarkdownProps) {
           if (baseUrl && href) {
             try {
               resolvedHref = new URL(href, baseUrl).toString();
-            } catch (_) {}
+            } catch (error) {
+              console.error(error);
+            }
           }
 
           return (
@@ -119,7 +101,7 @@ export function Markdown({ text, baseUrl }: MarkdownProps) {
               href={resolvedHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 dark:text-blue-400 underline cursor-pointer"
+              className="cursor-pointer text-blue-600 underline dark:text-blue-400"
             >
               {children}
             </a>
@@ -130,39 +112,33 @@ export function Markdown({ text, baseUrl }: MarkdownProps) {
           if (baseUrl && src) {
             try {
               resolvedSrc = new URL(src, baseUrl).toString();
-            } catch (_) {}
+            } catch (error) {
+              console.error(error);
+            }
           }
           return (
             <img
               src={resolvedSrc}
               alt={alt}
               title={title}
-              className="max-w-full h-auto rounded-md my-4"
+              className="my-4 h-auto max-w-full rounded-md"
             />
           );
         },
         table: ({ children }) => (
-          <table className="w-full border-collapse my-2 text-sm">
-            {children}
-          </table>
+          <table className="my-2 w-full border-collapse text-sm">{children}</table>
         ),
-        thead: ({ children }) => (
-          <thead className="bg-gray-100 dark:bg-gray-800">{children}</thead>
-        ),
+        thead: ({ children }) => <thead className="bg-gray-100 dark:bg-gray-800">{children}</thead>,
         tbody: ({ children }) => <tbody>{children}</tbody>,
         tr: ({ children }) => (
-          <tr className="border-b border-gray-200 dark:border-gray-700">
-            {children}
-          </tr>
+          <tr className="border-b border-gray-200 dark:border-gray-700">{children}</tr>
         ),
         th: ({ children }) => (
-          <th className="px-3 py-2 text-left font-semibold border-b border-gray-300 dark:border-gray-600">
+          <th className="border-b border-gray-300 px-3 py-2 text-left font-semibold dark:border-gray-600">
             {children}
           </th>
         ),
-        td: ({ children }) => (
-          <td className="px-3 py-2 align-top">{children}</td>
-        ),
+        td: ({ children }) => <td className="px-3 py-2 align-top">{children}</td>,
       }}
     >
       {text}

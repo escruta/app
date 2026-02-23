@@ -1,10 +1,6 @@
 import { useState, useCallback } from "react";
 import type { ReactNode } from "react";
-import {
-  ToastContext,
-  type ToastData,
-  type ToastContextType,
-} from "@/contexts";
+import { ToastContext, type ToastData, type ToastContextType } from "@/contexts";
 import { Toast } from "@/components/ui";
 
 type ToastType = "success" | "error" | "info" | "warning";

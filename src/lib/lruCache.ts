@@ -67,10 +67,7 @@ function stableStringify(obj: unknown): string {
   return JSON.stringify(sorted);
 }
 
-export function generateCacheKey(
-  endpoint: string,
-  options?: RequestConfig,
-): string {
+export function generateCacheKey(endpoint: string, options?: RequestConfig): string {
   const { method = "GET", params, body, data } = options || {};
   return `${method}:${endpoint}:${stableStringify(params)}:${stableStringify(
     body,

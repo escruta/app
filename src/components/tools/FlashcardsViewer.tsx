@@ -120,13 +120,11 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
       tabIndex={0}
     >
       {/* ── Top Bar (fixed) ── */}
-      <div className="flex-shrink-0 px-6 py-4 flex flex-col gap-3 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex flex-shrink-0 flex-col gap-3 border-b border-gray-200 px-6 py-4 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="flex flex-col">
-              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                Progress
-              </span>
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Progress</span>
               <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
                 {currentIndex + 1} / {totalCards}
               </span>
@@ -135,9 +133,7 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
             <div className="h-8 w-px bg-gray-200 dark:bg-gray-600" />
 
             <div className="flex flex-col">
-              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                Learned
-              </span>
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Learned</span>
               <div className="flex items-center gap-1.5">
                 <CheckIcon className="size-3 text-green-500" />
                 <span className="text-sm font-semibold text-green-600 dark:text-green-400">
@@ -161,7 +157,7 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
         </div>
 
         {/* Progress Bar */}
-        <div className="relative h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+        <div className="relative h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
           <motion.div
             className="absolute inset-y-0 left-0 bg-blue-500"
             initial={false}
@@ -178,8 +174,8 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
       </div>
 
       {/* ── Scrollable Content (middle) ── */}
-      <div className="flex-1 min-h-0 overflow-hidden flex items-center justify-center">
-        <div className="px-6 py-6 w-full max-w-2xl mx-auto">
+      <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden">
+        <div className="mx-auto w-full max-w-2xl px-6 py-6">
           <AnimatePresence initial={false} custom={direction} mode="wait">
             <motion.div
               key={currentIndex}
@@ -200,7 +196,7 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
                 animate={{ rotateY: isFlipped ? 180 : 0 }}
                 transition={{ duration: 0.25, ease: "easeInOut" }}
                 style={{ transformStyle: "preserve-3d" }}
-                className="relative w-full h-56"
+                className="relative h-56 w-full"
               >
                 {/* Front - Question */}
                 <div
@@ -214,7 +210,7 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
                   )}
                 >
                   <div className="absolute top-3 left-3 flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded-xs text-[10px] font-medium bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300">
+                    <span className="rounded-xs bg-blue-100 px-2 py-0.5 text-[10px] font-medium text-blue-600 dark:bg-blue-900/50 dark:text-blue-300">
                       Question
                     </span>
                     {knownCards.has(currentIndex) && (
@@ -222,7 +218,7 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="px-2 py-0.5 rounded-xs text-[10px] font-medium flex items-center gap-1 bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-300"
+                        className="flex items-center gap-1 rounded-xs bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-600 dark:bg-green-900/50 dark:text-green-300"
                       >
                         <CheckIcon className="size-3" />
                         Learned
@@ -232,7 +228,7 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
                   <span className="absolute bottom-3 text-[10px] text-gray-400 dark:text-gray-500">
                     Click to flip
                   </span>
-                  <p className="font-semibold text-gray-800 dark:text-gray-100 leading-relaxed max-w-xl text-base">
+                  <p className="max-w-xl text-base leading-relaxed font-semibold text-gray-800 dark:text-gray-100">
                     {currentCard.front}
                   </p>
                 </div>
@@ -245,13 +241,13 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
                     "flex flex-col items-center justify-center text-center",
                   )}
                 >
-                  <span className="absolute top-3 left-3 px-2 py-0.5 rounded-xs text-[10px] font-medium bg-blue-200 dark:bg-blue-800/50 text-blue-700 dark:text-blue-200">
+                  <span className="absolute top-3 left-3 rounded-xs bg-blue-200 px-2 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-800/50 dark:text-blue-200">
                     Answer
                   </span>
                   <span className="absolute bottom-3 text-[10px] text-blue-400 dark:text-blue-500">
                     Click to flip back
                   </span>
-                  <p className="text-gray-700 dark:text-gray-200 leading-relaxed max-w-xl text-sm">
+                  <p className="max-w-xl text-sm leading-relaxed text-gray-700 dark:text-gray-200">
                     {currentCard.back}
                   </p>
                 </div>
@@ -262,8 +258,8 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
       </div>
 
       {/* ── Bottom Bar (fixed) ── */}
-      <div className="flex-shrink-0 px-6 py-3 border-t border-gray-200 dark:border-gray-700 flex flex-col items-center gap-3">
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center w-full max-w-2xl mx-auto">
+      <div className="flex flex-shrink-0 flex-col items-center gap-3 border-t border-gray-200 px-6 py-3 dark:border-gray-700">
+        <div className="mx-auto grid w-full max-w-2xl grid-cols-[1fr_auto_1fr] items-center">
           <div className="flex justify-start">
             <Tooltip text="Previous card" position="top">
               <IconButton
@@ -272,7 +268,7 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
                 size="sm"
                 onClick={handlePrev}
                 disabled={currentIndex === 0}
-                className="rounded-xs border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-30 disabled:hover:border-gray-200 dark:disabled:hover:border-gray-600 disabled:hover:bg-transparent"
+                className="rounded-xs border border-gray-200 hover:border-blue-300 hover:bg-blue-50 disabled:opacity-30 disabled:hover:border-gray-200 disabled:hover:bg-transparent dark:border-gray-600 dark:hover:border-blue-500 dark:hover:bg-blue-900/20 dark:disabled:hover:border-gray-600"
               />
             </Tooltip>
           </div>
@@ -297,14 +293,14 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
                 size="sm"
                 onClick={handleNext}
                 disabled={currentIndex === totalCards - 1}
-                className="rounded-xs border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-30 disabled:hover:border-gray-200 dark:disabled:hover:border-gray-600 disabled:hover:bg-transparent"
+                className="rounded-xs border border-gray-200 hover:border-blue-300 hover:bg-blue-50 disabled:opacity-30 disabled:hover:border-gray-200 disabled:hover:bg-transparent dark:border-gray-600 dark:hover:border-blue-500 dark:hover:bg-blue-900/20 dark:disabled:hover:border-gray-600"
               />
             </Tooltip>
           </div>
         </div>
 
         {/* Dot indicators */}
-        <div className="flex gap-1 items-center">
+        <div className="flex items-center gap-1">
           {flashcards.map((_, idx) => (
             <button
               type="button"
@@ -334,21 +330,21 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
         </div>
 
         {/* Keyboard Shortcuts */}
-        <div className="flex gap-4 text-[10px] text-gray-400 dark:text-gray-500 font-medium">
+        <div className="flex gap-4 text-[10px] font-medium text-gray-400 dark:text-gray-500">
           <div className="flex items-center gap-1.5">
-            <kbd className="px-1.5 py-0.5 rounded-xs border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-[10px] font-mono">
+            <kbd className="rounded-xs border border-gray-200 bg-gray-50 px-1.5 py-0.5 font-mono text-[10px] dark:border-gray-700 dark:bg-gray-800">
               ←→
             </kbd>
             <span>Navigate</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <kbd className="px-1.5 py-0.5 rounded-xs border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-[10px] font-mono">
+            <kbd className="rounded-xs border border-gray-200 bg-gray-50 px-1.5 py-0.5 font-mono text-[10px] dark:border-gray-700 dark:bg-gray-800">
               Space
             </kbd>
             <span>Flip</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <kbd className="px-1.5 py-0.5 rounded-xs border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-[10px] font-mono">
+            <kbd className="rounded-xs border border-gray-200 bg-gray-50 px-1.5 py-0.5 font-mono text-[10px] dark:border-gray-700 dark:bg-gray-800">
               K
             </kbd>
             <span>Learn</span>

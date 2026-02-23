@@ -57,25 +57,14 @@ export function Button({
   return (
     <button
       onClick={onClick}
-      className={cn(
-        baseStyles,
-        sizeStyles[size],
-        variantStyles[variant],
-        className,
-        {
-          [disabledStyles]: disabled,
-        },
-      )}
+      className={cn(baseStyles, sizeStyles[size], variantStyles[variant], className, {
+        [disabledStyles]: disabled,
+      })}
       type={type}
       disabled={disabled}
     >
       {icon && (
-        <span
-          className={cn(
-            "mr-2 flex items-center justify-center",
-            iconSizeStyles[size],
-          )}
-        >
+        <span className={cn("mr-2 flex items-center justify-center", iconSizeStyles[size])}>
           {icon}
         </span>
       )}

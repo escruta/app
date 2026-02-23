@@ -6,8 +6,8 @@ export function AppearanceSection() {
   const { themePreference, setTheme, ThemeOptions } = useTheme();
 
   return (
-    <CommonBar className="flex-col justify-center items-start">
-      <h2 className="text-xl font-medium mb-4">Appearance</h2>
+    <CommonBar className="flex-col items-start justify-center">
+      <h2 className="mb-4 text-xl font-medium">Appearance</h2>
       <div className="flex items-center gap-4">
         <Dropdown<(typeof ThemeOptions)[keyof typeof ThemeOptions]>
           options={Object.values(ThemeOptions)}

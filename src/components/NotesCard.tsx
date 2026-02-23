@@ -1,15 +1,7 @@
 import type { Note } from "@/interfaces";
 import { AddIcon, EditIcon } from "@/components/icons";
 import { NoteChip } from "./NoteChip";
-import {
-  Card,
-  Button,
-  Divider,
-  Modal,
-  TextField,
-  Tooltip,
-  Spinner,
-} from "@/components/ui";
+import { Card, Button, Divider, Modal, TextField, Tooltip, Spinner } from "@/components/ui";
 import { useFetch } from "@/hooks";
 import { useState, useEffect } from "react";
 
@@ -19,11 +11,7 @@ interface NotesCardProps {
   refreshTrigger?: number;
 }
 
-export function NotesCard({
-  notebookId,
-  onNoteSelect,
-  refreshTrigger,
-}: NotesCardProps) {
+export function NotesCard({ notebookId, onNoteSelect, refreshTrigger }: NotesCardProps) {
   const {
     data: notes,
     loading,
@@ -65,10 +53,10 @@ export function NotesCard({
 
   return (
     <>
-      <Card className="flex flex-col h-full overflow-hidden p-0">
-        <div className="shrink-0 bg-white dark:bg-gray-900 z-10 rounded-t-xs">
-          <div className="flex flex-row justify-between items-center p-4">
-            <h2 className="text-lg font-sans font-semibold">Notes</h2>
+      <Card className="flex h-full flex-col overflow-hidden p-0">
+        <div className="z-10 shrink-0 rounded-t-xs bg-white dark:bg-gray-900">
+          <div className="flex flex-row items-center justify-between p-4">
+            <h2 className="font-sans text-lg font-semibold">Notes</h2>
             <Tooltip text="Add a new note" position="bottom">
               <Button
                 icon={<AddIcon />}
@@ -83,20 +71,14 @@ export function NotesCard({
           </div>
           <Divider className="my-0" />
         </div>
-        <div className="flex-1 overflow-y-auto w-full p-4">
+        <div className="w-full flex-1 overflow-y-auto p-4">
           {(() => {
             if (loading) {
-              return (
-                <div className="text-center text-gray-500 text-sm">
-                  Loading notes...
-                </div>
-              );
+              return <div className="text-center text-sm text-gray-500">Loading notes...</div>;
             }
             if (error) {
               return (
-                <div className="text-red-500 text-sm">
-                  Error loading notes: {error.message}
-                </div>
+                <div className="text-sm text-red-500">Error loading notes: {error.message}</div>
               );
             }
             if (notes && notes.length > 0) {
@@ -105,28 +87,21 @@ export function NotesCard({
                   {notes
                     .sort((a, b) => a.title.localeCompare(b.title))
                     .map((note) => (
-                      <NoteChip
-                        key={note.id}
-                        note={note}
-                        onSelect={onNoteSelect}
-                      />
+                      <NoteChip key={note.id} note={note} onSelect={onNoteSelect} />
                     ))}
                 </div>
               );
             }
             return (
-              <div className="flex flex-col items-center justify-center text-center py-10 px-4">
-                <div className="size-20 bg-blue-50 dark:bg-blue-950/30 rounded-xs flex items-center justify-center mb-5 shadow-sm border border-blue-300 dark:border-blue-700">
+              <div className="flex flex-col items-center justify-center px-4 py-10 text-center">
+                <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
                   <div className="size-10 text-blue-500 dark:text-blue-400">
                     <EditIcon />
                   </div>
                 </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">
-                  No notes yet
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs leading-relaxed">
-                  Create your first note to start capturing ideas and insights
-                  from your sources.
+                <h3 className="text-foreground mb-2 text-lg font-semibold">No notes yet</h3>
+                <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                  Create your first note to start capturing ideas and insights from your sources.
                 </p>
               </div>
             );
@@ -141,10 +116,7 @@ export function NotesCard({
         title="Add note"
         actions={
           <>
-            <Button
-              variant="secondary"
-              onClick={() => setIsAddNoteModalOpen(false)}
-            >
+            <Button variant="secondary" onClick={() => setIsAddNoteModalOpen(false)}>
               Cancel
             </Button>
             <Button
@@ -171,9 +143,7 @@ export function NotesCard({
             autoFocus
           />
           {addingNoteError && (
-            <div className="text-red-500 text-sm">
-              Error: {addingNoteError.message}
-            </div>
+            <div className="text-sm text-red-500">Error: {addingNoteError.message}</div>
           )}
         </div>
       </Modal>

@@ -37,45 +37,43 @@ export function AccountSection() {
     false,
   );
 
-  const { loading: isChangingPassword, refetch: changePassword } =
-    useFetch<string>(
-      "/users/change-password",
-      {
-        method: "POST",
-        data: {
-          currentPassword,
-          newPassword,
-        },
-        onSuccess: () => {
-          setIsPasswordModalOpen(false);
-          resetPasswordFields();
-          signOut();
-        },
-        onError: (error) => {
-          setErrorPasswordMessage(error.message || "Unknown error");
-          console.error("Error changing password:", error.message);
-        },
+  const { loading: isChangingPassword, refetch: changePassword } = useFetch<string>(
+    "/users/change-password",
+    {
+      method: "POST",
+      data: {
+        currentPassword,
+        newPassword,
       },
-      false,
-    );
+      onSuccess: () => {
+        setIsPasswordModalOpen(false);
+        resetPasswordFields();
+        signOut();
+      },
+      onError: (error) => {
+        setErrorPasswordMessage(error.message || "Unknown error");
+        console.error("Error changing password:", error.message);
+      },
+    },
+    false,
+  );
 
-  const { loading: isDeletingAccount, refetch: executeDeleteAccount } =
-    useFetch<string>(
-      "/users/me",
-      {
-        method: "DELETE",
-        onSuccess: () => {
-          setIsDeleteModalOpen(false);
-          setDeleteConfirmation("");
-          signOut();
-        },
-        onError: (error) => {
-          setErrorDeleteMessage(error.message || "Unknown error");
-          console.error("Error deleting account:", error.message);
-        },
+  const { loading: isDeletingAccount, refetch: executeDeleteAccount } = useFetch<string>(
+    "/users/me",
+    {
+      method: "DELETE",
+      onSuccess: () => {
+        setIsDeleteModalOpen(false);
+        setDeleteConfirmation("");
+        signOut();
       },
-      false,
-    );
+      onError: (error) => {
+        setErrorDeleteMessage(error.message || "Unknown error");
+        console.error("Error deleting account:", error.message);
+      },
+    },
+    false,
+  );
 
   const checkPasswordStrength = (password: string) => {
     const criteria = [
@@ -164,39 +162,27 @@ export function AccountSection() {
   };
 
   return (
-    <CommonBar className="flex-col justify-center items-start">
-      <h2 className="text-xl font-medium mb-4">Account</h2>
-      <div className="space-y-4 w-full">
+    <CommonBar className="flex-col items-start justify-center">
+      <h2 className="mb-4 text-xl font-medium">Account</h2>
+      <div className="w-full space-y-4">
         {user && (
           <div className="mb-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Full name
-                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Full name</p>
                 <p className="font-medium">{user.fullName}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Email
-                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
                 <p className="font-medium">{user.email}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Member since
-                </p>
-                <p className="font-medium">
-                  {new Date(user.createdAt).toLocaleDateString()}
-                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Member since</p>
+                <p className="font-medium">{new Date(user.createdAt).toLocaleDateString()}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Last updated
-                </p>
-                <p className="font-medium">
-                  {new Date(user.updatedAt).toLocaleDateString()}
-                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Last updated</p>
+                <p className="font-medium">{new Date(user.updatedAt).toLocaleDateString()}</p>
               </div>
             </div>
           </div>
@@ -205,20 +191,14 @@ export function AccountSection() {
           <Button variant="secondary" onClick={() => setIsNameModalOpen(true)}>
             Change name
           </Button>
-          <Button
-            variant="secondary"
-            onClick={() => setIsPasswordModalOpen(true)}
-          >
+          <Button variant="secondary" onClick={() => setIsPasswordModalOpen(true)}>
             Change password
           </Button>
         </div>
-        <div className="pt-6 border-t border-gray-200 dark:border-gray-700 mt-6">
-          <h3 className="text-lg font-medium text-red-600 dark:text-red-400 mb-2">
-            Danger Zone
-          </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            Once you delete your account, there is no going back. Please be
-            certain.
+        <div className="mt-6 border-t border-gray-200 pt-6 dark:border-gray-700">
+          <h3 className="mb-2 text-lg font-medium text-red-600 dark:text-red-400">Danger Zone</h3>
+          <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+            Once you delete your account, there is no going back. Please be certain.
           </p>
           <Button variant="danger" onClick={() => setIsDeleteModalOpen(true)}>
             Delete account
@@ -266,9 +246,7 @@ export function AccountSection() {
             value={newFullName}
             onChange={(e) => setNewFullName(e.target.value)}
           />
-          {errorNameMessage && (
-            <div className="text-red-500 text-sm">{errorNameMessage}</div>
-          )}
+          {errorNameMessage && <div className="text-sm text-red-500">{errorNameMessage}</div>}
         </div>
       </Modal>
 
@@ -294,12 +272,7 @@ export function AccountSection() {
             <Button
               variant="primary"
               onClick={handlePasswordChange}
-              disabled={
-                !currentPassword ||
-                !newPassword ||
-                !confirmPassword ||
-                isChangingPassword
-              }
+              disabled={!currentPassword || !newPassword || !confirmPassword || isChangingPassword}
               icon={isChangingPassword ? <Spinner /> : <CheckIcon />}
             >
               {isChangingPassword ? "Changing" : "Change password"}
@@ -334,12 +307,12 @@ export function AccountSection() {
             autoComplete="new-password"
           />
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Password must be at least 8 characters long, contain uppercase and
-            lowercase letters, and include at least one number. Your session
-            will be closed after changing your password.
+            Password must be at least 8 characters long, contain uppercase and lowercase letters,
+            and include at least one number. Your session will be closed after changing your
+            password.
           </p>
           {errorPasswordMessage && (
-            <div className="text-red-500 text-sm">{errorPasswordMessage}</div>
+            <div className="text-sm text-red-500">{errorPasswordMessage}</div>
           )}
         </div>
       </Modal>
@@ -369,8 +342,7 @@ export function AccountSection() {
               variant="danger"
               onClick={handleDeleteAccount}
               disabled={
-                deleteConfirmation.toLowerCase() !== "delete my account" ||
-                isDeletingAccount
+                deleteConfirmation.toLowerCase() !== "delete my account" || isDeletingAccount
               }
               icon={isDeletingAccount ? <Spinner /> : undefined}
             >
@@ -386,8 +358,8 @@ export function AccountSection() {
             message="This will permanently delete your account and all your data."
           />
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Please type <span className="font-bold">delete my account</span> to
-            confirm account deletion.
+            Please type <span className="font-bold">delete my account</span> to confirm account
+            deletion.
           </p>
           <TextField
             id="delete-confirmation"
@@ -398,9 +370,7 @@ export function AccountSection() {
             placeholder="Type 'delete my account' to confirm"
             autoFocus
           />
-          {errorDeleteMessage && (
-            <div className="text-red-500 text-sm">{errorDeleteMessage}</div>
-          )}
+          {errorDeleteMessage && <div className="text-sm text-red-500">{errorDeleteMessage}</div>}
         </div>
       </Modal>
     </CommonBar>

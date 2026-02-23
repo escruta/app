@@ -41,12 +41,7 @@ interface ToolbarButtonProps {
   children: React.ReactNode;
 }
 
-function ToolbarButton({
-  isActive,
-  onClick,
-  title,
-  children,
-}: ToolbarButtonProps) {
+function ToolbarButton({ isActive, onClick, title, children }: ToolbarButtonProps) {
   return (
     <Tooltip text={title} position="top">
       <button
@@ -55,8 +50,7 @@ function ToolbarButton({
           "h-8 px-2 rounded-xs flex items-center justify-center transition-all duration-200 focus:outline-none select-none cursor-pointer",
           "border border-transparent",
           {
-            "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400":
-              isActive,
+            "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400": isActive,
             "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200 active:bg-gray-200 dark:active:bg-gray-700":
               !isActive,
           },
@@ -96,12 +90,7 @@ export function Editor({
           onClick: (node, pos) => {
             const katex = prompt("Enter new calculation:", node.attrs.latex);
             if (katex) {
-              editor
-                .chain()
-                .setNodeSelection(pos)
-                .updateInlineMath({ latex: katex })
-                .focus()
-                .run();
+              editor.chain().setNodeSelection(pos).updateInlineMath({ latex: katex }).focus().run();
             }
           },
         },
@@ -109,12 +98,7 @@ export function Editor({
           onClick: (node, pos) => {
             const katex = prompt("Enter new calculation:", node.attrs.latex);
             if (katex) {
-              editor
-                .chain()
-                .setNodeSelection(pos)
-                .updateBlockMath({ latex: katex })
-                .focus()
-                .run();
+              editor.chain().setNodeSelection(pos).updateBlockMath({ latex: katex }).focus().run();
             }
           },
         },
@@ -231,10 +215,7 @@ export function Editor({
               event.preventDefault();
               return true;
             } catch (e) {
-              console.warn(
-                "Markdown paste failed, falling back to plain text:",
-                e,
-              );
+              console.warn("Markdown paste failed, falling back to plain text:", e);
             }
           }
 
@@ -268,13 +249,11 @@ export function Editor({
   }
 
   return (
-    <div className="flex flex-col h-full w-full relative">
-      <div className="top-0 z-10 flex overflow-x-auto overflow-y-hidden items-center gap-1 bg-white dark:bg-gray-900 px-2 py-1">
+    <div className="relative flex h-full w-full flex-col">
+      <div className="top-0 z-10 flex items-center gap-1 overflow-x-auto overflow-y-hidden bg-white px-2 py-1 dark:bg-gray-900">
         <ToolbarButton
           isActive={editor.isActive("heading", { level: 1 })}
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 1 }).run()
-          }
+          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
           title="Heading 1"
         >
           <Heading1Icon className="size-4" />
@@ -282,9 +261,7 @@ export function Editor({
 
         <ToolbarButton
           isActive={editor.isActive("heading", { level: 2 })}
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 2 }).run()
-          }
+          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
           title="Heading 2"
         >
           <Heading2Icon className="size-4" />
@@ -292,9 +269,7 @@ export function Editor({
 
         <ToolbarButton
           isActive={editor.isActive("heading", { level: 3 })}
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 3 }).run()
-          }
+          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
           title="Heading 3"
         >
           <Heading3Icon className="size-4" />
@@ -371,16 +346,12 @@ export function Editor({
         </ToolbarButton>
 
         <ToolbarButton
-          isActive={
-            editor.isActive("inlineMath") || editor.isActive("blockMath")
-          }
+          isActive={editor.isActive("inlineMath") || editor.isActive("blockMath")}
           onClick={() => {
             const isInline = editor.isActive("inlineMath");
             const isBlock = editor.isActive("blockMath");
             const { empty, from, to, $from, $to } = editor.state.selection;
-            const selectedText = empty
-              ? ""
-              : editor.state.doc.textBetween(from, to, "\n");
+            const selectedText = empty ? "" : editor.state.doc.textBetween(from, to, "\n");
 
             const currentLatex = isInline
               ? editor.getAttributes("inlineMath").latex
@@ -391,10 +362,7 @@ export function Editor({
             let latex: string | null = currentLatex;
 
             if (empty || isInline || isBlock) {
-              latex = window.prompt(
-                "Mathematical expression (LaTeX):",
-                currentLatex,
-              );
+              latex = window.prompt("Mathematical expression (LaTeX):", currentLatex);
             }
 
             if (latex !== null && latex.trim() !== "") {
@@ -409,28 +377,16 @@ export function Editor({
                     $from.parentOffset === 0 &&
                     $to.parentOffset === $to.parent.content.size;
                   const spansMultipleBlocks = $from.parent !== $to.parent;
-                  const shouldBeBlock =
-                    isEntireNodeSelected || spansMultipleBlocks;
+                  const shouldBeBlock = isEntireNodeSelected || spansMultipleBlocks;
 
                   if (shouldBeBlock) {
-                    editor
-                      .chain()
-                      .focus()
-                      .deleteSelection()
-                      .insertBlockMath({ latex })
-                      .run();
+                    editor.chain().focus().deleteSelection().insertBlockMath({ latex }).run();
                   } else {
-                    editor
-                      .chain()
-                      .focus()
-                      .deleteSelection()
-                      .insertInlineMath({ latex })
-                      .run();
+                    editor.chain().focus().deleteSelection().insertInlineMath({ latex }).run();
                   }
                 } else {
                   const isCurrentNodeEmpty =
-                    editor.state.selection.$head.parent.textContent.trim() ===
-                    "";
+                    editor.state.selection.$head.parent.textContent.trim() === "";
                   if (isCurrentNodeEmpty) {
                     editor.chain().focus().insertBlockMath({ latex }).run();
                   } else {
@@ -456,7 +412,7 @@ export function Editor({
 
       <EditorContent
         editor={editor}
-        className="flex-1 min-h-0 w-full flex flex-col overflow-hidden [&>div]:flex-1 [&>div]:overflow-y-auto"
+        className="flex min-h-0 w-full flex-1 flex-col overflow-hidden [&>div]:flex-1 [&>div]:overflow-y-auto"
       />
     </div>
   );

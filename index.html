@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -8,12 +8,7 @@
       rel="icon"
       media="(prefers-color-scheme: light)"
     />
-    <link
-      id="favicon-dark"
-      href="/DarkIcon.svg"
-      rel="icon"
-      media="(prefers-color-scheme: dark)"
-    />
+    <link id="favicon-dark" href="/DarkIcon.svg" rel="icon" media="(prefers-color-scheme: dark)" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"
@@ -34,9 +29,7 @@
           let themePreference;
           try {
             const cookieValue = getCookie("themePreference");
-            themePreference = cookieValue
-              ? JSON.parse(decodeURIComponent(cookieValue))
-              : "System";
+            themePreference = cookieValue ? JSON.parse(decodeURIComponent(cookieValue)) : "System";
           } catch (_) {
             themePreference = "System";
           }

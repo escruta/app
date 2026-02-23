@@ -30,12 +30,7 @@ export default defineConfig({
             "@tiptap/extension-code",
             "@tiptap/extension-mathematics",
           ],
-          "markdown-vendor": [
-            "react-markdown",
-            "remark-math",
-            "remark-gfm",
-            "rehype-katex",
-          ],
+          "markdown-vendor": ["react-markdown", "remark-math", "remark-gfm", "rehype-katex"],
           "highlight-vendor": ["lowlight"],
           "katex-vendor": ["katex"],
         },

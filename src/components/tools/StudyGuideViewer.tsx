@@ -25,18 +25,16 @@ function CollapsibleSection({
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className="border border-gray-200 dark:border-gray-600 rounded-xs overflow-hidden">
+    <div className="overflow-hidden rounded-xs border border-gray-200 dark:border-gray-600">
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="w-full flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 hover:bg-blue-50/50 dark:hover:bg-gray-700 transition-colors duration-200"
+        className="flex w-full items-center justify-between bg-gray-50 p-4 transition-colors duration-200 hover:bg-blue-50/50 dark:bg-gray-800 dark:hover:bg-gray-700"
       >
         <div className="flex items-center gap-3">
-          <h3 className="font-semibold text-base text-gray-800 dark:text-gray-100">
-            {title}
-          </h3>
+          <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100">{title}</h3>
           {badge !== undefined && (
-            <span className="px-2 py-0.5 text-xs rounded-xs font-medium bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300">
+            <span className="rounded-xs bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-600 dark:bg-blue-900/50 dark:text-blue-300">
               {badge}
             </span>
           )}
@@ -44,7 +42,7 @@ function CollapsibleSection({
 
         <ChevronIcon
           direction={isOpen ? "up" : "down"}
-          className="size-3.5 text-gray-400 dark:text-gray-500 transition-transform duration-200"
+          className="size-3.5 text-gray-400 transition-transform duration-200 dark:text-gray-500"
         />
       </button>
       <AnimatePresence initial={false}>
@@ -56,7 +54,7 @@ function CollapsibleSection({
             transition={{ duration: 0.25, ease: "easeOut" }}
             className="overflow-hidden"
           >
-            <div className="p-4 bg-white dark:bg-gray-900">{children}</div>
+            <div className="bg-white p-4 dark:bg-gray-900">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -65,43 +63,33 @@ function CollapsibleSection({
 }
 
 export function StudyGuideViewer({ data, className }: StudyGuideViewerProps) {
-  const {
-    overview,
-    keyConcepts,
-    importantDetails,
-    connections,
-    reviewQuestions,
-  } = data;
+  const { overview, keyConcepts, importantDetails, connections, reviewQuestions } = data;
 
   return (
     <div className={cn("flex flex-col gap-4 p-6 max-w-3xl mx-auto", className)}>
       {/* Overview - always visible */}
-      <div className="p-4 rounded-xs bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700">
-        <p className="text-xs text-blue-600 dark:text-blue-400 font-medium uppercase tracking-wider mb-2">
+      <div className="rounded-xs border border-blue-200 bg-blue-50 p-4 dark:border-blue-700 dark:bg-blue-900/20">
+        <p className="mb-2 text-xs font-medium tracking-wider text-blue-600 uppercase dark:text-blue-400">
           Overview
         </p>
-        <p className="text-base text-gray-700 dark:text-gray-200 leading-relaxed select-text">
+        <p className="text-base leading-relaxed text-gray-700 select-text dark:text-gray-200">
           {overview}
         </p>
       </div>
 
       {/* Key Concepts */}
       {keyConcepts && keyConcepts.length > 0 && (
-        <CollapsibleSection
-          title="Key Concepts"
-          badge={keyConcepts.length}
-          defaultOpen={true}
-        >
+        <CollapsibleSection title="Key Concepts" badge={keyConcepts.length} defaultOpen={true}>
           <div className="flex flex-col gap-2">
             {keyConcepts.map((concept, index) => (
               <div
                 key={index}
-                className="flex flex-col sm:flex-row sm:gap-4 p-3 rounded-xs bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700"
+                className="flex flex-col rounded-xs border border-gray-100 bg-gray-50 p-3 sm:flex-row sm:gap-4 dark:border-gray-700 dark:bg-gray-800"
               >
-                <dt className="font-medium text-base text-blue-600 dark:text-blue-400 sm:min-w-[180px] sm:max-w-[180px] flex-shrink-0 select-text">
+                <dt className="flex-shrink-0 text-base font-medium text-blue-600 select-text sm:max-w-[180px] sm:min-w-[180px] dark:text-blue-400">
                   {concept.term}
                 </dt>
-                <dd className="text-base text-gray-700 dark:text-gray-200 mt-1 sm:mt-0 leading-relaxed select-text">
+                <dd className="mt-1 text-base leading-relaxed text-gray-700 select-text sm:mt-0 dark:text-gray-200">
                   {concept.definition}
                 </dd>
               </div>
@@ -120,8 +108,8 @@ export function StudyGuideViewer({ data, className }: StudyGuideViewerProps) {
           <ul className="flex flex-col gap-2">
             {importantDetails.map((detail, index) => (
               <li key={index} className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-1.5 h-1.5 mt-[7px] rounded-full bg-blue-500" />
-                <span className="text-base text-gray-700 dark:text-gray-200 leading-relaxed select-text">
+                <span className="mt-[7px] h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-500" />
+                <span className="text-base leading-relaxed text-gray-700 select-text dark:text-gray-200">
                   {detail}
                 </span>
               </li>
@@ -140,10 +128,10 @@ export function StudyGuideViewer({ data, className }: StudyGuideViewerProps) {
           <ul className="flex flex-col gap-2">
             {connections.map((connection, index) => (
               <li key={index} className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center rounded-xs bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-300 text-xs font-medium">
+                <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-xs bg-blue-100 text-xs font-medium text-blue-600 dark:bg-blue-900/50 dark:text-blue-300">
                   {index + 1}
                 </span>
-                <span className="text-base text-gray-700 dark:text-gray-200 leading-relaxed pt-0.5 select-text">
+                <span className="pt-0.5 text-base leading-relaxed text-gray-700 select-text dark:text-gray-200">
                   {connection}
                 </span>
               </li>
@@ -162,10 +150,10 @@ export function StudyGuideViewer({ data, className }: StudyGuideViewerProps) {
           <ol className="flex flex-col gap-3">
             {reviewQuestions.map((question, index) => (
               <li key={index} className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-xs bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-300 text-xs font-medium">
+                <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-xs bg-green-100 text-xs font-medium text-green-600 dark:bg-green-900/50 dark:text-green-300">
                   {index + 1}
                 </span>
-                <span className="text-base text-gray-700 dark:text-gray-200 pt-0.5 leading-relaxed select-text">
+                <span className="pt-0.5 text-base leading-relaxed text-gray-700 select-text dark:text-gray-200">
                   {question}
                 </span>
               </li>

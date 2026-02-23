@@ -84,8 +84,7 @@ export function ToolCard({
       className={cn(
         baseClasses,
         {
-          [defaultHoverClasses]:
-            !disabled && !isLoading && !isCompleted && !isFailed,
+          [defaultHoverClasses]: !disabled && !isLoading && !isCompleted && !isFailed,
           [disabledClasses]: disabled || isLoading,
           [loadingClasses]: isLoading,
           [completedClasses]: isCompleted && hasResult,
@@ -104,7 +103,7 @@ export function ToolCard({
       role="button"
       aria-disabled={disabled || isLoading}
     >
-      <div className="relative p-3 h-full flex items-center gap-3">
+      <div className="relative flex h-full items-center gap-3 p-3">
         <div
           className={cn("shrink-0 p-2 rounded-xs transition-all duration-300", {
             "bg-gray-100 dark:bg-gray-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-800":
@@ -121,9 +120,7 @@ export function ToolCard({
               <Spinner size={16} className="text-blue-600 dark:text-blue-400" />
             </div>
           ) : isCompleted && hasResult ? (
-            <div className="size-4 text-green-600 dark:text-green-400">
-              {icon}
-            </div>
+            <div className="size-4 text-green-600 dark:text-green-400">{icon}</div>
           ) : isFailed ? (
             <div className="size-4 text-red-600 dark:text-red-400">
               <CloseIcon />
@@ -141,36 +138,30 @@ export function ToolCard({
         </div>
 
         {/* Content */}
-        <div className="flex flex-col flex-1 justify-center gap-0.5">
+        <div className="flex flex-1 flex-col justify-center gap-0.5">
           <h3
-            className={cn(
-              "font-medium text-sm leading-tight transition-colors duration-300",
-              {
-                "text-gray-900 dark:text-gray-100 group-hover:text-blue-900 dark:group-hover:text-blue-100":
-                  !isLoading && !isCompleted && !isFailed,
-                "text-blue-700 dark:text-blue-300": isLoading,
-                "text-green-700 dark:text-green-300 group-hover:text-green-800 dark:group-hover:text-green-100":
-                  isCompleted && hasResult,
-                "text-red-700 dark:text-red-300 group-hover:text-red-800 dark:group-hover:text-red-100":
-                  isFailed,
-              },
-            )}
+            className={cn("font-medium text-sm leading-tight transition-colors duration-300", {
+              "text-gray-900 dark:text-gray-100 group-hover:text-blue-900 dark:group-hover:text-blue-100":
+                !isLoading && !isCompleted && !isFailed,
+              "text-blue-700 dark:text-blue-300": isLoading,
+              "text-green-700 dark:text-green-300 group-hover:text-green-800 dark:group-hover:text-green-100":
+                isCompleted && hasResult,
+              "text-red-700 dark:text-red-300 group-hover:text-red-800 dark:group-hover:text-red-100":
+                isFailed,
+            })}
           >
             {title}
           </h3>
           <p
-            className={cn(
-              "text-xs leading-tight transition-colors duration-300 truncate",
-              {
-                "text-gray-500 dark:text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300":
-                  !isLoading && !isCompleted && !isFailed,
-                "text-blue-600 dark:text-blue-400": isLoading,
-                "text-green-600 dark:text-green-400 group-hover:text-green-700 dark:group-hover:text-green-300":
-                  isCompleted && hasResult,
-                "text-red-600 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300":
-                  isFailed,
-              },
-            )}
+            className={cn("text-xs leading-tight transition-colors duration-300 truncate", {
+              "text-gray-500 dark:text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300":
+                !isLoading && !isCompleted && !isFailed,
+              "text-blue-600 dark:text-blue-400": isLoading,
+              "text-green-600 dark:text-green-400 group-hover:text-green-700 dark:group-hover:text-green-300":
+                isCompleted && hasResult,
+              "text-red-600 dark:text-red-400 group-hover:text-red-700 dark:group-hover:text-red-300":
+                isFailed,
+            })}
           >
             {isLoading
               ? "Generating..."

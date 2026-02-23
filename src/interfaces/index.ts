@@ -1,10 +1,6 @@
 export type * from "./Conversation";
 export type { Flashcard, FlashcardsResponse } from "./FlashcardsResponse";
-export type {
-  default as GenerationJob,
-  JobType,
-  JobStatus,
-} from "./GenerationJob";
+export type { default as GenerationJob, JobType, JobStatus } from "./GenerationJob";
 export type { Branch, MindMapResponse } from "./MindMapResponse";
 export type { default as Note } from "./Note";
 export type { default as Notebook } from "./Notebook";

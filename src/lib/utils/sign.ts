@@ -1,9 +1,6 @@
 export type SignContext = "signin" | "signup";
 
-export function getSignErrorMessage(
-  status: number,
-  context: SignContext = "signin",
-) {
+export function getSignErrorMessage(status: number, context: SignContext = "signin") {
   const isSignUp = context === "signup";
 
   switch (status) {
@@ -16,9 +13,7 @@ export function getSignErrorMessage(
         ? "Forbidden. You do not have permission to create an account."
         : "Forbidden. You do not have permission to sign in.";
     case 404:
-      return isSignUp
-        ? "Registration service not available."
-        : "User not found.";
+      return isSignUp ? "Registration service not available." : "User not found.";
     case 405:
       return "Method not allowed.";
     case 408:
@@ -70,8 +65,6 @@ export function getSignErrorMessage(
     case 451:
       return "Unavailable due to legal reasons.";
     default:
-      return isSignUp
-        ? "Sign up error. Please try again."
-        : "Sign in error. Please try again.";
+      return isSignUp ? "Sign up error. Please try again." : "Sign in error. Please try again.";
   }
 }

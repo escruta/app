@@ -22,7 +22,8 @@ export default function useCookie<T>(
         return defaultValue;
       }
       return undefined;
-    } catch (_) {
+    } catch (error) {
+      console.error(error);
       return defaultValue;
     }
   });

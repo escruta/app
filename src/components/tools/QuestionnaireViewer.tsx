@@ -2,12 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
 import { Button, IconButton, Tooltip } from "@/components/ui";
-import {
-  CheckIcon,
-  CloseIcon,
-  ChevronIcon,
-  RestartIcon,
-} from "@/components/icons";
+import { CheckIcon, CloseIcon, ChevronIcon, RestartIcon } from "@/components/icons";
 import type { QuestionnaireResponse, Question } from "@/interfaces";
 
 interface QuestionnaireViewerProps {
@@ -39,10 +34,7 @@ const slideVariants = {
   }),
 };
 
-export function QuestionnaireViewer({
-  data,
-  className,
-}: QuestionnaireViewerProps) {
+export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProps) {
   const { questions } = data;
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -147,10 +139,8 @@ export function QuestionnaireViewer({
   }
 
   const score = calculateScore();
-  const progressPercentage =
-    score.total > 0 ? (score.answered / score.total) * 100 : 0;
-  const correctPercentage =
-    score.total > 0 ? (score.correct / score.total) * 100 : 0;
+  const progressPercentage = score.total > 0 ? (score.answered / score.total) * 100 : 0;
+  const correctPercentage = score.total > 0 ? (score.correct / score.total) * 100 : 0;
 
   if (!questions || questions.length === 0) {
     return (
@@ -163,13 +153,11 @@ export function QuestionnaireViewer({
   return (
     <div className={cn("flex flex-col h-full", className)}>
       {/* ── Top Bar (fixed) ── */}
-      <div className="flex-shrink-0 px-6 py-4 flex flex-col gap-3 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex flex-shrink-0 flex-col gap-3 border-b border-gray-200 px-6 py-4 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="flex flex-col">
-              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                Progress
-              </span>
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Progress</span>
               <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
                 {score.answered} / {score.total}
               </span>
@@ -178,9 +166,7 @@ export function QuestionnaireViewer({
             <div className="h-8 w-px bg-gray-200 dark:bg-gray-600" />
 
             <div className="flex flex-col">
-              <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                Correct
-              </span>
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Correct</span>
               <div className="flex items-center gap-1.5">
                 <CheckIcon className="size-3 text-green-500" />
                 <span className="text-sm font-semibold text-green-600 dark:text-green-400">
@@ -204,7 +190,7 @@ export function QuestionnaireViewer({
         </div>
 
         {/* Progress Bar */}
-        <div className="relative h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+        <div className="relative h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
           <motion.div
             className="absolute inset-y-0 left-0 bg-blue-500"
             initial={false}
@@ -221,8 +207,8 @@ export function QuestionnaireViewer({
       </div>
 
       {/* ── Scrollable Content (middle) ── */}
-      <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
-        <div className="px-6 py-4 max-w-3xl mx-auto">
+      <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
+        <div className="mx-auto max-w-3xl px-6 py-4">
           <AnimatePresence mode="wait">
             {showResults ? (
               <motion.div
@@ -233,20 +219,19 @@ export function QuestionnaireViewer({
                 transition={{ duration: 0.25, ease: "easeOut" }}
                 className="flex flex-col gap-4"
               >
-                <div className="p-4 rounded-xs border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800">
-                  <div className="flex items-center justify-between mb-3">
+                <div className="rounded-xs border border-gray-200 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-800">
+                  <div className="mb-3 flex items-center justify-between">
                     <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
                       Results
                     </p>
                     <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {Math.round((score.correct / score.total) * 100)}%
-                      accuracy
+                      {Math.round((score.correct / score.total) * 100)}% accuracy
                     </span>
                   </div>
 
-                  <div className="relative h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mb-3">
+                  <div className="relative mb-3 h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                     <motion.div
-                      className="absolute inset-y-0 left-0 bg-green-500 rounded-full"
+                      className="absolute inset-y-0 left-0 rounded-full bg-green-500"
                       initial={{ width: 0 }}
                       animate={{
                         width: `${(score.correct / score.total) * 100}%`,
@@ -314,8 +299,8 @@ export function QuestionnaireViewer({
 
       {/* ── Bottom Bar (fixed) ── */}
       {!showResults && (
-        <div className="flex-shrink-0 px-6 py-3 border-t border-gray-200 dark:border-gray-700">
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center max-w-3xl mx-auto">
+        <div className="flex-shrink-0 border-t border-gray-200 px-6 py-3 dark:border-gray-700">
+          <div className="mx-auto grid max-w-3xl grid-cols-[1fr_auto_1fr] items-center">
             <div className="flex justify-start">
               <Tooltip text="Previous question" position="top">
                 <IconButton
@@ -324,14 +309,14 @@ export function QuestionnaireViewer({
                   size="sm"
                   onClick={handlePrev}
                   disabled={currentIndex === 0}
-                  className="rounded-xs border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-30 disabled:hover:border-gray-200 dark:disabled:hover:border-gray-600 disabled:hover:bg-transparent"
+                  className="rounded-xs border border-gray-200 hover:border-blue-300 hover:bg-blue-50 disabled:opacity-30 disabled:hover:border-gray-200 disabled:hover:bg-transparent dark:border-gray-600 dark:hover:border-blue-500 dark:hover:bg-blue-900/20 dark:disabled:hover:border-gray-600"
                 />
               </Tooltip>
             </div>
 
             <div className="flex items-center justify-center">
               {/* Dot indicators */}
-              <div className="flex gap-1 items-center">
+              <div className="flex items-center gap-1">
                 {questions.map((_, idx) => (
                   <button
                     type="button"
@@ -374,11 +359,7 @@ export function QuestionnaireViewer({
                   transition={{ duration: 0.2, ease: "easeOut" }}
                 >
                   {score.answered === score.total ? (
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => setShowResults(true)}
-                    >
+                    <Button variant="primary" size="sm" onClick={() => setShowResults(true)}>
                       Show Results
                     </Button>
                   ) : currentIndex < totalQuestions - 1 ? (
@@ -395,7 +376,7 @@ export function QuestionnaireViewer({
                     size="sm"
                     onClick={handleNext}
                     disabled={currentIndex === totalQuestions - 1}
-                    className="rounded-xs border border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-30 disabled:hover:border-gray-200 dark:disabled:hover:border-gray-600 disabled:hover:bg-transparent"
+                    className="rounded-xs border border-gray-200 hover:border-blue-300 hover:bg-blue-50 disabled:opacity-30 disabled:hover:border-gray-200 disabled:hover:bg-transparent dark:border-gray-600 dark:hover:border-blue-500 dark:hover:bg-blue-900/20 dark:disabled:hover:border-gray-600"
                   />
                 </Tooltip>
               )}
@@ -452,19 +433,17 @@ function QuestionContent({
         >
           {questionNumber}
         </span>
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wider font-medium">
+            <span className="text-[10px] font-medium tracking-wider text-gray-400 uppercase dark:text-gray-500">
               {typeLabel}
             </span>
-            <span className="text-[10px] text-gray-300 dark:text-gray-600">
-              •
-            </span>
-            <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium">
+            <span className="text-[10px] text-gray-300 dark:text-gray-600">•</span>
+            <span className="text-[10px] font-medium text-gray-400 dark:text-gray-500">
               {questionNumber} of {totalQuestions}
             </span>
           </div>
-          <p className="text-gray-800 dark:text-gray-100 mt-1 leading-relaxed">
+          <p className="mt-1 leading-relaxed text-gray-800 dark:text-gray-100">
             {question.question}
           </p>
         </div>
@@ -506,9 +485,7 @@ function QuestionContent({
               <button
                 type="button"
                 key={oIndex}
-                onClick={() =>
-                  !state.answered && onMultipleChoiceSelect(oIndex)
-                }
+                onClick={() => !state.answered && onMultipleChoiceSelect(oIndex)}
                 disabled={state.answered}
                 className={cn(
                   "text-left p-3 rounded-xs border transition-all duration-200 group/option",
@@ -532,11 +509,10 @@ function QuestionContent({
                           : "border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 group-hover/option:border-blue-400 dark:group-hover/option:border-blue-500 group-hover/option:text-blue-500",
                     )}
                   >
-                    {state.answered &&
-                    oIndex === question.correctAnswerIndex ? (
-                      <CheckIcon className="w-3.5 h-3.5" />
+                    {state.answered && oIndex === question.correctAnswerIndex ? (
+                      <CheckIcon className="h-3.5 w-3.5" />
                     ) : state.answered && oIndex === state.selectedOption ? (
-                      <CloseIcon className="w-3.5 h-3.5" />
+                      <CloseIcon className="h-3.5 w-3.5" />
                     ) : (
                       String.fromCharCode(65 + oIndex)
                     )}
@@ -580,15 +556,12 @@ function QuestionContent({
                 )}
               >
                 <div className="flex items-center justify-center gap-2">
-                  {state.answered &&
-                    value === question.correctAnswerBoolean && (
-                      <CheckIcon className="size-3.5" />
-                    )}
+                  {state.answered && value === question.correctAnswerBoolean && (
+                    <CheckIcon className="size-3.5" />
+                  )}
                   {state.answered &&
                     value === state.selectedBoolean &&
-                    value !== question.correctAnswerBoolean && (
-                      <CloseIcon className="size-3.5" />
-                    )}
+                    value !== question.correctAnswerBoolean && <CloseIcon className="size-3.5" />}
                   {value ? "True" : "False"}
                 </div>
               </button>
@@ -615,7 +588,7 @@ function QuestionContent({
               rows={3}
             />
             {!state.answered && (
-              <div className="flex justify-end mt-2">
+              <div className="mt-2 flex justify-end">
                 <Button
                   variant="primary"
                   size="sm"
@@ -634,11 +607,11 @@ function QuestionContent({
                   transition={{ duration: 0.25, ease: "easeOut" }}
                   className="overflow-hidden"
                 >
-                  <div className="mt-3 p-3 rounded-xs bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700">
-                    <p className="text-[10px] text-blue-600 dark:text-blue-400 font-medium uppercase tracking-wider mb-1">
+                  <div className="mt-3 rounded-xs border border-blue-200 bg-blue-50 p-3 dark:border-blue-700 dark:bg-blue-900/20">
+                    <p className="mb-1 text-[10px] font-medium tracking-wider text-blue-600 uppercase dark:text-blue-400">
                       Sample Answer
                     </p>
-                    <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed">
+                    <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-200">
                       {question.sampleAnswer}
                     </p>
                   </div>
@@ -658,11 +631,11 @@ function QuestionContent({
             transition={{ duration: 0.25, ease: "easeOut" }}
             className="overflow-hidden"
           >
-            <div className="p-3 rounded-xs bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700">
-              <p className="text-[10px] text-blue-600 dark:text-blue-400 font-medium uppercase tracking-wider mb-1">
+            <div className="rounded-xs border border-blue-200 bg-blue-50 p-3 dark:border-blue-700 dark:bg-blue-900/20">
+              <p className="mb-1 text-[10px] font-medium tracking-wider text-blue-600 uppercase dark:text-blue-400">
                 Explanation
               </p>
-              <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed">
+              <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-200">
                 {question.explanation}
               </p>
             </div>

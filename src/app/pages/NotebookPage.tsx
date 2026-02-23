@@ -2,12 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useLoaderData } from "react-router";
 import { useFetch, useCookie, useIsMobile } from "@/hooks";
 import type { Note, Source, Notebook, NotebookContent } from "@/interfaces";
-import {
-  EditIcon,
-  NotebookIcon,
-  FireIcon,
-  ShareIcon,
-} from "@/components/icons";
+import { EditIcon, NotebookIcon, FireIcon, ShareIcon } from "@/components/icons";
 import {
   Tooltip,
   IconButton,
@@ -53,10 +48,7 @@ export default function NotebookPage() {
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
   const [notesRefreshKey, setNotesRefreshKey] = useState<number>(0);
   const [sourcesRefreshKey, setSourcesRefreshKey] = useState<number>(0);
-  const [leftPanelWidth, setLeftPanelWidth] = useCookie<number>(
-    "notebookLeftPanelWidth",
-    50,
-  );
+  const [leftPanelWidth, setLeftPanelWidth] = useCookie<number>("notebookLeftPanelWidth", 50);
   const [isResizing, setIsResizing] = useState<boolean>(false);
   const tabsRef = useRef<TabsRef>(null);
   const sectionRef = useRef<HTMLElement>(null);
@@ -83,9 +75,7 @@ export default function NotebookPage() {
 
   const handleToggleSource = (sourceId: string) => {
     setSelectedSourceIds((prev) =>
-      prev.includes(sourceId)
-        ? prev.filter((id) => id !== sourceId)
-        : [...prev, sourceId],
+      prev.includes(sourceId) ? prev.filter((id) => id !== sourceId) : [...prev, sourceId],
     );
   };
 
@@ -180,26 +170,25 @@ export default function NotebookPage() {
   if (error) {
     if (error.status === 404) {
       return (
-        <div className="flex justify-center h-screen w-full flex-col">
-          <div className="border-y border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 px-6 py-5">
+        <div className="flex h-screen w-full flex-col justify-center">
+          <div className="border-y border-gray-200 bg-gray-50 px-6 py-5 dark:border-gray-700 dark:bg-gray-950">
             <motion.div
-              className="flex justify-center items-center py-12"
+              className="flex items-center justify-center py-12"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
             >
               <div className="text-center">
-                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-xs flex items-center justify-center mb-4 mx-auto">
-                  <div className="w-8 h-8 text-gray-400 dark:text-gray-600">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-xs bg-gray-100 dark:bg-gray-800">
+                  <div className="h-8 w-8 text-gray-400 dark:text-gray-600">
                     <NotebookIcon />
                   </div>
                 </div>
-                <h1 className="text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <h1 className="mb-2 text-xl font-medium text-gray-700 dark:text-gray-300">
                   Notebook not found
                 </h1>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  The notebook you're looking for doesn't exist or has been
-                  deleted.
+                  The notebook you're looking for doesn't exist or has been deleted.
                 </p>
               </div>
             </motion.div>
@@ -210,24 +199,24 @@ export default function NotebookPage() {
 
     if (error.status === 401) {
       return (
-        <div className="flex justify-center h-screen w-full flex-col">
-          <div className="border-y border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 px-6 py-5">
+        <div className="flex h-screen w-full flex-col justify-center">
+          <div className="border-y border-gray-200 bg-gray-50 px-6 py-5 dark:border-gray-700 dark:bg-gray-950">
             <motion.div
-              className="flex justify-center items-center py-12"
+              className="flex items-center justify-center py-12"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
             >
               <div className="text-center">
-                <div className="w-16 h-16 bg-yellow-50 dark:bg-yellow-950 rounded-xs flex items-center justify-center mb-4 mx-auto">
-                  <div className="w-8 h-8 text-yellow-500">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-xs bg-yellow-50 dark:bg-yellow-950">
+                  <div className="h-8 w-8 text-yellow-500">
                     <NotebookIcon />
                   </div>
                 </div>
-                <h1 className="text-xl font-medium text-yellow-600 dark:text-yellow-400 mb-2">
+                <h1 className="mb-2 text-xl font-medium text-yellow-600 dark:text-yellow-400">
                   Access denied
                 </h1>
-                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
                   You do not have permission to access this notebook.
                 </p>
               </div>
@@ -238,24 +227,24 @@ export default function NotebookPage() {
     }
 
     return (
-      <div className="flex justify-center h-screen w-full flex-col">
-        <div className="border-y border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 px-6 py-5">
+      <div className="flex h-screen w-full flex-col justify-center">
+        <div className="border-y border-gray-200 bg-gray-50 px-6 py-5 dark:border-gray-700 dark:bg-gray-950">
           <motion.div
-            className="flex justify-center items-center py-12"
+            className="flex items-center justify-center py-12"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="text-center max-w-md">
-              <div className="w-16 h-16 bg-red-50 dark:bg-red-950 rounded-xs flex items-center justify-center mb-4 mx-auto">
-                <div className="w-8 h-8 text-red-500">
+            <div className="max-w-md text-center">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-xs bg-red-50 dark:bg-red-950">
+                <div className="h-8 w-8 text-red-500">
                   <FireIcon />
                 </div>
               </div>
-              <h1 className="text-lg font-medium text-red-600 dark:text-red-400 mb-2">
+              <h1 className="mb-2 text-lg font-medium text-red-600 dark:text-red-400">
                 Error loading notebook
               </h1>
-              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+              <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
                 {error.message}
               </p>
             </div>
@@ -267,9 +256,9 @@ export default function NotebookPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center h-screen w-full flex-col">
-        <div className="border-y border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-950 px-6 py-5">
-          <div className="flex justify-center items-center py-12">
+      <div className="flex h-screen w-full flex-col justify-center">
+        <div className="border-y border-gray-200 bg-gray-50 px-6 py-5 dark:border-gray-700 dark:bg-gray-950">
+          <div className="flex items-center justify-center py-12">
             <motion.div
               className="text-center"
               initial={{ opacity: 0, y: 20 }}
@@ -277,13 +266,11 @@ export default function NotebookPage() {
               transition={{ duration: 0.3 }}
             >
               <motion.div
-                className="inline-block w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mb-4"
+                className="mb-4 inline-block h-8 w-8 rounded-full border-2 border-blue-500 border-t-transparent"
                 animate={{ rotate: 360 }}
                 transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
               />
-              <p className="text-gray-600 dark:text-gray-400 font-medium">
-                Loading notebook...
-              </p>
+              <p className="font-medium text-gray-600 dark:text-gray-400">Loading notebook...</p>
             </motion.div>
           </div>
         </div>
@@ -291,9 +278,7 @@ export default function NotebookPage() {
     );
   }
 
-  const metadata = notebook
-    ? generateNotebookMetadata(notebook.title, notebookId)
-    : null;
+  const metadata = notebook ? generateNotebookMetadata(notebook.title, notebookId) : null;
 
   const sourcesTabContent = (
     <div className="relative h-full w-full">
@@ -395,15 +380,13 @@ export default function NotebookPage() {
           twitterCard={metadata.twitterCard}
         />
       )}
-      <div className="bg-white dark:bg-black border-b border-gray-200 dark:border-gray-700 py-4 px-4 md:px-6 z-10">
-        <div className="flex justify-between items-center gap-2">
-          <h1 className="flex items-baseline gap-1.5 min-w-0 flex-1 text-gray-900 dark:text-white select-text">
-            <span className="hidden md:block text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400 shrink-0">
+      <div className="z-10 border-b border-gray-200 bg-white px-4 py-4 md:px-6 dark:border-gray-700 dark:bg-black">
+        <div className="flex items-center justify-between gap-2">
+          <h1 className="flex min-w-0 flex-1 items-baseline gap-1.5 text-gray-900 select-text dark:text-white">
+            <span className="hidden shrink-0 text-xs font-medium tracking-wide text-gray-500 uppercase md:block dark:text-gray-400">
               Notebook /{" "}
             </span>
-            <span className="truncate text-2xl font-bold">
-              {notebook?.title}
-            </span>
+            <span className="truncate text-2xl font-bold">{notebook?.title}</span>
           </h1>
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
@@ -419,7 +402,7 @@ export default function NotebookPage() {
                 icon={<EditIcon />}
                 variant="ghost"
                 size="sm"
-                className="shrink-0 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200"
+                className="shrink-0 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
                 onClick={() => setIsRenameModalOpen(true)}
               />
             </Tooltip>
@@ -427,7 +410,7 @@ export default function NotebookPage() {
         </div>
       </div>
 
-      <div className="flex-1 p-3 md:p-4 overflow-hidden">
+      <div className="flex-1 overflow-hidden p-3 md:p-4">
         <SimpleBackground />
         {isMobile ? (
           <Tabs
@@ -463,20 +446,12 @@ export default function NotebookPage() {
               {
                 id: "3",
                 label: "Tools",
-                content: (
-                  <ToolsCard
-                    notebookId={notebookId}
-                    onNodeSelect={handleNodeSelect}
-                  />
-                ),
+                content: <ToolsCard notebookId={notebookId} onNodeSelect={handleNodeSelect} />,
               },
             ]}
           />
         ) : (
-          <section
-            ref={sectionRef}
-            className="flex h-full overflow-hidden gap-1"
-          >
+          <section ref={sectionRef} className="flex h-full gap-1 overflow-hidden">
             <div
               className={cn("min-h-0 flex flex-col overflow-hidden", {
                 "transition-all duration-200 ease-out": !isResizing,
@@ -500,12 +475,7 @@ export default function NotebookPage() {
                   {
                     id: "3",
                     label: "Tools",
-                    content: (
-                      <ToolsCard
-                        notebookId={notebookId}
-                        onNodeSelect={handleNodeSelect}
-                      />
-                    ),
+                    content: <ToolsCard notebookId={notebookId} onNodeSelect={handleNodeSelect} />,
                   },
                 ]}
                 defaultActiveTab="1"
@@ -514,19 +484,16 @@ export default function NotebookPage() {
 
             {/* Resizer */}
             <div
-              className="w-2 cursor-col-resize flex items-center justify-center group z-5"
+              className="group z-5 flex w-2 cursor-col-resize items-center justify-center"
               onMouseDown={handleMouseDown}
               onDoubleClick={handleDoubleClick}
             >
               <div
-                className={cn(
-                  "w-px h-1/12 rounded-xs transition-all duration-150",
-                  {
-                    "bg-blue-500 dark:bg-blue-400": isResizing,
-                    "bg-gray-300/60 dark:bg-gray-600 group-hover:bg-blue-400 dark:group-hover:bg-blue-500":
-                      !isResizing,
-                  },
-                )}
+                className={cn("w-px h-1/12 rounded-xs transition-all duration-150", {
+                  "bg-blue-500 dark:bg-blue-400": isResizing,
+                  "bg-gray-300/60 dark:bg-gray-600 group-hover:bg-blue-400 dark:group-hover:bg-blue-500":
+                    !isResizing,
+                })}
               />
             </div>
 
@@ -586,7 +553,7 @@ export default function NotebookPage() {
             autoFocus
           />
           {renameError && (
-            <div className="text-red-500 text-sm font-medium bg-red-50 dark:bg-red-950 px-3 py-2 rounded-xs border border-red-200 dark:border-red-800">
+            <div className="rounded-xs border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-500 dark:border-red-800 dark:bg-red-950">
               Error: {renameError.message}
             </div>
           )}

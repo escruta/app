@@ -35,18 +35,13 @@ export function Modal({
   const viewportHeight = useVisualViewportHeight();
   const [scope, animate] = useAnimate();
 
-  const maxHeight =
-    isMobile && viewportHeight ? viewportHeight * 0.9 : undefined;
+  const maxHeight = isMobile && viewportHeight ? viewportHeight * 0.9 : undefined;
 
   const canDismiss = closeOnOutsideClick && closeOnEscape;
 
   const handleClose = async () => {
     if (isMobile && scope.current) {
-      await animate(
-        scope.current,
-        { y: "100%" },
-        { duration: 0.15, ease: "easeOut" },
-      );
+      await animate(scope.current, { y: "100%" }, { duration: 0.15, ease: "easeOut" });
     }
     onClose();
   };
@@ -74,7 +69,7 @@ export function Modal({
     <AnimatePresence>
       <motion.div
         key="modal-backdrop"
-        className="fixed inset-0 z-40 bg-black/30 dark:bg-black/60 backdrop-blur-[1px] opacity-60"
+        className="fixed inset-0 z-40 bg-black/30 opacity-60 backdrop-blur-[1px] dark:bg-black/60"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -83,11 +78,11 @@ export function Modal({
       />
 
       {isMobile ? (
-        <div className="fixed inset-x-0 bottom-0 z-100 pointer-events-none">
+        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-100">
           <motion.div
             ref={scope}
             key="modal-content-mobile"
-            className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 border-x-0 border-b-0 pointer-events-auto flex flex-col shadow-xl shadow-black/20 dark:shadow-black/40 ring-1 ring-gray-500/10 dark:ring-gray-500/20"
+            className="pointer-events-auto flex w-full flex-col border border-x-0 border-b-0 border-gray-200 bg-white shadow-xl ring-1 shadow-black/20 ring-gray-500/10 dark:border-gray-700 dark:bg-gray-900 dark:shadow-black/40 dark:ring-gray-500/20"
             style={{ maxHeight: maxHeight ?? "90vh" }}
             role="dialog"
             aria-modal="true"
@@ -100,16 +95,12 @@ export function Modal({
             dragElastic={{ top: 0, bottom: 0.5 }}
             onDragEnd={async (_, info) => {
               if (info.offset.y > 100 || info.velocity.y > 500) {
-                await animate(
-                  scope.current,
-                  { y: "100%" },
-                  { duration: 0.1, ease: "easeOut" },
-                );
+                await animate(scope.current, { y: "100%" }, { duration: 0.1, ease: "easeOut" });
                 onClose();
               }
             }}
           >
-            <div className="flex items-center justify-between gap-4 p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between gap-4 border-b border-gray-200 p-4 dark:border-gray-700">
               <div className="flex flex-col gap-0.5">
                 <h2
                   id="modal-title"
@@ -117,11 +108,7 @@ export function Modal({
                 >
                   {title}
                 </h2>
-                {subtitle && (
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {subtitle}
-                  </p>
-                )}
+                {subtitle && <p className="text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>}
               </div>
               {!canDismiss ? null : (
                 <IconButton
@@ -139,14 +126,14 @@ export function Modal({
             </div>
 
             {actions && (
-              <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex justify-end gap-3 border-t border-gray-200 p-4 dark:border-gray-700">
                 {actions}
               </div>
             )}
           </motion.div>
         </div>
       ) : (
-        <div className="fixed inset-0 flex items-center justify-center p-4 z-[100] pointer-events-none">
+        <div className="pointer-events-none fixed inset-0 z-[100] flex items-center justify-center p-4">
           <motion.div
             key="modal-content"
             className={cn(
@@ -166,7 +153,7 @@ export function Modal({
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.15 }}
           >
-            <div className="flex items-center justify-between gap-4 p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between gap-4 border-b border-gray-200 p-4 dark:border-gray-700">
               <div className="flex flex-col gap-0.5">
                 <h2
                   id="modal-title"
@@ -174,11 +161,7 @@ export function Modal({
                 >
                   {title}
                 </h2>
-                {subtitle && (
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {subtitle}
-                  </p>
-                )}
+                {subtitle && <p className="text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>}
               </div>
               {!canDismiss ? null : (
                 <IconButton
@@ -196,7 +179,7 @@ export function Modal({
             </div>
 
             {actions && (
-              <div className="flex justify-end gap-3 p-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex justify-end gap-3 border-t border-gray-200 p-4 dark:border-gray-700">
                 {actions}
               </div>
             )}

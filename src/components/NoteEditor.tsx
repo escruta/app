@@ -21,9 +21,7 @@ import {
   TextField,
   Tooltip,
 } from "@/components/ui";
-const Editor = lazy(() =>
-  import("./Editor").then((module) => ({ default: module.Editor })),
-);
+const Editor = lazy(() => import("./Editor").then((module) => ({ default: module.Editor })));
 
 interface NoteEditorProps {
   notebookId: string;
@@ -48,8 +46,7 @@ export function NoteEditor({
     refetch: refetchNote,
   } = useFetch<Note>(`notebooks/${notebookId}/notes/${note.id}`);
 
-  const [isEditTitleModalOpen, setIsEditTitleModalOpen] =
-    useState<boolean>(false);
+  const [isEditTitleModalOpen, setIsEditTitleModalOpen] = useState<boolean>(false);
   const [newTitle, setNewTitle] = useState<string>(note.title);
   const [content, setContent] = useState<string>("");
   const [originalContent, setOriginalContent] = useState<string>("");
@@ -163,14 +160,12 @@ export function NoteEditor({
           className,
         )}
       >
-        <div className="flex flex-row justify-between items-center mb-2 pt-4 px-4 shrink-0">
-          <h2 className="flex items-baseline gap-1.5 min-w-0 flex-1">
-            <span className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400 shrink-0">
+        <div className="mb-2 flex shrink-0 flex-row items-center justify-between px-4 pt-4">
+          <h2 className="flex min-w-0 flex-1 items-baseline gap-1.5">
+            <span className="shrink-0 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
               Note /{" "}
             </span>
-            <span className="truncate text-lg font-semibold select-text">
-              {note.title}
-            </span>
+            <span className="truncate text-lg font-semibold select-text">{note.title}</span>
           </h2>
           <div className="flex gap-2">
             {(isSaving || content !== originalContent) && (
@@ -199,10 +194,7 @@ export function NoteEditor({
                 onClick={() => setIsDeleteModalOpen(true)}
               />
             </Tooltip>
-            <Tooltip
-              text={isExpanded ? "Restore size" : "Expand"}
-              position="bottom"
-            >
+            <Tooltip text={isExpanded ? "Restore size" : "Expand"} position="bottom">
               <IconButton
                 icon={isExpanded ? <CompressIcon /> : <ExpandIcon />}
                 variant="ghost"
@@ -223,18 +215,10 @@ export function NoteEditor({
 
         <Divider className="mb-0" />
 
-        {loading && (
-          <div className="text-center text-gray-500 text-sm">
-            Loading note...
-          </div>
-        )}
-        {error && (
-          <div className="text-red-500 text-sm">
-            Error loading note: {error.message}
-          </div>
-        )}
+        {loading && <div className="text-center text-sm text-gray-500">Loading note...</div>}
+        {error && <div className="text-sm text-red-500">Error loading note: {error.message}</div>}
         {fullNote && !loading && !error && (
-          <div className="flex-1 overflow-hidden flex flex-col">
+          <div className="flex flex-1 flex-col overflow-hidden">
             <Editor
               initialContent={fullNote.content || ""}
               onContentChange={setContent}
@@ -252,10 +236,7 @@ export function NoteEditor({
         title="Edit note title"
         actions={
           <>
-            <Button
-              variant="secondary"
-              onClick={() => setIsEditTitleModalOpen(false)}
-            >
+            <Button variant="secondary" onClick={() => setIsEditTitleModalOpen(false)}>
               Cancel
             </Button>
             <Button
@@ -281,11 +262,7 @@ export function NoteEditor({
             placeholder="Enter new note title"
             autoFocus
           />
-          {updateError && (
-            <div className="text-red-500 text-sm">
-              Error: {updateError.message}
-            </div>
-          )}
+          {updateError && <div className="text-sm text-red-500">Error: {updateError.message}</div>}
         </div>
       </Modal>
 
@@ -296,10 +273,7 @@ export function NoteEditor({
         title="Delete note"
         actions={
           <>
-            <Button
-              variant="secondary"
-              onClick={() => setIsDeleteModalOpen(false)}
-            >
+            <Button variant="secondary" onClick={() => setIsDeleteModalOpen(false)}>
               Cancel
             </Button>
             <Button
@@ -317,14 +291,9 @@ export function NoteEditor({
       >
         <div className="space-y-4">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Are you sure you want to delete this note? This action cannot be
-            undone.
+            Are you sure you want to delete this note? This action cannot be undone.
           </p>
-          {deleteError && (
-            <div className="text-red-500 text-sm">
-              Error: {deleteError.message}
-            </div>
-          )}
+          {deleteError && <div className="text-sm text-red-500">Error: {deleteError.message}</div>}
         </div>
       </Modal>
     </>

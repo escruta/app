@@ -33,12 +33,7 @@ interface ShimmerProps {
   style?: CSSProperties;
 }
 
-function Shimmer({
-  className,
-  animate = true,
-  delay = 0,
-  style,
-}: ShimmerProps) {
+function Shimmer({ className, animate = true, delay = 0, style }: ShimmerProps) {
   return (
     <div
       className={cn(
@@ -54,7 +49,7 @@ function Shimmer({
     >
       {animate && (
         <div
-          className="absolute inset-0 z-10 animate-shimmer"
+          className="animate-shimmer absolute inset-0 z-10"
           style={{
             background:
               "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)",
@@ -126,11 +121,7 @@ function RectangleSkeleton({
   animate = true,
 }: SkeletonShapeProps) {
   return (
-    <Shimmer
-      className={cn("rounded-xs", className)}
-      animate={animate}
-      style={{ width, height }}
-    />
+    <Shimmer className={cn("rounded-xs", className)} animate={animate} style={{ width, height }} />
   );
 }
 
@@ -139,14 +130,7 @@ export function Skeleton(props: SkeletonProps) {
 
   if (variant === "circle") {
     const { size = 48 } = props as SkeletonShapeProps;
-    return (
-      <CircleSkeleton
-        variant="circle"
-        size={size}
-        className={className}
-        animate={animate}
-      />
-    );
+    return <CircleSkeleton variant="circle" size={size} className={className} animate={animate} />;
   }
 
   if (variant === "rectangle") {
@@ -162,11 +146,7 @@ export function Skeleton(props: SkeletonProps) {
     );
   }
 
-  const {
-    lines = 3,
-    lineHeight = "md",
-    lastLineWidth = "random",
-  } = props as SkeletonTextProps;
+  const { lines = 3, lineHeight = "md", lastLineWidth = "random" } = props as SkeletonTextProps;
 
   return (
     <TextSkeleton

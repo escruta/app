@@ -38,10 +38,7 @@ export function Dropdown<T extends string>({
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         handleOpenChange(false);
       }
     }
@@ -69,7 +66,7 @@ export function Dropdown<T extends string>({
   return (
     <div className={cn("flex items-center gap-3", className)}>
       {label && (
-        <p className="text-sm font-medium text-gray-700 dark:text-gray-200 select-none whitespace-nowrap">
+        <p className="text-sm font-medium whitespace-nowrap text-gray-700 select-none dark:text-gray-200">
           {label}
         </p>
       )}
@@ -95,16 +92,13 @@ export function Dropdown<T extends string>({
             {
               "hover:border-blue-500 hover:ring-1 hover:ring-blue-300 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-gray-900 dark:hover:border-blue-400 cursor-pointer":
                 !disabled,
-              "opacity-50 cursor-not-allowed bg-gray-50 dark:bg-gray-900 hover:ring-0":
-                disabled,
+              "opacity-50 cursor-not-allowed bg-gray-50 dark:bg-gray-900 hover:ring-0": disabled,
               "ring-2 ring-blue-500 dark:ring-blue-400 border-blue-500 dark:border-blue-400 ring-offset-2 ring-offset-white dark:ring-offset-gray-900":
                 isOpen && !disabled,
             },
           )}
         >
-          <span className="block truncate">
-            {selectedOption || placeholder}
-          </span>
+          <span className="block truncate">{selectedOption || placeholder}</span>
 
           {/* Chevron Icon */}
           <span
@@ -178,9 +172,7 @@ export function Dropdown<T extends string>({
                           size === "sm" ? "pr-2" : "pr-3",
                         )}
                       >
-                        <CheckIcon
-                          className={size === "sm" ? "size-4" : "size-5"}
-                        />
+                        <CheckIcon className={size === "sm" ? "size-4" : "size-5"} />
                       </span>
                     )}
                   </motion.button>

@@ -57,15 +57,12 @@ export function SideMenu() {
   };
 
   return (
-    <div className="flex h-auto md:h-screen flex-row md:flex-col justify-between items-center border-b md:border-b-0 md:border-e border-gray-200 dark:border-gray-800 transition-all duration-300 w-full md:w-16 md:min-w-16 md:max-w-16 bg-white dark:bg-black z-10">
-      <NavLink
-        to="/"
-        className="w-16 h-16 grid place-items-center group shrink-0"
-      >
-        <AppIcon className="h-10 w-10 fill-gray-800 dark:fill-gray-50 transition-all duration-300 group-hover:fill-blue-500 dark:group-hover:fill-blue-400" />
+    <div className="z-10 flex h-auto w-full flex-row items-center justify-between border-b border-gray-200 bg-white transition-all duration-300 md:h-screen md:w-16 md:max-w-16 md:min-w-16 md:flex-col md:border-e md:border-b-0 dark:border-gray-800 dark:bg-black">
+      <NavLink to="/" className="group grid h-16 w-16 shrink-0 place-items-center">
+        <AppIcon className="h-10 w-10 fill-gray-800 transition-all duration-300 group-hover:fill-blue-500 dark:fill-gray-50 dark:group-hover:fill-blue-400" />
       </NavLink>
 
-      <div className="flex flex-row md:flex-col items-center justify-center gap-3 mr-4 md:mr-0 md:mb-6">
+      <div className="mr-4 flex flex-row items-center justify-center gap-3 md:mr-0 md:mb-6 md:flex-col">
         <SideItemMenu
           icon={<HomeIcon />}
           label="Notebooks"
@@ -95,10 +92,7 @@ export function SideMenu() {
         width="sm"
         actions={
           <>
-            <Button
-              onClick={() => setShowSignOutModal(false)}
-              variant="secondary"
-            >
+            <Button onClick={() => setShowSignOutModal(false)} variant="secondary">
               Cancel
             </Button>
             <Button onClick={handleSignOut} variant="danger">
@@ -107,9 +101,7 @@ export function SideMenu() {
           </>
         }
       >
-        <p className="text-gray-700 dark:text-gray-300">
-          Are you sure you want to sign out?
-        </p>
+        <p className="text-gray-700 dark:text-gray-300">Are you sure you want to sign out?</p>
       </Modal>
     </div>
   );

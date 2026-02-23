@@ -43,11 +43,11 @@ export function Switch({
         </span>
       )}
 
-      <div className="relative inline-block w-12 h-7">
+      <div className="relative inline-block h-7 w-12">
         <input
           id={id}
           type="checkbox"
-          className="sr-only peer"
+          className="peer sr-only"
           checked={checked}
           onChange={(e) => onChange(e.target.checked)}
           disabled={disabled}
@@ -88,7 +88,7 @@ export function Switch({
                   duration: 0.15,
                   ease: "easeOut",
                 }}
-                className="w-3 h-3 text-blue-500"
+                className="h-3 w-3 text-blue-500"
               >
                 <CheckIcon />
               </motion.div>
@@ -102,7 +102,7 @@ export function Switch({
                   duration: 0.15,
                   ease: "easeOut",
                 }}
-                className="w-3 h-3 text-gray-500"
+                className="h-3 w-3 text-gray-500"
               >
                 <CloseIcon />
               </motion.div>

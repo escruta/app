@@ -4,11 +4,7 @@ interface ChevronIconProps extends React.SVGProps<SVGSVGElement> {
   direction: "up" | "down" | "left" | "right";
 }
 
-export function ChevronIcon({
-  className,
-  direction,
-  ...props
-}: ChevronIconProps) {
+export function ChevronIcon({ className, direction, ...props }: ChevronIconProps) {
   const rotations = {
     up: "rotate-180",
     down: "rotate-0",

@@ -42,7 +42,7 @@ export function Checkbox({
           onChange={(e) => onChange(e.target.checked)}
           disabled={disabled}
         />
-        <div className="size-3.5 flex items-center justify-center">
+        <div className="flex size-3.5 items-center justify-center">
           <AnimatePresence>
             {checked && (
               <motion.div
@@ -50,7 +50,7 @@ export function Checkbox({
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0, opacity: 0 }}
                 transition={{ duration: 0.1 }}
-                className="text-white size-3.5"
+                className="size-3.5 text-white"
               >
                 <CheckIcon />
               </motion.div>

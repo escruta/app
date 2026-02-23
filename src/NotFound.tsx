@@ -12,7 +12,7 @@ export default function NotFound() {
   } as const;
 
   return (
-    <main className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden bg-white dark:bg-gray-950 px-6 text-center">
+    <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-white px-6 text-center dark:bg-gray-950">
       <SEOMetadata
         title="404 - Page Not Found - Escruta"
         description="The page you are looking for does not exist. Return to Escruta's homepage to continue your research journey."
@@ -22,14 +22,14 @@ export default function NotFound() {
       />
       <SimpleBackground />
 
-      <div className="relative z-10 flex flex-col items-center max-w-2xl mx-auto space-y-6">
+      <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center space-y-6">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
           className="space-y-2"
         >
-          <h1 className="text-6xl md:text-7xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+          <h1 className="text-6xl font-extrabold tracking-tight text-gray-900 md:text-7xl dark:text-white">
             404
           </h1>
         </motion.div>
@@ -40,12 +40,11 @@ export default function NotFound() {
           transition={{ ...fadeInSlight.transition, delay: 0.1 }}
           className="space-y-4"
         >
-          <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 dark:text-gray-100">
+          <h2 className="text-2xl font-semibold text-gray-800 md:text-3xl dark:text-gray-100">
             Lost in knowledge
           </h2>
-          <p className="text-gray-600 dark:text-gray-400 text-lg max-w-md mx-auto leading-relaxed">
-            The information you are looking for is currently unavailable or has
-            found a new home.
+          <p className="mx-auto max-w-md text-lg leading-relaxed text-gray-600 dark:text-gray-400">
+            The information you are looking for is currently unavailable or has found a new home.
           </p>
         </motion.div>
 

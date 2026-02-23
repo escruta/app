@@ -4,16 +4,11 @@ import { useCookie } from "@/hooks";
 
 const THEME_COOKIE_KEY = "themePreference";
 
-const determineEffectiveTheme = (
-  preference: ThemeOptions,
-): "light" | "dark" => {
+const determineEffectiveTheme = (preference: ThemeOptions): "light" | "dark" => {
   if (preference === ThemeOptions.Light) return "light";
   if (preference === ThemeOptions.Dark) return "dark";
 
-  if (
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-color-scheme: dark)").matches
-  ) {
+  if (typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches) {
     return "dark";
   }
   return "light";
@@ -81,7 +76,5 @@ export default function ThemeProvider({ children }: { children: ReactNode }) {
     ThemeOptions,
   };
 
-  return (
-    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
