@@ -9,7 +9,6 @@ import {
   TextField,
   Tooltip,
   Switch,
-  Dropdown,
   FilePicker,
   Spinner,
 } from "@/components/ui";
@@ -235,6 +234,8 @@ export function SourcesCard({
           isOpen={isAddSourceModalOpen}
           onClose={handleModalClose}
           title="Add source"
+          width="xl"
+          contentClassname="max-h-[85vh]"
           closeOnOutsideClick={!addingSource}
           closeOnEscape={!addingSource}
           actions={
@@ -273,45 +274,45 @@ export function SourcesCard({
             </div>
           }
         >
-          <div className="space-y-4">
-            <Dropdown
-              label="Source type"
-              // options={["Website", "YouTube Video", "File"]}
-              options={["Website", "File"]}
-              selectedOption={sourceType}
-              onSelect={setSourceType}
+          <div className="flex flex-col gap-6">
+            <TextField
+              id="source-link"
+              label="Website URL"
+              type="url"
+              value={newSourceLink}
+              onChange={(e) => {
+                setNewSourceLink(e.target.value);
+                if (e.target.value) {
+                  setSourceType("Website");
+                  setNewSourceFile(null);
+                }
+              }}
+              placeholder="https://example.com"
+              autoFocus
+              className="mb-0"
             />
 
-            {sourceType === "File" ? (
-              <>
-                <FilePicker
-                  id="source-file"
-                  label="Select file"
-                  onChange={setNewSourceFile}
-                  value={newSourceFile}
-                  accept=".pdf,.docx,.txt,.md"
-                  placeholder="PDF, DOCX, TXT, or Markdown files"
-                />
-                <div className="text-gray-500">Maximum file size: 50 MB</div>
-              </>
-            ) : (
-              <TextField
-                id="source-link"
-                label="URL"
-                type="url"
-                value={newSourceLink}
-                onChange={(e) => setNewSourceLink(e.target.value)}
-                placeholder={
-                  sourceType === "YouTube Video"
-                    ? "https://www.youtube.com/watch?v=..."
-                    : "https://example.com"
-                }
-                autoFocus
-              />
-            )}
+            <Divider label="OR" className="my-0" />
 
-            {newSourceLinkError && <div className="text-sm text-red-500">{newSourceLinkError}</div>}
+            <FilePicker
+              id="source-file"
+              label="Upload File"
+              onChange={(file) => {
+                setNewSourceFile(file);
+                if (file) {
+                  setSourceType("File");
+                  setNewSourceLink("");
+                }
+              }}
+              value={newSourceFile}
+              accept=".pdf,.docx,.txt,.md"
+              placeholder="PDF, DOCX, TXT, or MD (Max 50MB)"
+            />
           </div>
+
+          {newSourceLinkError && (
+            <div className="mt-4 text-sm font-medium text-red-500">{newSourceLinkError}</div>
+          )}
         </Modal>
       )}
     </>
