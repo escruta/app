@@ -7,6 +7,7 @@ export default interface Source {
   isConvertedByAi: boolean;
   summary?: string;
   link: string;
+  status: "PENDING" | "READY" | "FAILED";
   createdAt: Date;
   updatedAt: Date;
 }

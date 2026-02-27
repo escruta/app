@@ -66,6 +66,7 @@ export default function NotebookPage() {
       title: "",
       isConvertedByAi: false,
       link: "",
+      status: "READY",
       createdAt: new Date(),
       updatedAt: new Date(),
     };

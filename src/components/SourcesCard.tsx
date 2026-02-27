@@ -12,7 +12,7 @@ import {
   FilePicker,
   Spinner,
 } from "@/components/ui";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useFetch } from "@/hooks";
 import type { SourceType } from "@/lib/utils/index";
 
@@ -43,12 +43,37 @@ export function SourcesCard({
     }
   }, [refreshTrigger]);
 
+  const pendingAddedSources = useRef<Set<string>>(new Set());
+
   const {
     data: sources,
     loading,
     error,
     refetch: refetchSources,
   } = useFetch<Source[]>(`notebooks/${notebookId}/sources`);
+
+  useEffect(() => {
+    if (!sources) return;
+
+    let hasPending = false;
+    for (const source of sources) {
+      if (source.status === "PENDING") {
+        hasPending = true;
+      } else if (source.status === "READY" && pendingAddedSources.current.has(source.id)) {
+        pendingAddedSources.current.delete(source.id);
+        onSourceAdded?.();
+      } else if (source.status === "FAILED" && pendingAddedSources.current.has(source.id)) {
+        pendingAddedSources.current.delete(source.id);
+      }
+    }
+
+    if (hasPending) {
+      const timeoutId = setTimeout(() => {
+        refetchSources(true, false);
+      }, 2000);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [sources, refetchSources, onSourceAdded]);
 
   const [isAddSourceModalOpen, setIsAddSourceModalOpen] = useState<boolean>(false);
   const [isAIConverterEnabled, setIsAIConverterEnabled] = useState<boolean>(false);
@@ -77,13 +102,17 @@ export function SourcesCard({
               link: newSourceLink,
             },
       headers: sourceType === "File" ? {} : { "Content-Type": "application/json" },
-      onSuccess: () => {
+      onSuccess: (data: Source) => {
         setNewSourceLink("");
         setNewSourceFile(null);
         setSourceType("Website");
         setIsAddSourceModalOpen(false);
+        if (data.status === "PENDING") {
+          pendingAddedSources.current.add(data.id);
+        } else {
+          onSourceAdded?.();
+        }
         refetchSources(true, false);
-        onSourceAdded?.();
       },
       onError: (error) => {
         console.error("Error adding source:", error.message);
