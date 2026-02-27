@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useFetch, useToast } from "@/hooks";
 import type { Source } from "@/interfaces";
@@ -23,7 +23,6 @@ import {
   Spinner,
   Skeleton,
 } from "@/components/ui";
-import { lazy } from "react";
 import { cn, getSourceType, getYouTubeVideoId, getHttpErrorMessage } from "@/lib/utils";
 
 const Markdown = lazy(() => import("./Markdown").then((module) => ({ default: module.Markdown })));
@@ -53,6 +52,8 @@ export function SourceViewer({
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [currentSourceId, setCurrentSourceId] = useState<string>(source.id);
+  const [contentToRender, setContentToRender] = useState<string | null>(null);
+  const [_, startTransition] = useTransition();
 
   const { showToast } = useToast();
 
@@ -63,8 +64,20 @@ export function SourceViewer({
   useEffect(() => {
     if (source.id !== currentSourceId) {
       setCurrentSourceId(source.id);
+      setContentToRender(null);
     }
   }, [source.id, currentSourceId]);
+
+  useEffect(() => {
+    if (fullSource?.content !== undefined) {
+      const timer = setTimeout(() => {
+        startTransition(() => {
+          setContentToRender(fullSource.content || "");
+        });
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [fullSource?.content]);
 
   const {
     loading: deletingSource,
@@ -326,10 +339,19 @@ export function SourceViewer({
                         </div>
                       ) : sourceSummary?.trim() ? (
                         <div className="max-w-none leading-relaxed text-blue-800 select-text dark:text-blue-50">
-                          <Markdown
-                            text={sourceSummary}
-                            baseUrl={fullSource?.link || source.link}
-                          />
+                          <Suspense
+                            fallback={
+                              <Skeleton
+                                lines={4}
+                                className="[&>div]:!bg-blue-200/80 [&>div]:dark:!bg-blue-800/80"
+                              />
+                            }
+                          >
+                            <Markdown
+                              text={sourceSummary}
+                              baseUrl={fullSource?.link || source.link}
+                            />
+                          </Suspense>
                         </div>
                       ) : (
                         <Button onClick={regenerateSummary} icon={<StarsIcon />}>
@@ -355,10 +377,26 @@ export function SourceViewer({
                     {fullSource.content && (
                       <div className="overflow-auto break-words select-text">
                         <div className="max-w-none leading-relaxed">
-                          <Markdown
-                            text={fullSource.content}
-                            baseUrl={fullSource?.link || source.link}
-                          />
+                          {contentToRender !== null ? (
+                            <Suspense
+                              fallback={
+                                <Skeleton
+                                  lines={10}
+                                  className="[&>div]:!bg-gray-200 dark:[&>div]:!bg-gray-800"
+                                />
+                              }
+                            >
+                              <Markdown
+                                text={contentToRender}
+                                baseUrl={fullSource?.link || source.link}
+                              />
+                            </Suspense>
+                          ) : (
+                            <Skeleton
+                              lines={10}
+                              className="[&>div]:!bg-gray-200 dark:[&>div]:!bg-gray-800"
+                            />
+                          )}
                         </div>
                       </div>
                     )}
@@ -366,10 +404,26 @@ export function SourceViewer({
                 ) : (
                   <div className="h-auto min-h-[80%] w-full overflow-auto px-6 py-8 break-words select-text">
                     <div className="max-w-none leading-relaxed">
-                      <Markdown
-                        text={fullSource.content || ""}
-                        baseUrl={fullSource?.link || source.link}
-                      />
+                      {contentToRender !== null ? (
+                        <Suspense
+                          fallback={
+                            <Skeleton
+                              lines={10}
+                              className="[&>div]:!bg-gray-200 dark:[&>div]:!bg-gray-800"
+                            />
+                          }
+                        >
+                          <Markdown
+                            text={contentToRender}
+                            baseUrl={fullSource?.link || source.link}
+                          />
+                        </Suspense>
+                      ) : (
+                        <Skeleton
+                          lines={10}
+                          className="[&>div]:!bg-gray-200 dark:[&>div]:!bg-gray-800"
+                        />
+                      )}
                     </div>
                   </div>
                 )}
