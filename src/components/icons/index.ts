@@ -20,6 +20,7 @@ export * from "./GridIcon";
 export * from "./Heading1Icon";
 export * from "./Heading2Icon";
 export * from "./Heading3Icon";
+export * from "./HighlightIcon";
 export * from "./HomeIcon";
 export * from "./ItalicIcon";
 export * from "./LinkIcon";

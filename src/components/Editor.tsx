@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createLowlight, common } from "lowlight";
+import { Mark, mergeAttributes } from "@tiptap/core";
 import { useEditor, EditorContent, ReactNodeViewRenderer } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
@@ -27,12 +28,36 @@ import {
   MathIcon,
   QuoteIcon,
   TaskListIcon,
+  HighlightIcon,
 } from "@/components/icons";
 import { Divider, Tooltip } from "./ui";
 import "katex/dist/katex.min.css";
 import "./Editor.css";
 
 const lowlight = createLowlight(common);
+
+const Highlight = Mark.create({
+  name: "highlight",
+  addOptions() {
+    return {
+      HTMLAttributes: {
+        class:
+          "bg-blue-500/15 dark:bg-blue-500/30 text-black dark:text-white px-1 py-0.5 rounded-xs",
+      },
+    };
+  },
+  parseHTML() {
+    return [{ tag: "mark" }];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ["mark", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
+  },
+  addKeyboardShortcuts() {
+    return {
+      "Mod-Shift-h": () => this.editor.commands.toggleMark(this.name),
+    };
+  },
+});
 
 interface ToolbarButtonProps {
   isActive: boolean;
@@ -108,6 +133,7 @@ export function Editor({
         code: false,
         codeBlock: false,
       }),
+      Highlight,
       CodeBlockLowlight.extend({
         addNodeView() {
           return ReactNodeViewRenderer(EditorCodeBlock);
@@ -299,6 +325,14 @@ export function Editor({
           title="Underline"
         >
           <UnderlineIcon className="size-4" />
+        </ToolbarButton>
+
+        <ToolbarButton
+          isActive={editor.isActive("highlight")}
+          onClick={() => editor.chain().focus().toggleMark("highlight").run()}
+          title="Highlight"
+        >
+          <HighlightIcon className="size-4" />
         </ToolbarButton>
 
         <Divider orientation="vertical" className="h-5" />
