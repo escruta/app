@@ -426,6 +426,9 @@ export default function NotebookPage() {
                   <ChatCard
                     notebookId={notebookId}
                     sourcesCount={notebook?.sources.length ?? 0}
+                    readySourcesCount={
+                      notebook?.sources.filter((s) => s.status === "READY").length ?? 0
+                    }
                     selectedSourceIds={selectedSourceIds}
                     refreshTrigger={sourcesRefreshKey}
                     onSourceSelect={handleSourceSelectFromChat}
@@ -507,6 +510,9 @@ export default function NotebookPage() {
               <ChatCard
                 notebookId={notebookId}
                 sourcesCount={notebook?.sources.length ?? 0}
+                readySourcesCount={
+                  notebook?.sources.filter((s) => s.status === "READY").length ?? 0
+                }
                 selectedSourceIds={selectedSourceIds}
                 refreshTrigger={sourcesRefreshKey}
                 onSourceSelect={handleSourceSelectFromChat}

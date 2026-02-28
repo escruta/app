@@ -51,6 +51,7 @@ interface ChatResponse {
 interface ChatCardProps {
   notebookId: string;
   sourcesCount: number;
+  readySourcesCount: number;
   selectedSourceIds?: string[];
   refreshTrigger?: number;
   onSourceSelect?: (sourceId: string) => void;
@@ -131,6 +132,7 @@ function processMessage(message: Message, onRetry?: () => void): ReactNode {
 export function ChatCard({
   notebookId,
   sourcesCount,
+  readySourcesCount,
   selectedSourceIds = [],
   refreshTrigger,
   onSourceSelect,
@@ -161,12 +163,15 @@ export function ChatCard({
       onSuccess: () => {
         setSummaryGenerateError(null);
         refetchSummary(true);
+        useFetch.clearCache(`notebooks/${notebookId}/example-questions`);
+        setSkipExampleQuestionsFetch(false);
       },
       onError: (error: FetchError) => {
         console.error("Error generating summary:", error.message);
         useFetch.clearCache(`notebooks/${notebookId}/summary`);
         refetchSummary(true);
         setSummaryGenerateError(error);
+        setSkipExampleQuestionsFetch(false);
       },
     }),
     [refetchSummary, notebookId],
@@ -206,14 +211,14 @@ export function ChatCard({
   }>(
     `notebooks/${notebookId}/example-questions`,
     exampleQuestionsOptions,
-    sourcesCount > 0 && !skipExampleQuestionsFetch,
+    readySourcesCount > 0 && !skipExampleQuestionsFetch,
   );
 
-  const prevSourcesCountRef = useRef<number>(sourcesCount);
+  const prevReadySourcesCountRef = useRef<number>(readySourcesCount);
 
   useEffect(() => {
-    const prevCount = prevSourcesCountRef.current;
-    const currentCount = sourcesCount;
+    const prevCount = prevReadySourcesCountRef.current;
+    const currentCount = readySourcesCount;
 
     if (currentCount > 0 && prevCount !== currentCount) {
       setIsAutoRegenerating(true);
@@ -223,7 +228,6 @@ export function ChatCard({
       const timer = setTimeout(async () => {
         try {
           await regenerateSummary(true);
-          setSkipExampleQuestionsFetch(false);
         } catch (error) {
           console.error("Error during auto-regeneration:", error);
         } finally {
@@ -237,8 +241,8 @@ export function ChatCard({
       };
     }
 
-    prevSourcesCountRef.current = currentCount;
-  }, [sourcesCount, notebookId, regenerateSummary, refetchExampleQuestions]);
+    prevReadySourcesCountRef.current = currentCount;
+  }, [readySourcesCount, notebookId, regenerateSummary, refetchExampleQuestions]);
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
@@ -627,8 +631,11 @@ export function ChatCard({
                       <Markdown text={notebookSummary} />
                     </div>
                   ) : (
-                    <Button onClick={regenerateSummary} disabled={isSummaryRegenerating}>
-                      Generate summary
+                    <Button
+                      onClick={regenerateSummary}
+                      disabled={isSummaryRegenerating || readySourcesCount === 0}
+                    >
+                      {readySourcesCount === 0 ? "Waiting for sources..." : "Generate summary"}
                     </Button>
                   )}
                 </motion.div>
@@ -658,8 +665,17 @@ export function ChatCard({
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <h4 className="text-foreground text-sm font-semibold">Example questions</h4>
-                        {isAutoRegenerating || skipExampleQuestionsFetch ? (
-                          <Tooltip text="Waiting for summary..." position="bottom">
+                        {isAutoRegenerating ||
+                        skipExampleQuestionsFetch ||
+                        readySourcesCount === 0 ? (
+                          <Tooltip
+                            text={
+                              readySourcesCount === 0
+                                ? "Waiting for sources..."
+                                : "Waiting for summary..."
+                            }
+                            position="bottom"
+                          >
                             <div className="flex h-8 w-8 items-center justify-center">
                               <Spinner />
                             </div>
@@ -691,7 +707,8 @@ export function ChatCard({
                             key={
                               isExampleQuestionsLoading ||
                               isAutoRegenerating ||
-                              skipExampleQuestionsFetch
+                              skipExampleQuestionsFetch ||
+                              readySourcesCount === 0
                                 ? "loading"
                                 : "questions"
                             }
@@ -703,7 +720,8 @@ export function ChatCard({
                           >
                             {isExampleQuestionsLoading ||
                             isAutoRegenerating ||
-                            skipExampleQuestionsFetch ? (
+                            skipExampleQuestionsFetch ||
+                            readySourcesCount === 0 ? (
                               <>
                                 <Skeleton variant="rectangle" height={34} />
                                 <Skeleton variant="rectangle" height={34} />
