@@ -1,3 +1,4 @@
+import { memo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import remarkGfm from "remark-gfm";
@@ -11,7 +12,7 @@ interface MarkdownProps {
   baseUrl?: string;
 }
 
-export function Markdown({ text, baseUrl }: MarkdownProps) {
+export const Markdown = memo(function Markdown({ text, baseUrl }: MarkdownProps) {
   const processedText = text
     .replace(/\\\[/g, "$$$$")
     .replace(/\\\]/g, "$$$$")
@@ -150,4 +151,4 @@ export function Markdown({ text, baseUrl }: MarkdownProps) {
       {processedText}
     </ReactMarkdown>
   );
-}
+});
