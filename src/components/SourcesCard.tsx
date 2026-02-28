@@ -231,9 +231,11 @@ export function SourcesCard({
                     <SourceChip
                       key={source.id}
                       source={source}
+                      notebookId={notebookId}
                       onSourceSelect={onSourceSelect}
                       selected={selectedSourceIds.includes(source.id)}
                       onToggle={() => onToggleSource?.(source.id)}
+                      onDelete={() => refetchSources(true, false)}
                     />
                   ))}
                 </div>
