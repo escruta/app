@@ -21,7 +21,7 @@ type ViewMode = "grid" | "list";
 export default function HomePage() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const { data, loading, error } = useFetch<Notebook[]>("/notebooks");
+  const { data, loading, error, refetch: refetchNotebooks } = useFetch<Notebook[]>("/notebooks");
   const [sortBy, setSortBy] = useCookie<SortOptions>("notebookSortPreference", SortOptions.Newest);
   const [viewMode, setViewMode] = useCookie<ViewMode>("notebookViewMode", "grid");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -224,7 +224,12 @@ export default function HomePage() {
             }
           >
             {getSortedNotebooks().map((notebook: Notebook) => (
-              <NotebookCard key={notebook.id} notebook={notebook} viewMode={viewMode} />
+              <NotebookCard
+                key={notebook.id}
+                notebook={notebook}
+                viewMode={viewMode}
+                onDelete={() => refetchNotebooks(true, false)}
+              />
             ))}
           </div>
         ) : (

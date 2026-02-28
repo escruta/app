@@ -20,9 +20,10 @@ import { cn } from "@/lib/utils";
 interface NotebookCardProps {
   notebook: Notebook;
   viewMode?: "grid" | "list";
+  onDelete?: (id: string) => void;
 }
 
-export function NotebookCard({ notebook, viewMode = "grid" }: NotebookCardProps) {
+export function NotebookCard({ notebook, viewMode = "grid", onDelete }: NotebookCardProps) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState<string>("");
   const [isDeleted, setIsDeleted] = useState<boolean>(false);
@@ -50,6 +51,7 @@ export function NotebookCard({ notebook, viewMode = "grid" }: NotebookCardProps)
       setIsDeleteModalOpen(false);
       setDeleteConfirmation("");
       useFetch.clearCache("/notebooks");
+      onDelete?.(notebook.id);
     } catch (error) {
       console.error("Error deleting notebook:", error);
     }
