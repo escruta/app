@@ -21,9 +21,13 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  .ProseMirror a {
+  html:not(.dark):not(.light) .ProseMirror a {
     color: var(--color-blue-400);
   }
+}
+
+html.dark .ProseMirror a {
+  color: var(--color-blue-400);
 }
 
 .ProseMirror h1 {
@@ -95,10 +99,15 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  .ProseMirror blockquote {
+  html:not(.dark):not(.light) .ProseMirror blockquote {
     border-left-color: var(--color-gray-700);
     color: var(--color-gray-400);
   }
+}
+
+html.dark .ProseMirror blockquote {
+  border-left-color: var(--color-gray-700);
+  color: var(--color-gray-400);
 }
 
 .ProseMirror pre {
@@ -123,11 +132,17 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  .ProseMirror pre {
+  html:not(.dark):not(.light) .ProseMirror pre {
     background-color: var(--color-gray-900);
     border-color: var(--color-gray-700);
     color: var(--color-gray-100);
   }
+}
+
+html.dark .ProseMirror pre {
+  background-color: var(--color-gray-900);
+  border-color: var(--color-gray-700);
+  color: var(--color-gray-100);
 }
 
 .ProseMirror hr {
@@ -142,9 +157,13 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  .ProseMirror hr {
+  html:not(.dark):not(.light) .ProseMirror hr {
     border-top-color: var(--color-gray-700);
   }
+}
+
+html.dark .ProseMirror hr {
+  border-top-color: var(--color-gray-700);
 }
 
 .ProseMirror ul[data-type="taskList"] {
@@ -219,19 +238,48 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  .ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"] {
+  html:not(.dark):not(.light)
+    .ProseMirror
+    ul[data-type="taskList"]
+    li
+    > label
+    input[type="checkbox"] {
     background-color: var(--color-gray-800);
     border-color: var(--color-gray-600);
   }
 
-  .ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"]:checked {
+  html:not(.dark):not(.light)
+    .ProseMirror
+    ul[data-type="taskList"]
+    li
+    > label
+    input[type="checkbox"]:checked {
     background-color: var(--color-blue-500);
     border-color: var(--color-blue-500);
   }
 
-  .ProseMirror ul[data-type="taskList"] li[data-checked="true"] > div > p {
+  html:not(.dark):not(.light)
+    .ProseMirror
+    ul[data-type="taskList"]
+    li[data-checked="true"]
+    > div
+    > p {
     color: var(--color-gray-400);
   }
+}
+
+html.dark .ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"] {
+  background-color: var(--color-gray-800);
+  border-color: var(--color-gray-600);
+}
+
+html.dark .ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"]:checked {
+  background-color: var(--color-blue-500);
+  border-color: var(--color-blue-500);
+}
+
+html.dark .ProseMirror ul[data-type="taskList"] li[data-checked="true"] > div > p {
+  color: var(--color-gray-400);
 }
 
 .ProseMirror div[data-type="block-math"] {
@@ -269,18 +317,33 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  .ProseMirror div[data-type="block-math"] {
+  html:not(.dark):not(.light) .ProseMirror div[data-type="block-math"] {
     background-color: var(--color-gray-900);
     border-color: var(--color-gray-800);
   }
 
-  .ProseMirror div[data-type="block-math"]:hover {
+  html:not(.dark):not(.light) .ProseMirror div[data-type="block-math"]:hover {
     background-color: var(--color-gray-800);
     border-color: var(--color-gray-700);
   }
 
-  .ProseMirror span[data-type="inline-math"].ProseMirror-selectednode {
+  html:not(.dark):not(.light) .ProseMirror span[data-type="inline-math"].ProseMirror-selectednode {
     color: var(--color-blue-100);
     outline-color: var(--color-blue-700);
   }
+}
+
+html.dark .ProseMirror div[data-type="block-math"] {
+  background-color: var(--color-gray-900);
+  border-color: var(--color-gray-800);
+}
+
+html.dark .ProseMirror div[data-type="block-math"]:hover {
+  background-color: var(--color-gray-800);
+  border-color: var(--color-gray-700);
+}
+
+html.dark .ProseMirror span[data-type="inline-math"].ProseMirror-selectednode {
+  color: var(--color-blue-100);
+  outline-color: var(--color-blue-700);
 }
