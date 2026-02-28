@@ -32,21 +32,21 @@ html.dark .ProseMirror a {
 
 .ProseMirror h1 {
   font-size: 1.875rem;
-  font-weight: 600;
+  font-weight: 500;
   margin: 1rem 0;
   line-height: 1.2;
 }
 
 .ProseMirror h2 {
   font-size: 1.5rem;
-  font-weight: 600;
+  font-weight: 500;
   margin: 1rem 0;
   line-height: 1.3;
 }
 
 .ProseMirror h3 {
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 500;
   margin: 1rem 0;
   line-height: 1.4;
 }
