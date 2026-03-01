@@ -62,5 +62,6 @@ const { loading: isDeleting, refetch: deleteSomething } = useFetch(
 
 - Read the request and determine which component needs to be changed
 - Use existing hooks and components - Don't reinvent the wheel
-- Just use `npm run lint` and `npm run format` to ensure the code is clean and well-formatted
-- Just use `npm run lint:fix` and `npm run format:fix` to fix linting and formatting errors
+- **NEVER RUN `npm run build` OR ANY COMPILATION COMMAND UNDER ANY CIRCUMSTANCES**
+- To test the application, you can **ONLY** run `npm run lint` and `npm run format`
+- To fix linting and formatting errors, you can only run `npm run lint:fix` and `npm run format:fix`
