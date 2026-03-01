@@ -8,7 +8,6 @@ import {
   Modal,
   TextField,
   Tooltip,
-  Switch,
   FilePicker,
   Spinner,
 } from "@/components/ui";
@@ -76,7 +75,6 @@ export function SourcesCard({
   }, [sources, refetchSources, onSourceAdded]);
 
   const [isAddSourceModalOpen, setIsAddSourceModalOpen] = useState<boolean>(false);
-  const [isAIConverterEnabled, setIsAIConverterEnabled] = useState<boolean>(false);
   const [sourceType, setSourceType] = useState<SourceType>("Website");
   const [newSourceLink, setNewSourceLink] = useState<string>("");
   const [newSourceFile, setNewSourceFile] = useState<File | null>(null);
@@ -84,8 +82,8 @@ export function SourcesCard({
 
   const { loading: addingSource, refetch: addSource } = useFetch<Source>(
     sourceType === "File"
-      ? `notebooks/${notebookId}/sources/upload?aiConverter=${isAIConverterEnabled}`
-      : `notebooks/${notebookId}/sources?aiConverter=${isAIConverterEnabled}`,
+      ? `notebooks/${notebookId}/sources/upload`
+      : `notebooks/${notebookId}/sources`,
     {
       method: "POST",
       data:
@@ -270,38 +268,20 @@ export function SourcesCard({
           closeOnOutsideClick={!addingSource}
           closeOnEscape={!addingSource}
           actions={
-            <div className="flex w-full justify-between">
-              {sourceType === "Website" || sourceType === "File" ? (
-                <Tooltip
-                  text="Enable AI to improve source readability."
-                  position="bottom"
-                  className="grid"
-                >
-                  <Switch
-                    checked={isAIConverterEnabled}
-                    onChange={setIsAIConverterEnabled}
-                    label="AI converter"
-                    disabled={addingSource}
-                  />
-                </Tooltip>
-              ) : (
-                <div className="flex-1"></div>
-              )}
-              <div className="flex gap-3">
-                <Button variant="secondary" onClick={handleModalClose}>
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={handleAddSource}
-                  disabled={
-                    (sourceType === "File" ? !newSourceFile : !newSourceLink.trim()) || addingSource
-                  }
-                  icon={addingSource ? <Spinner /> : <AddIcon />}
-                >
-                  {addingSource ? "Adding" : "Add"}
-                </Button>
-              </div>
+            <div className="flex w-full justify-end gap-3">
+              <Button variant="secondary" onClick={handleModalClose}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleAddSource}
+                disabled={
+                  (sourceType === "File" ? !newSourceFile : !newSourceLink.trim()) || addingSource
+                }
+                icon={addingSource ? <Spinner /> : <AddIcon />}
+              >
+                {addingSource ? "Adding" : "Add"}
+              </Button>
             </div>
           }
         >
