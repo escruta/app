@@ -1,4 +1,4 @@
-export default interface Source {
+export interface Source {
   id: string;
   notebookId: string;
   icon?: string;
@@ -7,7 +7,11 @@ export default interface Source {
   isConvertedByAi: boolean;
   summary?: string;
   link: string;
-  status: "PENDING" | "READY" | "FAILED";
+  status: SourceStatus;
+  type: SourceType;
   createdAt: Date;
   updatedAt: Date;
 }
+
+export type SourceType = "Website" | "YouTube Video" | "File" | "Text";
+export type SourceStatus = "PENDING" | "READY" | "FAILED";

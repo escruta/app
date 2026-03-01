@@ -1,5 +1,5 @@
 import type { Source } from "@/interfaces";
-import { AddIcon, UploadIcon } from "@/components/icons";
+import { AddIcon, UploadIcon, FileIcon, LinkIcon, NoteIcon } from "@/components/icons";
 import { SourceChip } from "./SourceChip";
 import {
   Card,
@@ -7,13 +7,16 @@ import {
   Divider,
   Modal,
   TextField,
-  Tooltip,
   FilePicker,
   Spinner,
+  Menu,
+  MenuTrigger,
+  MenuContent,
+  MenuItem,
 } from "@/components/ui";
 import { useEffect, useState, useRef } from "react";
 import { useFetch } from "@/hooks";
-import type { SourceType } from "@/lib/utils/index";
+import type { SourceType } from "@/interfaces";
 
 interface SourcesCardProps {
   notebookId: string;
@@ -51,6 +54,8 @@ export function SourcesCard({
     refetch: refetchSources,
   } = useFetch<Source[]>(`notebooks/${notebookId}/sources`);
 
+  console.log(sources);
+
   useEffect(() => {
     if (!sources) return;
 
@@ -75,15 +80,24 @@ export function SourcesCard({
   }, [sources, refetchSources, onSourceAdded]);
 
   const [isAddSourceModalOpen, setIsAddSourceModalOpen] = useState<boolean>(false);
-  const [sourceType, setSourceType] = useState<SourceType>("Website");
+  const [sourceType, setSourceType] = useState<SourceType>("File");
   const [newSourceLink, setNewSourceLink] = useState<string>("");
   const [newSourceFile, setNewSourceFile] = useState<File | null>(null);
+  const [newSourceTextTitle, setNewSourceTextTitle] = useState<string>("");
+  const [newSourceTextContent, setNewSourceTextContent] = useState<string>("");
   const [newSourceLinkError, setNewSourceLinkError] = useState<string>("");
+
+  const handleOpenModal = (type: SourceType) => {
+    setSourceType(type);
+    setIsAddSourceModalOpen(true);
+  };
 
   const { loading: addingSource, refetch: addSource } = useFetch<Source>(
     sourceType === "File"
       ? `notebooks/${notebookId}/sources/upload`
-      : `notebooks/${notebookId}/sources`,
+      : sourceType === "Text"
+        ? `notebooks/${notebookId}/sources/text`
+        : `notebooks/${notebookId}/sources`,
     {
       method: "POST",
       data:
@@ -96,14 +110,21 @@ export function SourcesCard({
               }
               return formData;
             })()
-          : {
-              link: newSourceLink,
-            },
+          : sourceType === "Text"
+            ? {
+                title: newSourceTextTitle,
+                content: newSourceTextContent,
+              }
+            : {
+                link: newSourceLink,
+              },
       headers: sourceType === "File" ? {} : { "Content-Type": "application/json" },
       onSuccess: (data: Source) => {
         setNewSourceLink("");
         setNewSourceFile(null);
-        setSourceType("Website");
+        setNewSourceTextTitle("");
+        setNewSourceTextContent("");
+        setSourceType("File");
         setIsAddSourceModalOpen(false);
         if (data.status === "PENDING") {
           pendingAddedSources.current.add(data.id);
@@ -132,6 +153,11 @@ export function SourcesCard({
       const maxFileSize = 50 * 1024 * 1024;
       if (newSourceFile.size > maxFileSize) {
         setNewSourceLinkError("File size exceeds the 50MB limit. Please select a smaller file.");
+        return;
+      }
+    } else if (sourceType === "Text") {
+      if (!newSourceTextTitle.trim() || !newSourceTextContent.trim()) {
+        setNewSourceLinkError("Please enter both title and content");
         return;
       }
     } else {
@@ -163,7 +189,9 @@ export function SourcesCard({
       setIsAddSourceModalOpen(false);
       setNewSourceLink("");
       setNewSourceFile(null);
-      setSourceType("Website");
+      setNewSourceTextTitle("");
+      setNewSourceTextContent("");
+      setSourceType("File");
       setNewSourceLinkError("");
     }
   }
@@ -186,25 +214,30 @@ export function SourcesCard({
           <div className="flex flex-row items-center justify-between p-4">
             <h2 className="font-sans text-lg font-semibold">Sources</h2>
             <div className="flex gap-3">
-              {/* <Tooltip text="Find sources" position="bottom">
-                <IconButton
-                  icon={<StarsIcon />}
-                  variant="ghost"
-                  size="sm"
-                  className="shrink-0"
-                />
-              </Tooltip> */}
-              <Tooltip text="Add a new source" position="bottom">
-                <Button
-                  icon={<AddIcon />}
-                  variant="primary"
-                  size="sm"
-                  className="shrink-0"
-                  onClick={() => setIsAddSourceModalOpen(true)}
-                >
-                  Add source
-                </Button>
-              </Tooltip>
+              <Menu>
+                <MenuTrigger>
+                  <Button icon={<AddIcon />} variant="primary" size="sm" className="shrink-0">
+                    Add source
+                  </Button>
+                </MenuTrigger>
+                <MenuContent>
+                  <MenuItem
+                    icon={<FileIcon />}
+                    label="Upload file"
+                    onClick={() => handleOpenModal("File")}
+                  />
+                  <MenuItem
+                    icon={<LinkIcon />}
+                    label="Website link"
+                    onClick={() => handleOpenModal("Website")}
+                  />
+                  <MenuItem
+                    icon={<NoteIcon />}
+                    label="Direct text"
+                    onClick={() => handleOpenModal("Text")}
+                  />
+                </MenuContent>
+              </Menu>
             </div>
           </div>
           <Divider className="my-0" />
@@ -249,7 +282,7 @@ export function SourcesCard({
                 <h3 className="text-foreground mb-2 text-lg font-semibold">No sources yet</h3>
                 <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
                   Add your first source to start gathering information. You can upload PDFs, add web
-                  links, or paste text.
+                  links or paste text.
                 </p>
               </div>
             );
@@ -262,9 +295,14 @@ export function SourcesCard({
         <Modal
           isOpen={isAddSourceModalOpen}
           onClose={handleModalClose}
-          title="Add source"
-          width="xl"
-          contentClassname="max-h-[85vh]"
+          title={
+            sourceType === "File"
+              ? "Upload file"
+              : sourceType === "Website"
+                ? "Add website link"
+                : "Add direct text"
+          }
+          width="md"
           closeOnOutsideClick={!addingSource}
           closeOnEscape={!addingSource}
           actions={
@@ -276,7 +314,11 @@ export function SourcesCard({
                 variant="primary"
                 onClick={handleAddSource}
                 disabled={
-                  (sourceType === "File" ? !newSourceFile : !newSourceLink.trim()) || addingSource
+                  (sourceType === "File" && !newSourceFile) ||
+                  (sourceType === "Website" && !newSourceLink.trim()) ||
+                  (sourceType === "Text" &&
+                    (!newSourceTextTitle.trim() || !newSourceTextContent.trim())) ||
+                  addingSource
                 }
                 icon={addingSource ? <Spinner /> : <AddIcon />}
               >
@@ -285,40 +327,65 @@ export function SourcesCard({
             </div>
           }
         >
-          <div className="flex flex-col gap-6">
-            <TextField
-              id="source-link"
-              label="Website URL"
-              type="url"
-              value={newSourceLink}
-              onChange={(e) => {
-                setNewSourceLink(e.target.value);
-                if (e.target.value) {
-                  setSourceType("Website");
-                  setNewSourceFile(null);
-                }
-              }}
-              placeholder="https://example.com"
-              autoFocus
-              className="mb-0"
-            />
+          <div className="flex flex-col">
+            {sourceType === "File" && (
+              <FilePicker
+                id="source-file"
+                onChange={(file) => {
+                  setNewSourceFile(file);
+                  if (file) {
+                    setNewSourceLink("");
+                  }
+                }}
+                value={newSourceFile}
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.md"
+                placeholder="PDF, DOCX, XLSX, PPTX, TXT or MD (Max 50MB)"
+                className="h-full"
+              />
+            )}
 
-            <Divider label="OR" className="my-0" />
+            {sourceType === "Website" && (
+              <div className="flex w-full flex-col gap-4">
+                <TextField
+                  id="source-link"
+                  label="Website URL"
+                  type="url"
+                  value={newSourceLink}
+                  onChange={(e) => setNewSourceLink(e.target.value)}
+                  placeholder="https://example.com or YouTube video link"
+                  autoFocus
+                  className="mb-0"
+                />
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Paste a link to an article, blog post or a YouTube video to extract its content
+                </p>
+              </div>
+            )}
 
-            <FilePicker
-              id="source-file"
-              label="Upload File"
-              onChange={(file) => {
-                setNewSourceFile(file);
-                if (file) {
-                  setSourceType("File");
-                  setNewSourceLink("");
-                }
-              }}
-              value={newSourceFile}
-              accept=".pdf,.docx,.txt,.md"
-              placeholder="PDF, DOCX, TXT, or MD (Max 50MB)"
-            />
+            {sourceType === "Text" && (
+              <div className="flex w-full flex-col gap-4">
+                <TextField
+                  id="source-text-title"
+                  label="Title"
+                  type="text"
+                  value={newSourceTextTitle}
+                  onChange={(e) => setNewSourceTextTitle(e.target.value)}
+                  placeholder="E.g., Meeting Notes"
+                  className="mb-0"
+                />
+                <TextField
+                  id="source-text-content"
+                  label="Content"
+                  multiline
+                  minRows={5}
+                  maxRows={10}
+                  value={newSourceTextContent}
+                  onChange={(e) => setNewSourceTextContent(e.target.value)}
+                  placeholder="Paste or type your text here..."
+                  className="mb-0"
+                />
+              </div>
+            )}
           </div>
 
           {newSourceLinkError && (

@@ -13,6 +13,7 @@ interface TextFieldBaseProps {
   disabled?: boolean;
   autoFocus?: boolean;
   autoComplete?: string;
+  minRows?: number;
   maxRows?: number;
   search?: boolean;
   onClear?: () => void;
@@ -46,6 +47,7 @@ export function TextField({
   autoFocus = false,
   autoComplete,
   multiline = false,
+  minRows,
   maxRows,
   search = false,
   onClear,
@@ -63,7 +65,7 @@ export function TextField({
       const newHeight = Math.min(textarea.scrollHeight, maxHeight);
       textarea.style.height = newHeight + "px";
     }
-  }, [value, multiline, maxRows]);
+  }, [value, multiline, minRows, maxRows]);
 
   const baseInputClassName = cn(
     "w-full px-3 py-2 text-base border border-gray-300 dark:border-gray-600 rounded-xs focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200 resize-none shadow-sm shadow-gray-500/5 dark:shadow-black/10 disabled:opacity-50 disabled:cursor-not-allowed",
@@ -97,8 +99,8 @@ export function TextField({
         required={required}
         disabled={disabled}
         autoFocus={autoFocus}
-        rows={1}
-        style={{ minHeight: "42px" }}
+        rows={minRows || 1}
+        style={{ minHeight: minRows && minRows > 1 ? undefined : "42px" }}
       />
     ) : (
       <div className="relative">
@@ -164,8 +166,8 @@ export function TextField({
           required={required}
           disabled={disabled}
           autoFocus={autoFocus}
-          rows={1}
-          style={{ minHeight: "42px" }}
+          rows={minRows || 1}
+          style={{ minHeight: minRows && minRows > 1 ? undefined : "42px" }}
         />
       ) : (
         <div className="relative">

@@ -23,7 +23,7 @@ import {
   Spinner,
   Skeleton,
 } from "@/components/ui";
-import { cn, getSourceType, getYouTubeVideoId, getHttpErrorMessage } from "@/lib/utils";
+import { cn, getYouTubeVideoId, getHttpErrorMessage } from "@/lib/utils";
 
 const Markdown = lazy(() => import("./Markdown").then((module) => ({ default: module.Markdown })));
 
@@ -57,9 +57,8 @@ export function SourceViewer({
 
   const { showToast } = useToast();
 
-  const sourceType = getSourceType(fullSource || source);
   const youtubeVideoId =
-    sourceType === "YouTube Video" ? getYouTubeVideoId(fullSource?.link || source.link) : null;
+    source.type === "YouTube Video" ? getYouTubeVideoId(fullSource?.link || source.link) : null;
 
   useEffect(() => {
     if (source.id !== currentSourceId) {
@@ -179,7 +178,7 @@ export function SourceViewer({
             </h2>
             <div className="flex gap-2">
               <Tooltip
-                text={sourceType === "YouTube Video" ? "Copy video URL" : "Copy source content"}
+                text={source.type === "YouTube Video" ? "Copy video URL" : "Copy source content"}
                 position="bottom"
               >
                 <IconButton
@@ -188,11 +187,11 @@ export function SourceViewer({
                   size="sm"
                   onClick={() => {
                     const textToCopy =
-                      sourceType === "YouTube Video"
+                      source.type === "YouTube Video"
                         ? fullSource?.link || source.link
                         : fullSource?.content || "";
                     const message =
-                      sourceType === "YouTube Video"
+                      source.type === "YouTube Video"
                         ? "Video URL copied to clipboard"
                         : "Source content copied to clipboard";
                     navigator.clipboard.writeText(textToCopy);
@@ -200,7 +199,7 @@ export function SourceViewer({
                   }}
                 />
               </Tooltip>
-              {sourceType === "Website" && (
+              {source.type === "Website" && (
                 <Tooltip text="Open source" position="bottom">
                   <IconButton
                     icon={<LinkIcon />}
@@ -363,7 +362,7 @@ export function SourceViewer({
                 </Card>
               </div>
               <div className="flex-1">
-                {sourceType === "YouTube Video" && youtubeVideoId ? (
+                {source.type === "YouTube Video" && youtubeVideoId ? (
                   <div className="h-auto min-h-[80%] w-full px-6 py-8">
                     <div className="mb-6 aspect-video w-full">
                       <iframe

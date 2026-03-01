@@ -98,7 +98,7 @@ export function FilePicker({
           multiple={multiple}
         />
 
-        <div className="pointer-events-none p-12 text-center">
+        <div className="pointer-events-none flex h-full min-h-[200px] flex-col items-center justify-center p-12 text-center">
           <div className="mb-2">
             <UploadIcon className="mx-auto h-8 w-8 text-gray-400" />
           </div>

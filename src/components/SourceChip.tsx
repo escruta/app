@@ -78,7 +78,7 @@ export function SourceChip({
       <div className="relative flex h-full items-center gap-3 p-3">
         <div className="shrink-0 rounded-xs bg-gray-100 p-2 transition-all duration-300 group-hover:bg-blue-100 dark:bg-gray-700 dark:group-hover:bg-blue-800">
           <div className="grid size-4 place-items-center text-gray-600 transition-all duration-300 group-hover:text-blue-600 dark:text-gray-300 dark:group-hover:text-blue-400">
-            {isPending ? <Spinner size={16} /> : getSourceIcon(source)}
+            {isPending ? <Spinner size={16} /> : getSourceIcon(source.type)}
           </div>
         </div>
         <div className="min-w-0 flex-1">
