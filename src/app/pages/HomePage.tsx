@@ -275,10 +275,16 @@ export default function HomePage() {
           <div className="space-y-4">
             <TextField
               id="notebook-title"
-              label="Notebook Title"
+              label="Notebook title"
               type="text"
               value={newNotebookTitle}
               onChange={(e) => setNewNotebookTitle(e.target.value)}
+              onKeyDown={async (e) => {
+                if (e.key === "Enter" && newNotebookTitle.trim() && !creatingNotebook) {
+                  e.preventDefault();
+                  await createNotebook();
+                }
+              }}
               placeholder="Enter notebook title"
               autoFocus
             />
