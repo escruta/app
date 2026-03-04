@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useLoaderData } from "react-router";
 import { useFetch, useCookie, useIsMobile } from "@/hooks";
 import type { Note, Source, Notebook, NotebookContent } from "@/interfaces";
-import { EditIcon, NotebookIcon, FireIcon, ShareIcon } from "@/components/icons";
+import { EditIcon, NotebookIcon, FireIcon, ShareIcon, DotsVerticalIcon } from "@/components/icons";
 import {
   Tooltip,
   IconButton,
@@ -12,6 +12,11 @@ import {
   Button,
   Modal,
   Spinner,
+  Menu,
+  MenuTrigger,
+  MenuContent,
+  MenuItem,
+  Divider,
 } from "@/components/ui";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -66,6 +71,7 @@ export default function NotebookPage() {
       title: "",
       isConvertedByAi: false,
       link: "",
+      type: "Text",
       status: "READY",
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -395,18 +401,42 @@ export default function NotebookPage() {
             transition={{ duration: 0.3, delay: 0.2 }}
             className="flex gap-3"
           >
-            <Button onClick={() => {}} size="sm" icon={<ShareIcon />}>
-              Share notebook
-            </Button>
-            <Tooltip text="Edit title" position="left">
-              <IconButton
-                icon={<EditIcon />}
-                variant="ghost"
-                size="sm"
-                className="shrink-0 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-                onClick={() => setIsRenameModalOpen(true)}
-              />
-            </Tooltip>
+            {isMobile ? (
+              <Menu>
+                <MenuTrigger>
+                  <IconButton
+                    icon={<DotsVerticalIcon />}
+                    variant="ghost"
+                    size="sm"
+                    className="shrink-0 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                  />
+                </MenuTrigger>
+                <MenuContent align="right">
+                  <MenuItem
+                    label="Edit title"
+                    icon={<EditIcon />}
+                    onClick={() => setIsRenameModalOpen(true)}
+                  />
+                  <Divider />
+                  <MenuItem label="Share notebook" icon={<ShareIcon />} onClick={() => {}} />
+                </MenuContent>
+              </Menu>
+            ) : (
+              <>
+                <Button onClick={() => {}} size="sm" icon={<ShareIcon />}>
+                  Share notebook
+                </Button>
+                <Tooltip text="Edit title" position="left">
+                  <IconButton
+                    icon={<EditIcon />}
+                    variant="ghost"
+                    size="sm"
+                    className="shrink-0 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
+                    onClick={() => setIsRenameModalOpen(true)}
+                  />
+                </Tooltip>
+              </>
+            )}
           </motion.div>
         </div>
       </div>
