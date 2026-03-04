@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useLoaderData } from "react-router";
-import { useFetch, useCookie, useIsMobile } from "@/hooks";
+import { useFetch, useCookie, useIsMobile, useIsTablet } from "@/hooks";
 import type { Note, Source, Notebook, NotebookContent } from "@/interfaces";
 import { EditIcon, NotebookIcon, FireIcon, ShareIcon, DotsVerticalIcon } from "@/components/icons";
 import {
@@ -162,6 +162,7 @@ export default function NotebookPage() {
   };
 
   const isMobile = useIsMobile();
+  const isTablet = useIsTablet();
 
   async function handleRenameNotebook() {
     if (!newTitle.trim()) return;
@@ -401,7 +402,7 @@ export default function NotebookPage() {
             transition={{ duration: 0.3, delay: 0.2 }}
             className="flex gap-3"
           >
-            {isMobile ? (
+            {isTablet ? (
               <Menu>
                 <MenuTrigger>
                   <IconButton
