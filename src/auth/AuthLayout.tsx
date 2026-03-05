@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks";
 import { websiteUrl } from "@/config";
 
-export default function AuthLayout() {
+export function AuthLayout() {
   const { isAuthenticated } = useAuth();
   const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
 

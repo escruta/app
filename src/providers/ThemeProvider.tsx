@@ -25,7 +25,7 @@ const applyTheme = (theme: "light" | "dark") => {
   }
 };
 
-export default function ThemeProvider({ children }: { children: ReactNode }) {
+export function ThemeProvider({ children }: { children: ReactNode }) {
   const [themePreference, setThemePreference] = useCookie<ThemeOptions>(
     THEME_COOKIE_KEY,
     ThemeOptions.System,

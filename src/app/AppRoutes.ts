@@ -1,12 +1,12 @@
 import { lazy } from "react";
 import type { RouteObject } from "react-router";
-import AppLayout from "./AppLayout";
+import { AppLayout } from "./AppLayout";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const NotebookPage = lazy(() => import("./pages/NotebookPage"));
 
-export default <RouteObject[]>[
+export const AppRoutes: RouteObject[] = [
   {
     Component: AppLayout,
     children: [

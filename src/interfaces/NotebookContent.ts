@@ -1,8 +1,8 @@
-import type User from "./User";
-import type Note from "./Note";
-import type Source from "./Source";
+import type { User } from "./User";
+import type { Note } from "./Note";
+import type { Source } from "./Source";
 
-export default interface NotebookContent {
+export interface NotebookContent {
   id: string;
   icon?: string;
   title: string;

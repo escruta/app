@@ -30,7 +30,7 @@ import {
 } from "@/components";
 import { generateNotebookMetadata } from "@/lib/seo";
 import { cn } from "@/lib/utils";
-import SimpleBackground from "@/components/backgrounds/SimpleBackground";
+import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
 
 export default function NotebookPage() {
   const notebookId: string = useLoaderData();

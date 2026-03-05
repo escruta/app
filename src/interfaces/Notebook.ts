@@ -1,4 +1,4 @@
-export default interface Notebook {
+export interface Notebook {
   id: string;
   icon?: string;
   title: string;

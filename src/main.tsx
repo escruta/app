@@ -2,13 +2,13 @@ import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import { AuthProvider, ThemeProvider, ToastProvider } from "./providers";
 
-import AuthLayout from "./auth/AuthLayout";
+import { AuthLayout } from "./auth/AuthLayout";
 import { SignInPage } from "./auth/pages/SignInPage";
 import { SignUpPage } from "./auth/pages/SignUpPage";
-import AppRoutes from "./app/AppRoutes";
+import { AppRoutes } from "./app/AppRoutes";
 import { ProtectedRoute } from "./auth/ProtectedRoute";
 
-import NotFound from "./NotFound";
+import { NotFound } from "./NotFound";
 
 import "./index.css";
 

@@ -4,7 +4,7 @@ export type JobType =
 
 export type JobStatus = "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
 
-export default interface GenerationJob {
+export interface GenerationJob {
   id: string;
   notebookId: string;
   type: JobType;

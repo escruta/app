@@ -2,9 +2,9 @@ import { Link } from "react-router";
 import { SEOMetadata } from "@/components";
 import { Button } from "@/components/ui";
 import { motion } from "motion/react";
-import SimpleBackground from "@/components/backgrounds/SimpleBackground";
+import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
 
-export default function NotFound() {
+export function NotFound() {
   const fadeInSlight = {
     initial: { opacity: 0, y: 10 },
     animate: { opacity: 1, y: 0 },

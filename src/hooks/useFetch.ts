@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import useCookie from "./useCookie";
+import { useCookie } from "./useCookie";
 import { AUTH_TOKEN_KEY, BACKEND_BASE_URL } from "@/config";
 import type { Token } from "@/interfaces";
 import { cacheInstance, generateCacheKey } from "@/lib/lruCache";
@@ -19,7 +19,7 @@ export interface UseFetchOptions<T> extends RequestConfig {
   retryDelay?: number;
 }
 
-export default function useFetch<T = unknown>(
+export function useFetch<T = unknown>(
   endpoint: string,
   options?: UseFetchOptions<T>,
   immediate = true,

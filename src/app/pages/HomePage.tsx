@@ -7,7 +7,7 @@ import { NotebookCard, CommonBar, SEOMetadata } from "@/components";
 import { AddIcon, GridIcon, ListIcon, FireIcon, NotebookIcon } from "@/components/icons";
 import { getRouteMetadata } from "@/lib/seo";
 import { motion } from "motion/react";
-import SimpleBackground from "@/components/backgrounds/SimpleBackground";
+import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
 
 enum SortOptions {
   Newest = "Newest",

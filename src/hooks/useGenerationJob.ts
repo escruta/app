@@ -14,7 +14,7 @@ interface JobStartedResponse {
   message: string;
 }
 
-export default function useGenerationJob(
+export function useGenerationJob(
   notebookId: string,
   toolType: JobType,
   options: UseGenerationJobOptions = {},

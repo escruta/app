@@ -4,7 +4,7 @@ import { useAuth, useCookie } from "@/hooks";
 import type { User } from "@/interfaces";
 import { SideMenu } from "@/components";
 
-export default function AppLayout() {
+export function AppLayout() {
   const { currentUser, fetchUserData } = useAuth();
   const [, setUserData] = useCookie<User | null>("user", null);
 

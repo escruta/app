@@ -28,4 +28,4 @@ export interface ToastContextType {
   clearToasts: () => void;
 }
 
-export default createContext<ToastContextType | null>(null);
+export const ToastContext = createContext<ToastContextType | null>(null);

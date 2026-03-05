@@ -4,7 +4,7 @@ import { AUTH_TOKEN_KEY, BACKEND_BASE_URL } from "@/config";
 import { AuthContext } from "@/contexts";
 import type { Token, User } from "@/interfaces";
 
-export default function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [tokenCookie, setTokenCookie] = useCookie<Token>(AUTH_TOKEN_KEY, {
     token: null,
     expiresIn: 0,

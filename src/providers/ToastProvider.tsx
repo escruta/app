@@ -9,7 +9,7 @@ interface ToastProviderProps {
   children: ReactNode;
 }
 
-export default function ToastProvider({ children }: ToastProviderProps) {
+export function ToastProvider({ children }: ToastProviderProps) {
   const [toasts, setToasts] = useState<ToastData[]>([]);
 
   const hideToast = useCallback((id: string) => {

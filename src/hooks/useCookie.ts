@@ -6,7 +6,7 @@ const defaultOptions: Cookies.CookieAttributes = {
   secure: true,
 };
 
-export default function useCookie<T>(
+export function useCookie<T>(
   keyName: string,
   defaultValue?: T,
   options: Cookies.CookieAttributes = defaultOptions,

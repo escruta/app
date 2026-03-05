@@ -1,4 +1,4 @@
-export default interface Note {
+export interface Note {
   id: string;
   notebookId: string;
   sourceId?: string;
