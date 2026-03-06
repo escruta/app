@@ -32,6 +32,18 @@ const { loading: isDeleting, refetch: deleteSomething } = useFetch(
 
 - The `useFetch` already includes essential state handling (`loading`, `error`, `data`) - Do not duplicate them
 
+### `useFetch` Best Practices
+
+- **Dynamic Endpoints**: When using `useFetch` with `immediate: false` for mutations or on-demand fetches, provide the full endpoint path directly using template literals. Do not use ternary operators to handle "empty" IDs; the hook is reactive and its `refetch` function will always use the latest values from its dependencies.
+
+```tsx
+// ✅ Do this
+const { refetch: fetchItem } = useFetch(`/items/${item?.id}`, { method: 'GET' }, false);
+
+// ❌ Don't do this (redundant ternary)
+const { refetch: fetchItem } = useFetch(item?.id ? `/items/${item.id}` : "", { ... }, false);
+```
+
 ## UI and Reusable Components
 
 - Use only the ui components found in `@/components/ui/` (e.g., `Button`, `IconButton`, `Tooltip`, `Spinner`, `Modal`, `Checkbox`)

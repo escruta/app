@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useFetch, useCookie } from "@/hooks";
-import { AUTH_TOKEN_KEY, BACKEND_BASE_URL } from "@/config";
+import { AUTH_TOKEN_KEY } from "@/config";
 import type { GenerationJob, JobType, Token } from "@/interfaces";
 
 interface UseGenerationJobOptions {
@@ -23,7 +23,6 @@ export function useGenerationJob(
 
   const [token] = useCookie<Token>(AUTH_TOKEN_KEY);
   const [job, setJob] = useState<GenerationJob | null>(null);
-  const [isStarting, setIsStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
@@ -41,29 +40,11 @@ export function useGenerationJob(
     }
   }, [existingJob]);
 
-  const pollJobStatus = useCallback(
-    async (jobId: string) => {
-      if (!mountedRef.current || !token?.token) return;
-
-      try {
-        const response = await fetch(
-          `${BACKEND_BASE_URL}/notebooks/${notebookId}/tools/jobs/${jobId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token.token}`,
-              "Content-Type": "application/json",
-            },
-          },
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch job status");
-        }
-
-        const updatedJob: GenerationJob = await response.json();
-
-        if (!mountedRef.current) return;
-
+  const { refetch: fetchJobStatus } = useFetch<GenerationJob>(
+    `/notebooks/${notebookId}/tools/jobs/${job?.id}`,
+    {
+      skipCache: true,
+      onSuccess: (updatedJob) => {
         setJob(updatedJob);
 
         if (updatedJob.status === "COMPLETED") {
@@ -74,22 +55,18 @@ export function useGenerationJob(
           setError(updatedJob.errorMessage || "Generation failed");
           onFailed?.(updatedJob);
         }
-      } catch (err) {
+      },
+      onError: (err) => {
         console.error("Error polling job status:", err);
-      }
+      },
     },
-    [notebookId, token?.token, onCompleted, onFailed],
+    false,
   );
 
-  const startPolling = useCallback(
-    (jobId: string) => {
-      stopPolling();
-      pollingRef.current = setInterval(() => {
-        pollJobStatus(jobId);
-      }, pollingInterval);
-    },
-    [pollJobStatus, pollingInterval],
-  );
+  const pollJobStatus = useCallback(() => {
+    if (!mountedRef.current || !job?.id) return;
+    fetchJobStatus();
+  }, [fetchJobStatus, job?.id]);
 
   const stopPolling = useCallback(() => {
     if (pollingRef.current) {
@@ -98,56 +75,52 @@ export function useGenerationJob(
     }
   }, []);
 
+  const startPolling = useCallback(() => {
+    stopPolling();
+    pollingRef.current = setInterval(() => {
+      pollJobStatus();
+    }, pollingInterval);
+  }, [pollJobStatus, pollingInterval, stopPolling]);
+
+  const { loading: isStarting, refetch: callStartGeneration } = useFetch<JobStartedResponse>(
+    `/notebooks/${notebookId}/tools/generate`,
+    {
+      method: "POST",
+      data: { type: toolType },
+      onSuccess: (data) => {
+        const initialJob: GenerationJob = {
+          id: data.jobId,
+          notebookId,
+          type: toolType,
+          status: "PENDING",
+          result: null,
+          errorMessage: null,
+          createdAt: new Date().toISOString(),
+          completedAt: null,
+        };
+
+        setJob(initialJob);
+      },
+      onError: (err) => {
+        setError(err.message || "Failed to start generation");
+      },
+    },
+    false,
+  );
+
   const startGeneration = useCallback(async () => {
     if (!token?.token) {
       setError("Not authenticated");
       return;
     }
 
-    setIsStarting(true);
     setError(null);
-
-    try {
-      const response = await fetch(`${BACKEND_BASE_URL}/notebooks/${notebookId}/tools/generate`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token.token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ type: toolType }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Failed to start generation");
-      }
-
-      const data: JobStartedResponse = await response.json();
-
-      const initialJob: GenerationJob = {
-        id: data.jobId,
-        notebookId,
-        type: toolType,
-        status: "PENDING",
-        result: null,
-        errorMessage: null,
-        createdAt: new Date().toISOString(),
-        completedAt: null,
-      };
-
-      setJob(initialJob);
-      startPolling(data.jobId);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      setError(message);
-    } finally {
-      setIsStarting(false);
-    }
-  }, [notebookId, toolType, token?.token, startPolling]);
+    callStartGeneration();
+  }, [token?.token, callStartGeneration]);
 
   useEffect(() => {
     if (job && (job.status === "PENDING" || job.status === "PROCESSING") && !pollingRef.current) {
-      startPolling(job.id);
+      startPolling();
     }
 
     return () => {
