@@ -54,8 +54,6 @@ export function SourcesCard({
     refetch: refetchSources,
   } = useFetch<Source[]>(`notebooks/${notebookId}/sources`);
 
-  console.log(sources);
-
   useEffect(() => {
     if (!sources) return;
 

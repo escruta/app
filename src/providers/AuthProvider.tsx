@@ -16,7 +16,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   ];
 
   const signIn = async (email: string, password: string) => {
-    const response = await fetch(`${BACKEND_BASE_URL}/login`, {
+    const response = await fetch(new URL("/login", BACKEND_BASE_URL), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, name: string) => {
-    const response = await fetch(`${BACKEND_BASE_URL}/register`, {
+    const response = await fetch(new URL("/register", BACKEND_BASE_URL), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -82,7 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchUserData = useCallback(async () => {
     if (tokenCookie?.token) {
       try {
-        const response = await fetch(`${BACKEND_BASE_URL}/users/me`, {
+        const response = await fetch(new URL("/users/me", BACKEND_BASE_URL), {
           headers: {
             Authorization: `Bearer ${tokenCookie.token}`,
             "Content-Type": "application/json",
