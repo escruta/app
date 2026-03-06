@@ -7,7 +7,7 @@ import { Button, TextField, Spinner } from "@/components/ui";
 import { getSignErrorMessage } from "@/lib/utils";
 
 export function SignUpPage() {
-  const [fullName, setFullName] = useState("");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -57,20 +57,20 @@ export function SignUpPage() {
 
   useEffect(() => {
     const isEmailValid = email.trim() !== "" && /\S+@\S+\.\S+/.test(email);
-    const isFullNameValid = fullName.trim() !== "";
+    const isNameValid = name.trim() !== "";
     const passwordValidation = checkPasswordStrength(password);
     const isPasswordValid = passwordValidation.isValid && password.trim() !== "";
     const doPasswordsMatch = password === confirmPassword && confirmPassword !== "";
 
-    setAllowSubmit(isEmailValid && isFullNameValid && isPasswordValid && doPasswordsMatch);
-  }, [fullName, email, password, confirmPassword]);
+    setAllowSubmit(isEmailValid && isNameValid && isPasswordValid && doPasswordsMatch);
+  }, [name, email, password, confirmPassword]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (!fullName.trim()) {
-      setError("Full name is required.");
+    if (!name.trim()) {
+      setError("Name is required.");
       return;
     }
 
@@ -98,7 +98,7 @@ export function SignUpPage() {
     setLoading(true);
 
     try {
-      const response = await signUp(email, password, fullName);
+      const response = await signUp(email, password, name);
       if (response.status === 201) {
         showToast("Registration successful! Redirecting...", "success", {
           duration: 1500,
@@ -162,11 +162,11 @@ export function SignUpPage() {
           transition={{ duration: 0.3, delay: 0.3 }}
         >
           <TextField
-            id="fullName"
-            label="Full Name"
+            id="name"
+            label="Name"
             type="text"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             placeholder="John Doe"
             required
             autoFocus

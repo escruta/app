@@ -8,7 +8,7 @@ export function AccountSection() {
   const { signOut, currentUser: user, fetchUserData } = useAuth();
 
   const [isNameModalOpen, setIsNameModalOpen] = useState(false);
-  const [newFullName, setNewFullName] = useState(user?.fullName || "");
+  const [newName, setNewName] = useState(user?.name || "");
   const [errorNameMessage, setErrorNameMessage] = useState("");
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -24,7 +24,7 @@ export function AccountSection() {
     "/users/change-name",
     {
       method: "POST",
-      params: { newFullName },
+      params: { newName },
       onSuccess: () => {
         setIsNameModalOpen(false);
         fetchUserData();
@@ -169,8 +169,8 @@ export function AccountSection() {
           <div className="mb-4">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Full name</p>
-                <p className="font-medium">{user.fullName}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Name</p>
+                <p className="font-medium">{user.name}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
@@ -211,17 +211,17 @@ export function AccountSection() {
         isOpen={isNameModalOpen}
         onClose={() => {
           setIsNameModalOpen(false);
-          setNewFullName(user?.fullName || "");
+          setNewName(user?.name || "");
           setErrorNameMessage("");
         }}
-        title="Change full name"
+        title="Change name"
         actions={
           <>
             <Button
               variant="secondary"
               onClick={() => {
                 setIsNameModalOpen(false);
-                setNewFullName(user?.fullName || "");
+                setNewName(user?.name || "");
                 setErrorNameMessage("");
               }}
             >
@@ -230,7 +230,7 @@ export function AccountSection() {
             <Button
               variant="primary"
               onClick={() => updateName()}
-              disabled={!newFullName || isUpdatingName}
+              disabled={!newName || isUpdatingName}
               icon={isUpdatingName ? <Spinner /> : <CheckIcon />}
             >
               {isUpdatingName ? "Updating" : "Update name"}
@@ -240,11 +240,11 @@ export function AccountSection() {
       >
         <div className="space-y-4">
           <TextField
-            id="full-name"
-            label="Full name"
+            id="name"
+            label="Name"
             type="text"
-            value={newFullName}
-            onChange={(e) => setNewFullName(e.target.value)}
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
           />
           {errorNameMessage && <div className="text-sm text-red-500">{errorNameMessage}</div>}
         </div>

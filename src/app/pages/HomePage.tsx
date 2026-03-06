@@ -166,7 +166,7 @@ export default function HomePage() {
         <div className="flex items-center justify-between gap-2">
           <h1 className="flex min-w-0 flex-1 items-center gap-1.5 text-gray-900 select-text *:leading-7 dark:text-white">
             <span className="truncate text-2xl font-bold">
-              Welcome, {currentUser?.fullName || "User"}!
+              Welcome, {currentUser?.name || "User"}!
             </span>
           </h1>
         </div>

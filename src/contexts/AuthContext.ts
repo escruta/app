@@ -9,7 +9,7 @@ interface AuthContextType {
   signUp: (
     email: string,
     password: string,
-    fullName: string,
+    name: string,
   ) => Promise<{ status: number; data: unknown }>;
   signOut: () => void;
   loading: boolean;
