@@ -55,10 +55,11 @@ export function SourceChip({
         "dark:focus:ring-offset-gray-900",
         "bg-white dark:bg-gray-900",
         "border-gray-200 dark:border-gray-600",
-        "hover:bg-blue-50 dark:hover:bg-gray-800",
         {
-          "border-blue-300 dark:border-blue-500 bg-blue-50/30 dark:bg-blue-900/10": selected,
-          "hover:border-blue-300 dark:hover:border-gray-500": !selected && !isPending && !isFailed,
+          "border-blue-300 dark:border-blue-500 bg-blue-50/30 dark:bg-blue-900/10 hover:bg-blue-100/50 dark:hover:bg-blue-800/40":
+            selected,
+          "hover:border-blue-300 dark:hover:border-gray-500 hover:bg-blue-50 dark:hover:bg-gray-800":
+            !selected && !isPending && !isFailed,
           "opacity-70 cursor-not-allowed": isPending,
           "border-red-300 dark:border-red-800 bg-red-50/30 dark:bg-red-900/10 cursor-not-allowed":
             isFailed,
