@@ -165,16 +165,6 @@ export function SourceViewer({
               <span className="truncate font-semibold">
                 {fullSource?.title || source.title || "Source viewer"}
               </span>
-              {(fullSource?.isConvertedByAi || source.isConvertedByAi) && (
-                <Tooltip text="Converted by AI" position="bottom">
-                  <div className="flex flex-shrink-0 items-center gap-1.5 rounded-xs border border-blue-200 bg-blue-100 px-2.5 py-1 text-blue-700 select-none dark:border-blue-700 dark:bg-blue-900/50 dark:text-blue-200">
-                    <div className="h-3.5 w-3.5 flex-shrink-0">
-                      <StarsIcon />
-                    </div>
-                    <span className="text-xs font-semibold">AI</span>
-                  </div>
-                </Tooltip>
-              )}
             </h2>
             <div className="flex gap-2">
               <Tooltip

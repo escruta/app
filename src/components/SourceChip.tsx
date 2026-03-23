@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { Source } from "@/interfaces";
 import { getSourceIcon } from "@/lib/utils/index";
-import { StarsIcon, DeleteIcon } from "@/components/icons";
+import { DeleteIcon } from "@/components/icons";
 import { Tooltip, Checkbox, Spinner, IconButton } from "@/components/ui";
 import { useFetch } from "@/hooks";
 
@@ -91,16 +91,6 @@ export function SourceChip({
             </p>
           )}
         </div>
-        {!isPending && !isFailed && source.isConvertedByAi && (
-          <Tooltip text="Converted by AI" position="top">
-            <div className="flex shrink-0 items-center gap-1.5 rounded-xs border border-blue-200 bg-blue-100 px-2 py-1 text-blue-700 transition-all duration-300 select-none group-hover:bg-blue-200 dark:border-blue-700 dark:bg-blue-900/50 dark:text-blue-200 dark:group-hover:bg-blue-900">
-              <div className="h-3 w-3 shrink-0">
-                <StarsIcon />
-              </div>
-              <span className="text-xs font-semibold">AI</span>
-            </div>
-          </Tooltip>
-        )}
         {isFailed && notebookId && (
           <div className="z-10 shrink-0" onClick={(e) => e.stopPropagation()}>
             <Tooltip text="Delete failed source" position="top">

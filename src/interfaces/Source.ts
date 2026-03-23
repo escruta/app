@@ -4,7 +4,6 @@ export interface Source {
   icon?: string;
   title: string;
   content?: string;
-  isConvertedByAi: boolean;
   summary?: string;
   link: string;
   status: SourceStatus;

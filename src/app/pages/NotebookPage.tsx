@@ -69,7 +69,6 @@ export default function NotebookPage() {
       id: sourceId,
       notebookId: notebookId,
       title: "",
-      isConvertedByAi: false,
       link: "",
       type: "Text",
       status: "READY",
