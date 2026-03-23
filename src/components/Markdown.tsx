@@ -133,7 +133,9 @@ export const Markdown = memo(function Markdown({ text, baseUrl }: MarkdownProps)
           );
         },
         table: ({ children }) => (
-          <table className="my-2 w-full border-collapse text-sm">{children}</table>
+          <div className="my-2 w-full overflow-x-auto">
+            <table className="w-full border-collapse text-sm">{children}</table>
+          </div>
         ),
         thead: ({ children }) => <thead className="bg-gray-100 dark:bg-gray-800">{children}</thead>,
         tbody: ({ children }) => <tbody>{children}</tbody>,

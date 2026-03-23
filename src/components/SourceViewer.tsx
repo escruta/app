@@ -374,7 +374,7 @@ export function SourceViewer({
                       />
                     </div>
                     {fullSource.content && (
-                      <div className="overflow-auto break-words select-text">
+                      <div className="overflow-x-hidden break-words select-text">
                         <div className="max-w-none leading-relaxed">
                           {contentToRender !== null ? (
                             <Suspense
@@ -401,7 +401,7 @@ export function SourceViewer({
                     )}
                   </div>
                 ) : (
-                  <div className="h-auto min-h-[80%] w-full overflow-auto px-6 py-8 break-words select-text">
+                  <div className="h-auto min-h-[80%] w-full overflow-x-hidden px-6 py-8 break-words select-text">
                     <div className="max-w-none leading-relaxed">
                       {contentToRender !== null ? (
                         <Suspense
