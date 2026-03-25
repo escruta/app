@@ -178,11 +178,7 @@ export function AccountSection() {
               </div>
               <div>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Member since</p>
-                <p className="font-medium">{new Date(user.createdAt).toLocaleDateString()}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Last updated</p>
-                <p className="font-medium">{new Date(user.updatedAt).toLocaleDateString()}</p>
+                <p className="font-medium">{new Date(user.createdAt).toLocaleString()}</p>
               </div>
             </div>
           </div>
