@@ -136,13 +136,13 @@ export function Dropdown<T extends string>({
                 "max-h-60 overflow-auto",
               )}
             >
-              <div className="py-1">
+              <div className="flex flex-col gap-0.5 p-1.5">
                 {options.map((option, index) => (
                   <motion.button
                     key={option}
                     type="button"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                     transition={{
                       duration: 0.05,
                       delay: index * 0.015,
@@ -150,21 +150,19 @@ export function Dropdown<T extends string>({
                     }}
                     onClick={() => handleSelect(option)}
                     className={cn(
-                      "relative w-full text-left",
-                      size === "sm" && "px-2 py-1.5 text-xs",
-                      size === "md" && "px-3 py-2 text-sm",
-                      "text-gray-900 dark:text-gray-100",
-                      "transition-colors duration-150",
-                      "hover:bg-blue-50 dark:hover:bg-gray-800",
-                      "focus:outline-none focus:bg-blue-50 focus:ring-1 focus:ring-blue-300 dark:focus:bg-gray-800",
-                      "cursor-pointer select-none rounded-xs",
+                      "relative flex w-full items-center text-left font-medium",
+                      size === "sm" ? "px-2 py-1.5 text-xs" : "px-3 py-2 text-sm",
+                      "text-gray-700 dark:text-gray-200",
+                      "transition-all duration-200 outline-none select-none cursor-pointer rounded-xs",
+                      "hover:bg-blue-50 hover:ring-1 hover:ring-blue-300 focus:bg-blue-50 dark:hover:bg-gray-700 dark:focus:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 active:bg-blue-100 dark:active:bg-gray-600",
+                      "focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900",
                       {
-                        "bg-blue-100 dark:bg-gray-800 text-blue-700 dark:text-blue-300":
+                        "bg-blue-100 dark:bg-gray-700 text-blue-700 dark:text-blue-300":
                           selectedOption === option,
                       },
                     )}
                   >
-                    <span className="block truncate">{option}</span>
+                    <span className="flex-1 truncate pr-6">{option}</span>
                     {selectedOption === option && (
                       <span
                         className={cn(
