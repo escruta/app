@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import type { Notebook } from "@/interfaces";
-import { useAuth, useCookie, useFetch } from "@/hooks";
+import { useAuth, useCookie, useFetch, useIsMobile } from "@/hooks";
 import { Button, Dropdown, Modal, TextField, SegmentedButtons, Spinner } from "@/components/ui";
 import { NotebookCard, CommonBar, SEOMetadata } from "@/components";
 import { AddIcon, GridIcon, ListIcon, FireIcon, NotebookIcon } from "@/components/icons";
@@ -19,6 +19,7 @@ enum SortOptions {
 type ViewMode = "grid" | "list";
 
 export default function HomePage() {
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { data, loading, error, refetch: refetchNotebooks } = useFetch<Notebook[]>("/notebooks");
@@ -184,7 +185,7 @@ export default function HomePage() {
           </Button>
 
           {data && data.length > 0 ? (
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-1 md:justify-end md:gap-4 md:pb-0">
+            <div className="flex flex-wrap items-center justify-between gap-2 md:justify-end md:gap-8">
               <SegmentedButtons
                 options={[
                   {
@@ -200,14 +201,14 @@ export default function HomePage() {
                 ]}
                 value={viewMode || "grid"}
                 onChange={setViewMode}
-                size="sm"
+                label={isMobile ? undefined : "View:"}
               />
 
               <Dropdown<SortOptions>
                 options={Object.values(SortOptions)}
                 selectedOption={sortBy || SortOptions.Newest}
                 onSelect={(option) => setSortBy(option as SortOptions)}
-                label="Sort by:"
+                label={isMobile ? undefined : "Sort by:"}
               />
             </div>
           ) : (
