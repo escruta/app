@@ -757,8 +757,8 @@ export function ChatCard({
                   <FileIcon />
                 </div>
               </div>
-              <h3 className="text-foreground mb-2 text-xl font-semibold">This notebook is empty</h3>
-              <p className="max-w-sm text-base leading-relaxed text-gray-500 dark:text-gray-400">
+              <h3 className="text-foreground mb-2 text-lg font-semibold">This notebook is empty</h3>
+              <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
                 Add sources to start chatting with your documents. You can upload PDFs, paste text,
                 or add web links.
               </p>
