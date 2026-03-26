@@ -71,7 +71,7 @@ export function NotesCard({ notebookId, onNoteSelect, refreshTrigger }: NotesCar
           </div>
           <Divider className="my-0" />
         </div>
-        <div className="w-full flex-1 overflow-y-auto p-4">
+        <div className="w-full flex-1 overflow-y-auto px-4">
           {(() => {
             if (loading) {
               return <div className="text-center text-sm text-gray-500">Loading notes...</div>;
@@ -83,7 +83,7 @@ export function NotesCard({ notebookId, onNoteSelect, refreshTrigger }: NotesCar
             }
             if (notes && notes.length > 0) {
               return (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 py-4">
                   {notes
                     .sort((a, b) => a.title.localeCompare(b.title))
                     .map((note) => (
@@ -93,7 +93,7 @@ export function NotesCard({ notebookId, onNoteSelect, refreshTrigger }: NotesCar
               );
             }
             return (
-              <div className="flex flex-col items-center justify-center px-4 py-10 text-center">
+              <div className="flex size-full flex-col items-center justify-start pt-24 text-center">
                 <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
                   <div className="size-10 text-blue-500 dark:text-blue-400">
                     <EditIcon />

@@ -240,7 +240,7 @@ export function SourcesCard({
           </div>
           <Divider className="my-0" />
         </div>
-        <div className="w-full flex-1 overflow-y-auto p-4">
+        <div className="w-full flex-1 overflow-y-auto px-4">
           {(() => {
             if (loading) {
               return <div className="text-center text-sm text-gray-500">Loading sources...</div>;
@@ -252,7 +252,7 @@ export function SourcesCard({
             }
             if (sources && sources.length > 0) {
               return (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 py-4">
                   <Button variant="secondary" size="sm" onClick={handleSelectAllToggle}>
                     {isAllSelected ? "Deselect all sources" : "Select all sources"}
                   </Button>
@@ -271,7 +271,7 @@ export function SourcesCard({
               );
             }
             return (
-              <div className="flex flex-col items-center justify-center px-4 py-10 text-center">
+              <div className="flex size-full flex-col items-center justify-start pt-24 text-center">
                 <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
                   <div className="size-10 text-blue-500 dark:text-blue-400">
                     <UploadIcon />

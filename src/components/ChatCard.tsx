@@ -558,12 +558,7 @@ export function ChatCard({
           )}
         </div>
       ) : (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="flex max-h-full min-h-0 flex-grow flex-col overflow-y-auto px-4"
-        >
+        <div className="flex max-h-full min-h-0 flex-grow flex-col overflow-y-auto px-4">
           {sourcesCount > 0 ? (
             <div className="w-full px-4 py-8">
               <div className="mb-3 flex items-center justify-between">
@@ -751,7 +746,7 @@ export function ChatCard({
               )}
             </div>
           ) : (
-            <div className="flex h-full flex-col items-center justify-center px-4 py-12 text-center">
+            <div className="flex size-full flex-col items-center justify-start pt-24 text-center">
               <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
                 <div className="size-10 text-blue-500 dark:text-blue-400">
                   <FileIcon />
@@ -764,7 +759,7 @@ export function ChatCard({
               </p>
             </div>
           )}
-        </motion.div>
+        </div>
       )}
       <Divider className="mt-0" />
       <div className="shrink-0 px-4">
