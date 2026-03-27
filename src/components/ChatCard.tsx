@@ -14,7 +14,7 @@ import {
   Skeleton,
 } from "@/components/ui";
 import { ChatHistory } from "@/components/ChatHistory";
-import type { ConversationMessages } from "@/interfaces";
+import type { ConversationMessages, Source } from "@/interfaces";
 import { useEffect, useState, useRef, useMemo, useCallback, type ReactNode } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn, getHttpErrorMessage } from "@/lib/utils";
@@ -50,10 +50,8 @@ interface ChatResponse {
 
 interface ChatCardProps {
   notebookId: string;
-  sourcesCount: number;
-  readySourcesCount: number;
+  sources: Source[];
   selectedSourceIds?: string[];
-  refreshTrigger?: number;
   onSourceSelect?: (sourceId: string) => void;
   externalQuestion?: string | null;
   onExternalQuestionHandled?: () => void;
@@ -131,14 +129,15 @@ function processMessage(message: Message, onRetry?: () => void): ReactNode {
 
 export function ChatCard({
   notebookId,
-  sourcesCount,
-  readySourcesCount,
+  sources,
   selectedSourceIds = [],
-  refreshTrigger,
   onSourceSelect,
   externalQuestion,
   onExternalQuestionHandled,
 }: ChatCardProps) {
+  const sourcesCount = sources.length;
+  const readySourcesCount = sources.filter((s) => s.status === "READY").length;
+
   const [summaryGenerateError, setSummaryGenerateError] = useState<FetchError | null>(null);
 
   const summaryOptions = useMemo(
@@ -182,11 +181,6 @@ export function ChatCard({
   const { loading: isSummaryRegenerating, refetch: regenerateSummary } = useFetch<{
     summary: string;
   }>(`notebooks/${notebookId}/summary`, regenerateSummaryOptions, false);
-
-  useEffect(() => {
-    refetchSummary();
-    refetchExampleQuestions();
-  }, [refreshTrigger]);
 
   const [isAutoRegenerating, setIsAutoRegenerating] = useState(false);
   const [skipExampleQuestionsFetch, setSkipExampleQuestionsFetch] = useState(false);

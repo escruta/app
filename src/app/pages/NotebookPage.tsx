@@ -52,15 +52,43 @@ export default function NotebookPage() {
   const [selectedSource, setSelectedSource] = useState<Source | null>(null);
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
   const [notesRefreshKey, setNotesRefreshKey] = useState<number>(0);
-  const [sourcesRefreshKey, setSourcesRefreshKey] = useState<number>(0);
   const [leftPanelWidth, setLeftPanelWidth] = useCookie<number>("notebookLeftPanelWidth", 50);
   const [isResizing, setIsResizing] = useState<boolean>(false);
   const tabsRef = useRef<TabsRef>(null);
   const sectionRef = useRef<HTMLElement>(null);
 
+  const initialLoadRef = useRef(true);
+
+  useEffect(() => {
+    if (!notebook?.sources) return;
+    const hasPending = notebook.sources.some((s) => s.status === "PENDING");
+    if (hasPending) {
+      const timer = setTimeout(() => {
+        refetchNotebook(true, false);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [notebook?.sources, refetchNotebook]);
+
   useEffect(() => {
     if (notebook?.sources) {
-      setSelectedSourceIds(notebook.sources.map((s) => s.id));
+      if (initialLoadRef.current) {
+        setSelectedSourceIds(notebook.sources.map((s) => s.id));
+        initialLoadRef.current = false;
+      } else {
+        setSelectedSourceIds((prev) => {
+          const newIds = notebook.sources.map((s) => s.id);
+          const addedIds = newIds.filter((id) => !prev.includes(id));
+          if (addedIds.length > 0) {
+            return [...prev, ...addedIds];
+          }
+          const validIds = prev.filter((id) => newIds.includes(id));
+          if (validIds.length !== prev.length) {
+            return validIds;
+          }
+          return prev;
+        });
+      }
     }
   }, [notebook]);
 
@@ -306,7 +334,6 @@ export default function NotebookPage() {
               onSourceDelete={() => {
                 setSelectedSource(null);
                 refetchNotebook(true, false);
-                setSourcesRefreshKey((prev) => prev + 1);
               }}
               className="h-full"
             />
@@ -321,20 +348,14 @@ export default function NotebookPage() {
       >
         <SourcesCard
           notebookId={notebookId}
+          sources={notebook?.sources || []}
+          isLoading={loading}
           onSourceSelect={(source: Source) => setSelectedSource(source)}
           selectedSourceIds={selectedSourceIds}
           onToggleSource={handleToggleSource}
           onSelectAll={handleSelectAllSources}
           onClearSelection={handleClearSourceSelection}
-          refreshTrigger={sourcesRefreshKey}
-          onSourceCreated={() => {
-            refetchNotebook(true, false);
-          }}
-          onSourceAdded={() => {
-            refetchNotebook(true, false);
-            setSourcesRefreshKey((prev) => prev + 1);
-          }}
-          onSourceDeleted={() => {
+          onSourcesChange={() => {
             refetchNotebook(true, false);
           }}
         />
@@ -461,12 +482,8 @@ export default function NotebookPage() {
                 content: (
                   <ChatCard
                     notebookId={notebookId}
-                    sourcesCount={notebook?.sources.length ?? 0}
-                    readySourcesCount={
-                      notebook?.sources.filter((s) => s.status === "READY").length ?? 0
-                    }
+                    sources={notebook?.sources || []}
                     selectedSourceIds={selectedSourceIds}
-                    refreshTrigger={sourcesRefreshKey}
                     onSourceSelect={handleSourceSelectFromChat}
                     externalQuestion={chatQuestion}
                     onExternalQuestionHandled={() => setChatQuestion(null)}
@@ -557,12 +574,8 @@ export default function NotebookPage() {
             >
               <ChatCard
                 notebookId={notebookId}
-                sourcesCount={notebook?.sources.length ?? 0}
-                readySourcesCount={
-                  notebook?.sources.filter((s) => s.status === "READY").length ?? 0
-                }
+                sources={notebook?.sources || []}
                 selectedSourceIds={selectedSourceIds}
-                refreshTrigger={sourcesRefreshKey}
                 onSourceSelect={handleSourceSelectFromChat}
                 externalQuestion={chatQuestion}
                 onExternalQuestionHandled={() => setChatQuestion(null)}

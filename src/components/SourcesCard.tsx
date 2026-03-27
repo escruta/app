@@ -14,74 +14,35 @@ import {
   MenuContent,
   MenuItem,
 } from "@/components/ui";
-import { useEffect, useState, useRef } from "react";
+import { useState } from "react";
 import { useFetch } from "@/hooks";
 import type { SourceType } from "@/interfaces";
 
 interface SourcesCardProps {
   notebookId: string;
+  sources: Source[];
+  isLoading?: boolean;
   onSourceSelect?: (source: Source) => void;
   selectedSourceIds?: string[];
   onToggleSource?: (sourceId: string) => void;
   onSelectAll?: (sourceIds: string[]) => void;
   onClearSelection?: () => void;
-  refreshTrigger?: number;
-  onSourceCreated?: () => void;
-  onSourceAdded?: () => void;
-  onSourceDeleted?: () => void;
+  onSourcesChange?: () => void;
 }
 
 export function SourcesCard({
   notebookId,
+  sources,
+  isLoading,
   onSourceSelect,
   selectedSourceIds = [],
   onToggleSource,
   onSelectAll,
   onClearSelection,
-  refreshTrigger,
-  onSourceCreated,
-  onSourceAdded,
-  onSourceDeleted,
+  onSourcesChange,
 }: SourcesCardProps) {
-  useEffect(() => {
-    if (refreshTrigger !== undefined) {
-      refetchSources(true, false);
-    }
-  }, [refreshTrigger]);
-
-  const pendingAddedSources = useRef<Set<string>>(new Set());
-
-  const {
-    data: sources,
-    loading,
-    error,
-    refetch: refetchSources,
-  } = useFetch<Source[]>(`notebooks/${notebookId}/sources`);
-
-  useEffect(() => {
-    if (!sources) return;
-
-    let hasPending = false;
-    for (const source of sources) {
-      if (source.status === "PENDING") {
-        hasPending = true;
-      } else if (source.status === "READY" && pendingAddedSources.current.has(source.id)) {
-        pendingAddedSources.current.delete(source.id);
-        onSourceAdded?.();
-      } else if (source.status === "FAILED" && pendingAddedSources.current.has(source.id)) {
-        pendingAddedSources.current.delete(source.id);
-      }
-    }
-
-    if (hasPending) {
-      const timeoutId = setTimeout(() => {
-        refetchSources(true, false);
-      }, 2000);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [sources, refetchSources, onSourceAdded]);
-
   const [isAddSourceModalOpen, setIsAddSourceModalOpen] = useState<boolean>(false);
+
   const [sourceType, setSourceType] = useState<SourceType>("File");
   const [newSourceLink, setNewSourceLink] = useState<string>("");
   const [newSourceFile, setNewSourceFile] = useState<File | null>(null);
@@ -121,20 +82,14 @@ export function SourcesCard({
                 link: newSourceLink,
               },
       headers: sourceType === "File" ? {} : { "Content-Type": "application/json" },
-      onSuccess: (data: Source) => {
+      onSuccess: () => {
         setNewSourceLink("");
         setNewSourceFile(null);
         setNewSourceTextTitle("");
         setNewSourceTextContent("");
         setSourceType("File");
         setIsAddSourceModalOpen(false);
-        onSourceCreated?.();
-        if (data.status === "PENDING") {
-          pendingAddedSources.current.add(data.id);
-        } else {
-          onSourceAdded?.();
-        }
-        refetchSources(true, false);
+        onSourcesChange?.();
       },
       onError: (error) => {
         console.error("Error adding source:", error.message);
@@ -247,13 +202,8 @@ export function SourcesCard({
         </div>
         <div className="w-full flex-1 overflow-y-auto px-4">
           {(() => {
-            if (loading) {
+            if (isLoading) {
               return <div className="text-center text-sm text-gray-500">Loading sources...</div>;
-            }
-            if (error) {
-              return (
-                <div className="text-sm text-red-500">Error loading sources: {error.message}</div>
-              );
             }
             if (sources && sources.length > 0) {
               return (
@@ -270,8 +220,7 @@ export function SourcesCard({
                       selected={selectedSourceIds.includes(source.id)}
                       onToggle={() => onToggleSource?.(source.id)}
                       onDelete={() => {
-                        refetchSources(true, false);
-                        onSourceDeleted?.();
+                        onSourcesChange?.();
                       }}
                     />
                   ))}
