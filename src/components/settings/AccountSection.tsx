@@ -20,7 +20,7 @@ export function AccountSection() {
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [errorDeleteMessage, setErrorDeleteMessage] = useState("");
 
-  const { loading: isUpdatingName, refetch: updateName } = useFetch<string>(
+  const { loading: isUpdatingName, refetch: updateName } = useFetch<void>(
     "/users/change-name",
     {
       method: "POST",
@@ -37,7 +37,7 @@ export function AccountSection() {
     false,
   );
 
-  const { loading: isChangingPassword, refetch: changePassword } = useFetch<string>(
+  const { loading: isChangingPassword, refetch: changePassword } = useFetch<void>(
     "/users/change-password",
     {
       method: "POST",
@@ -58,7 +58,7 @@ export function AccountSection() {
     false,
   );
 
-  const { loading: isDeletingAccount, refetch: executeDeleteAccount } = useFetch<string>(
+  const { loading: isDeletingAccount, refetch: executeDeleteAccount } = useFetch<void>(
     "/users/me",
     {
       method: "DELETE",

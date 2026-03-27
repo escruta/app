@@ -99,10 +99,10 @@ export function SourceViewer({
   );
 
   const {
-    data: sourceSummary,
+    data: sourceSummaryData,
     loading: isSummaryLoading,
     refetch: refetchSummary,
-  } = useFetch<string>(
+  } = useFetch<{ summary: string }>(
     `notebooks/${notebookId}/sources/${source.id}/summary`,
     {
       method: "GET",
@@ -113,7 +113,11 @@ export function SourceViewer({
     false,
   );
 
-  const { loading: isRegeneratingSummary, refetch: regenerateSummary } = useFetch<string>(
+  const sourceSummary = sourceSummaryData?.summary;
+
+  const { loading: isRegeneratingSummary, refetch: regenerateSummary } = useFetch<{
+    summary: string;
+  }>(
     `notebooks/${notebookId}/sources/${source.id}/summary`,
     {
       method: "POST",

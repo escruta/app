@@ -152,10 +152,12 @@ export function ChatCard({
   );
 
   const {
-    data: notebookSummary,
+    data: notebookSummaryData,
     loading: isSummaryLoading,
     refetch: refetchSummary,
-  } = useFetch<string>(`notebooks/${notebookId}/summary`, summaryOptions, false);
+  } = useFetch<{ summary: string }>(`notebooks/${notebookId}/summary`, summaryOptions, false);
+
+  const notebookSummary = notebookSummaryData?.summary;
 
   const regenerateSummaryOptions = useMemo(
     () => ({
@@ -177,11 +179,9 @@ export function ChatCard({
     [refetchSummary, notebookId],
   );
 
-  const { loading: isSummaryRegenerating, refetch: regenerateSummary } = useFetch<string>(
-    `notebooks/${notebookId}/summary`,
-    regenerateSummaryOptions,
-    false,
-  );
+  const { loading: isSummaryRegenerating, refetch: regenerateSummary } = useFetch<{
+    summary: string;
+  }>(`notebooks/${notebookId}/summary`, regenerateSummaryOptions, false);
 
   useEffect(() => {
     refetchSummary();
