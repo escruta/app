@@ -64,9 +64,7 @@ export function ToolCard({
   `;
 
   const disabledClasses = `
-    opacity-50 cursor-not-allowed 
-    !hover:bg-white !dark:hover:bg-gray-800
-    !hover:border-gray-200 !dark:hover:border-gray-600
+    opacity-50 cursor-not-allowed pointer-events-none
   `;
 
   function handleClick() {

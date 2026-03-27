@@ -26,7 +26,9 @@ interface SourcesCardProps {
   onSelectAll?: (sourceIds: string[]) => void;
   onClearSelection?: () => void;
   refreshTrigger?: number;
+  onSourceCreated?: () => void;
   onSourceAdded?: () => void;
+  onSourceDeleted?: () => void;
 }
 
 export function SourcesCard({
@@ -37,7 +39,9 @@ export function SourcesCard({
   onSelectAll,
   onClearSelection,
   refreshTrigger,
+  onSourceCreated,
   onSourceAdded,
+  onSourceDeleted,
 }: SourcesCardProps) {
   useEffect(() => {
     if (refreshTrigger !== undefined) {
@@ -124,6 +128,7 @@ export function SourcesCard({
         setNewSourceTextContent("");
         setSourceType("File");
         setIsAddSourceModalOpen(false);
+        onSourceCreated?.();
         if (data.status === "PENDING") {
           pendingAddedSources.current.add(data.id);
         } else {
@@ -264,7 +269,10 @@ export function SourcesCard({
                       onSourceSelect={onSourceSelect}
                       selected={selectedSourceIds.includes(source.id)}
                       onToggle={() => onToggleSource?.(source.id)}
-                      onDelete={() => refetchSources(true, false)}
+                      onDelete={() => {
+                        refetchSources(true, false);
+                        onSourceDeleted?.();
+                      }}
                     />
                   ))}
                 </div>

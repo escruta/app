@@ -327,9 +327,15 @@ export default function NotebookPage() {
           onSelectAll={handleSelectAllSources}
           onClearSelection={handleClearSourceSelection}
           refreshTrigger={sourcesRefreshKey}
+          onSourceCreated={() => {
+            refetchNotebook(true, false);
+          }}
           onSourceAdded={() => {
             refetchNotebook(true, false);
             setSourcesRefreshKey((prev) => prev + 1);
+          }}
+          onSourceDeleted={() => {
+            refetchNotebook(true, false);
           }}
         />
       </div>
@@ -480,7 +486,13 @@ export default function NotebookPage() {
               {
                 id: "3",
                 label: "Tools",
-                content: <ToolsCard notebookId={notebookId} onNodeSelect={handleNodeSelect} />,
+                content: (
+                  <ToolsCard
+                    notebookId={notebookId}
+                    onNodeSelect={handleNodeSelect}
+                    hasSources={(notebook?.sources?.length ?? 0) > 0}
+                  />
+                ),
               },
             ]}
           />
@@ -509,7 +521,13 @@ export default function NotebookPage() {
                   {
                     id: "3",
                     label: "Tools",
-                    content: <ToolsCard notebookId={notebookId} onNodeSelect={handleNodeSelect} />,
+                    content: (
+                      <ToolsCard
+                        notebookId={notebookId}
+                        onNodeSelect={handleNodeSelect}
+                        hasSources={(notebook?.sources?.length ?? 0) > 0}
+                      />
+                    ),
                   },
                 ]}
                 defaultActiveTab="1"

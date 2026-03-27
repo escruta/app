@@ -19,6 +19,7 @@ interface Tool {
 interface ToolsCardProps {
   notebookId: string;
   onNodeSelect?: (question: string) => void;
+  hasSources?: boolean;
 }
 
 interface SelectedTool {
@@ -29,7 +30,7 @@ interface SelectedTool {
   startGeneration: () => void;
 }
 
-export function ToolsCard({ notebookId, onNodeSelect }: ToolsCardProps) {
+export function ToolsCard({ notebookId, onNodeSelect, hasSources = true }: ToolsCardProps) {
   const [selectedTool, setSelectedTool] = useState<SelectedTool | null>(null);
 
   const tools: Tool[] = [
@@ -120,6 +121,7 @@ export function ToolsCard({ notebookId, onNodeSelect }: ToolsCardProps) {
                   tool={tool}
                   notebookId={notebookId}
                   onSelect={handleSelectTool}
+                  disabled={!hasSources}
                 />
               ))}
             </div>
@@ -140,9 +142,10 @@ interface ToolItemProps {
     isLoading: boolean,
     startGeneration: () => void,
   ) => void;
+  disabled?: boolean;
 }
 
-function ToolItem({ tool, notebookId, onSelect }: ToolItemProps) {
+function ToolItem({ tool, notebookId, onSelect, disabled }: ToolItemProps) {
   const { job, isLoading, isCompleted, isFailed, result, startGeneration } = useGenerationJob(
     notebookId,
     tool.type,
@@ -169,6 +172,7 @@ function ToolItem({ tool, notebookId, onSelect }: ToolItemProps) {
       status={job?.status ?? null}
       hasResult={isCompleted && result !== null}
       onViewResult={handleViewResult}
+      disabled={disabled}
     />
   );
 }
