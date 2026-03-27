@@ -154,7 +154,7 @@ export function ChatCard({
     data: notebookSummaryData,
     loading: isSummaryLoading,
     refetch: refetchSummary,
-  } = useFetch<{ summary: string }>(`notebooks/${notebookId}/summary`, summaryOptions, false);
+  } = useFetch<{ summary: string }>(`notebooks/${notebookId}/summary`, summaryOptions);
 
   const notebookSummary = notebookSummaryData?.summary;
 
