@@ -1,45 +1,17 @@
-import { lazy } from "react";
 import { useFetch } from "@/hooks";
-import { FileIcon, RestartIcon, SendIcon, ChatHistoryIcon, AddIcon } from "@/components/icons";
-import {
-  Alert,
-  Card,
-  Divider,
-  TextField,
-  IconButton,
-  Tooltip,
-  Button,
-  Spinner,
-  Chip,
-  Skeleton,
-} from "@/components/ui";
+import { FileIcon, SendIcon, ChatHistoryIcon, AddIcon } from "@/components/icons";
+import { Card, Divider, TextField, IconButton, Tooltip, Spinner } from "@/components/ui";
 import { ChatHistory } from "@/components/ChatHistory";
 import type { ConversationMessages, Source } from "@/interfaces";
-import { useEffect, useState, useRef, useMemo, useCallback, type ReactNode } from "react";
+import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { cn, getHttpErrorMessage } from "@/lib/utils";
+import { getHttpErrorMessage } from "@/lib/utils";
 
-const Markdown = lazy(() => import("./Markdown").then((module) => ({ default: module.Markdown })));
-
-const CodeBlock = lazy(() =>
-  import("./CodeBlock").then((module) => ({ default: module.CodeBlock })),
-);
+import { ChatMessage, type Message, type CitedSource } from "./chat/ChatMessage";
+import { NotebookSummary } from "./chat/NotebookSummary";
+import { ExampleQuestions } from "./chat/ExampleQuestions";
 
 type Sender = "user" | "ai";
-
-interface Message {
-  id: string;
-  text: string;
-  sender: Sender;
-  citedSources?: CitedSource[];
-  error?: true;
-  selectedSourcesCount?: number;
-}
-
-interface CitedSource {
-  id: string;
-  title: string;
-}
 
 interface ChatResponse {
   content: string;
@@ -55,76 +27,6 @@ interface ChatCardProps {
   onSourceSelect?: (sourceId: string) => void;
   externalQuestion?: string | null;
   onExternalQuestionHandled?: () => void;
-}
-
-function processMessage(message: Message, onRetry?: () => void): ReactNode {
-  if (message.error) {
-    return (
-      <div className="flex flex-col gap-3">
-        <Alert title="Error" message={message.text} variant="danger" />
-        {onRetry && (
-          <Button
-            onClick={onRetry}
-            variant="ghost"
-            size="sm"
-            icon={<RestartIcon className="h-4 w-4" />}
-          >
-            Retry message
-          </Button>
-        )}
-      </div>
-    );
-  }
-
-  const codeBlockRegex = /```(\w+)?\n?([\s\S]*?)```/g;
-  const parts = [];
-  let lastIndex = 0;
-  let match = codeBlockRegex.exec(message.text);
-
-  while (match !== null) {
-    if (match.index > lastIndex) {
-      const beforeCode = message.text.slice(lastIndex, match.index);
-      if (beforeCode.trim()) {
-        parts.push({ type: "text", content: beforeCode });
-      }
-    }
-
-    parts.push({
-      type: "code",
-      language: match[1] || "",
-      content: match[2],
-    });
-
-    lastIndex = match.index + match[0].length;
-    match = codeBlockRegex.exec(message.text);
-  }
-
-  if (lastIndex < message.text.length) {
-    const remaining = message.text.slice(lastIndex);
-    if (remaining.trim()) {
-      parts.push({ type: "text", content: remaining });
-    }
-  }
-
-  if (parts.length === 0) {
-    parts.push({ type: "text", content: message.text });
-  }
-
-  return parts.map((part, index) => {
-    if (part.type === "code") {
-      return (
-        <CodeBlock key={index} className={part.language ? `language-${part.language}` : ""}>
-          {part.content}
-        </CodeBlock>
-      );
-    }
-
-    return (
-      <div key={index}>
-        <Markdown text={part.content} />
-      </div>
-    );
-  });
 }
 
 export function ChatCard({
@@ -469,75 +371,13 @@ export function ChatCard({
         >
           <AnimatePresence>
             {messages.map((message, index) => (
-              <motion.div
+              <ChatMessage
                 key={message.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-                className={cn("message-item scroll-mt-4 flex flex-col mb-4", {
-                  "justify-end items-end": message.sender === "user",
-                  "justify-start items-start": message.sender === "ai",
-                })}
-              >
-                <div
-                  className={cn(
-                    "w-full flex flex-col gap-4 select-text transition-all duration-200",
-                    {
-                      "max-w-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 px-4 py-2.5 rounded-xs self-end ml-12 shadow-xs":
-                        message.sender === "user",
-                      "max-w-3xl self-start mr-12 py-2": message.sender === "ai" && !message.error,
-                      "max-w-2xl bg-red-50/10 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 px-5 py-4 rounded-xs self-start mr-12":
-                        message.error,
-                    },
-                  )}
-                >
-                  <div
-                    className={cn("text-base font-medium leading-relaxed", {
-                      "text-blue-800 dark:text-blue-100": message.sender === "user",
-                      "text-gray-950 dark:text-gray-50": message.sender === "ai",
-                    })}
-                  >
-                    {processMessage(
-                      message,
-                      message.error ? () => handleRetryFromError(index) : undefined,
-                    )}
-                  </div>
-
-                  {message.sender === "ai" &&
-                    message.citedSources &&
-                    message.citedSources.length > 0 && (
-                      <div className="border-t border-gray-200/65 pt-4 dark:border-gray-800/65">
-                        <div className="mb-3 text-[10px] font-bold tracking-widest text-gray-500 uppercase select-none dark:text-gray-400">
-                          Cited sources
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {message.citedSources.map((source, idx) => (
-                            <Chip
-                              key={source.id}
-                              onClick={() => handleSourceClick(source.id)}
-                              title={source.title}
-                              size="sm"
-                              className="max-w-full"
-                            >
-                              <span className="max-w-[180px] truncate">
-                                {source.title || `Source ${idx + 1}`}
-                              </span>
-                            </Chip>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                </div>
-                {message.sender === "user" &&
-                  message.selectedSourcesCount !== undefined &&
-                  message.selectedSourcesCount > 0 && (
-                    <div className="mt-1 mr-1 text-xs text-gray-400 dark:text-gray-500">
-                      {message.selectedSourcesCount} source
-                      {message.selectedSourcesCount !== 1 ? "s" : ""} selected
-                    </div>
-                  )}
-              </motion.div>
+                message={message}
+                index={index}
+                onRetryFromError={handleRetryFromError}
+                onSourceClick={handleSourceClick}
+              />
             ))}
           </AnimatePresence>
           {(isChatLoading || isLoadingConversation) && (
@@ -554,189 +394,27 @@ export function ChatCard({
       ) : (
         <div className="flex max-h-full min-h-0 flex-grow flex-col overflow-y-auto px-4">
           {sourcesCount > 0 ? (
-            <div className="w-full px-4 py-8">
-              <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-xl font-semibold">Summary of the notebook</h3>
-                {notebookSummary && !isSummaryLoading && !isAutoRegenerating && (
-                  <Tooltip
-                    text={isSummaryRegenerating ? "Regenerating summary" : "Regenerate summary"}
-                    position="bottom"
-                  >
-                    <IconButton
-                      icon={isSummaryRegenerating ? <Spinner /> : <RestartIcon />}
-                      variant="ghost"
-                      size="sm"
-                      onClick={regenerateSummary}
-                      disabled={isSummaryRegenerating}
-                    />
-                  </Tooltip>
-                )}
-                {isAutoRegenerating && (
-                  <Tooltip text="Auto-regenerating..." position="bottom">
-                    <div className="flex h-8 w-8 items-center justify-center">
-                      <Spinner />
-                    </div>
-                  </Tooltip>
-                )}
-              </div>
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.div
-                  key={
-                    isSummaryLoading || isSummaryRegenerating || isAutoRegenerating
-                      ? "loading"
-                      : summaryGenerateError
-                        ? "error"
-                        : notebookSummary?.trim()
-                          ? "summary"
-                          : "empty"
-                  }
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.15, ease: "easeInOut" }}
-                  className="mt-1 mb-1 max-w-none"
-                >
-                  {isSummaryLoading || isSummaryRegenerating || isAutoRegenerating ? (
-                    <Skeleton lines={6} className="w-full" />
-                  ) : summaryGenerateError ? (
-                    <div className="flex flex-col gap-3">
-                      <Alert
-                        title="Error"
-                        message={getHttpErrorMessage(summaryGenerateError.status)}
-                        variant="danger"
-                      />
-                      <Button
-                        onClick={regenerateSummary}
-                        disabled={isSummaryRegenerating}
-                        variant="ghost"
-                        size="sm"
-                        icon={<RestartIcon className="h-4 w-4" />}
-                      >
-                        Regenerate summary
-                      </Button>
-                    </div>
-                  ) : notebookSummary?.trim() ? (
-                    <div className="select-text">
-                      <Markdown text={notebookSummary} />
-                    </div>
-                  ) : (
-                    <Button
-                      onClick={regenerateSummary}
-                      disabled={isSummaryRegenerating || readySourcesCount === 0}
-                    >
-                      {readySourcesCount === 0 ? "Waiting for sources..." : "Generate summary"}
-                    </Button>
-                  )}
-                </motion.div>
-              </AnimatePresence>
-
-              {/* Example questions */}
+            <div className="w-full">
+              <NotebookSummary
+                notebookSummary={notebookSummary}
+                isSummaryLoading={isSummaryLoading}
+                isAutoRegenerating={isAutoRegenerating}
+                isSummaryRegenerating={isSummaryRegenerating}
+                summaryGenerateError={summaryGenerateError}
+                readySourcesCount={readySourcesCount}
+                regenerateSummary={() => regenerateSummary()}
+              />
               {messages.length === 0 && !isChatLoading && (
-                <div className="mt-6">
-                  {exampleQuestionsError && !skipExampleQuestionsFetch ? (
-                    <div className="flex flex-col gap-3">
-                      <Alert
-                        title="Error"
-                        message={getHttpErrorMessage(exampleQuestionsError.status)}
-                        variant="danger"
-                      />
-                      <Button
-                        onClick={() => refetchExampleQuestions(true)}
-                        disabled={isExampleQuestionsLoading}
-                        variant="ghost"
-                        size="sm"
-                        icon={<RestartIcon className="h-4 w-4" />}
-                      >
-                        Regenerate example questions
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-foreground text-sm font-semibold">Example questions</h4>
-                        {isAutoRegenerating ||
-                        skipExampleQuestionsFetch ||
-                        readySourcesCount === 0 ? (
-                          <Tooltip
-                            text={
-                              readySourcesCount === 0
-                                ? "Waiting for sources..."
-                                : "Waiting for summary..."
-                            }
-                            position="bottom"
-                          >
-                            <div className="flex h-8 w-8 items-center justify-center">
-                              <Spinner />
-                            </div>
-                          </Tooltip>
-                        ) : (
-                          <Tooltip
-                            text={
-                              isExampleQuestionsLoading
-                                ? "Refreshing questions"
-                                : "Refresh questions"
-                            }
-                            position="bottom"
-                          >
-                            <IconButton
-                              icon={isExampleQuestionsLoading ? <Spinner /> : <RestartIcon />}
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                refetchExampleQuestions(true);
-                              }}
-                              disabled={isExampleQuestionsLoading}
-                            />
-                          </Tooltip>
-                        )}
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <AnimatePresence mode="wait" initial={false}>
-                          <motion.div
-                            key={
-                              isExampleQuestionsLoading ||
-                              isAutoRegenerating ||
-                              skipExampleQuestionsFetch ||
-                              readySourcesCount === 0
-                                ? "loading"
-                                : "questions"
-                            }
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.15, ease: "easeInOut" }}
-                            className="flex flex-col gap-2"
-                          >
-                            {isExampleQuestionsLoading ||
-                            isAutoRegenerating ||
-                            skipExampleQuestionsFetch ||
-                            readySourcesCount === 0 ? (
-                              <>
-                                <Skeleton variant="rectangle" height={34} />
-                                <Skeleton variant="rectangle" height={34} />
-                                <Skeleton variant="rectangle" height={34} />
-                              </>
-                            ) : exampleQuestions?.questions &&
-                              exampleQuestions.questions.length > 0 ? (
-                              exampleQuestions.questions.map((question, index) => (
-                                <Chip
-                                  key={index}
-                                  onClick={() => {
-                                    setInput(question);
-                                  }}
-                                  multiline
-                                  className="w-full justify-start text-left"
-                                >
-                                  {question}
-                                </Chip>
-                              ))
-                            ) : null}
-                          </motion.div>
-                        </AnimatePresence>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <ExampleQuestions
+                  exampleQuestionsError={exampleQuestionsError}
+                  skipExampleQuestionsFetch={skipExampleQuestionsFetch}
+                  isExampleQuestionsLoading={isExampleQuestionsLoading}
+                  isAutoRegenerating={isAutoRegenerating}
+                  readySourcesCount={readySourcesCount}
+                  exampleQuestions={exampleQuestions}
+                  refetchExampleQuestions={refetchExampleQuestions}
+                  onQuestionSelect={(q) => setInput(q)}
+                />
               )}
             </div>
           ) : (

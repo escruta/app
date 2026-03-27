@@ -2,22 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useLoaderData } from "react-router";
 import { useFetch, useCookie, useIsMobile, useIsTablet } from "@/hooks";
 import type { Note, Source, Notebook, NotebookContent } from "@/interfaces";
-import { EditIcon, NotebookIcon, FireIcon, ShareIcon, DotsVerticalIcon } from "@/components/icons";
-import {
-  Tooltip,
-  IconButton,
-  Tabs,
-  type TabsRef,
-  TextField,
-  Button,
-  Modal,
-  Spinner,
-  Menu,
-  MenuTrigger,
-  MenuContent,
-  MenuItem,
-  Divider,
-} from "@/components/ui";
+import { Tabs, type TabsRef } from "@/components/ui";
 import { motion, AnimatePresence } from "motion/react";
 import {
   SourcesCard,
@@ -31,6 +16,9 @@ import {
 import { generateNotebookMetadata } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
+import { NotebookErrorState, NotebookLoadingState } from "./notebook/NotebookStates";
+import { RenameNotebookModal } from "./notebook/RenameNotebookModal";
+import { NotebookHeader } from "./notebook/NotebookHeader";
 
 export default function NotebookPage() {
   const notebookId: string = useLoaderData();
@@ -203,114 +191,11 @@ export default function NotebookPage() {
   }
 
   if (error) {
-    if (error.status === 404) {
-      return (
-        <div className="flex h-screen w-full flex-col justify-center">
-          <div className="border-y border-gray-200 bg-gray-50 px-6 py-5 dark:border-gray-700 dark:bg-gray-950">
-            <motion.div
-              className="flex items-center justify-center py-12"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="text-center">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-xs bg-gray-100 dark:bg-gray-800">
-                  <div className="h-8 w-8 text-gray-400 dark:text-gray-600">
-                    <NotebookIcon />
-                  </div>
-                </div>
-                <h1 className="mb-2 text-xl font-medium text-gray-700 dark:text-gray-300">
-                  Notebook not found
-                </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  The notebook you're looking for doesn't exist or has been deleted.
-                </p>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      );
-    }
-
-    if (error.status === 401) {
-      return (
-        <div className="flex h-screen w-full flex-col justify-center">
-          <div className="border-y border-gray-200 bg-gray-50 px-6 py-5 dark:border-gray-700 dark:bg-gray-950">
-            <motion.div
-              className="flex items-center justify-center py-12"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="text-center">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-xs bg-yellow-50 dark:bg-yellow-950">
-                  <div className="h-8 w-8 text-yellow-500">
-                    <NotebookIcon />
-                  </div>
-                </div>
-                <h1 className="mb-2 text-xl font-medium text-yellow-600 dark:text-yellow-400">
-                  Access denied
-                </h1>
-                <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                  You do not have permission to access this notebook.
-                </p>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="flex h-screen w-full flex-col justify-center">
-        <div className="border-y border-gray-200 bg-gray-50 px-6 py-5 dark:border-gray-700 dark:bg-gray-950">
-          <motion.div
-            className="flex items-center justify-center py-12"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <div className="max-w-md text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-xs bg-red-50 dark:bg-red-950">
-                <div className="h-8 w-8 text-red-500">
-                  <FireIcon />
-                </div>
-              </div>
-              <h1 className="mb-2 text-lg font-medium text-red-600 dark:text-red-400">
-                Error loading notebook
-              </h1>
-              <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                {error.message}
-              </p>
-            </div>
-          </motion.div>
-        </div>
-      </div>
-    );
+    return <NotebookErrorState error={error} />;
   }
 
   if (loading) {
-    return (
-      <div className="flex h-screen w-full flex-col justify-center">
-        <div className="border-y border-gray-200 bg-gray-50 px-6 py-5 dark:border-gray-700 dark:bg-gray-950">
-          <div className="flex items-center justify-center py-12">
-            <motion.div
-              className="text-center"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <motion.div
-                className="mb-4 inline-block h-8 w-8 rounded-full border-2 border-blue-500 border-t-transparent"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
-              />
-              <p className="font-medium text-gray-600 dark:text-gray-400">Loading notebook...</p>
-            </motion.div>
-          </div>
-        </div>
-      </div>
-    );
+    return <NotebookLoadingState />;
   }
 
   const metadata = notebook ? generateNotebookMetadata(notebook.title, notebookId) : null;
@@ -414,59 +299,12 @@ export default function NotebookPage() {
           twitterCard={metadata.twitterCard}
         />
       )}
-      <div className="z-10 border-b border-gray-200 bg-white px-4 py-4 md:px-6 dark:border-gray-700 dark:bg-black">
-        <div className="flex items-center justify-between gap-2">
-          <h1 className="flex min-w-0 flex-1 items-baseline gap-1.5 text-gray-900 select-text dark:text-white">
-            <span className="hidden shrink-0 text-xs font-medium tracking-wide text-gray-500 uppercase md:block dark:text-gray-400">
-              Notebook /{" "}
-            </span>
-            <span className="truncate text-2xl font-bold">{notebook?.title}</span>
-          </h1>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3, delay: 0.2 }}
-            className="flex gap-3"
-          >
-            {isTablet ? (
-              <Menu>
-                <MenuTrigger>
-                  <IconButton
-                    icon={<DotsVerticalIcon />}
-                    variant="ghost"
-                    size="sm"
-                    className="shrink-0 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-                  />
-                </MenuTrigger>
-                <MenuContent align="right">
-                  <MenuItem
-                    label="Edit title"
-                    icon={<EditIcon />}
-                    onClick={() => setIsRenameModalOpen(true)}
-                  />
-                  <Divider />
-                  <MenuItem label="Share notebook" icon={<ShareIcon />} onClick={() => {}} />
-                </MenuContent>
-              </Menu>
-            ) : (
-              <>
-                <Button onClick={() => {}} size="sm" icon={<ShareIcon />}>
-                  Share notebook
-                </Button>
-                <Tooltip text="Edit title" position="left">
-                  <IconButton
-                    icon={<EditIcon />}
-                    variant="ghost"
-                    size="sm"
-                    className="shrink-0 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
-                    onClick={() => setIsRenameModalOpen(true)}
-                  />
-                </Tooltip>
-              </>
-            )}
-          </motion.div>
-        </div>
-      </div>
+      <NotebookHeader
+        title={notebook?.title}
+        isTablet={isTablet}
+        onRenameClick={() => setIsRenameModalOpen(true)}
+        onShareClick={() => {}}
+      />
 
       <div className="flex-1 overflow-hidden p-3 md:p-4">
         <SimpleBackground />
@@ -585,48 +423,15 @@ export default function NotebookPage() {
         )}
       </div>
 
-      {/* Rename Modal */}
-      <Modal
+      <RenameNotebookModal
         isOpen={isRenameModalOpen}
         onClose={() => setIsRenameModalOpen(false)}
-        title="Rename notebook"
-        actions={
-          <>
-            <Button
-              variant="secondary"
-              onClick={() => setIsRenameModalOpen(false)}
-              disabled={renamingNotebook}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              onClick={handleRenameNotebook}
-              disabled={!newTitle.trim() || renamingNotebook}
-              icon={renamingNotebook ? <Spinner /> : <EditIcon />}
-            >
-              {renamingNotebook ? "Renaming" : "Rename"}
-            </Button>
-          </>
-        }
-      >
-        <div className="space-y-6">
-          <TextField
-            id="notebook-title"
-            label="Notebook Title"
-            type="text"
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
-            placeholder="Enter new notebook title"
-            autoFocus
-          />
-          {renameError && (
-            <div className="rounded-xs border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-500 dark:border-red-800 dark:bg-red-950">
-              Error: {renameError.message}
-            </div>
-          )}
-        </div>
-      </Modal>
+        newTitle={newTitle}
+        setNewTitle={setNewTitle}
+        handleRenameNotebook={handleRenameNotebook}
+        renamingNotebook={renamingNotebook}
+        renameError={renameError}
+      />
     </div>
   );
 }
