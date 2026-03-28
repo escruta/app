@@ -46,7 +46,7 @@ export function Card({
       {/* Card */}
       <div
         className={cn(
-          "bg-white/80 dark:bg-gray-900/80 backdrop-blur-md p-4 rounded-xs border border-gray-200 dark:border-gray-700 ring-1 ring-gray-500/5 dark:ring-gray-500/10",
+          "bg-white dark:bg-gray-900 p-4 rounded-xs border border-gray-200 dark:border-gray-700 ring-1 ring-gray-500/5 dark:ring-gray-500/10",
           {
             "fixed z-50 m-auto overflow-auto inset-0": isExpanded,
             "sm:inset-4 sm:max-h-[calc(100vh-4rem)] sm:max-w-[calc(100vw-4rem)]": isExpanded,
