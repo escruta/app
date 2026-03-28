@@ -6,7 +6,7 @@ export function AppearanceSection() {
   const { themePreference, setTheme, ThemeOptions } = useTheme();
 
   return (
-    <CommonBar className="flex-col items-start justify-center">
+    <CommonBar className="z-10 flex-col items-start justify-center">
       <h2 className="mb-4 text-xl font-medium">Appearance</h2>
       <div className="flex items-center gap-4">
         <Dropdown<(typeof ThemeOptions)[keyof typeof ThemeOptions]>
