@@ -11,22 +11,25 @@ import {
   MenuContent,
   MenuItem,
 } from "@/components/ui";
-import { NotebookIcon, DotsVerticalIcon } from "@/components/icons";
+import { NotebookIcon, DotsVerticalIcon, EditIcon, DeleteIcon } from "@/components/icons";
 import { useState } from "react";
 import { useFetch } from "@/hooks";
 import { useNavigate } from "react-router";
 import { cn } from "@/lib/utils";
+import { RenameNotebookModal } from "@/app/pages/notebook/RenameNotebookModal";
 
 interface NotebookCardProps {
   notebook: Notebook;
   viewMode?: "grid" | "list";
-  onDelete?: (id: string) => void;
+  onChange?: () => void;
 }
 
-export function NotebookCard({ notebook, viewMode = "grid", onDelete }: NotebookCardProps) {
+export function NotebookCard({ notebook, viewMode = "grid", onChange }: NotebookCardProps) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState<string>("");
   const [isDeleted, setIsDeleted] = useState<boolean>(false);
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
+  const [newTitle, setNewTitle] = useState<string>(notebook.title);
   const navigate = useNavigate();
 
   const {
@@ -44,6 +47,34 @@ export function NotebookCard({ notebook, viewMode = "grid", onDelete }: Notebook
     false,
   );
 
+  const {
+    loading: renamingNotebook,
+    error: renameError,
+    refetch: renameNotebook,
+  } = useFetch<Notebook>(
+    "/notebooks",
+    {
+      method: "PUT",
+      data: {
+        id: notebook.id,
+        title: newTitle,
+      },
+    },
+    false,
+  );
+
+  async function handleRenameNotebook() {
+    try {
+      await renameNotebook();
+      setIsRenameModalOpen(false);
+      useFetch.clearCache(`/notebooks`);
+      useFetch.clearCache(`/notebooks/${notebook.id}`);
+      onChange?.();
+    } catch (error) {
+      console.error("Error renaming notebook:", error);
+    }
+  }
+
   async function handleDeleteNotebook() {
     try {
       await deleteNotebook();
@@ -51,7 +82,7 @@ export function NotebookCard({ notebook, viewMode = "grid", onDelete }: Notebook
       setIsDeleteModalOpen(false);
       setDeleteConfirmation("");
       useFetch.clearCache("/notebooks");
-      onDelete?.(notebook.id);
+      onChange?.();
     } catch (error) {
       console.error("Error deleting notebook:", error);
     }
@@ -132,6 +163,12 @@ export function NotebookCard({ notebook, viewMode = "grid", onDelete }: Notebook
                   </MenuTrigger>
                   <MenuContent>
                     <MenuItem
+                      icon={<EditIcon />}
+                      label="Rename"
+                      onClick={() => setIsRenameModalOpen(true)}
+                    />
+                    <MenuItem
+                      icon={<DeleteIcon />}
                       label="Delete"
                       onClick={() => setIsDeleteModalOpen(true)}
                       variant="danger"
@@ -187,6 +224,12 @@ export function NotebookCard({ notebook, viewMode = "grid", onDelete }: Notebook
                 </MenuTrigger>
                 <MenuContent>
                   <MenuItem
+                    icon={<EditIcon />}
+                    label="Rename"
+                    onClick={() => setIsRenameModalOpen(true)}
+                  />
+                  <MenuItem
+                    icon={<DeleteIcon />}
                     label="Delete"
                     onClick={() => setIsDeleteModalOpen(true)}
                     variant="danger"
@@ -197,6 +240,19 @@ export function NotebookCard({ notebook, viewMode = "grid", onDelete }: Notebook
           </>
         )}
       </div>
+
+      <RenameNotebookModal
+        isOpen={isRenameModalOpen}
+        onClose={() => {
+          setIsRenameModalOpen(false);
+          setNewTitle(notebook.title);
+        }}
+        newTitle={newTitle}
+        setNewTitle={setNewTitle}
+        handleRenameNotebook={handleRenameNotebook}
+        renamingNotebook={renamingNotebook}
+        renameError={renameError}
+      />
 
       {/* Delete Modal */}
       <Modal

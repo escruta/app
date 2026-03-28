@@ -229,7 +229,7 @@ export default function HomePage() {
                 key={notebook.id}
                 notebook={notebook}
                 viewMode={viewMode}
-                onDelete={() => refetchNotebooks(true, false)}
+                onChange={() => refetchNotebooks(true, false)}
               />
             ))}
           </div>
