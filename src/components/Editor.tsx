@@ -30,7 +30,7 @@ import {
   TaskListIcon,
   HighlightIcon,
 } from "@/components/icons";
-import { Divider, Tooltip } from "./ui";
+import { Divider, Tooltip, Modal, TextField, Button } from "./ui";
 import "katex/dist/katex.min.css";
 import "./Editor.css";
 
@@ -105,6 +105,32 @@ export function Editor({
   const isUpdatingRef = useRef(false);
   const [, setForceUpdate] = useState(0);
 
+  const [promptState, setPromptState] = useState<{
+    isOpen: boolean;
+    title: string;
+    value: string;
+    onConfirm: (value: string | null) => void;
+  }>({
+    isOpen: false,
+    title: "",
+    value: "",
+    onConfirm: () => {},
+  });
+
+  const promptUser = (title: string, initialValue: string): Promise<string | null> => {
+    return new Promise((resolve) => {
+      setPromptState({
+        isOpen: true,
+        title,
+        value: initialValue,
+        onConfirm: (val) => {
+          setPromptState((prev) => ({ ...prev, isOpen: false }));
+          resolve(val);
+        },
+      });
+    });
+  };
+
   const editor = useEditor({
     extensions: [
       Mathematics.configure({
@@ -112,17 +138,17 @@ export function Editor({
           throwOnError: false,
         },
         inlineOptions: {
-          onClick: (node, pos) => {
-            const katex = prompt("Enter new calculation:", node.attrs.latex);
-            if (katex) {
+          onClick: async (node, pos) => {
+            const katex = await promptUser("Enter new calculation:", node.attrs.latex);
+            if (katex !== null) {
               editor.chain().setNodeSelection(pos).updateInlineMath({ latex: katex }).focus().run();
             }
           },
         },
         blockOptions: {
-          onClick: (node, pos) => {
-            const katex = prompt("Enter new calculation:", node.attrs.latex);
-            if (katex) {
+          onClick: async (node, pos) => {
+            const katex = await promptUser("Enter new calculation:", node.attrs.latex);
+            if (katex !== null) {
               editor.chain().setNodeSelection(pos).updateBlockMath({ latex: katex }).focus().run();
             }
           },
@@ -381,7 +407,7 @@ export function Editor({
 
         <ToolbarButton
           isActive={editor.isActive("inlineMath") || editor.isActive("blockMath")}
-          onClick={() => {
+          onClick={async () => {
             const isInline = editor.isActive("inlineMath");
             const isBlock = editor.isActive("blockMath");
             const { empty, from, to, $from, $to } = editor.state.selection;
@@ -396,7 +422,7 @@ export function Editor({
             let latex: string | null = currentLatex;
 
             if (empty || isInline || isBlock) {
-              latex = window.prompt("Mathematical expression (LaTeX):", currentLatex);
+              latex = await promptUser("Mathematical expression (LaTeX):", currentLatex);
             }
 
             if (latex !== null && latex.trim() !== "") {
@@ -448,6 +474,41 @@ export function Editor({
         editor={editor}
         className="flex min-h-0 w-full flex-1 flex-col overflow-hidden [&>div]:flex-1 [&>div]:overflow-y-auto"
       />
+
+      <Modal
+        isOpen={promptState.isOpen}
+        onClose={() => promptState.onConfirm(null)}
+        title={promptState.title}
+        width="md"
+        actions={
+          <>
+            <Button variant="secondary" onClick={() => promptState.onConfirm(null)}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={() => promptState.onConfirm(promptState.value)}>
+              Confirm
+            </Button>
+          </>
+        }
+      >
+        <div className="flex flex-col gap-4">
+          <TextField
+            id="editor-prompt-input"
+            value={promptState.value}
+            onChange={(e) => setPromptState((prev) => ({ ...prev, value: e.target.value }))}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                promptState.onConfirm(promptState.value);
+              }
+            }}
+            multiline
+            minRows={3}
+            maxRows={6}
+            autoFocus
+          />
+        </div>
+      </Modal>
     </div>
   );
 }
