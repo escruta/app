@@ -50,7 +50,7 @@ export function ExampleQuestions({
             {isAutoRegenerating || skipExampleQuestionsFetch || readySourcesCount === 0 ? (
               <Tooltip
                 text={readySourcesCount === 0 ? "Waiting for sources..." : "Waiting for summary..."}
-                position="bottom"
+                position="left"
               >
                 <div className="flex h-8 w-8 items-center justify-center">
                   <Spinner />
@@ -59,7 +59,7 @@ export function ExampleQuestions({
             ) : (
               <Tooltip
                 text={isExampleQuestionsLoading ? "Refreshing questions" : "Refresh questions"}
-                position="bottom"
+                position="left"
               >
                 <IconButton
                   icon={isExampleQuestionsLoading ? <Spinner /> : <RestartIcon />}

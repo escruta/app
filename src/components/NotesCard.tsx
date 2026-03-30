@@ -1,7 +1,7 @@
 import type { Note } from "@/interfaces";
 import { AddIcon, EditIcon } from "@/components/icons";
 import { NoteChip } from "./NoteChip";
-import { Card, Button, Divider, Modal, TextField, Tooltip, Spinner } from "@/components/ui";
+import { Card, Button, Divider, Modal, TextField, Spinner } from "@/components/ui";
 import { useFetch } from "@/hooks";
 import { useState, useEffect } from "react";
 
@@ -57,17 +57,15 @@ export function NotesCard({ notebookId, onNoteSelect, refreshTrigger }: NotesCar
         <div className="z-10 shrink-0 rounded-t-xs bg-white dark:bg-gray-900">
           <div className="flex flex-row items-center justify-between p-4">
             <h2 className="font-sans text-lg font-semibold">Notes</h2>
-            <Tooltip text="Add a new note" position="bottom">
-              <Button
-                icon={<AddIcon />}
-                variant="primary"
-                size="sm"
-                className="flex-shrink-0"
-                onClick={() => setIsAddNoteModalOpen(true)}
-              >
-                Add note
-              </Button>
-            </Tooltip>
+            <Button
+              icon={<AddIcon />}
+              variant="primary"
+              size="sm"
+              className="flex-shrink-0"
+              onClick={() => setIsAddNoteModalOpen(true)}
+            >
+              Add note
+            </Button>
           </div>
           <Divider className="my-0" />
         </div>

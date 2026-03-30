@@ -30,7 +30,7 @@ export function NotebookSummary({
         {notebookSummary && !isSummaryLoading && !isAutoRegenerating && (
           <Tooltip
             text={isSummaryRegenerating ? "Regenerating summary" : "Regenerate summary"}
-            position="bottom"
+            position="left"
           >
             <IconButton
               icon={isSummaryRegenerating ? <Spinner /> : <RestartIcon />}

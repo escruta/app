@@ -60,7 +60,7 @@ export function NotebookHeader({
               <Button onClick={onShareClick} size="sm" icon={<ShareIcon />}>
                 Share notebook
               </Button>
-              <Tooltip text="Edit title" position="left">
+              <Tooltip text="Edit title" position="bottom">
                 <IconButton
                   icon={<EditIcon />}
                   variant="ghost"

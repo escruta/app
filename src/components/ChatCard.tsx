@@ -338,7 +338,7 @@ export function ChatCard({
           </span>
         </h2>
         {sourcesCount > 0 ? (
-          <Tooltip text="Chat history" position="bottom">
+          <Tooltip text="Chat history" position="left">
             <IconButton
               icon={<ChatHistoryIcon />}
               ariaLabel="Chat history"
