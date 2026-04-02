@@ -125,6 +125,35 @@ export function NotebookCard({ notebook, viewMode = "grid", onChange }: Notebook
     }
   };
 
+  const renderMenu = () => (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={handleMenuClick}
+      onKeyDown={(e) => e.key === "Enter" && handleMenuClick(e as unknown as React.MouseEvent)}
+    >
+      <Menu>
+        <MenuTrigger>
+          <IconButton
+            icon={<DotsVerticalIcon />}
+            size="sm"
+            ariaLabel="More options"
+            variant="ghost"
+          />
+        </MenuTrigger>
+        <MenuContent>
+          <MenuItem icon={<EditIcon />} label="Rename" onClick={() => setIsRenameModalOpen(true)} />
+          <MenuItem
+            icon={<DeleteIcon />}
+            label="Delete"
+            onClick={() => setIsDeleteModalOpen(true)}
+            variant="danger"
+          />
+        </MenuContent>
+      </Menu>
+    </div>
+  );
+
   return (
     <>
       <div
@@ -144,38 +173,7 @@ export function NotebookCard({ notebook, viewMode = "grid", onChange }: Notebook
               <div className="bg-blue-25 rounded-xs p-2 text-blue-500 dark:bg-blue-900/30 dark:text-blue-300">
                 <NotebookIcon className="h-5 w-5" />
               </div>
-              <div
-                role="button"
-                tabIndex={0}
-                onClick={handleMenuClick}
-                onKeyDown={(e) =>
-                  e.key === "Enter" && handleMenuClick(e as unknown as React.MouseEvent)
-                }
-              >
-                <Menu>
-                  <MenuTrigger>
-                    <IconButton
-                      icon={<DotsVerticalIcon />}
-                      size="sm"
-                      ariaLabel="More options"
-                      variant="ghost"
-                    />
-                  </MenuTrigger>
-                  <MenuContent>
-                    <MenuItem
-                      icon={<EditIcon />}
-                      label="Rename"
-                      onClick={() => setIsRenameModalOpen(true)}
-                    />
-                    <MenuItem
-                      icon={<DeleteIcon />}
-                      label="Delete"
-                      onClick={() => setIsDeleteModalOpen(true)}
-                      variant="danger"
-                    />
-                  </MenuContent>
-                </Menu>
-              </div>
+              {renderMenu()}
             </div>
 
             <div>
@@ -205,38 +203,7 @@ export function NotebookCard({ notebook, viewMode = "grid", onChange }: Notebook
               </div>
             </div>
 
-            <div
-              role="button"
-              tabIndex={0}
-              onClick={handleMenuClick}
-              onKeyDown={(e) =>
-                e.key === "Enter" && handleMenuClick(e as unknown as React.MouseEvent)
-              }
-            >
-              <Menu>
-                <MenuTrigger>
-                  <IconButton
-                    icon={<DotsVerticalIcon />}
-                    size="sm"
-                    ariaLabel="More options"
-                    variant="ghost"
-                  />
-                </MenuTrigger>
-                <MenuContent>
-                  <MenuItem
-                    icon={<EditIcon />}
-                    label="Rename"
-                    onClick={() => setIsRenameModalOpen(true)}
-                  />
-                  <MenuItem
-                    icon={<DeleteIcon />}
-                    label="Delete"
-                    onClick={() => setIsDeleteModalOpen(true)}
-                    variant="danger"
-                  />
-                </MenuContent>
-              </Menu>
-            </div>
+            {renderMenu()}
           </>
         )}
       </div>
