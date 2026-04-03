@@ -1,10 +1,47 @@
-import { useEffect } from "react";
+import { useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence, useAnimate } from "motion/react";
 import { IconButton } from "./IconButton";
 import { CloseIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { useIsMobile, useVisualViewportHeight } from "@/hooks";
+
+const modalListeners = new Set<() => void>();
+const openModals: string[] = [];
+
+function useModalStack(isOpen: boolean) {
+  const id = useId();
+  const [index, setIndex] = useState(-1);
+
+  useEffect(() => {
+    if (isOpen) {
+      if (!openModals.includes(id)) {
+        openModals.push(id);
+        modalListeners.forEach((l) => l());
+      }
+      return () => {
+        const idx = openModals.indexOf(id);
+        if (idx !== -1) {
+          openModals.splice(idx, 1);
+          modalListeners.forEach((l) => l());
+        }
+      };
+    }
+  }, [isOpen, id]);
+
+  useEffect(() => {
+    const update = () => {
+      setIndex(openModals.indexOf(id));
+    };
+    update();
+    modalListeners.add(update);
+    return () => {
+      modalListeners.delete(update);
+    };
+  }, [id]);
+
+  return { index: index !== -1 ? index : 0 };
+}
 
 interface ModalProps {
   isOpen: boolean;
@@ -34,6 +71,10 @@ export function Modal({
   const isMobile = useIsMobile();
   const viewportHeight = useVisualViewportHeight();
   const [scope, animate] = useAnimate();
+  const { index } = useModalStack(isOpen);
+
+  const zIndexBackdrop = 40 + index * 10;
+  const zIndexContent = 50 + index * 10;
 
   const maxHeight = isMobile && viewportHeight ? viewportHeight * 0.9 : undefined;
 
@@ -69,7 +110,8 @@ export function Modal({
     <AnimatePresence>
       <motion.div
         key="modal-backdrop"
-        className="fixed inset-0 z-40 bg-black/30 opacity-60 backdrop-blur-[1px] dark:bg-black/60"
+        className="fixed inset-0 bg-black/30 opacity-60 backdrop-blur-[1px] dark:bg-black/60"
+        style={{ zIndex: zIndexBackdrop }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -78,7 +120,10 @@ export function Modal({
       />
 
       {isMobile ? (
-        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-100">
+        <div
+          className="pointer-events-none fixed inset-x-0 bottom-0"
+          style={{ zIndex: zIndexContent }}
+        >
           <motion.div
             ref={scope}
             key="modal-content-mobile"
@@ -89,6 +134,7 @@ export function Modal({
             aria-labelledby="modal-title"
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
+            exit={{ y: "100%" }}
             transition={{ duration: 0.15, ease: "easeOut" }}
             drag={canDismiss ? "y" : false}
             dragConstraints={{ top: 0, bottom: 0 }}
@@ -133,7 +179,10 @@ export function Modal({
           </motion.div>
         </div>
       ) : (
-        <div className="pointer-events-none fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div
+          className="pointer-events-none fixed inset-0 flex items-center justify-center p-4"
+          style={{ zIndex: zIndexContent }}
+        >
           <motion.div
             key="modal-content"
             className={cn(
