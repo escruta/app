@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-interface ChevronIconProps extends React.SVGProps<SVGSVGElement> {
+interface ChevronIconProps extends IconProps {
   direction: "up" | "down" | "left" | "right";
 }
 
