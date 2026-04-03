@@ -1,40 +1,14 @@
-## General Rules
+# Agent Guidelines and Considerations
 
-- Research how the same problem has been resolved in other components (e.g., check `SourceViewer.tsx` and `NotesCard.tsx` before resolving the problem in `SourcesCard.tsx`)
+When addressing any task, you must first thoroughly research how similar problems have been resolved in other components across the codebase. For instance, always check existing implementations like `SourceViewer.tsx` and `NotesCard.tsx` before attempting to resolve a related issue in a component like `SourcesCard.tsx`.
 
-- All network handling MUST be done using the custom hook `useFetch` located in `@/hooks/useFetch.ts`
-- **MANUAL USE OF `fetch()` IS STRICTLY PROHIBITED.**
+It is absolutely crucial that all network handling is performed exclusively using the custom `useFetch` hook located at `@/hooks/useFetch.ts`. Under no circumstances should you manually use the native `fetch()` API; its manual use is strictly prohibited.
 
-## Understanding the `useFetch`
+The `useFetch` hook returns an object containing `data`, `loading`, `error`, and a `refetch` function, and it takes an `endpoint`, `options`, and an `immediate` boolean flag. The `endpoint` represents the API path (like `notebooks/${notebookId}/sources`), and the hook automatically manages the base URL. The `options` object allows you to specify the request `method`, `data` for the body, and callbacks like `onSuccess` or `onError`. By default, the `immediate` flag is true, meaning the request executes as soon as the component mounts. If set to false, the request is not executed upon mounting, and you must use the returned `refetch` function to trigger it on demand.
 
-```tsx
-const { data, loading, error, refetch } = useFetch(endpoint, options, immediate);
-```
+A correct pattern for a mutation involves setting `immediate` to false and attaching the `refetch` function to an event handler, such as a button click, while utilizing the `loading` state to disable the interaction. Since `useFetch` already includes essential state handling for loading, error, and data, you must not duplicate these states in your components.
 
-- **`endpoint`**: The API path (e.g., `notebooks/${notebookId}/sources`). The hook already handles base url
-- **`options`**: Request options (`method`, `data` for the body, `onSuccess`, `onError`)
-- **`immediate`**: If `true` (default): The request is made as soon as the component is mounted. If `false`: The request **is NOT** executed upon mounting. The hook returns the `refetch` function so you can execute it on demand
-
-**Correct example of a mutation:**
-
-```tsx
-const { loading: isDeleting, refetch: deleteSomething } = useFetch(
-  `path/${id}`,
-  {
-    method: "DELETE",
-    onSuccess: () => onDeletedAction(),
-  },
-  false,
-);
-
-<Button onClick={() => deleteSomething()} disabled={isDeleting} />;
-```
-
-- The `useFetch` already includes essential state handling (`loading`, `error`, `data`) - Do not duplicate them
-
-### `useFetch` Best Practices
-
-- **Dynamic Endpoints**: When using `useFetch` with `immediate: false` for mutations or on-demand fetches, provide the full endpoint path directly using template literals. Do not use ternary operators to handle "empty" IDs; the hook is reactive and its `refetch` function will always use the latest values from its dependencies.
+When configuring dynamic endpoints with `immediate: false` for mutations or on-demand fetches, you must provide the full endpoint path directly using template literals. You should not use ternary operators to handle empty IDs or conditionally build the endpoint string. The hook is reactive, and its `refetch` function will consistently use the latest values from its dependencies, making such ternary checks redundant and discouraged.
 
 ```tsx
 // ✅ Do this
@@ -44,36 +18,20 @@ const { refetch: fetchItem } = useFetch(`/items/${item?.id}`, { method: 'GET' },
 const { refetch: fetchItem } = useFetch(item?.id ? `/items/${item.id}` : "", { ... }, false);
 ```
 
-## UI and Reusable Components
+Regarding the user interface, you must strictly use the UI components available in the `@/components/ui/` directory, such as `Button`, `IconButton`, `Tooltip`, `Spinner`, `Modal`, or `Checkbox`. Similarly, only use icons sourced from `@/components/icons/`. You are not allowed to create raw HTML elements with hardcoded styles if a suitable UI component already exists to fulfill the requirement.
 
-- Use only the ui components found in `@/components/ui/` (e.g., `Button`, `IconButton`, `Tooltip`, `Spinner`, `Modal`, `Checkbox`)
-- Use only the icons from `@/components/icons/`
-- Don't create raw HTML with hardcoded styles if a UI component already exists that does the job
-- Use `cn()` from `@/lib/utils` to combine Tailwind conditional classes
+When combining Tailwind CSS conditional classes, you must use the `cn()` utility from `@/lib/utils`. Specifically, you should use the object syntax to conditionally apply classes rather than relying on logical AND operators or ternary operators directly within the class string.
 
 ```tsx
-// Don't do this
-<div className={cn("base-class", condition && "conditional-class")} />
-
-// Don't do this
-<div className={cn("base-class", condition ? "conditional-class" : "another-class")} />
-
 // Do this
-<div className={cn("base-class", {
-  "conditional-class": condition,
-})} />
-
-// Do this
-<div className={cn("base-class", {
-  "conditional-class": condition,
-  "another-class": !condition,
-})} />
+<div
+  className={cn("base-class", {
+    "conditional-class": condition,
+    "another-class": !condition,
+  })}
+/>
 ```
 
-## Task Resolution Process
+During the task resolution process, begin by carefully reading the request to determine exactly which component requires modification. Always prioritize the use of existing hooks and components instead of reinventing the wheel.
 
-- Read the request and determine which component needs to be changed
-- Use existing hooks and components - Don't reinvent the wheel
-- **NEVER RUN `npm run build` OR ANY COMPILATION COMMAND UNDER ANY CIRCUMSTANCES**
-- To test the application, you can **ONLY** run `npm run lint` and `npm run format`
-- To fix linting and formatting errors, you can only run `npm run lint:fix` and `npm run format:fix`
+You must never run `npm run build` or any other compilation command under any circumstances. If you need to fix linting or formatting errors, the only permitted commands are `npm run lint` and `npm run format`.
