@@ -5,10 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "oxlint",
-    "lint:fix": "oxlint --fix",
-    "format": "oxfmt --check",
-    "format:fix": "oxfmt",
+    "lint": "oxlint --fix",
+    "format": "oxfmt",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview"
   },

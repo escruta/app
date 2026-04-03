@@ -25,10 +25,8 @@ The application will be available at [localhost:5173](http://localhost:5173/) by
 
 - `npm run dev` - Start development server with hot reload
 - `npm run build` - Create production build
-- `npm run lint` - Run Oxlint for code quality checks
-- `npm run lint:fix` - Run Oxlint for code quality checks and fix issues
-- `npm run format` - Run Oxfmt for code formatting
-- `npm run format:fix` - Run Oxfmt for code formatting and fix issues
+- `npm run lint` - Run Oxlint for code quality checks and fix issues
+- `npm run format` - Run Oxfmt for code formatting and fix issues
 - `npm run preview` - Preview production build locally
 
 ## Configuration
