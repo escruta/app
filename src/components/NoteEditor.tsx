@@ -27,10 +27,17 @@ interface NoteEditorProps {
   note: Note;
   handleCloseNote: () => void;
   onNoteDeleted: () => void;
+  onNoteUpdated?: (note: Note) => void;
   className?: string;
 }
 
-export function NoteEditor({ note, handleCloseNote, className, onNoteDeleted }: NoteEditorProps) {
+export function NoteEditor({
+  note,
+  handleCloseNote,
+  className,
+  onNoteDeleted,
+  onNoteUpdated,
+}: NoteEditorProps) {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const {
     data: fullNote,
@@ -76,10 +83,12 @@ export function NoteEditor({ note, handleCloseNote, className, onNoteDeleted }: 
         title: newTitle,
         content: fullNote?.content || null,
       },
-      onSuccess: () => {
+      onSuccess: (updatedNote) => {
+        useFetch.clearCache();
         setIsEditTitleModalOpen(false);
         note.title = newTitle;
         setNewTitle(note.title);
+        if (updatedNote && onNoteUpdated) onNoteUpdated(updatedNote);
       },
       onError: (error) => {
         console.error("Error updating note:", error.message);
@@ -97,6 +106,7 @@ export function NoteEditor({ note, handleCloseNote, className, onNoteDeleted }: 
         content: content,
       },
       onSuccess: () => {
+        useFetch.clearCache();
         setIsSaving(false);
         setOriginalContent(content);
         refetchNote(true, false);
@@ -129,6 +139,7 @@ export function NoteEditor({ note, handleCloseNote, className, onNoteDeleted }: 
     {
       method: "DELETE",
       onSuccess: () => {
+        useFetch.clearCache();
         setIsDeleteModalOpen(false);
         onNoteDeleted();
         handleCloseNote();

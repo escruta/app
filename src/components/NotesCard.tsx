@@ -41,6 +41,7 @@ export function NotesCard({ notebookId, onNoteSelect, refreshTrigger }: NotesCar
         notebookId: notebookId,
       },
       onSuccess: () => {
+        useFetch.clearCache();
         setNewNoteTitle("");
         setIsAddNoteModalOpen(false);
         refetchNotes(true);

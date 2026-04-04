@@ -49,6 +49,7 @@ export default function NotesPage() {
         notebookId: notebooks?.find((nb) => nb.title === selectedNotebookTitle)?.id,
       },
       onSuccess: (newNote) => {
+        useFetch.clearCache();
         closeModals();
         refetchNotes(true);
         if (newNote) setSelectedNote(newNote);
@@ -311,6 +312,10 @@ export default function NotesPage() {
               handleCloseNote={() => setSelectedNote(null)}
               onNoteDeleted={() => {
                 setSelectedNote(null);
+                refetchNotes(true);
+              }}
+              onNoteUpdated={(updatedNote) => {
+                setSelectedNote(updatedNote);
                 refetchNotes(true);
               }}
               className="h-full w-full shadow-xl md:shadow-none"
