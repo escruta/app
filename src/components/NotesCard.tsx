@@ -17,7 +17,7 @@ export function NotesCard({ notebookId, onNoteSelect, refreshTrigger }: NotesCar
     loading,
     error,
     refetch: refetchNotes,
-  } = useFetch<Note[]>(`notebooks/${notebookId}/notes`);
+  } = useFetch<Note[]>(`/notes?notebookId=${notebookId}`);
 
   const [isAddNoteModalOpen, setIsAddNoteModalOpen] = useState<boolean>(false);
   const [newNoteTitle, setNewNoteTitle] = useState<string>("");
@@ -33,11 +33,12 @@ export function NotesCard({ notebookId, onNoteSelect, refreshTrigger }: NotesCar
     error: addingNoteError,
     refetch: addNote,
   } = useFetch<Note>(
-    `notebooks/${notebookId}/notes`,
+    `/notes`,
     {
       method: "POST",
       data: {
         title: newNoteTitle,
+        notebookId: notebookId,
       },
       onSuccess: () => {
         setNewNoteTitle("");

@@ -24,27 +24,20 @@ import {
 const Editor = lazy(() => import("./Editor").then((module) => ({ default: module.Editor })));
 
 interface NoteEditorProps {
-  notebookId: string;
   note: Note;
   handleCloseNote: () => void;
   onNoteDeleted: () => void;
   className?: string;
 }
 
-export function NoteEditor({
-  notebookId,
-  note,
-  handleCloseNote,
-  className,
-  onNoteDeleted,
-}: NoteEditorProps) {
+export function NoteEditor({ note, handleCloseNote, className, onNoteDeleted }: NoteEditorProps) {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const {
     data: fullNote,
     loading,
     error,
     refetch: refetchNote,
-  } = useFetch<Note>(`notebooks/${notebookId}/notes/${note.id}`);
+  } = useFetch<Note>(`/notes/${note.id}`);
 
   const [isEditTitleModalOpen, setIsEditTitleModalOpen] = useState<boolean>(false);
   const [newTitle, setNewTitle] = useState<string>(note.title);
@@ -75,7 +68,7 @@ export function NoteEditor({
     error: updateError,
     refetch: updateNote,
   } = useFetch<Note>(
-    `notebooks/${notebookId}/notes`,
+    `/notes`,
     {
       method: "PUT",
       data: {
@@ -96,7 +89,7 @@ export function NoteEditor({
   );
 
   const { refetch: saveNoteContent } = useFetch<Note>(
-    `notebooks/${notebookId}/notes`,
+    `/notes`,
     {
       method: "PUT",
       data: {
@@ -132,7 +125,7 @@ export function NoteEditor({
     error: deleteError,
     refetch: deleteNote,
   } = useFetch<Note>(
-    `notebooks/${notebookId}/notes/${note.id}`,
+    `/notes/${note.id}`,
     {
       method: "DELETE",
       onSuccess: () => {

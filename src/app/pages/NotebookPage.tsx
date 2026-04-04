@@ -261,7 +261,6 @@ export default function NotebookPage() {
             className="absolute inset-0 z-10 h-[96%] self-end"
           >
             <NoteEditor
-              notebookId={notebookId}
               note={selectedNote}
               className="h-full"
               handleCloseNote={() => setSelectedNote(null)}
