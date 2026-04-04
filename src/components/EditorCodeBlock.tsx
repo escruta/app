@@ -78,6 +78,7 @@ export function EditorCodeBlock({ node, updateAttributes }: NodeViewProps) {
           variant="ghost"
         />
         <Dropdown
+          align="right"
           size="sm"
           options={languages.map((l) => l.label)}
           selectedOption={currentLanguageLabel}

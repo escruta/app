@@ -18,7 +18,7 @@ enum SortOptions {
 
 type ViewMode = "grid" | "list";
 
-export default function HomePage() {
+export default function NotebooksPage() {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
@@ -152,7 +152,7 @@ export default function HomePage() {
     }
   }
 
-  const metadata = getRouteMetadata("/");
+  const metadata = getRouteMetadata("/notebooks");
 
   return (
     <div className="flex h-screen max-h-full w-full flex-col">
@@ -205,6 +205,7 @@ export default function HomePage() {
               />
 
               <Dropdown<SortOptions>
+                align="right"
                 options={Object.values(SortOptions)}
                 selectedOption={sortBy || SortOptions.Newest}
                 onSelect={(option) => setSortBy(option as SortOptions)}

@@ -13,6 +13,7 @@ type DropdownProps<T extends string> = {
   disabled?: boolean;
   size?: "sm" | "md";
   onOpenChange?: (isOpen: boolean) => void;
+  align?: "left" | "right";
 };
 
 export function Dropdown<T extends string>({
@@ -25,6 +26,7 @@ export function Dropdown<T extends string>({
   disabled = false,
   size = "md",
   onOpenChange,
+  align = "left",
 }: DropdownProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -71,7 +73,7 @@ export function Dropdown<T extends string>({
         </p>
       )}
 
-      <div className="relative" ref={dropdownRef}>
+      <div className="relative min-w-0 flex-1" ref={dropdownRef}>
         {/* Trigger Button */}
         <button
           type="button"
@@ -80,8 +82,8 @@ export function Dropdown<T extends string>({
           disabled={disabled}
           className={cn(
             "relative w-full text-left",
-            size === "sm" && "min-w-[120px] h-8 px-2 pr-7 text-xs",
-            size === "md" && "min-w-[160px] h-10 px-3 pr-10 text-sm",
+            size === "sm" && "h-8 px-2 pr-7 text-xs",
+            size === "md" && "h-10 px-3 pr-10 text-sm",
             "bg-white dark:bg-gray-900",
             "border border-gray-300 dark:border-gray-600",
             "rounded-xs",
@@ -129,7 +131,8 @@ export function Dropdown<T extends string>({
                 ease: "easeOut",
               }}
               className={cn(
-                "absolute z-50 w-full mt-1.5",
+                "absolute z-50 min-w-full w-max mt-1.5",
+                align === "right" ? "right-0" : "left-0",
                 "bg-white dark:bg-gray-900",
                 "border border-gray-300 dark:border-gray-600",
                 "rounded-xs shadow-lg shadow-gray-500/10 dark:shadow-black/20 ring-1 ring-gray-500/5 dark:ring-gray-500/10",

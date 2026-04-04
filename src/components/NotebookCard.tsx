@@ -43,6 +43,11 @@ export function NotebookCard({ notebook, viewMode = "grid", onChange }: Notebook
       data: {
         id: notebook.id,
       },
+      onSuccess: () => {
+        useFetch.clearCache(`/notebooks/${notebook.id}`);
+        useFetch.clearCache(`/notebooks`);
+        useFetch.clearCache(`/notes`);
+      },
     },
     false,
   );
@@ -58,6 +63,11 @@ export function NotebookCard({ notebook, viewMode = "grid", onChange }: Notebook
       data: {
         id: notebook.id,
         title: newTitle,
+      },
+      onSuccess: () => {
+        useFetch.clearCache(`/notebooks/${notebook.id}`);
+        useFetch.clearCache(`/notebooks`);
+        useFetch.clearCache(`/notes`);
       },
     },
     false,
