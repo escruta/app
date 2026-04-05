@@ -52,7 +52,8 @@ export function SourceViewer({
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [currentSourceId, setCurrentSourceId] = useState<string>(source.id);
-  const [contentToRender, setContentToRender] = useState<string | null>(null);
+  const [contentChunks, setContentChunks] = useState<string[]>([]);
+  const [visibleChunks, setVisibleChunks] = useState<number>(0);
   const [_, startTransition] = useTransition();
 
   const { showToast } = useToast();
@@ -63,20 +64,53 @@ export function SourceViewer({
   useEffect(() => {
     if (source.id !== currentSourceId) {
       setCurrentSourceId(source.id);
-      setContentToRender(null);
+      setContentChunks([]);
+      setVisibleChunks(0);
     }
   }, [source.id, currentSourceId]);
 
   useEffect(() => {
     if (fullSource?.content !== undefined) {
+      const text = fullSource.content || "";
+      const chunks: string[] = [];
+      let currentChunk = "";
+      let inCodeBlock = false;
+      let inMathBlock = false;
+
+      const lines = text.split("\n");
+      for (const line of lines) {
+        if (line.trim().startsWith("```")) {
+          inCodeBlock = !inCodeBlock;
+        }
+        if (line.trim().startsWith("$$")) {
+          inMathBlock = !inMathBlock;
+        }
+        currentChunk += line + "\n";
+
+        if (!inCodeBlock && !inMathBlock && currentChunk.length > 4000 && line.trim() === "") {
+          chunks.push(currentChunk);
+          currentChunk = "";
+        }
+      }
+      if (currentChunk) chunks.push(currentChunk);
+
+      startTransition(() => {
+        setContentChunks(chunks);
+        setVisibleChunks(1);
+      });
+    }
+  }, [fullSource?.content]);
+
+  useEffect(() => {
+    if (contentChunks.length > 0 && visibleChunks < contentChunks.length) {
       const timer = setTimeout(() => {
         startTransition(() => {
-          setContentToRender(fullSource.content || "");
+          setVisibleChunks((v) => v + 1);
         });
       }, 50);
       return () => clearTimeout(timer);
     }
-  }, [fullSource?.content]);
+  }, [contentChunks, visibleChunks]);
 
   const {
     loading: deletingSource,
@@ -370,7 +404,7 @@ export function SourceViewer({
                     {fullSource.content && (
                       <div className="overflow-x-hidden break-words select-text">
                         <div className="max-w-none leading-relaxed">
-                          {contentToRender !== null ? (
+                          {contentChunks.length > 0 ? (
                             <Suspense
                               fallback={
                                 <Skeleton
@@ -379,10 +413,13 @@ export function SourceViewer({
                                 />
                               }
                             >
-                              <Markdown
-                                text={contentToRender}
-                                baseUrl={fullSource?.link || source.link}
-                              />
+                              {contentChunks.slice(0, visibleChunks).map((chunk, index) => (
+                                <Markdown
+                                  key={index}
+                                  text={chunk}
+                                  baseUrl={fullSource?.link || source.link}
+                                />
+                              ))}
                             </Suspense>
                           ) : (
                             <Skeleton
@@ -397,7 +434,7 @@ export function SourceViewer({
                 ) : (
                   <div className="h-auto min-h-[80%] w-full overflow-x-hidden px-6 py-8 break-words select-text">
                     <div className="max-w-none leading-relaxed">
-                      {contentToRender !== null ? (
+                      {contentChunks.length > 0 ? (
                         <Suspense
                           fallback={
                             <Skeleton
@@ -406,10 +443,13 @@ export function SourceViewer({
                             />
                           }
                         >
-                          <Markdown
-                            text={contentToRender}
-                            baseUrl={fullSource?.link || source.link}
-                          />
+                          {contentChunks.slice(0, visibleChunks).map((chunk, index) => (
+                            <Markdown
+                              key={index}
+                              text={chunk}
+                              baseUrl={fullSource?.link || source.link}
+                            />
+                          ))}
                         </Suspense>
                       ) : (
                         <Skeleton
