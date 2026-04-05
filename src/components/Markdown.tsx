@@ -42,7 +42,7 @@ export const Markdown = memo(function Markdown({ text, baseUrl }: MarkdownProps)
         h6: ({ children }) => (
           <h6 className="my-4 text-base leading-[1.5] font-semibold">{children}</h6>
         ),
-        p: ({ children }) => <p className="my-2">{children}</p>,
+        p: ({ children }) => <p>{children}</p>,
         ul: ({ className, children }) => (
           <ul
             className={cn(
@@ -128,7 +128,7 @@ export const Markdown = memo(function Markdown({ text, baseUrl }: MarkdownProps)
               src={resolvedSrc}
               alt={alt}
               title={title}
-              className="my-4 h-auto max-w-full rounded-md"
+              className="my-4 h-auto max-w-full rounded-xs"
             />
           );
         },

@@ -1,6 +1,23 @@
 import { useFetch } from "@/hooks";
-import { FileIcon, SendIcon, ChatHistoryIcon, AddIcon } from "@/components/icons";
-import { Card, Divider, TextField, IconButton, Tooltip, Spinner } from "@/components/ui";
+import {
+  FileIcon,
+  SendIcon,
+  ChatHistoryIcon,
+  DotsVerticalIcon,
+  ChatNewIcon,
+} from "@/components/icons";
+import {
+  Card,
+  Divider,
+  TextField,
+  IconButton,
+  Tooltip,
+  Spinner,
+  Menu,
+  MenuTrigger,
+  MenuContent,
+  MenuItem,
+} from "@/components/ui";
 import { ChatHistory } from "@/components/ChatHistory";
 import type { ConversationMessages, Source } from "@/interfaces";
 import { useEffect, useState, useRef, useMemo, useCallback } from "react";
@@ -149,6 +166,21 @@ export function ChatCard({
   const [pendingConversationTitle, setPendingConversationTitle] = useState<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const pendingMessageRef = useRef<string | null>(null);
+  const inputContainerRef = useRef<HTMLDivElement>(null);
+  const [inputHeight, setInputHeight] = useState(0);
+
+  useEffect(() => {
+    if (!inputContainerRef.current) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setInputHeight((entry.target as HTMLElement).offsetHeight);
+      }
+    });
+
+    observer.observe(inputContainerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   const loadConversationOptions = useMemo(
     () => ({
@@ -327,7 +359,7 @@ export function ChatCard({
   }, []);
 
   return (
-    <Card className="flex h-full flex-col overflow-hidden px-0">
+    <Card className="flex h-full flex-col overflow-hidden px-0 pb-0">
       <div className="mb-2 flex shrink-0 flex-row items-center justify-between px-4">
         <h2 className="flex min-w-0 flex-1 items-baseline gap-1.5">
           <span className="shrink-0 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
@@ -338,15 +370,38 @@ export function ChatCard({
           </span>
         </h2>
         {sourcesCount > 0 ? (
-          <Tooltip text="Chat history" position="left">
-            <IconButton
-              icon={<ChatHistoryIcon />}
-              ariaLabel="Chat history"
-              onClick={() => setIsHistoryOpen(true)}
-              variant="ghost"
-              size="sm"
-            />
-          </Tooltip>
+          <div className="flex items-center gap-1">
+            <Tooltip text="New conversation" position="top">
+              <IconButton
+                icon={<ChatNewIcon />}
+                ariaLabel="New conversation"
+                onClick={handleNewConversation}
+                disabled={messages.length === 0 || isChatLoading || isAutoRegenerating}
+                variant="ghost"
+                size="sm"
+              />
+            </Tooltip>
+            <Menu>
+              <Tooltip text="More options" position="top">
+                <MenuTrigger>
+                  <IconButton
+                    icon={<DotsVerticalIcon />}
+                    ariaLabel="More options"
+                    variant="ghost"
+                    size="sm"
+                  />
+                </MenuTrigger>
+              </Tooltip>
+              <MenuContent align="right">
+                <MenuItem
+                  label="Chat history"
+                  icon={<ChatHistoryIcon />}
+                  onClick={() => setIsHistoryOpen(true)}
+                  disabled={isChatLoading || isAutoRegenerating}
+                />
+              </MenuContent>
+            </Menu>
+          </div>
         ) : null}
       </div>
       <ChatHistory
@@ -390,6 +445,7 @@ export function ChatCard({
               <Spinner />
             </motion.div>
           )}
+          <div style={{ height: inputHeight }} className="shrink-0" />
         </div>
       ) : (
         <div className="flex max-h-full min-h-0 flex-grow flex-col overflow-y-auto px-4">
@@ -431,28 +487,15 @@ export function ChatCard({
               </p>
             </div>
           )}
+          <div style={{ height: inputHeight }} className="shrink-0" />
         </div>
       )}
-      <Divider className="mt-0" />
-      <div className="shrink-0 px-4">
-        {/* Chat input */}
-        <div className="flex items-center gap-2 pt-1">
-          {messages.length > 0 ? (
-            <Tooltip text="New conversation" position="top">
-              <IconButton
-                icon={<AddIcon />}
-                ariaLabel="New conversation"
-                onClick={() => {
-                  setMessages([]);
-                  setInput("");
-                  setConversationId(null);
-                  setConversationTitle(null);
-                }}
-                disabled={messages.length === 0 || isChatLoading || isAutoRegenerating}
-                variant="ghost"
-              />
-            </Tooltip>
-          ) : null}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 shrink-0">
+        <div className="absolute inset-0 mx-4 bg-linear-to-t from-white from-80% to-transparent dark:from-gray-900/80 dark:to-transparent" />
+        <div
+          ref={inputContainerRef}
+          className="pointer-events-auto relative m-4 mt-6 flex flex-col rounded-xs border border-gray-300 bg-white shadow-sm transition-all focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400"
+        >
           <TextField
             id="chat-input"
             value={input}
@@ -464,22 +507,30 @@ export function ChatCard({
               }
             }}
             placeholder={
-              selectedSourceIds.length > 0
-                ? `Ask a question (${selectedSourceIds.length} source${selectedSourceIds.length !== 1 ? "s" : ""} selected)...`
-                : "Select sources to start chatting..."
+              sourcesCount === 0
+                ? "Add sources to start chatting..."
+                : selectedSourceIds.length > 0
+                  ? `Ask a question (${selectedSourceIds.length} source${selectedSourceIds.length !== 1 ? "s" : ""} selected)...`
+                  : "Select sources to start chatting..."
             }
-            className="flex-grow"
+            className="w-full rounded-t-xs border-0 bg-transparent py-3 pr-12 pl-4 shadow-none hover:border-transparent hover:ring-0 hover:ring-offset-0 focus:border-transparent focus:ring-0 focus:ring-offset-0 dark:hover:ring-offset-0 dark:focus:ring-0 dark:focus:ring-offset-0"
             disabled={isChatLoading || selectedSourceIds.length === 0}
             autoFocus
             maxRows={5}
             multiline
           />
-          <IconButton
-            icon={<SendIcon />}
-            onClick={handleSendMessage}
-            disabled={isChatLoading || !input.trim() || selectedSourceIds.length === 0}
-            aria-label="Send message"
-          />
+          <div className="absolute right-2 bottom-2">
+            <Tooltip text="Send message" position="top">
+              <IconButton
+                icon={<SendIcon />}
+                onClick={handleSendMessage}
+                disabled={isChatLoading || !input.trim() || selectedSourceIds.length === 0}
+                aria-label="Send message"
+                size="sm"
+                variant="primary"
+              />
+            </Tooltip>
+          </div>
         </div>
       </div>
     </Card>

@@ -2,6 +2,7 @@ export * from "./AddIcon";
 export * from "./BoldIcon";
 export * from "./CardIcon";
 export * from "./ChatHistoryIcon";
+export * from "./ChatNewIcon";
 export * from "./CheckIcon";
 export * from "./ChevronIcon";
 export * from "./CloseIcon";

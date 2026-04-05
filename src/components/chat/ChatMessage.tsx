@@ -35,7 +35,7 @@ function processMessage(message: Message, onRetry?: () => void): ReactNode {
             onClick={onRetry}
             variant="ghost"
             size="sm"
-            icon={<RestartIcon className="h-4 w-4" />}
+            icon={<RestartIcon className="size-4" />}
           >
             Retry message
           </Button>
@@ -116,10 +116,10 @@ export function ChatMessage({ message, index, onRetryFromError, onSourceClick }:
     >
       <div
         className={cn("w-full flex flex-col gap-4 select-text transition-all duration-200", {
-          "max-w-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 px-4 py-2.5 rounded-xs self-end ml-12 shadow-xs":
+          "max-w-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-4 rounded-xs self-end ml-12 shadow-x":
             message.sender === "user",
           "max-w-3xl self-start mr-12 py-2": message.sender === "ai" && !message.error,
-          "max-w-2xl bg-red-50/10 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 px-5 py-4 rounded-xs self-start mr-12":
+          "max-w-2xl bg-red-50/10 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 p-4 rounded-xs self-start mr-12":
             message.error,
         })}
       >
@@ -134,7 +134,7 @@ export function ChatMessage({ message, index, onRetryFromError, onSourceClick }:
 
         {message.sender === "ai" && message.citedSources && message.citedSources.length > 0 && (
           <div className="border-t border-gray-200/65 pt-4 dark:border-gray-800/65">
-            <div className="mb-3 text-[10px] font-bold tracking-widest text-gray-500 uppercase select-none dark:text-gray-400">
+            <div className="mb-3 text-xs font-bold tracking-widest text-gray-500 uppercase select-none dark:text-gray-400">
               Cited sources
             </div>
             <div className="flex flex-wrap gap-2">
@@ -146,9 +146,7 @@ export function ChatMessage({ message, index, onRetryFromError, onSourceClick }:
                   size="sm"
                   className="max-w-full"
                 >
-                  <span className="max-w-[180px] truncate">
-                    {source.title || `Source ${idx + 1}`}
-                  </span>
+                  <span className="max-w-44 truncate">{source.title || `Source ${idx + 1}`}</span>
                 </Chip>
               ))}
             </div>

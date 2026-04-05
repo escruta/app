@@ -176,16 +176,19 @@ export function MenuItem({
   icon,
   variant = "default",
   className,
+  disabled,
 }: {
   label: string;
   onClick: () => void;
   icon?: ReactNode;
   variant?: "default" | "danger";
   className?: string;
+  disabled?: boolean;
 }) {
   const context = useContext(MenuContext);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
+    if (disabled) return;
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       onClick();
@@ -194,7 +197,7 @@ export function MenuItem({
   };
 
   const baseStyles =
-    "flex w-full items-center gap-2 rounded-xs px-3 py-2 text-sm transition-all duration-200 outline-none select-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900";
+    "flex w-full items-center gap-2 rounded-xs px-3 py-2 text-sm transition-all duration-200 outline-none select-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none";
 
   const variantStyles = {
     default:
@@ -207,8 +210,10 @@ export function MenuItem({
     <button
       type="button"
       role="menuitem"
+      disabled={disabled}
       className={cn(baseStyles, variantStyles[variant], className)}
       onClick={() => {
+        if (disabled) return;
         onClick();
         context?.setIsOpen(false);
       }}
