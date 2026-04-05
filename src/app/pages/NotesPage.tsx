@@ -1,9 +1,28 @@
 import { useState, useMemo } from "react";
 import type { Note, Notebook } from "@/interfaces";
 import { useFetch, useCookie } from "@/hooks";
-import { Button, Modal, TextField, Spinner, Dropdown } from "@/components/ui";
+import {
+  Button,
+  Modal,
+  TextField,
+  Spinner,
+  Dropdown,
+  Menu,
+  MenuTrigger,
+  MenuContent,
+  MenuItem,
+  MenuLabel,
+  IconButton,
+} from "@/components/ui";
 import { CommonBar, SEOMetadata, NoteChip, NoteEditor } from "@/components";
-import { AddIcon, NoteIcon, NotebookIcon, ChevronIcon } from "@/components/icons";
+import {
+  AddIcon,
+  NoteIcon,
+  NotebookIcon,
+  ChevronIcon,
+  CheckIcon,
+  DotsVerticalIcon,
+} from "@/components/icons";
 import { getRouteMetadata } from "@/lib/seo";
 import { motion } from "motion/react";
 import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
@@ -199,21 +218,44 @@ export default function NotesPage() {
             "w-full border-r border-gray-200 md:w-1/3 dark:border-gray-800",
           )}
         >
-          <CommonBar className="sticky top-0 z-20 mb-4 flex flex-col items-stretch gap-4 xl:flex-row xl:items-center xl:justify-between xl:gap-8">
-            <Button onClick={openCreateModal} className="w-full justify-center xl:w-auto">
+          <CommonBar className="sticky top-0 z-20 mb-4 flex items-center justify-between gap-4">
+            <Button onClick={openCreateModal} className="w-full justify-center">
               Create note
             </Button>
             {notes && notes.length > 0 && (
-              <div className="flex w-full min-w-0 items-center justify-start xl:justify-end">
-                <Dropdown<SortOptions>
-                  align="right"
-                  options={Object.values(SortOptions)}
-                  selectedOption={sortBy || SortOptions.Newest}
-                  onSelect={(option) => setSortBy(option as SortOptions)}
-                  label="Sort by:"
-                  className="w-full min-w-0"
-                />
-              </div>
+              <Menu>
+                <MenuTrigger>
+                  <IconButton
+                    icon={<DotsVerticalIcon />}
+                    size="sm"
+                    ariaLabel="Options"
+                    variant="ghost"
+                  />
+                </MenuTrigger>
+                <MenuContent align="right" className="min-w-[12rem]">
+                  <div className="flex flex-col gap-0.5 p-0.5">
+                    <MenuLabel>Sort by</MenuLabel>
+                    {Object.values(SortOptions).map((option) => (
+                      <MenuItem
+                        key={option}
+                        label={option}
+                        onClick={() => setSortBy(option as SortOptions)}
+                        icon={
+                          sortBy === option ? (
+                            <CheckIcon className="size-4 text-blue-600 dark:text-blue-400" />
+                          ) : (
+                            <div className="size-4" />
+                          )
+                        }
+                        className={cn(
+                          sortBy === option &&
+                            "bg-blue-50 text-blue-700 dark:bg-gray-800 dark:text-blue-400",
+                        )}
+                      />
+                    ))}
+                  </div>
+                </MenuContent>
+              </Menu>
             )}
           </CommonBar>
 
