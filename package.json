@@ -8,6 +8,7 @@
     "lint": "oxlint --fix",
     "format": "oxfmt",
     "typecheck": "tsc --noEmit",
+    "check": "npm run lint && npm run format && npm run typecheck",
     "preview": "vite preview"
   },
   "dependencies": {
