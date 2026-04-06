@@ -82,7 +82,7 @@ html.dark *::selection {
   --color-yellow-900: oklch(0.421 0.095 57.708);
   --color-yellow-950: oklch(0.286 0.066 53.813);
 
-  /* Bleu */
+  /* Blue */
   --color-blue-50: #ebf6ff;
   --color-blue-100: #d6edff;
   --color-blue-200: #aed9ff;
@@ -94,6 +94,45 @@ html.dark *::selection {
   --color-blue-800: #014581;
   --color-blue-900: #013058;
   --color-blue-950: #012545;
+
+  /* Purple */
+  --color-purple-50: oklch(0.977 0.013 291.533);
+  --color-purple-100: oklch(0.95 0.039 292.053);
+  --color-purple-200: oklch(0.902 0.082 291.688);
+  --color-purple-300: oklch(0.838 0.134 290.875);
+  --color-purple-400: oklch(0.748 0.198 290.046);
+  --color-purple-500: oklch(0.669 0.224 290.233);
+  --color-purple-600: oklch(0.589 0.217 290.413);
+  --color-purple-700: oklch(0.51 0.187 290.584);
+  --color-purple-800: oklch(0.441 0.155 291.201);
+  --color-purple-900: oklch(0.384 0.125 292.203);
+  --color-purple-950: oklch(0.26 0.076 293.73);
+
+  /* Teal */
+  --color-teal-50: oklch(0.984 0.014 180.72);
+  --color-teal-100: oklch(0.953 0.051 180.801);
+  --color-teal-200: oklch(0.91 0.096 180.426);
+  --color-teal-300: oklch(0.855 0.138 181.071);
+  --color-teal-400: oklch(0.777 0.152 181.912);
+  --color-teal-500: oklch(0.704 0.14 182.503);
+  --color-teal-600: oklch(0.6 0.118 184.704);
+  --color-teal-700: oklch(0.511 0.096 186.391);
+  --color-teal-800: oklch(0.437 0.078 188.259);
+  --color-teal-900: oklch(0.386 0.063 189.967);
+  --color-teal-950: oklch(0.258 0.046 192.379);
+
+  /* Orange */
+  --color-orange-50: oklch(0.98 0.016 73.684);
+  --color-orange-100: oklch(0.954 0.038 75.164);
+  --color-orange-200: oklch(0.901 0.076 70.697);
+  --color-orange-300: oklch(0.837 0.128 66.29);
+  --color-orange-400: oklch(0.75 0.183 55.934);
+  --color-orange-500: oklch(0.689 0.207 43.19);
+  --color-orange-600: oklch(0.605 0.184 36.315);
+  --color-orange-700: oklch(0.505 0.146 34.225);
+  --color-orange-800: oklch(0.43 0.116 33.153);
+  --color-orange-900: oklch(0.38 0.094 33.32);
+  --color-orange-950: oklch(0.252 0.059 31.815);
 
   /* Gray */
   --color-gray-50: #fafafa;
