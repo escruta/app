@@ -6,7 +6,7 @@ import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
 import { getRouteMetadata } from "@/lib/seo";
 import { NotebookIcon, NoteIcon, SettingsIcon, SendIcon } from "@/components/icons";
 import { motion } from "motion/react";
-import { Dropdown, TextField, IconButton } from "@/components/ui";
+import { Dropdown, TextField, IconButton, Tooltip } from "@/components/ui";
 import type { Notebook, Note } from "@/interfaces";
 
 export default function HomePage() {
@@ -97,24 +97,27 @@ export default function HomePage() {
                 multiline
               />
               <div className="flex items-center justify-between border-t border-gray-100 p-2 dark:border-gray-800">
-                <Dropdown<Notebook>
-                  options={notebooks}
-                  selectedOption={selectedNotebook}
-                  onSelect={setSelectedNotebook}
-                  renderOption={(n) => n?.title || ""}
-                  placeholder={isLoadingNotebooks ? "Loading notebooks..." : "Select a notebook"}
-                  disabled={isLoadingNotebooks || notebooks.length === 0}
-                  className="w-64 max-w-[60%]"
-                  size="sm"
-                />
-                <IconButton
-                  icon={<SendIcon />}
-                  onClick={handleSendMessage}
-                  disabled={!input.trim() || !selectedNotebook}
-                  aria-label="Send message"
-                  size="sm"
-                  variant="primary"
-                />
+                <Tooltip text="Select a notebook" position="right">
+                  <Dropdown<Notebook>
+                    options={notebooks}
+                    selectedOption={selectedNotebook}
+                    onSelect={setSelectedNotebook}
+                    renderOption={(n) => n?.title || ""}
+                    placeholder={isLoadingNotebooks ? "Loading notebooks..." : "Select a notebook"}
+                    disabled={isLoadingNotebooks || notebooks.length === 0}
+                    size="sm"
+                  />
+                </Tooltip>
+                <Tooltip text="Send message" position="left">
+                  <IconButton
+                    icon={<SendIcon />}
+                    onClick={handleSendMessage}
+                    disabled={!input.trim() || !selectedNotebook}
+                    aria-label="Send message"
+                    size="sm"
+                    variant="primary"
+                  />
+                </Tooltip>
               </div>
             </div>
           </motion.div>
