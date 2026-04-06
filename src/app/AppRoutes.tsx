@@ -1,7 +1,8 @@
 import { lazy } from "react";
-import { Navigate, type RouteObject } from "react-router";
+import { type RouteObject } from "react-router";
 import { AppLayout } from "./AppLayout";
 
+const HomePage = lazy(() => import("./pages/HomePage"));
 const NotebooksPage = lazy(() => import("./pages/NotebooksPage"));
 const NotesPage = lazy(() => import("./pages/NotesPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
@@ -13,7 +14,7 @@ export const AppRoutes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <Navigate to="/notebooks" replace />,
+        Component: HomePage,
       },
       {
         path: "notebooks",

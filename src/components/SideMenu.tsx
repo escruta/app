@@ -1,7 +1,7 @@
 import { NavLink, useLocation, useNavigate } from "react-router";
 import { useAuth, useIsMobile } from "@/hooks";
 import { Tooltip, Button, Modal } from "@/components/ui";
-import { SettingsIcon, SignOutIcon, NoteIcon, NotebookIcon } from "@/components/icons";
+import { SettingsIcon, SignOutIcon, NoteIcon, NotebookIcon, HomeIcon } from "@/components/icons";
 import { useState } from "react";
 import { AppIcon } from "./AppIcon";
 import { cn } from "@/lib/utils";
@@ -58,11 +58,18 @@ export function SideMenu() {
 
   return (
     <div className="z-10 flex h-auto w-full flex-row items-center justify-between border-b border-gray-200 bg-white transition-all duration-300 md:h-screen md:w-16 md:max-w-16 md:min-w-16 md:flex-col md:border-e md:border-b-0 dark:border-gray-800 dark:bg-black">
-      <NavLink to="/notebooks" className="group grid h-16 w-16 shrink-0 place-items-center">
+      <NavLink to="/" className="group grid h-16 w-16 shrink-0 place-items-center">
         <AppIcon className="h-10 w-10 fill-gray-800 transition-all duration-300 group-hover:fill-blue-500 dark:fill-gray-50 dark:group-hover:fill-blue-400" />
       </NavLink>
 
       <div className="mr-4 flex flex-row items-center justify-center gap-3 md:mr-0 md:mb-6 md:flex-col">
+        <SideItemMenu
+          icon={<HomeIcon />}
+          label="Home"
+          onClick={() => navigate("/")}
+          isActive={location.pathname === "/"}
+          position={isMobile ? "bottom" : "right"}
+        />
         <SideItemMenu
           icon={<NotebookIcon />}
           label="Notebooks"

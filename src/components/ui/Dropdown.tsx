@@ -103,7 +103,7 @@ export function Dropdown<T>({
           )}
         >
           <span className="block truncate">
-            {selectedOption !== undefined ? renderOption(selectedOption as T) : placeholder}
+            {selectedOption != null ? renderOption(selectedOption as T) : placeholder}
           </span>
 
           {/* Chevron Icon */}

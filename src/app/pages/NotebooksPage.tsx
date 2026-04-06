@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import type { Notebook } from "@/interfaces";
-import { useAuth, useCookie, useFetch, useIsMobile } from "@/hooks";
+import { useCookie, useFetch, useIsMobile } from "@/hooks";
 import { Button, Dropdown, Modal, TextField, SegmentedButtons, Spinner } from "@/components/ui";
 import { NotebookCard, CommonBar, SEOMetadata } from "@/components";
 import { AddIcon, GridIcon, ListIcon, FireIcon, NotebookIcon } from "@/components/icons";
@@ -21,7 +21,6 @@ type ViewMode = "grid" | "list";
 export default function NotebooksPage() {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
   const { data, loading, error, refetch: refetchNotebooks } = useFetch<Notebook[]>("/notebooks");
   const [sortBy, setSortBy] = useCookie<SortOptions>("notebookSortPreference", SortOptions.Newest);
   const [viewMode, setViewMode] = useCookie<ViewMode>("notebookViewMode", "grid");
@@ -166,9 +165,7 @@ export default function NotebooksPage() {
       <div className="z-20 border-b border-gray-200 bg-white px-4 py-4 md:px-6 dark:border-gray-700 dark:bg-black">
         <div className="flex items-center justify-between gap-2">
           <h1 className="flex min-w-0 flex-1 items-center gap-1.5 text-gray-900 select-text *:leading-7 dark:text-white">
-            <span className="truncate text-2xl font-bold">
-              Welcome, {currentUser?.name || "User"}!
-            </span>
+            <span className="truncate text-2xl font-bold">Notebooks</span>
           </h1>
         </div>
       </div>
