@@ -3,9 +3,9 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { CheckIcon, ChevronIcon } from "@/components/icons";
 
-type DropdownProps<T extends string> = {
+type DropdownProps<T> = {
   options: T[];
-  selectedOption: T;
+  selectedOption: T | null | undefined;
   onSelect: (option: T) => void;
   label?: string;
   className?: string;
@@ -14,9 +14,10 @@ type DropdownProps<T extends string> = {
   size?: "sm" | "md";
   onOpenChange?: (isOpen: boolean) => void;
   align?: "left" | "right";
+  renderOption?: (option: T) => React.ReactNode;
 };
 
-export function Dropdown<T extends string>({
+export function Dropdown<T>({
   options,
   selectedOption,
   onSelect,
@@ -27,6 +28,7 @@ export function Dropdown<T extends string>({
   size = "md",
   onOpenChange,
   align = "left",
+  renderOption = (opt) => String(opt),
 }: DropdownProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -73,7 +75,7 @@ export function Dropdown<T extends string>({
         </p>
       )}
 
-      <div className="relative min-w-0 flex-1" ref={dropdownRef}>
+      <div className="relative max-w-xs min-w-0 flex-1 sm:max-w-sm" ref={dropdownRef}>
         {/* Trigger Button */}
         <button
           type="button"
@@ -100,7 +102,9 @@ export function Dropdown<T extends string>({
             },
           )}
         >
-          <span className="block truncate">{selectedOption || placeholder}</span>
+          <span className="block truncate">
+            {selectedOption !== undefined ? renderOption(selectedOption as T) : placeholder}
+          </span>
 
           {/* Chevron Icon */}
           <span
@@ -136,13 +140,13 @@ export function Dropdown<T extends string>({
                 "bg-white dark:bg-gray-900",
                 "border border-gray-300 dark:border-gray-600",
                 "rounded-xs shadow-lg shadow-gray-500/10 dark:shadow-black/20 ring-1 ring-gray-500/5 dark:ring-gray-500/10",
-                "max-h-60 overflow-auto",
+                "max-h-60 overflow-auto max-w-xs sm:max-w-sm",
               )}
             >
               <div className="flex flex-col gap-0.5 p-1.5">
                 {options.map((option, index) => (
                   <motion.button
-                    key={option}
+                    key={String(option)}
                     type="button"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -165,7 +169,7 @@ export function Dropdown<T extends string>({
                       },
                     )}
                   >
-                    <span className="flex-1 truncate pr-6">{option}</span>
+                    <span className="flex-1 truncate pr-6">{renderOption(option)}</span>
                     {selectedOption === option && (
                       <span
                         className={cn(

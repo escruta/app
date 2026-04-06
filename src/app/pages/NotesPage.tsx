@@ -22,6 +22,7 @@ import {
   ChevronIcon,
   CheckIcon,
   DotsVerticalIcon,
+  CloseIcon,
 } from "@/components/icons";
 import { getRouteMetadata } from "@/lib/seo";
 import { motion } from "motion/react";
@@ -51,7 +52,7 @@ export default function NotesPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [noteTitle, setNoteTitle] = useState("");
-  const [selectedNotebookTitle, setSelectedNotebookTitle] = useState("");
+  const [selectedNotebookId, setSelectedNotebookId] = useState<string | null>(null);
   const [expandedNotebooks, setExpandedNotebooks] = useState<Record<string, boolean>>({});
   const [sortBy, setSortBy] = useCookie<SortOptions>("noteSortPreference", SortOptions.Newest);
 
@@ -65,7 +66,7 @@ export default function NotesPage() {
       method: "POST",
       data: {
         title: noteTitle,
-        notebookId: notebooks?.find((nb) => nb.title === selectedNotebookTitle)?.id,
+        notebookId: selectedNotebookId,
       },
       onSuccess: (newNote) => {
         useFetch.clearCache();
@@ -80,12 +81,12 @@ export default function NotesPage() {
   const closeModals = () => {
     setIsCreateModalOpen(false);
     setNoteTitle("");
-    setSelectedNotebookTitle("");
+    setSelectedNotebookId(null);
   };
 
   const openCreateModal = () => {
     setNoteTitle("");
-    setSelectedNotebookTitle("");
+    setSelectedNotebookId(null);
     setIsCreateModalOpen(true);
   };
 
@@ -411,14 +412,28 @@ export default function NotesPage() {
             />
 
             <div className="flex flex-col gap-1.5">
-              <Dropdown
-                label="Notebook"
-                options={["None", ...(notebooks?.map((nb) => nb.title) || [])]}
-                selectedOption={selectedNotebookTitle}
-                onSelect={(val) => setSelectedNotebookTitle(val === "None" ? "" : val)}
-                placeholder="Select a notebook (optional)"
-                className="w-full flex-col items-start gap-1.5"
-              />
+              <div className="flex w-full items-end gap-2">
+                <Dropdown<string>
+                  label="Notebook"
+                  options={notebooks?.map((nb) => nb.id) || []}
+                  selectedOption={selectedNotebookId || undefined}
+                  onSelect={(val) => setSelectedNotebookId(val)}
+                  renderOption={(opt) => {
+                    const notebook: Notebook | undefined = notebooks?.find((n) => n.id === opt);
+                    return notebook ? notebook.title : "Unknown";
+                  }}
+                  placeholder="Select a notebook (optional)"
+                  className="min-w-0 flex-1 flex-col items-start gap-1.5"
+                />
+                {selectedNotebookId && (
+                  <IconButton
+                    icon={<CloseIcon />}
+                    onClick={() => setSelectedNotebookId(null)}
+                    variant="ghost"
+                    ariaLabel="Clear notebook selection"
+                  />
+                )}
+              </div>
             </div>
 
             {saveError && <div className="text-sm text-red-500">Error: {saveError.message}</div>}
