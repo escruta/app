@@ -102,7 +102,14 @@ export function ToolResultViewer({
       case "STUDY_GUIDE":
         return <StudyGuideViewer data={parsedContent.data} />;
       case "MIND_MAP":
-        return <MindMapViewer data={parsedContent.data} onNodeSelect={onNodeSelect} />;
+        return (
+          <MindMapViewer
+            data={parsedContent.data}
+            onNodeSelect={onNodeSelect}
+            isExpanded={isExpanded}
+            setIsExpanded={setIsExpanded}
+          />
+        );
       default:
         return (
           <div className="flex flex-1 items-center justify-center p-6">

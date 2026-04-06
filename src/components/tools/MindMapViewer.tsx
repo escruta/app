@@ -8,6 +8,8 @@ interface MindMapViewerProps {
   data: MindMapResponse;
   className?: string;
   onNodeSelect?: (question: string) => void;
+  isExpanded?: boolean;
+  setIsExpanded?: (isExpanded: boolean) => void;
 }
 
 interface BranchNodeProps {
@@ -104,7 +106,7 @@ function BranchNode({
       setIsExpanded((prev) => !prev);
     } else if (onNodeSelect) {
       const context = path.join(" > ");
-      const question = `Tell me more about "${branch.label}" in the context of "${context}"`;
+      const question = `Explain in detail the concept of "${branch.label}" considering its context within the topic: ${context}.`;
       onNodeSelect(question);
     }
   };
@@ -237,7 +239,7 @@ function MainBranch({
       setIsExpanded((prev) => !prev);
     } else if (onNodeSelect) {
       const context = path.join(" > ");
-      const question = `Tell me more about "${branch.label}" in the context of "${context}"`;
+      const question = `Explain in detail the concept of "${branch.label}" considering its context within the topic: ${context}.`;
       onNodeSelect(question);
     }
   }
@@ -338,7 +340,13 @@ function MainBranch({
   );
 }
 
-export function MindMapViewer({ data, className, onNodeSelect }: MindMapViewerProps) {
+export function MindMapViewer({
+  data,
+  className,
+  onNodeSelect,
+  isExpanded,
+  setIsExpanded,
+}: MindMapViewerProps) {
   const { central, branches } = data;
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -352,6 +360,14 @@ export function MindMapViewer({ data, className, onNodeSelect }: MindMapViewerPr
 
   const handleExpandAll = () => setExpandTrigger((prev) => prev + 1);
   const handleCollapseAll = () => setCollapseTrigger((prev) => prev + 1);
+
+  const handleNodeSelect = useCallback(
+    (question: string) => {
+      if (onNodeSelect) onNodeSelect(question);
+      if (isExpanded && setIsExpanded) setIsExpanded(false);
+    },
+    [onNodeSelect, isExpanded, setIsExpanded],
+  );
 
   useEffect(() => {
     if (containerRef.current && contentRef.current) {
@@ -579,7 +595,7 @@ export function MindMapViewer({ data, className, onNodeSelect }: MindMapViewerPr
                     path={[central]}
                     expandTrigger={expandTrigger}
                     collapseTrigger={collapseTrigger}
-                    onNodeSelect={onNodeSelect}
+                    onNodeSelect={handleNodeSelect}
                   />
                 </div>
               ))}
