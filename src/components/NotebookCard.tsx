@@ -117,7 +117,11 @@ export function NotebookCard({ notebook, viewMode = "grid", onChange }: Notebook
   }
 
   const baseClasses = cn(
-    "z-10 rounded-xs border cursor-pointer bg-white hover:bg-blue-50/50 dark:bg-gray-900 dark:hover:bg-gray-800/80 border-gray-200 dark:border-gray-700 transition-all duration-200 ease-out",
+    "group z-10 rounded-xs border cursor-pointer transition-all duration-300 ease-out",
+    "bg-white dark:bg-gray-900",
+    "border-gray-200 dark:border-gray-700",
+    "hover:bg-blue-50 dark:hover:bg-gray-800",
+    "hover:border-blue-300 dark:hover:border-gray-500",
   );
 
   const gridClasses = cn("h-40 w-full p-4 flex flex-col justify-between");
@@ -180,14 +184,16 @@ export function NotebookCard({ notebook, viewMode = "grid", onChange }: Notebook
         {viewMode === "grid" ? (
           <>
             <div className="flex items-start justify-between">
-              <div className="bg-blue-25 rounded-xs p-2 text-blue-500 dark:bg-blue-900/30 dark:text-blue-300">
-                <NotebookIcon className="h-5 w-5" />
+              <div className="shrink-0 rounded-xs bg-blue-100 p-2 dark:bg-blue-900/50">
+                <div className="flex size-4 items-center justify-center text-blue-600 dark:text-blue-400 [&>svg]:h-full [&>svg]:w-full">
+                  <NotebookIcon />
+                </div>
               </div>
               {renderMenu()}
             </div>
 
             <div>
-              <h2 className="mb-1 line-clamp-2 text-lg font-semibold text-gray-900 dark:text-white">
+              <h2 className="mb-1 line-clamp-2 text-lg font-semibold text-gray-900 transition-colors duration-300 group-hover:text-blue-900 dark:text-gray-100 dark:group-hover:text-blue-100">
                 {notebook.title}
               </h2>
               <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -198,13 +204,13 @@ export function NotebookCard({ notebook, viewMode = "grid", onChange }: Notebook
         ) : (
           <>
             <div className="flex min-w-0 flex-1 items-center gap-3">
-              <div className="bg-blue-25 rounded-xs p-2 text-blue-500 dark:bg-blue-900/30 dark:text-blue-300">
-                <div className="flex h-6 w-6 items-center justify-center [&>svg]:h-full [&>svg]:w-full">
+              <div className="shrink-0 rounded-xs bg-blue-100 p-2 dark:bg-blue-900/50">
+                <div className="flex size-4 items-center justify-center text-blue-600 dark:text-blue-400 [&>svg]:h-full [&>svg]:w-full">
                   <NotebookIcon />
                 </div>
               </div>
               <div className="min-w-0 flex-1">
-                <h2 className="truncate text-lg font-semibold text-gray-900 dark:text-white">
+                <h2 className="truncate text-lg font-semibold text-gray-900 transition-colors duration-300 group-hover:text-blue-900 dark:text-gray-100 dark:group-hover:text-blue-100">
                   {notebook.title}
                 </h2>
                 <p className="text-xs text-gray-500 dark:text-gray-400">

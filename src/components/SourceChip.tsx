@@ -54,7 +54,7 @@ export function SourceChip({
         "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1",
         "dark:focus:ring-offset-gray-900",
         "bg-white dark:bg-gray-900",
-        "border-gray-200 dark:border-gray-600",
+        "border-gray-200 dark:border-gray-700",
         {
           "border-blue-300 dark:border-blue-500 bg-blue-50/30 dark:bg-blue-900/10 hover:bg-blue-100/50 dark:hover:bg-blue-800/40":
             selected,
@@ -77,13 +77,13 @@ export function SourceChip({
       role="button"
     >
       <div className="relative flex h-full items-center gap-3 p-3">
-        <div className="shrink-0 rounded-xs bg-gray-100 p-2 transition-all duration-300 group-hover:bg-blue-100 dark:bg-gray-700 dark:group-hover:bg-blue-800">
-          <div className="grid size-4 place-items-center text-gray-600 transition-all duration-300 group-hover:text-blue-600 dark:text-gray-300 dark:group-hover:text-blue-400">
+        <div className="shrink-0 rounded-xs bg-blue-100 p-2 dark:bg-blue-900/50">
+          <div className="grid size-4 place-items-center text-blue-600 dark:text-blue-400">
             {isPending ? <Spinner size={16} /> : getSourceIcon(source.type)}
           </div>
         </div>
         <div className="min-w-0 flex-1">
-          <h2 className="line-clamp-1 text-sm font-medium text-gray-800 transition-colors duration-300 group-hover:text-blue-900 dark:text-gray-200 dark:group-hover:text-blue-100">
+          <h2 className="line-clamp-1 text-sm font-medium text-gray-900 transition-colors duration-300 group-hover:text-blue-900 dark:text-gray-100 dark:group-hover:text-blue-100">
             {source.title}
           </h2>
           {isFailed && (

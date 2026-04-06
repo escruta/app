@@ -17,7 +17,7 @@ export function NoteChip({ note, className, onSelect }: NoteChipProps) {
         "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1",
         "dark:focus:ring-offset-gray-900",
         "bg-white dark:bg-gray-900",
-        "border-gray-200 dark:border-gray-600",
+        "border-gray-200 dark:border-gray-700",
         "hover:bg-blue-50 dark:hover:bg-gray-800",
         "hover:border-blue-300 dark:hover:border-gray-500",
         className,
@@ -33,13 +33,13 @@ export function NoteChip({ note, className, onSelect }: NoteChipProps) {
       role="button"
     >
       <div className="relative flex h-full items-center gap-3 p-3">
-        <div className="shrink-0 rounded-xs bg-gray-100 p-2 transition-all duration-300 group-hover:bg-blue-100 dark:bg-gray-700 dark:group-hover:bg-blue-800">
+        <div className="shrink-0 rounded-xs bg-blue-100 p-2 dark:bg-blue-900/50">
           {note.icon ? (
             <span className="flex size-4 items-center justify-center text-sm leading-none">
               {note.icon}
             </span>
           ) : (
-            <div className="size-4 text-gray-600 transition-all duration-300 group-hover:text-blue-600 dark:text-gray-300 dark:group-hover:text-blue-400">
+            <div className="size-4 text-blue-600 dark:text-blue-400">
               <NoteIcon />
             </div>
           )}

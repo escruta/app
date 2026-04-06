@@ -103,14 +103,11 @@ export function ToolCard({
     >
       <div className="relative flex h-full items-center gap-3 p-3">
         <div
-          className={cn("shrink-0 p-2 rounded-xs transition-all duration-300", {
-            "bg-gray-100 dark:bg-gray-700 group-hover:bg-blue-100 dark:group-hover:bg-blue-800":
-              !isLoading && !isCompleted && !isFailed,
-            "bg-blue-100 dark:bg-blue-800": isLoading,
-            "bg-green-100 dark:bg-green-800 group-hover:bg-green-200 dark:group-hover:bg-green-700":
-              isCompleted && hasResult,
-            "bg-red-100 dark:bg-red-800 group-hover:bg-red-200 dark:group-hover:bg-red-700":
-              isFailed,
+          className={cn("shrink-0 p-2 rounded-xs", {
+            "bg-blue-100 dark:bg-blue-900/50": !isLoading && !isCompleted && !isFailed,
+            "bg-blue-200 dark:bg-blue-800": isLoading,
+            "bg-green-100 dark:bg-green-900/50": isCompleted && hasResult,
+            "bg-red-100 dark:bg-red-900/50": isFailed,
           })}
         >
           {isLoading ? (
@@ -124,14 +121,7 @@ export function ToolCard({
               <CloseIcon />
             </div>
           ) : (
-            <div
-              className={cn(
-                "size-4 transition-all duration-300",
-                "text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400",
-              )}
-            >
-              {icon}
-            </div>
+            <div className="size-4 text-blue-600 dark:text-blue-400">{icon}</div>
           )}
         </div>
 
