@@ -2,6 +2,7 @@ export * from "./AppIcon.tsx";
 export * from "./ChatCard.tsx";
 export * from "./CommonBar.tsx";
 export * from "./HomeActionCard.tsx";
+export * from "./HomeChipProduct.tsx";
 export * from "./Logotype.tsx";
 export * from "./NotebookCard.tsx";
 export * from "./NoteChip.tsx";

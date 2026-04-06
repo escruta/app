@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router";
 import type { Note, Notebook } from "@/interfaces";
 import { useFetch, useCookie } from "@/hooks";
 import {
@@ -55,6 +56,19 @@ export default function NotesPage() {
   const [selectedNotebookId, setSelectedNotebookId] = useState<string | null>(null);
   const [expandedNotebooks, setExpandedNotebooks] = useState<Record<string, boolean>>({});
   const [sortBy, setSortBy] = useCookie<SortOptions>("noteSortPreference", SortOptions.Newest);
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (notes && location.state?.noteId) {
+      const noteToSelect = notes.find((n) => n.id === location.state.noteId);
+      if (noteToSelect) {
+        setSelectedNote(noteToSelect);
+      }
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [notes, location.state, navigate, location.pathname]);
 
   const {
     loading: savingNote,

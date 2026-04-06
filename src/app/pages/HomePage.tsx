@@ -1,13 +1,13 @@
 import { useNavigate } from "react-router";
 import { useState } from "react";
 import { useAuth, useFetch } from "@/hooks";
-import { HomeActionCard, SEOMetadata } from "@/components";
+import { HomeActionCard, HomeChipProduct, SEOMetadata } from "@/components";
 import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
 import { getRouteMetadata } from "@/lib/seo";
 import { NotebookIcon, NoteIcon, SettingsIcon, SendIcon } from "@/components/icons";
 import { motion } from "motion/react";
 import { Dropdown, TextField, IconButton } from "@/components/ui";
-import type { Notebook } from "@/interfaces";
+import type { Notebook, Note } from "@/interfaces";
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -19,12 +19,31 @@ export default function HomePage() {
   const { data: notebooksData, loading: isLoadingNotebooks } = useFetch<Notebook[]>("/notebooks", {
     method: "GET",
   });
+  const { data: notesData } = useFetch<Note[]>("/notes", {
+    method: "GET",
+  });
 
   const notebooks = notebooksData || [];
+  const notes = notesData || [];
+
+  const recentNotebooks = [...notebooks]
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    .slice(0, 3);
+  const recentNotes = [...notes]
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    .slice(0, 3);
 
   const handleSendMessage = () => {
     if (!input.trim() || !selectedNotebook) return;
     navigate(`/notebook/${selectedNotebook.id}`, { state: { question: input } });
+  };
+
+  const formatDate = (dateValue: string | Date) => {
+    return new Date(dateValue).toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
   return (
@@ -39,7 +58,7 @@ export default function HomePage() {
       <div className="relative flex-1 overflow-auto p-4 md:p-8">
         <SimpleBackground />
 
-        <div className="relative z-10 mx-auto max-w-4xl pt-32">
+        <div className="relative z-10 mx-auto max-w-4xl pt-8 md:pt-24">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -125,6 +144,61 @@ export default function HomePage() {
               onClick={() => navigate("/settings")}
             />
           </motion.div>
+
+          {(recentNotebooks.length > 0 || recentNotes.length > 0) && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
+              className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2"
+            >
+              {recentNotebooks.length > 0 && (
+                <div className="mb-6 md:mb-0">
+                  <h3 className="mb-3 text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Recent notebooks
+                  </h3>
+                  <div className="flex flex-col gap-2">
+                    {recentNotebooks.map((notebook) => (
+                      <HomeChipProduct
+                        key={notebook.id}
+                        title={notebook.title}
+                        icon={<NotebookIcon className="size-4 text-blue-500 dark:text-blue-400" />}
+                        onClick={() => navigate(`/notebook/${notebook.id}`)}
+                        date={formatDate(notebook.updatedAt)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {recentNotes.length > 0 && (
+                <div>
+                  <h3 className="mb-3 text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Recent notes
+                  </h3>
+                  <div className="flex flex-col gap-2">
+                    {recentNotes.map((note) => (
+                      <HomeChipProduct
+                        key={note.id}
+                        title={note.title}
+                        icon={
+                          note.icon ? (
+                            <span className="flex size-4 items-center justify-center text-sm leading-none">
+                              {note.icon}
+                            </span>
+                          ) : (
+                            <NoteIcon className="size-4 text-blue-500 dark:text-blue-400" />
+                          )
+                        }
+                        onClick={() => navigate("/notes", { state: { noteId: note.id } })}
+                        date={formatDate(note.updatedAt)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          )}
         </div>
       </div>
     </div>
