@@ -2,7 +2,7 @@ import { useNavigate } from "react-router";
 import { useState } from "react";
 import { useAuth, useFetch } from "@/hooks";
 import { HomeActionCard, HomeChipProduct, SEOMetadata } from "@/components";
-import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
+import { GaussianBlurGradientBackground } from "@/components/backgrounds/GaussianBlurGradientBackground";
 import { getRouteMetadata } from "@/lib/seo";
 import { NotebookIcon, NoteIcon, SettingsIcon, SendIcon } from "@/components/icons";
 import { motion } from "motion/react";
@@ -56,7 +56,7 @@ export default function HomePage() {
         twitterCard={metadata?.twitterCard}
       />
       <div className="relative flex-1 overflow-auto p-4 md:p-8">
-        <SimpleBackground />
+        <GaussianBlurGradientBackground />
 
         <div className="relative z-10 mx-auto max-w-4xl pt-8 md:pt-24">
           <motion.div
