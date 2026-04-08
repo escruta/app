@@ -8,9 +8,7 @@ type DividerProps = {
 
 export function Divider({ className = "", orientation = "horizontal", label }: DividerProps) {
   if (orientation === "vertical") {
-    return (
-      <div className={cn("inline-block h-full w-px bg-gray-200 dark:bg-gray-700", className)} />
-    );
+    return <div className={cn("border-r border-gray-200 dark:border-gray-700 mx-2", className)} />;
   }
 
   if (label) {

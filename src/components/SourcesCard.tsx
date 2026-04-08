@@ -1,5 +1,12 @@
 import type { Source } from "@/interfaces";
-import { AddIcon, UploadIcon, FileIcon, LinkIcon, NoteIcon } from "@/components/icons";
+import {
+  AddIcon,
+  UploadIcon,
+  FileIcon,
+  LinkIcon,
+  NoteIcon,
+  CompressIcon,
+} from "@/components/icons";
 import { SourceChip } from "./SourceChip";
 import {
   Card,
@@ -13,6 +20,8 @@ import {
   MenuTrigger,
   MenuContent,
   MenuItem,
+  IconButton,
+  Tooltip,
 } from "@/components/ui";
 import { useState } from "react";
 import { useFetch } from "@/hooks";
@@ -28,6 +37,7 @@ interface SourcesCardProps {
   onSelectAll?: (sourceIds: string[]) => void;
   onClearSelection?: () => void;
   onSourcesChange?: () => void;
+  onToggleCollapse?: () => void;
 }
 
 export function SourcesCard({
@@ -40,6 +50,7 @@ export function SourcesCard({
   onSelectAll,
   onClearSelection,
   onSourcesChange,
+  onToggleCollapse,
 }: SourcesCardProps) {
   const [isAddSourceModalOpen, setIsAddSourceModalOpen] = useState<boolean>(false);
 
@@ -171,32 +182,17 @@ export function SourcesCard({
         <div className="z-10 shrink-0 rounded-t-xs bg-white dark:bg-gray-900">
           <div className="flex flex-row items-center justify-between p-4">
             <h2 className="font-sans text-lg font-semibold">Sources</h2>
-            <div className="flex gap-3">
-              <Menu>
-                <MenuTrigger>
-                  <Button icon={<AddIcon />} variant="primary" size="sm" className="shrink-0">
-                    Add source
-                  </Button>
-                </MenuTrigger>
-                <MenuContent>
-                  <MenuItem
-                    icon={<FileIcon />}
-                    label="Upload file"
-                    onClick={() => handleOpenModal("File")}
-                  />
-                  <MenuItem
-                    icon={<LinkIcon />}
-                    label="Website link"
-                    onClick={() => handleOpenModal("Website")}
-                  />
-                  <MenuItem
-                    icon={<NoteIcon />}
-                    label="Direct text"
-                    onClick={() => handleOpenModal("Text")}
-                  />
-                </MenuContent>
-              </Menu>
-            </div>
+            {onToggleCollapse && (
+              <Tooltip text="Collapse panel" position="bottom">
+                <IconButton
+                  icon={<CompressIcon />}
+                  onClick={onToggleCollapse}
+                  variant="secondary"
+                  size="sm"
+                  aria-label="Collapse panel"
+                />
+              </Tooltip>
+            )}
           </div>
           <Divider className="my-0" />
         </div>
@@ -208,6 +204,30 @@ export function SourcesCard({
             if (sources && sources.length > 0) {
               return (
                 <div className="flex flex-col gap-2 py-4">
+                  <Menu className="w-full">
+                    <MenuTrigger className="block w-full">
+                      <Button icon={<AddIcon />} variant="primary" size="sm" className="w-full">
+                        Add source
+                      </Button>
+                    </MenuTrigger>
+                    <MenuContent>
+                      <MenuItem
+                        icon={<FileIcon />}
+                        label="Upload file"
+                        onClick={() => handleOpenModal("File")}
+                      />
+                      <MenuItem
+                        icon={<LinkIcon />}
+                        label="Website link"
+                        onClick={() => handleOpenModal("Website")}
+                      />
+                      <MenuItem
+                        icon={<NoteIcon />}
+                        label="Direct text"
+                        onClick={() => handleOpenModal("Text")}
+                      />
+                    </MenuContent>
+                  </Menu>
                   <Button variant="secondary" size="sm" onClick={handleSelectAllToggle}>
                     {isAllSelected ? "Deselect all sources" : "Select all sources"}
                   </Button>

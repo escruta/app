@@ -52,7 +52,13 @@ export function Menu({ children, className }: { children: ReactNode; className?:
   );
 }
 
-export function MenuTrigger({ children }: { children: ReactElement<HTMLAttributes<HTMLElement>> }) {
+export function MenuTrigger({
+  children,
+  className,
+}: {
+  children: ReactElement<HTMLAttributes<HTMLElement>>;
+  className?: string;
+}) {
   const context = useContext(MenuContext);
   const localRef = useRef<HTMLSpanElement>(null);
 
@@ -70,7 +76,7 @@ export function MenuTrigger({ children }: { children: ReactElement<HTMLAttribute
   if (!context) return null;
 
   return (
-    <span ref={setRefs} className="inline-block">
+    <span ref={setRefs} className={cn("inline-block", className)}>
       {cloneElement(children, {
         onClick: (e: React.MouseEvent<HTMLElement>) => {
           children.props.onClick?.(e);

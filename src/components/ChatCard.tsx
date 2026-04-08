@@ -422,7 +422,7 @@ export function ChatCard({
       {messages.length > 0 ? (
         <div
           ref={scrollContainerRef}
-          className="min-h-0 flex-1 scroll-pt-4 space-y-4 overflow-y-auto scroll-smooth px-4 py-4 md:px-6"
+          className="min-h-0 flex-1 scroll-pt-4 space-y-4 overflow-y-auto scroll-smooth px-4 py-4 md:px-6 [&>*]:mx-auto [&>*]:max-w-4xl"
         >
           <AnimatePresence>
             {messages.map((message, index) => (
@@ -448,7 +448,7 @@ export function ChatCard({
           <div style={{ height: inputHeight }} className="shrink-0" />
         </div>
       ) : (
-        <div className="flex max-h-full min-h-0 flex-grow flex-col overflow-y-auto px-4">
+        <div className="flex max-h-full min-h-0 flex-grow flex-col overflow-y-auto px-4 [&>*]:mx-auto [&>*]:max-w-4xl">
           {sourcesCount > 0 ? (
             <div className="w-full">
               <NotebookSummary
@@ -494,7 +494,7 @@ export function ChatCard({
         <div className="absolute inset-0 mx-4 bg-linear-to-t from-white from-80% to-transparent dark:from-gray-900/80 dark:to-transparent" />
         <div
           ref={inputContainerRef}
-          className="pointer-events-auto relative m-4 mt-6 flex flex-col rounded-xs border border-gray-300 bg-white shadow-sm transition-all focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400"
+          className="pointer-events-auto relative mx-auto my-6 flex w-[calc(100%-2rem)] max-w-4xl flex-col rounded-xs border border-gray-300 bg-white shadow-sm transition-all focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400"
         >
           <TextField
             id="chat-input"

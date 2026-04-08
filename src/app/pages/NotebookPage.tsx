@@ -15,6 +15,8 @@ import {
 } from "@/components";
 import { generateNotebookMetadata } from "@/lib/seo";
 import { cn } from "@/lib/utils";
+import { ExpandIcon } from "@/components/icons";
+import { Tooltip, IconButton } from "@/components/ui";
 import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
 import { NotebookErrorState, NotebookLoadingState } from "./notebook/NotebookStates";
 import { RenameNotebookModal } from "./notebook/RenameNotebookModal";
@@ -41,8 +43,14 @@ export default function NotebookPage() {
   const [selectedSource, setSelectedSource] = useState<Source | null>(null);
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
   const [notesRefreshKey, setNotesRefreshKey] = useState<number>(0);
-  const [leftPanelWidth, setLeftPanelWidth] = useCookie<number>("notebookLeftPanelWidth", 50);
-  const [isResizing, setIsResizing] = useState<boolean>(false);
+  const [leftPanelWidth, setLeftPanelWidth] = useCookie<number>("notebookLeftPanelWidth", 30);
+  const [rightPanelWidth, setRightPanelWidth] = useCookie<number>("notebookRightPanelWidth", 30);
+  const [isLeftCollapsed, setIsLeftCollapsed] = useCookie<boolean>("notebookLeftCollapsed", false);
+  const [isRightCollapsed, setIsRightCollapsed] = useCookie<boolean>(
+    "notebookRightCollapsed",
+    false,
+  );
+  const [activeResizer, setActiveResizer] = useState<"left" | "right" | null>(null);
   const tabsRef = useRef<TabsRef>(null);
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -125,21 +133,36 @@ export default function NotebookPage() {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isResizing || !sectionRef.current) return;
+      if (!activeResizer || !sectionRef.current) return;
 
       const rect = sectionRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left;
+      const minCenterWidth = 30;
 
-      const newWidth = Math.min(Math.max((x / rect.width) * 100, 36), 64);
-      setLeftPanelWidth(newWidth);
+      if (activeResizer === "left") {
+        const currentRight = isRightCollapsed ? 0 : (rightPanelWidth ?? 25);
+        const maxAvailable = 100 - minCenterWidth - currentRight;
+        const maxLimit = Math.min(50, maxAvailable);
+        const newWidth = Math.min(Math.max((x / rect.width) * 100, 30), maxLimit);
+        setLeftPanelWidth(newWidth);
+        setIsLeftCollapsed(false);
+      } else if (activeResizer === "right") {
+        const rightX = rect.width - x;
+        const currentLeft = isLeftCollapsed ? 0 : (leftPanelWidth ?? 25);
+        const maxAvailable = 100 - minCenterWidth - currentLeft;
+        const maxLimit = Math.min(50, maxAvailable);
+        const newWidth = Math.min(Math.max((rightX / rect.width) * 100, 30), maxLimit);
+        setRightPanelWidth(newWidth);
+        setIsRightCollapsed(false);
+      }
     };
 
     const handleMouseUp = () => {
-      setIsResizing(false);
+      setActiveResizer(null);
       document.body.classList.remove("resizing");
     };
 
-    if (isResizing) {
+    if (activeResizer) {
       document.body.classList.add("resizing");
       document.addEventListener("mousemove", handleMouseMove);
       document.addEventListener("mouseup", handleMouseUp);
@@ -150,7 +173,73 @@ export default function NotebookPage() {
       document.removeEventListener("mouseup", handleMouseUp);
       document.body.classList.remove("resizing");
     };
-  }, [isResizing, setLeftPanelWidth]);
+  }, [
+    activeResizer,
+    setLeftPanelWidth,
+    setRightPanelWidth,
+    setIsLeftCollapsed,
+    setIsRightCollapsed,
+  ]);
+
+  const expandLeft = () => {
+    let desiredLeft = Math.max(30, leftPanelWidth ?? 30);
+    const currentRight = isRightCollapsed ? 0 : Math.max(30, rightPanelWidth ?? 30);
+
+    if (desiredLeft + currentRight + 30 > 100) {
+      const availableForRight = 100 - 30 - desiredLeft;
+      if (availableForRight < 30 && !isRightCollapsed) {
+        setRightPanelWidth(30);
+        desiredLeft = 40;
+      } else if (!isRightCollapsed) {
+        setRightPanelWidth(availableForRight);
+      }
+    }
+    setLeftPanelWidth(desiredLeft);
+    setIsLeftCollapsed(false);
+  };
+
+  const expandRight = () => {
+    let desiredRight = Math.max(30, rightPanelWidth ?? 30);
+    const currentLeft = isLeftCollapsed ? 0 : Math.max(30, leftPanelWidth ?? 30);
+
+    if (desiredRight + currentLeft + 30 > 100) {
+      const availableForLeft = 100 - 30 - desiredRight;
+      if (availableForLeft < 30 && !isLeftCollapsed) {
+        setLeftPanelWidth(30);
+        desiredRight = 40;
+      } else if (!isLeftCollapsed) {
+        setLeftPanelWidth(availableForLeft);
+      }
+    }
+    setRightPanelWidth(desiredRight);
+    setIsRightCollapsed(false);
+  };
+
+  const handleMouseDownLeft = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setActiveResizer("left");
+  };
+
+  const handleDoubleClickLeft = () => {
+    const currentRight = isRightCollapsed ? 0 : Math.max(30, rightPanelWidth ?? 30);
+    const maxAvailable = 100 - 30 - currentRight;
+    const maxLimit = Math.min(50, maxAvailable);
+    setLeftPanelWidth(maxLimit);
+    setIsLeftCollapsed(false);
+  };
+
+  const handleMouseDownRight = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setActiveResizer("right");
+  };
+
+  const handleDoubleClickRight = () => {
+    const currentLeft = isLeftCollapsed ? 0 : Math.max(30, leftPanelWidth ?? 30);
+    const maxAvailable = 100 - 30 - currentLeft;
+    const maxLimit = Math.min(50, maxAvailable);
+    setRightPanelWidth(maxLimit);
+    setIsRightCollapsed(false);
+  };
 
   const {
     loading: renamingNotebook,
@@ -167,15 +256,6 @@ export default function NotebookPage() {
     },
     false,
   );
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsResizing(true);
-  };
-
-  const handleDoubleClick = () => {
-    setLeftPanelWidth(50);
-  };
 
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
@@ -227,7 +307,7 @@ export default function NotebookPage() {
         ) : null}
       </AnimatePresence>
       <div
-        className={cn("h-full transition-all duration-200", {
+        className={cn("h-full transition-[opacity,transform] duration-200", {
           "opacity-50 scale-[0.98]": selectedSource,
           "opacity-100 scale-100": !selectedSource,
         })}
@@ -244,6 +324,7 @@ export default function NotebookPage() {
           onSourcesChange={() => {
             refetchNotebook(true, false);
           }}
+          onToggleCollapse={() => setIsLeftCollapsed(true)}
         />
       </div>
     </div>
@@ -274,7 +355,7 @@ export default function NotebookPage() {
         ) : null}
       </AnimatePresence>
       <div
-        className={cn("h-full transition-all duration-200", {
+        className={cn("h-full transition-[opacity,transform] duration-200", {
           "opacity-50 scale-[0.98]": selectedNote,
           "opacity-100 scale-100": !selectedNote,
         })}
@@ -354,62 +435,55 @@ export default function NotebookPage() {
         ) : (
           <section ref={sectionRef} className="flex h-full gap-1 overflow-hidden">
             <div
-              className={cn("min-h-0 flex flex-col overflow-hidden", {
-                "transition-all duration-200 ease-out": !isResizing,
-              })}
-              style={{ width: `${leftPanelWidth ?? 50}%` }}
+              className={cn(
+                "min-h-0 flex flex-col overflow-hidden transition-[width,background-color,border-color] duration-200 ease-out shrink-0",
+              )}
+              style={{ width: isLeftCollapsed ? "48px" : `${leftPanelWidth ?? 25}%` }}
             >
-              <Tabs
-                ref={tabsRef}
-                className="h-full"
-                items={[
-                  {
-                    id: "1",
-                    label: "Sources",
-                    content: sourcesTabContent,
-                  },
-                  {
-                    id: "2",
-                    label: "Notes",
-                    content: notesTabContent,
-                  },
-                  {
-                    id: "3",
-                    label: "Tools",
-                    content: (
-                      <ToolsCard
-                        notebookId={notebookId}
-                        onNodeSelect={handleNodeSelect}
-                        hasSources={(notebook?.sources?.length ?? 0) > 0}
-                      />
-                    ),
-                  },
-                ]}
-                defaultActiveTab="1"
-              />
+              {isLeftCollapsed && (
+                <div className="flex h-full w-full flex-col items-center py-3">
+                  <Tooltip text="Expand Sources" position="right">
+                    <IconButton
+                      icon={<ExpandIcon />}
+                      onClick={expandLeft}
+                      variant="secondary"
+                      size="sm"
+                      aria-label="Expand Sources"
+                    />
+                  </Tooltip>
+                  <div
+                    className="mt-4 flex-1 text-xs font-medium tracking-widest text-gray-400 uppercase select-none [writing-mode:vertical-rl]"
+                    style={{ transform: "rotate(180deg)" }}
+                  >
+                    Sources
+                  </div>
+                </div>
+              )}
+
+              <div className={cn("h-full w-full", { hidden: isLeftCollapsed })}>
+                {sourcesTabContent}
+              </div>
             </div>
 
-            {/* Resizer */}
-            <div
-              className="group z-5 flex w-2 cursor-col-resize items-center justify-center"
-              onMouseDown={handleMouseDown}
-              onDoubleClick={handleDoubleClick}
-            >
+            {/* Left Resizer */}
+            {!isLeftCollapsed && (
               <div
-                className={cn("w-px h-1/12 rounded-xs transition-all duration-150", {
-                  "bg-blue-500 dark:bg-blue-400": isResizing,
-                  "bg-gray-300/60 dark:bg-gray-600 group-hover:bg-blue-400 dark:group-hover:bg-blue-500":
-                    !isResizing,
-                })}
-              />
-            </div>
+                className="group z-5 flex w-2 cursor-col-resize items-center justify-center"
+                onMouseDown={handleMouseDownLeft}
+                onDoubleClick={handleDoubleClickLeft}
+                title="Double click to toggle"
+              >
+                <div
+                  className={cn("w-px h-1/12 rounded-xs transition-all duration-150", {
+                    "bg-blue-500 dark:bg-blue-400": activeResizer === "left",
+                    "bg-gray-300/60 dark:bg-gray-600 group-hover:bg-blue-400 dark:group-hover:bg-blue-500":
+                      activeResizer !== "left",
+                  })}
+                />
+              </div>
+            )}
 
-            <div
-              className={cn("min-h-0 flex flex-col overflow-hidden", {
-                "transition-all duration-200 ease-out": !isResizing,
-              })}
-              style={{ width: `${100 - (leftPanelWidth ?? 50)}%` }}
-            >
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
               <ChatCard
                 notebookId={notebookId}
                 sources={notebook?.sources || []}
@@ -418,6 +492,74 @@ export default function NotebookPage() {
                 externalQuestion={chatQuestion}
                 onExternalQuestionHandled={() => setChatQuestion(null)}
               />
+            </div>
+
+            {/* Right Resizer */}
+            {!isRightCollapsed && (
+              <div
+                className="group z-5 flex w-2 cursor-col-resize items-center justify-center"
+                onMouseDown={handleMouseDownRight}
+                onDoubleClick={handleDoubleClickRight}
+                title="Double click to toggle"
+              >
+                <div
+                  className={cn("w-px h-1/12 rounded-xs transition-all duration-150", {
+                    "bg-blue-500 dark:bg-blue-400": activeResizer === "right",
+                    "bg-gray-300/60 dark:bg-gray-600 group-hover:bg-blue-400 dark:group-hover:bg-blue-500":
+                      activeResizer !== "right",
+                  })}
+                />
+              </div>
+            )}
+
+            <div
+              className={cn(
+                "min-h-0 flex flex-col overflow-hidden transition-[width,background-color,border-color] duration-200 ease-out shrink-0",
+              )}
+              style={{ width: isRightCollapsed ? "48px" : `${rightPanelWidth ?? 25}%` }}
+            >
+              {isRightCollapsed && (
+                <div className="flex h-full w-full flex-col items-center py-3">
+                  <Tooltip text="Expand Notes & Tools" position="left">
+                    <IconButton
+                      icon={<ExpandIcon />}
+                      onClick={expandRight}
+                      variant="secondary"
+                      size="sm"
+                      aria-label="Expand Notes & Tools"
+                    />
+                  </Tooltip>
+                  <div className="mt-4 flex-1 text-xs font-medium tracking-widest text-gray-400 uppercase select-none [writing-mode:vertical-rl]">
+                    Notes & Tools
+                  </div>
+                </div>
+              )}
+
+              <div className={cn("h-full w-full", { hidden: isRightCollapsed })}>
+                <Tabs
+                  className="h-full"
+                  onToggleCollapse={() => setIsRightCollapsed(true)}
+                  items={[
+                    {
+                      id: "notes",
+                      label: "Notes",
+                      content: notesTabContent,
+                    },
+                    {
+                      id: "tools",
+                      label: "Tools",
+                      content: (
+                        <ToolsCard
+                          notebookId={notebookId}
+                          onNodeSelect={handleNodeSelect}
+                          hasSources={(notebook?.sources?.length ?? 0) > 0}
+                        />
+                      ),
+                    },
+                  ]}
+                  defaultActiveTab="notes"
+                />
+              </div>
             </div>
           </section>
         )}
