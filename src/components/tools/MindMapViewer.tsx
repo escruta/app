@@ -56,15 +56,15 @@ const getLineColor = (level: number) => {
 const getChevronColors = (level: number) => {
   const styles = [
     "",
-    "bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400",
-    "bg-purple-100 text-purple-600 dark:bg-purple-900/50 dark:text-purple-400",
-    "bg-teal-100 text-teal-600 dark:bg-teal-900/50 dark:text-teal-400",
-    "bg-orange-100 text-orange-600 dark:bg-orange-900/50 dark:text-orange-400",
-    "bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-400",
-    "bg-yellow-100 text-yellow-600 dark:bg-yellow-900/50 dark:text-yellow-400",
-    "bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400",
+    "bg-blue-100 border-blue-300 text-blue-600 dark:bg-blue-900/50 dark:border-blue-800 dark:text-blue-400",
+    "bg-purple-100 border-purple-300 text-purple-600 dark:bg-purple-900/50 dark:border-purple-800 dark:text-purple-400",
+    "bg-teal-100 border-teal-300 text-teal-600 dark:bg-teal-900/50 dark:border-teal-800 dark:text-teal-400",
+    "bg-orange-100 border-orange-300 text-orange-600 dark:bg-orange-900/50 dark:border-orange-800 dark:text-orange-400",
+    "bg-green-100 border-green-300 text-green-600 dark:bg-green-900/50 dark:border-green-800 dark:text-green-400",
+    "bg-yellow-100 border-yellow-300 text-yellow-600 dark:bg-yellow-900/50 dark:border-yellow-800 dark:text-yellow-400",
+    "bg-red-100 border-red-300 text-red-600 dark:bg-red-900/50 dark:border-red-800 dark:text-red-400",
   ];
-  return styles[Math.min(level, styles.length - 1)];
+  return cn("border", styles[Math.min(level, styles.length - 1)]);
 };
 
 const getHoverColors = (level: number) => {
@@ -102,9 +102,7 @@ function BranchNode({
   }, [collapseTrigger]);
 
   const handleNodeClick = () => {
-    if (hasChildren) {
-      setIsExpanded((prev) => !prev);
-    } else if (onNodeSelect) {
+    if (onNodeSelect) {
       const context = path.join(" > ");
       const question = `Explain in detail the concept of "${branch.label}" considering its context within the topic: ${context}.`;
       onNodeSelect(question);
@@ -117,39 +115,56 @@ function BranchNode({
       <div className={cn("h-px w-8 flex-shrink-0", getLineColor(level - 1))} />
 
       <div className="flex items-center">
-        {/* Node */}
-        <div
-          className={cn(
-            "relative flex items-center gap-1.5 px-3 py-1.5 rounded-xs border text-sm whitespace-nowrap select-none transition-colors",
-            getNodeColors(level, isLeaf),
-            {
-              ["cursor-pointer"]: hasChildren || onNodeSelect,
-              [getHoverColors(level)]: hasChildren || onNodeSelect,
-            },
-          )}
-          onClick={handleNodeClick}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              handleNodeClick();
-            }
-          }}
-          tabIndex={0}
-          role="button"
-        >
-          <span>{branch.label}</span>
+        {/* Node Container */}
+        <div className="z-10 flex items-center gap-1.5">
+          {/* Node */}
+          <div
+            className={cn(
+              "relative flex items-center px-3 py-1.5 rounded-xs border text-sm whitespace-nowrap select-none transition-colors",
+              getNodeColors(level, isLeaf),
+              {
+                "cursor-pointer": !!onNodeSelect,
+                [getHoverColors(level)]: !!onNodeSelect,
+              },
+            )}
+            onClick={handleNodeClick}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleNodeClick();
+              }
+            }}
+            tabIndex={0}
+            role="button"
+          >
+            <span>{branch.label}</span>
+          </div>
           {hasChildren && (
-            <span
+            <div
               className={cn(
-                "flex size-4 items-center justify-center rounded-xs",
+                "flex size-5 cursor-pointer items-center justify-center rounded-xs transition-colors",
                 getChevronColors(level),
+                getHoverColors(level),
               )}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsExpanded((prev) => !prev);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsExpanded((prev) => !prev);
+                }
+              }}
+              tabIndex={0}
+              role="button"
             >
               <ChevronIcon
                 direction={isExpanded ? "left" : "right"}
-                className="size-3 transition-transform duration-200"
+                className="size-3.5 transition-transform duration-200"
               />
-            </span>
+            </div>
           )}
         </div>
 
@@ -235,9 +250,7 @@ function MainBranch({
   }, [collapseTrigger]);
 
   function handleNodeClick() {
-    if (hasChildren) {
-      setIsExpanded((prev) => !prev);
-    } else if (onNodeSelect) {
+    if (onNodeSelect) {
       const context = path.join(" > ");
       const question = `Explain in detail the concept of "${branch.label}" considering its context within the topic: ${context}.`;
       onNodeSelect(question);
@@ -247,39 +260,56 @@ function MainBranch({
   return (
     <div className="flex items-center py-2">
       <div className="flex items-center">
-        {/* Main branch node */}
-        <div
-          className={cn(
-            "relative flex items-center gap-1.5 px-4 py-2 rounded-xs border select-none transition-colors whitespace-nowrap",
-            getNodeColors(1, !hasChildren),
-            {
-              "cursor-pointer": hasChildren || onNodeSelect,
-              [getHoverColors(1)]: hasChildren || onNodeSelect,
-            },
-          )}
-          onClick={handleNodeClick}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              handleNodeClick();
-            }
-          }}
-          tabIndex={0}
-          role="button"
-        >
-          <span>{branch.label}</span>
+        {/* Main branch node container */}
+        <div className="z-10 flex items-center gap-1.5">
+          {/* Main branch node */}
+          <div
+            className={cn(
+              "relative flex items-center px-4 py-2 rounded-xs border select-none transition-colors whitespace-nowrap",
+              getNodeColors(1, !hasChildren),
+              {
+                "cursor-pointer": !!onNodeSelect,
+                [getHoverColors(1)]: !!onNodeSelect,
+              },
+            )}
+            onClick={handleNodeClick}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleNodeClick();
+              }
+            }}
+            tabIndex={0}
+            role="button"
+          >
+            <span>{branch.label}</span>
+          </div>
           {hasChildren && (
-            <span
+            <div
               className={cn(
-                "flex size-5 items-center justify-center rounded-xs",
+                "flex size-6 cursor-pointer items-center justify-center rounded-xs transition-colors",
                 getChevronColors(1),
+                getHoverColors(1),
               )}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsExpanded((prev) => !prev);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsExpanded((prev) => !prev);
+                }
+              }}
+              tabIndex={0}
+              role="button"
             >
               <ChevronIcon
                 direction={isExpanded ? "left" : "right"}
-                className="size-3.5 transition-transform duration-200"
+                className="size-4 transition-transform duration-200"
               />
-            </span>
+            </div>
           )}
         </div>
 
