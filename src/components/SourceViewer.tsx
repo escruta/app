@@ -11,6 +11,7 @@ import {
   ExpandIcon,
   CompressIcon,
   StarsIcon,
+  DotsVerticalIcon,
 } from "@/components/icons";
 import {
   Alert,
@@ -22,6 +23,10 @@ import {
   Divider,
   Spinner,
   Skeleton,
+  Menu,
+  MenuTrigger,
+  MenuContent,
+  MenuItem,
 } from "@/components/ui";
 import { cn, getYouTubeVideoId, getHttpErrorMessage } from "@/lib/utils";
 
@@ -205,48 +210,100 @@ export function SourceViewer({
               </span>
             </h2>
             <div className="flex gap-2">
-              <Tooltip
-                text={source.type === "YouTube Video" ? "Copy video URL" : "Copy source content"}
-                position="bottom"
-              >
-                <IconButton
-                  icon={<CopyIcon />}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    const textToCopy =
-                      source.type === "YouTube Video"
-                        ? fullSource?.link || source.link
-                        : fullSource?.content || "";
-                    const message =
-                      source.type === "YouTube Video"
-                        ? "Video URL copied to clipboard"
-                        : "Source content copied to clipboard";
-                    navigator.clipboard.writeText(textToCopy);
-                    showToast(message, "success", { duration: 1500 });
-                  }}
-                />
-              </Tooltip>
-              {source.type === "Website" && (
-                <Tooltip text="Open source" position="bottom">
-                  <IconButton
-                    icon={<LinkIcon />}
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      window.open(fullSource?.link, "_blank", "noopener noreferrer");
-                    }}
-                  />
-                </Tooltip>
+              {!isExpanded ? (
+                <Menu>
+                  <MenuTrigger>
+                    <IconButton
+                      icon={<DotsVerticalIcon />}
+                      variant="ghost"
+                      size="sm"
+                      aria-label="More options"
+                    />
+                  </MenuTrigger>
+                  <MenuContent>
+                    <MenuItem
+                      icon={<CopyIcon />}
+                      label={
+                        source.type === "YouTube Video" ? "Copy video URL" : "Copy source content"
+                      }
+                      onClick={() => {
+                        const textToCopy =
+                          source.type === "YouTube Video"
+                            ? fullSource?.link || source.link
+                            : fullSource?.content || "";
+                        const message =
+                          source.type === "YouTube Video"
+                            ? "Video URL copied to clipboard"
+                            : "Source content copied to clipboard";
+                        navigator.clipboard.writeText(textToCopy);
+                        showToast(message, "success", { duration: 1500 });
+                      }}
+                    />
+                    {source.type === "Website" && (
+                      <MenuItem
+                        icon={<LinkIcon />}
+                        label="Open source"
+                        onClick={() => {
+                          window.open(fullSource?.link, "_blank", "noopener noreferrer");
+                        }}
+                      />
+                    )}
+                    <MenuItem
+                      icon={<DeleteIcon />}
+                      label="Delete source"
+                      variant="danger"
+                      onClick={() => setIsDeleteModalOpen(true)}
+                    />
+                  </MenuContent>
+                </Menu>
+              ) : (
+                <>
+                  <Tooltip
+                    text={
+                      source.type === "YouTube Video" ? "Copy video URL" : "Copy source content"
+                    }
+                    position="bottom"
+                  >
+                    <IconButton
+                      icon={<CopyIcon />}
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        const textToCopy =
+                          source.type === "YouTube Video"
+                            ? fullSource?.link || source.link
+                            : fullSource?.content || "";
+                        const message =
+                          source.type === "YouTube Video"
+                            ? "Video URL copied to clipboard"
+                            : "Source content copied to clipboard";
+                        navigator.clipboard.writeText(textToCopy);
+                        showToast(message, "success", { duration: 1500 });
+                      }}
+                    />
+                  </Tooltip>
+                  {source.type === "Website" && (
+                    <Tooltip text="Open source" position="bottom">
+                      <IconButton
+                        icon={<LinkIcon />}
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          window.open(fullSource?.link, "_blank", "noopener noreferrer");
+                        }}
+                      />
+                    </Tooltip>
+                  )}
+                  <Tooltip text="Delete source" position="bottom">
+                    <IconButton
+                      icon={<DeleteIcon />}
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsDeleteModalOpen(true)}
+                    />
+                  </Tooltip>
+                </>
               )}
-              <Tooltip text="Delete source" position="bottom">
-                <IconButton
-                  icon={<DeleteIcon />}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsDeleteModalOpen(true)}
-                />
-              </Tooltip>
               <Tooltip text={isExpanded ? "Restore size" : "Expand"} position="bottom">
                 <IconButton
                   icon={isExpanded ? <CompressIcon /> : <ExpandIcon />}
@@ -281,48 +338,92 @@ export function SourceViewer({
                       Summary of this source
                     </h3>
                     <div className="flex gap-2">
-                      {sourceSummary && (
-                        <Tooltip text="Copy summary" position="bottom">
-                          <IconButton
-                            icon={<CopyIcon />}
-                            disabled={isSummaryLoading || isRegeneratingSummary}
-                            variant="ghost"
-                            size="sm"
-                            className="border-blue-300 text-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-800/30"
-                            onClick={() => {
-                              navigator.clipboard.writeText(sourceSummary);
-                              showToast("Summary copied to clipboard", "success", {
-                                duration: 1500,
-                              });
-                            }}
-                          />
-                        </Tooltip>
-                      )}
-                      {sourceSummary && (
-                        <Tooltip text="Delete summary" position="bottom">
-                          <IconButton
-                            icon={<DeleteIcon />}
-                            variant="ghost"
-                            size="sm"
-                            className="border-blue-300 text-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-800/30"
-                            onClick={deleteSummary}
-                            disabled={
-                              isDeletingSummary || isSummaryLoading || isRegeneratingSummary
-                            }
-                          />
-                        </Tooltip>
-                      )}
-                      {sourceSummary && (
-                        <Tooltip text="Regenerate summary" position="bottom">
-                          <IconButton
-                            icon={isRegeneratingSummary ? <Spinner /> : <RestartIcon />}
-                            variant="ghost"
-                            size="sm"
-                            className="border-blue-300 text-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-800/30"
-                            onClick={regenerateSummary}
-                            disabled={isRegeneratingSummary}
-                          />
-                        </Tooltip>
+                      {!isExpanded && sourceSummary ? (
+                        <Menu>
+                          <MenuTrigger>
+                            <IconButton
+                              icon={<DotsVerticalIcon />}
+                              variant="ghost"
+                              size="sm"
+                              className="border-blue-300 text-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-800/30"
+                              aria-label="More options"
+                            />
+                          </MenuTrigger>
+                          <MenuContent>
+                            <MenuItem
+                              icon={<CopyIcon />}
+                              label="Copy summary"
+                              onClick={() => {
+                                navigator.clipboard.writeText(sourceSummary);
+                                showToast("Summary copied to clipboard", "success", {
+                                  duration: 1500,
+                                });
+                              }}
+                              disabled={isSummaryLoading || isRegeneratingSummary}
+                            />
+                            <MenuItem
+                              icon={isRegeneratingSummary ? <Spinner size={16} /> : <RestartIcon />}
+                              label="Regenerate summary"
+                              onClick={regenerateSummary}
+                              disabled={isRegeneratingSummary}
+                            />
+                            <MenuItem
+                              icon={<DeleteIcon />}
+                              label="Delete summary"
+                              variant="danger"
+                              onClick={deleteSummary}
+                              disabled={
+                                isDeletingSummary || isSummaryLoading || isRegeneratingSummary
+                              }
+                            />
+                          </MenuContent>
+                        </Menu>
+                      ) : (
+                        <>
+                          {sourceSummary && (
+                            <Tooltip text="Copy summary" position="bottom">
+                              <IconButton
+                                icon={<CopyIcon />}
+                                disabled={isSummaryLoading || isRegeneratingSummary}
+                                variant="ghost"
+                                size="sm"
+                                className="border-blue-300 text-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-800/30"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(sourceSummary);
+                                  showToast("Summary copied to clipboard", "success", {
+                                    duration: 1500,
+                                  });
+                                }}
+                              />
+                            </Tooltip>
+                          )}
+                          {sourceSummary && (
+                            <Tooltip text="Delete summary" position="bottom">
+                              <IconButton
+                                icon={<DeleteIcon />}
+                                variant="ghost"
+                                size="sm"
+                                className="border-blue-300 text-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-800/30"
+                                onClick={deleteSummary}
+                                disabled={
+                                  isDeletingSummary || isSummaryLoading || isRegeneratingSummary
+                                }
+                              />
+                            </Tooltip>
+                          )}
+                          {sourceSummary && (
+                            <Tooltip text="Regenerate summary" position="bottom">
+                              <IconButton
+                                icon={isRegeneratingSummary ? <Spinner /> : <RestartIcon />}
+                                variant="ghost"
+                                size="sm"
+                                className="border-blue-300 text-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-800/30"
+                                onClick={regenerateSummary}
+                                disabled={isRegeneratingSummary}
+                              />
+                            </Tooltip>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
