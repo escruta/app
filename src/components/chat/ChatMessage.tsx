@@ -116,7 +116,7 @@ export function ChatMessage({ message, index, onRetryFromError, onSourceClick }:
     >
       <div
         className={cn("w-full flex flex-col gap-4 select-text transition-all duration-200", {
-          "max-w-[85%] sm:max-w-xl bg-blue-100 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 p-4 rounded-xs self-end ml-12 shadow-sm":
+          "max-w-[85%] sm:max-w-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 p-4 rounded-xs self-end ml-12 shadow-sm":
             message.sender === "user",
           "max-w-3xl self-start mr-12 py-2": message.sender === "ai" && !message.error,
           "max-w-2xl bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/50 p-4 rounded-xs self-start mr-12":
@@ -125,7 +125,7 @@ export function ChatMessage({ message, index, onRetryFromError, onSourceClick }:
       >
         <div
           className={cn("text-base font-medium leading-relaxed", {
-            "text-blue-950 dark:text-blue-50": message.sender === "user",
+            "text-gray-900 dark:text-gray-100": message.sender === "user",
             "text-gray-950 dark:text-gray-50": message.sender === "ai",
           })}
         >

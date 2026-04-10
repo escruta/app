@@ -332,9 +332,9 @@ export function SourceViewer({
           <div className="w-full flex-1 overflow-y-auto">
             <div className="mx-auto flex w-full max-w-5xl flex-col">
               <div className="px-6 pt-4">
-                <Card className="border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20">
+                <Card className="border-gray-200 bg-gray-50 shadow-sm ring-0 dark:border-gray-700 dark:bg-gray-800/60">
                   <div className="mb-4 flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+                    <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
                       Summary of this source
                     </h3>
                     <div className="flex gap-2">
@@ -345,7 +345,6 @@ export function SourceViewer({
                               icon={<DotsVerticalIcon />}
                               variant="ghost"
                               size="sm"
-                              className="border-blue-300 text-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-800/30"
                               aria-label="More options"
                             />
                           </MenuTrigger>
@@ -387,7 +386,6 @@ export function SourceViewer({
                                 disabled={isSummaryLoading || isRegeneratingSummary}
                                 variant="ghost"
                                 size="sm"
-                                className="border-blue-300 text-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-800/30"
                                 onClick={() => {
                                   navigator.clipboard.writeText(sourceSummary);
                                   showToast("Summary copied to clipboard", "success", {
@@ -403,7 +401,6 @@ export function SourceViewer({
                                 icon={<DeleteIcon />}
                                 variant="ghost"
                                 size="sm"
-                                className="border-blue-300 text-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-800/30"
                                 onClick={deleteSummary}
                                 disabled={
                                   isDeletingSummary || isSummaryLoading || isRegeneratingSummary
@@ -417,7 +414,6 @@ export function SourceViewer({
                                 icon={isRegeneratingSummary ? <Spinner /> : <RestartIcon />}
                                 variant="ghost"
                                 size="sm"
-                                className="border-blue-300 text-blue-600 hover:border-blue-500 hover:bg-blue-100/50 dark:border-blue-600 dark:text-blue-400 dark:hover:bg-blue-800/30"
                                 onClick={regenerateSummary}
                                 disabled={isRegeneratingSummary}
                               />
@@ -444,10 +440,7 @@ export function SourceViewer({
                       transition={{ duration: 0.15, ease: "easeInOut" }}
                     >
                       {isSummaryLoading || isRegeneratingSummary ? (
-                        <Skeleton
-                          lines={6}
-                          className="[&>div]:!bg-blue-200/80 [&>div]:dark:!bg-blue-800/80"
-                        />
+                        <Skeleton lines={6} />
                       ) : summaryGenerateError ? (
                         <div className="flex flex-col gap-3">
                           <Alert
@@ -466,15 +459,8 @@ export function SourceViewer({
                           </Button>
                         </div>
                       ) : sourceSummary?.trim() ? (
-                        <div className="max-w-none leading-relaxed text-blue-800 select-text dark:text-blue-50">
-                          <Suspense
-                            fallback={
-                              <Skeleton
-                                lines={4}
-                                className="[&>div]:!bg-blue-200/80 [&>div]:dark:!bg-blue-800/80"
-                              />
-                            }
-                          >
+                        <div className="max-w-none text-base leading-relaxed font-medium text-gray-900 select-text dark:text-gray-100">
+                          <Suspense fallback={<Skeleton lines={4} />}>
                             <Markdown
                               text={sourceSummary}
                               baseUrl={fullSource?.link || source.link}
