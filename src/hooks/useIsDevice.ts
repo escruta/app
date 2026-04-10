@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 const MOBILE_BREAKPOINT = 640;
 const TABLET_BREAKPOINT = 768;
+const LAPTOP_BREAKPOINT = 1280;
 
 export function useIsMobile() {
   const [isMobile, setIsMobile] = useState(
@@ -35,4 +36,21 @@ export function useIsTablet() {
   }, []);
 
   return isTablet;
+}
+
+export function useIsLaptop() {
+  const [isLaptop, setIsLaptop] = useState(
+    typeof window !== "undefined" && window.innerWidth < LAPTOP_BREAKPOINT,
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsLaptop(window.innerWidth < LAPTOP_BREAKPOINT);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  return isLaptop;
 }

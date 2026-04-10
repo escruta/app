@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useLoaderData, useLocation } from "react-router";
-import { useFetch, useCookie, useIsMobile, useIsTablet } from "@/hooks";
+import { useFetch, useCookie, useIsTablet, useIsLaptop } from "@/hooks";
 import type { Note, Source, Notebook, NotebookContent } from "@/interfaces";
 import { Tabs, type TabsRef } from "@/components/ui";
 import { motion, AnimatePresence } from "motion/react";
@@ -120,7 +120,7 @@ export default function NotebookPage() {
 
   const handleNodeSelect = (question: string) => {
     setChatQuestion(question);
-    if (isMobile) {
+    if (isLaptop) {
       tabsRef.current?.setActiveTab("chat");
     }
   };
@@ -257,8 +257,8 @@ export default function NotebookPage() {
     false,
   );
 
-  const isMobile = useIsMobile();
   const isTablet = useIsTablet();
+  const isLaptop = useIsLaptop();
 
   async function handleRenameNotebook() {
     if (!newTitle.trim()) return;
@@ -389,7 +389,7 @@ export default function NotebookPage() {
 
       <div className="flex-1 overflow-hidden p-3 md:p-4">
         <SimpleBackground />
-        {isMobile ? (
+        {isLaptop ? (
           <Tabs
             ref={tabsRef}
             className="h-full"
