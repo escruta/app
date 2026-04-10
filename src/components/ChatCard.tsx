@@ -491,7 +491,7 @@ export function ChatCard({
         </div>
       )}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 shrink-0">
-        <div className="absolute inset-0 mx-4 bg-linear-to-t from-white from-80% to-transparent dark:from-gray-900/80 dark:to-transparent" />
+        <div className="absolute inset-0 mx-4 bg-linear-to-t from-white from-50% to-transparent dark:from-gray-900/90 dark:from-50% dark:to-transparent" />
         <div
           ref={inputContainerRef}
           className="pointer-events-auto relative mx-auto my-6 flex w-[calc(100%-2rem)] max-w-4xl flex-col rounded-xs border border-gray-300 bg-white shadow-sm transition-all focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400"
