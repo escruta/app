@@ -1,56 +1,30 @@
 import { useEffect, useState } from "react";
 
-const MOBILE_BREAKPOINT = 640;
-const TABLET_BREAKPOINT = 768;
-const LAPTOP_BREAKPOINT = 1280;
+const BREAKPOINTS = {
+  mobile: 640,
+  tablet: 768,
+  laptop: 1280,
+};
 
-export function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(
-    typeof window !== "undefined" && window.innerWidth < MOBILE_BREAKPOINT,
-  );
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  return isMobile;
-}
-
-export function useIsTablet() {
-  const [isTablet, setIsTablet] = useState(
-    typeof window !== "undefined" && window.innerWidth < TABLET_BREAKPOINT,
-  );
+function useMediaQuery(width: number) {
+  const [targetReached, setTargetReached] = useState(false);
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsTablet(window.innerWidth < TABLET_BREAKPOINT);
+    const media = window.matchMedia(`(max-width: ${width}px)`);
+
+    const updateTarget = (e: MediaQueryListEvent | MediaQueryList) => {
+      setTargetReached(e.matches);
     };
 
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    updateTarget(media);
 
-  return isTablet;
+    media.addEventListener("change", updateTarget);
+    return () => media.removeEventListener("change", updateTarget);
+  }, [width]);
+
+  return targetReached;
 }
 
-export function useIsLaptop() {
-  const [isLaptop, setIsLaptop] = useState(
-    typeof window !== "undefined" && window.innerWidth < LAPTOP_BREAKPOINT,
-  );
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsLaptop(window.innerWidth < LAPTOP_BREAKPOINT);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  return isLaptop;
-}
+export const useIsMobile = () => useMediaQuery(BREAKPOINTS.mobile);
+export const useIsTablet = () => useMediaQuery(BREAKPOINTS.tablet);
+export const useIsLaptop = () => useMediaQuery(BREAKPOINTS.laptop);
