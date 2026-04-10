@@ -46,7 +46,7 @@ export function SideMenu() {
   };
 
   return (
-    <div className="z-20 order-last flex w-full shrink-0 flex-row items-center justify-between border-t border-gray-200 bg-white p-2 md:order-first md:h-screen md:w-16 md:flex-col md:border-t-0 md:border-r md:py-4 dark:border-gray-800 dark:bg-black">
+    <div className="z-10 order-last flex w-full shrink-0 flex-row items-center justify-between border-t border-gray-200 bg-white p-2 md:order-first md:h-screen md:w-16 md:flex-col md:border-t-0 md:border-r md:py-4 dark:border-gray-800 dark:bg-black">
       <NavLink to="/" className="group grid h-12 w-12 shrink-0 place-items-center md:mb-4">
         <AppIcon className="h-10 w-10 fill-gray-800 transition-all duration-300 group-hover:fill-blue-500 dark:fill-gray-50 dark:group-hover:fill-blue-400" />
       </NavLink>
