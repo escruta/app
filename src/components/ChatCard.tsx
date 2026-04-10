@@ -1,4 +1,4 @@
-import { useFetch } from "@/hooks";
+import { useFetch, useCookie } from "@/hooks";
 import {
   FileIcon,
   SendIcon,
@@ -104,18 +104,26 @@ export function ChatCard({
   const [isAutoRegenerating, setIsAutoRegenerating] = useState(false);
   const [skipExampleQuestionsFetch, setSkipExampleQuestionsFetch] = useState(false);
 
+  const [cachedExampleQuestions, setCachedExampleQuestions] = useCookie<{
+    questions: string[];
+    count: number;
+  }>(`notebookExampleQuestions-${notebookId}`);
+
   const exampleQuestionsOptions = useMemo(
     () => ({
       method: "GET" as const,
+      onSuccess: (data: { questions: string[] }) => {
+        setCachedExampleQuestions({ questions: data.questions, count: readySourcesCount });
+      },
       onError: (error: FetchError) => {
         console.error("Error fetching example questions:", error.message);
       },
     }),
-    [],
+    [notebookId, readySourcesCount, setCachedExampleQuestions],
   );
 
   const {
-    data: exampleQuestions,
+    data: fetchedExampleQuestions,
     loading: isExampleQuestionsLoading,
     error: exampleQuestionsError,
     refetch: refetchExampleQuestions,
@@ -124,8 +132,15 @@ export function ChatCard({
   }>(
     `notebooks/${notebookId}/example-questions`,
     exampleQuestionsOptions,
-    readySourcesCount > 0 && !skipExampleQuestionsFetch,
+    readySourcesCount > 0 &&
+      !skipExampleQuestionsFetch &&
+      (!cachedExampleQuestions || cachedExampleQuestions.count !== readySourcesCount),
   );
+
+  const exampleQuestions =
+    cachedExampleQuestions?.count === readySourcesCount
+      ? cachedExampleQuestions
+      : fetchedExampleQuestions;
 
   const prevReadySourcesCountRef = useRef<number>(readySourcesCount);
 
