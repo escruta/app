@@ -569,7 +569,7 @@ export function MindMapViewer({
       >
         {/* Grid pattern */}
         <div
-          className="pointer-events-none absolute inset-0 opacity-[0.15] dark:opacity-[0.07]"
+          className="pointer-events-none absolute inset-0 opacity-10 dark:opacity-3"
           style={{
             backgroundImage: `
               linear-gradient(to right, rgb(150, 150, 150) 1px, transparent 1px),
