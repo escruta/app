@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import type { ReactNode } from "react";
 import { ToastContext, type ToastData, type ToastContextType } from "@/contexts";
 import { Toast } from "@/components/ui";
+import { AnimatePresence } from "motion/react";
 
 type ToastType = "success" | "error" | "info" | "warning";
 
@@ -32,7 +33,10 @@ export function ToastProvider({ children }: ToastProviderProps) {
         ...options,
       };
 
-      setToasts((prevToasts) => [...prevToasts, newToast]);
+      setToasts((prevToasts) => {
+        const updated = [...prevToasts, newToast];
+        return updated.slice(-3);
+      });
 
       if (newToast.duration && newToast.duration > 0) {
         setTimeout(() => {
@@ -57,18 +61,24 @@ export function ToastProvider({ children }: ToastProviderProps) {
   return (
     <ToastContext.Provider value={contextValue}>
       {children}
-      {toasts.map((toast) => (
-        <Toast
-          key={toast.id}
-          message={toast.message}
-          type={toast.type}
-          isVisible={true}
-          onClose={() => hideToast(toast.id)}
-          duration={toast.duration}
-          position={toast.position}
-          icon={toast.icon}
-        />
-      ))}
+      <AnimatePresence>
+        {toasts.map((toast, index) => {
+          const offset = toasts.length - 1 - index;
+          return (
+            <Toast
+              key={toast.id}
+              message={toast.message}
+              type={toast.type}
+              isVisible={true}
+              onClose={() => hideToast(toast.id)}
+              duration={toast.duration}
+              position={toast.position}
+              icon={toast.icon}
+              index={offset}
+            />
+          );
+        })}
+      </AnimatePresence>
     </ToastContext.Provider>
   );
 }
