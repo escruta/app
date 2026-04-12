@@ -1,8 +1,9 @@
 import { motion, AnimatePresence } from "motion/react";
 import { Markdown } from "../Markdown";
 import { Alert, Button, IconButton, Tooltip, Skeleton, Spinner } from "@/components/ui";
-import { RestartIcon } from "@/components/icons";
+import { RestartIcon, CopyIcon } from "@/components/icons";
 import { getHttpErrorMessage } from "@/lib/utils";
+import { useToast } from "@/hooks";
 
 interface NotebookSummaryProps {
   notebookSummary?: string;
@@ -23,31 +24,51 @@ export function NotebookSummary({
   readySourcesCount,
   regenerateSummary,
 }: NotebookSummaryProps) {
+  const { showToast } = useToast();
+
   return (
     <div className="w-full px-4 py-8 pb-0">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-xl font-semibold">Summary of the notebook</h3>
-        {notebookSummary && !isSummaryLoading && !isAutoRegenerating && (
-          <Tooltip
-            text={isSummaryRegenerating ? "Regenerating summary" : "Regenerate summary"}
-            position="left"
-          >
-            <IconButton
-              icon={isSummaryRegenerating ? <Spinner /> : <RestartIcon />}
-              variant="ghost"
-              size="sm"
-              onClick={regenerateSummary}
-              disabled={isSummaryRegenerating}
-            />
-          </Tooltip>
-        )}
-        {isAutoRegenerating && (
-          <Tooltip text="Auto-regenerating..." position="bottom">
-            <div className="flex h-8 w-8 items-center justify-center">
-              <Spinner />
-            </div>
-          </Tooltip>
-        )}
+        <div className="flex gap-2">
+          {notebookSummary && !isSummaryLoading && !isAutoRegenerating && (
+            <>
+              <Tooltip text="Copy summary" position="bottom">
+                <IconButton
+                  icon={<CopyIcon />}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText(notebookSummary);
+                    showToast("Summary copied to clipboard", "success", {
+                      duration: 1500,
+                    });
+                  }}
+                  disabled={isSummaryRegenerating}
+                />
+              </Tooltip>
+              <Tooltip
+                text={isSummaryRegenerating ? "Regenerating summary" : "Regenerate summary"}
+                position="bottom"
+              >
+                <IconButton
+                  icon={isSummaryRegenerating ? <Spinner /> : <RestartIcon />}
+                  variant="ghost"
+                  size="sm"
+                  onClick={regenerateSummary}
+                  disabled={isSummaryRegenerating}
+                />
+              </Tooltip>
+            </>
+          )}
+          {isAutoRegenerating && (
+            <Tooltip text="Auto-regenerating..." position="bottom">
+              <div className="flex h-8 w-8 items-center justify-center">
+                <Spinner />
+              </div>
+            </Tooltip>
+          )}
+        </div>
       </div>
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
