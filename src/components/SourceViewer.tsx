@@ -27,6 +27,7 @@ import {
   MenuTrigger,
   MenuContent,
   MenuItem,
+  CopyButton,
 } from "@/components/ui";
 import { cn, getYouTubeVideoId, getHttpErrorMessage } from "@/lib/utils";
 
@@ -264,22 +265,15 @@ export function SourceViewer({
                     }
                     position="bottom"
                   >
-                    <IconButton
-                      icon={<CopyIcon />}
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        const textToCopy =
-                          source.type === "YouTube Video"
-                            ? fullSource?.link || source.link
-                            : fullSource?.content || "";
-                        const message =
-                          source.type === "YouTube Video"
-                            ? "Video URL copied to clipboard"
-                            : "Source content copied to clipboard";
-                        navigator.clipboard.writeText(textToCopy);
-                        showToast(message, "success", { duration: 1500 });
-                      }}
+                    <CopyButton
+                      textToCopy={
+                        source.type === "YouTube Video"
+                          ? fullSource?.link || source.link || ""
+                          : fullSource?.content || ""
+                      }
+                      tooltipText={
+                        source.type === "YouTube Video" ? "Copy video URL" : "Copy source content"
+                      }
                     />
                   </Tooltip>
                   {source.type === "Website" && (
@@ -381,17 +375,10 @@ export function SourceViewer({
                         <>
                           {sourceSummary && (
                             <Tooltip text="Copy summary" position="bottom">
-                              <IconButton
-                                icon={<CopyIcon />}
+                              <CopyButton
+                                textToCopy={sourceSummary}
                                 disabled={isSummaryLoading || isRegeneratingSummary}
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  navigator.clipboard.writeText(sourceSummary);
-                                  showToast("Summary copied to clipboard", "success", {
-                                    duration: 1500,
-                                  });
-                                }}
+                                tooltipText="Copy summary"
                               />
                             </Tooltip>
                           )}

@@ -1,9 +1,8 @@
 import { motion, AnimatePresence } from "motion/react";
 import { Markdown } from "../Markdown";
-import { Alert, Button, IconButton, Tooltip, Skeleton, Spinner } from "@/components/ui";
-import { RestartIcon, CopyIcon } from "@/components/icons";
+import { Alert, Button, IconButton, Tooltip, Skeleton, Spinner, CopyButton } from "@/components/ui";
+import { RestartIcon } from "@/components/icons";
 import { getHttpErrorMessage } from "@/lib/utils";
-import { useToast } from "@/hooks";
 
 interface NotebookSummaryProps {
   notebookSummary?: string;
@@ -24,8 +23,6 @@ export function NotebookSummary({
   readySourcesCount,
   regenerateSummary,
 }: NotebookSummaryProps) {
-  const { showToast } = useToast();
-
   return (
     <div className="w-full px-4 py-8 pb-0">
       <div className="mb-3 flex items-center justify-between">
@@ -34,16 +31,9 @@ export function NotebookSummary({
           {notebookSummary && !isSummaryLoading && !isAutoRegenerating && (
             <>
               <Tooltip text="Copy summary" position="bottom">
-                <IconButton
-                  icon={<CopyIcon />}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    navigator.clipboard.writeText(notebookSummary);
-                    showToast("Summary copied to clipboard", "success", {
-                      duration: 1500,
-                    });
-                  }}
+                <CopyButton
+                  textToCopy={notebookSummary}
+                  tooltipText="Copy summary"
                   disabled={isSummaryRegenerating}
                 />
               </Tooltip>

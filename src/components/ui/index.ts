@@ -3,6 +3,7 @@ export * from "./Button";
 export * from "./Card";
 export * from "./Checkbox";
 export * from "./Chip";
+export * from "./CopyButton";
 export * from "./Divider";
 export * from "./Dropdown";
 export * from "./FilePicker";
