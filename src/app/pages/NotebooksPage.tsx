@@ -1,13 +1,35 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import type { Notebook } from "@/interfaces";
-import { useCookie, useFetch, useIsMobile } from "@/hooks";
-import { Button, Dropdown, Modal, TextField, SegmentedButtons, Spinner } from "@/components/ui";
+import { useCookie, useFetch, useIsTablet } from "@/hooks";
+import {
+  Button,
+  Dropdown,
+  Modal,
+  TextField,
+  SegmentedButtons,
+  Spinner,
+  Menu,
+  MenuTrigger,
+  MenuContent,
+  MenuItem,
+  MenuLabel,
+  IconButton,
+} from "@/components/ui";
 import { NotebookCard, CommonBar, SEOMetadata } from "@/components";
-import { AddIcon, GridIcon, ListIcon, FireIcon, NotebookIcon } from "@/components/icons";
+import {
+  AddIcon,
+  GridIcon,
+  ListIcon,
+  FireIcon,
+  NotebookIcon,
+  DotsVerticalIcon,
+  CheckIcon,
+} from "@/components/icons";
 import { getRouteMetadata } from "@/lib/seo";
 import { motion } from "motion/react";
 import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
+import { cn } from "@/lib/utils";
 
 enum SortOptions {
   Newest = "Newest",
@@ -19,7 +41,7 @@ enum SortOptions {
 type ViewMode = "grid" | "list";
 
 export default function NotebooksPage() {
-  const isMobile = useIsMobile();
+  const isTablet = useIsTablet();
   const navigate = useNavigate();
   const { data, loading, error, refetch: refetchNotebooks } = useFetch<Notebook[]>("/notebooks");
   const [sortBy, setSortBy] = useCookie<SortOptions>("notebookSortPreference", SortOptions.Newest);
@@ -173,7 +195,7 @@ export default function NotebooksPage() {
       <div className="flex-1 overflow-auto p-3 md:p-4">
         <SimpleBackground />
 
-        <CommonBar className="sticky top-0 z-20 mb-4 flex-col items-stretch justify-between gap-3 md:flex-row md:items-center md:gap-0">
+        <CommonBar className="sticky top-0 z-20 mb-4 flex items-center justify-between gap-4">
           <Button
             onClick={() => setIsCreateModalOpen(true)}
             className="w-full justify-center md:w-auto"
@@ -181,36 +203,104 @@ export default function NotebooksPage() {
             Create notebook
           </Button>
 
-          {data && data.length > 0 ? (
-            <div className="flex flex-wrap items-center justify-between gap-2 md:justify-end md:gap-8">
-              <SegmentedButtons
-                options={[
-                  {
-                    value: "grid" as const,
-                    icon: <GridIcon />,
-                    ariaLabel: "Grid view",
-                  },
-                  {
-                    value: "list" as const,
-                    icon: <ListIcon />,
-                    ariaLabel: "List view",
-                  },
-                ]}
-                value={viewMode || "grid"}
-                onChange={setViewMode}
-                label={isMobile ? undefined : "View:"}
-              />
+          {data && data.length > 0 && (
+            <>
+              {isTablet ? (
+                <Menu>
+                  <MenuTrigger>
+                    <IconButton
+                      icon={<DotsVerticalIcon />}
+                      size="sm"
+                      ariaLabel="Options"
+                      variant="ghost"
+                    />
+                  </MenuTrigger>
+                  <MenuContent align="right" className="min-w-[12rem]">
+                    <div className="flex flex-col gap-0.5 p-0.5">
+                      <MenuLabel>View Mode</MenuLabel>
+                      <MenuItem
+                        label="Grid"
+                        onClick={() => setViewMode("grid")}
+                        icon={
+                          viewMode === "grid" ? (
+                            <CheckIcon className="size-4 text-blue-600 dark:text-blue-400" />
+                          ) : (
+                            <div className="size-4" />
+                          )
+                        }
+                        className={cn(
+                          viewMode === "grid" &&
+                            "bg-blue-50 text-blue-700 dark:bg-gray-800 dark:text-blue-400",
+                        )}
+                      />
+                      <MenuItem
+                        label="List"
+                        onClick={() => setViewMode("list")}
+                        icon={
+                          viewMode === "list" ? (
+                            <CheckIcon className="size-4 text-blue-600 dark:text-blue-400" />
+                          ) : (
+                            <div className="size-4" />
+                          )
+                        }
+                        className={cn(
+                          viewMode === "list" &&
+                            "bg-blue-50 text-blue-700 dark:bg-gray-800 dark:text-blue-400",
+                        )}
+                      />
+                      <div className="my-1 h-px bg-gray-200 dark:bg-gray-700" />
+                      <MenuLabel>Sort by</MenuLabel>
+                      {Object.values(SortOptions).map((option) => (
+                        <MenuItem
+                          key={option}
+                          label={option}
+                          onClick={() => setSortBy(option as SortOptions)}
+                          icon={
+                            sortBy === option ? (
+                              <CheckIcon className="size-4 text-blue-600 dark:text-blue-400" />
+                            ) : (
+                              <div className="size-4" />
+                            )
+                          }
+                          className={cn(
+                            sortBy === option &&
+                              "bg-blue-50 text-blue-700 dark:bg-gray-800 dark:text-blue-400",
+                          )}
+                        />
+                      ))}
+                    </div>
+                  </MenuContent>
+                </Menu>
+              ) : (
+                <div className="flex flex-wrap items-center justify-end gap-8">
+                  <SegmentedButtons
+                    options={[
+                      {
+                        value: "grid" as const,
+                        icon: <GridIcon />,
+                        ariaLabel: "Grid view",
+                      },
+                      {
+                        value: "list" as const,
+                        icon: <ListIcon />,
+                        ariaLabel: "List view",
+                      },
+                    ]}
+                    value={viewMode || "grid"}
+                    onChange={setViewMode}
+                    label="View:"
+                  />
 
-              <Dropdown<SortOptions>
-                align="right"
-                options={Object.values(SortOptions)}
-                selectedOption={sortBy || SortOptions.Newest}
-                onSelect={(option) => setSortBy(option as SortOptions)}
-                label={isMobile ? undefined : "Sort by:"}
-              />
-            </div>
-          ) : (
-            <span></span>
+                  <Dropdown<SortOptions>
+                    align="right"
+                    options={Object.values(SortOptions)}
+                    selectedOption={sortBy || SortOptions.Newest}
+                    onSelect={(option) => setSortBy(option as SortOptions)}
+                    label="Sort by:"
+                  />
+                </div>
+              )}
+            </>
           )}
         </CommonBar>
 
