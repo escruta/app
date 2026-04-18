@@ -221,10 +221,14 @@ export default function NotebookPage() {
   };
 
   const handleDoubleClickLeft = () => {
-    const currentRight = isRightCollapsed ? 0 : Math.max(30, rightPanelWidth ?? 30);
-    const maxAvailable = 100 - 30 - currentRight;
-    const maxLimit = Math.min(50, maxAvailable);
-    setLeftPanelWidth(maxLimit);
+    if (!isRightCollapsed) {
+      setLeftPanelWidth(30);
+    } else {
+      const currentRight = isRightCollapsed ? 0 : Math.max(30, rightPanelWidth ?? 30);
+      const maxAvailable = 100 - 30 - currentRight;
+      const maxLimit = Math.min(50, maxAvailable);
+      setLeftPanelWidth(maxLimit);
+    }
     setIsLeftCollapsed(false);
   };
 
@@ -234,10 +238,14 @@ export default function NotebookPage() {
   };
 
   const handleDoubleClickRight = () => {
-    const currentLeft = isLeftCollapsed ? 0 : Math.max(30, leftPanelWidth ?? 30);
-    const maxAvailable = 100 - 30 - currentLeft;
-    const maxLimit = Math.min(50, maxAvailable);
-    setRightPanelWidth(maxLimit);
+    if (!isLeftCollapsed) {
+      setRightPanelWidth(30);
+    } else {
+      const currentLeft = isLeftCollapsed ? 0 : Math.max(30, leftPanelWidth ?? 30);
+      const maxAvailable = 100 - 30 - currentLeft;
+      const maxLimit = Math.min(50, maxAvailable);
+      setRightPanelWidth(maxLimit);
+    }
     setIsRightCollapsed(false);
   };
 
