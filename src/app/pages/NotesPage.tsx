@@ -54,7 +54,10 @@ export default function NotesPage() {
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [noteTitle, setNoteTitle] = useState("");
   const [selectedNotebookId, setSelectedNotebookId] = useState<string | null>(null);
-  const [expandedNotebooks, setExpandedNotebooks] = useState<Record<string, boolean>>({});
+  const [expandedNotebooks, setExpandedNotebooks] = useCookie<Record<string, boolean>>(
+    "notesExpandedNotebooks",
+    {},
+  );
   const [sortBy, setSortBy] = useCookie<SortOptions>("noteSortPreference", SortOptions.Newest);
 
   const location = useLocation();
@@ -109,10 +112,10 @@ export default function NotesPage() {
   };
 
   const toggleNotebook = (notebookId: string) => {
-    setExpandedNotebooks((prev) => ({
-      ...prev,
-      [notebookId]: !prev[notebookId],
-    }));
+    setExpandedNotebooks({
+      ...expandedNotebooks,
+      [notebookId]: !expandedNotebooks?.[notebookId],
+    });
   };
 
   const { groupedNotes, unassignedNotes } = useMemo(() => {
