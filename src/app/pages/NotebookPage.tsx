@@ -332,7 +332,7 @@ export default function NotebookPage() {
           onSourcesChange={() => {
             refetchNotebook(true, false);
           }}
-          onToggleCollapse={() => setIsLeftCollapsed(true)}
+          onToggleCollapse={!isLaptop ? () => setIsLeftCollapsed(true) : undefined}
         />
       </div>
     </div>
