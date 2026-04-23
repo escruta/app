@@ -182,17 +182,43 @@ export function SourcesCard({
         <div className="z-10 shrink-0 rounded-t-xs bg-white dark:bg-gray-900">
           <div className="flex flex-row items-center justify-between p-4">
             <h2 className="font-sans text-lg font-semibold">Sources</h2>
-            {onToggleCollapse && (
-              <Tooltip text="Collapse panel" position="bottom">
-                <IconButton
-                  icon={<CompressIcon />}
-                  onClick={onToggleCollapse}
-                  variant="secondary"
-                  size="sm"
-                  aria-label="Collapse panel"
-                />
-              </Tooltip>
-            )}
+            <div className="flex items-center gap-2">
+              <Menu>
+                <MenuTrigger>
+                  <Button icon={<AddIcon />} variant="primary" size="sm">
+                    Add source
+                  </Button>
+                </MenuTrigger>
+                <MenuContent>
+                  <MenuItem
+                    icon={<FileIcon />}
+                    label="Upload file"
+                    onClick={() => handleOpenModal("File")}
+                  />
+                  <MenuItem
+                    icon={<LinkIcon />}
+                    label="Website link"
+                    onClick={() => handleOpenModal("Website")}
+                  />
+                  <MenuItem
+                    icon={<NoteIcon />}
+                    label="Direct text"
+                    onClick={() => handleOpenModal("Text")}
+                  />
+                </MenuContent>
+              </Menu>
+              {onToggleCollapse && (
+                <Tooltip text="Collapse panel" position="bottom">
+                  <IconButton
+                    icon={<CompressIcon />}
+                    onClick={onToggleCollapse}
+                    variant="secondary"
+                    size="sm"
+                    aria-label="Collapse panel"
+                  />
+                </Tooltip>
+              )}
+            </div>
           </div>
           <Divider className="my-0" />
         </div>
@@ -204,30 +230,6 @@ export function SourcesCard({
             if (sources && sources.length > 0) {
               return (
                 <div className="flex flex-col gap-2 py-4">
-                  <Menu className="w-full">
-                    <MenuTrigger className="block w-full">
-                      <Button icon={<AddIcon />} variant="primary" size="sm" className="w-full">
-                        Add source
-                      </Button>
-                    </MenuTrigger>
-                    <MenuContent>
-                      <MenuItem
-                        icon={<FileIcon />}
-                        label="Upload file"
-                        onClick={() => handleOpenModal("File")}
-                      />
-                      <MenuItem
-                        icon={<LinkIcon />}
-                        label="Website link"
-                        onClick={() => handleOpenModal("Website")}
-                      />
-                      <MenuItem
-                        icon={<NoteIcon />}
-                        label="Direct text"
-                        onClick={() => handleOpenModal("Text")}
-                      />
-                    </MenuContent>
-                  </Menu>
                   <Button variant="secondary" size="sm" onClick={handleSelectAllToggle}>
                     {isAllSelected ? "Deselect all sources" : "Select all sources"}
                   </Button>
