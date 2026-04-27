@@ -103,12 +103,24 @@ interface ChatMessageProps {
 }
 
 export function ChatMessage({ message, index, onRetryFromError, onSourceClick }: ChatMessageProps) {
+  const isAI = message.sender === "ai";
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.3 }}
+      initial={
+        isAI
+          ? { opacity: 0, y: -5, clipPath: "inset(0 0 100% 0)" }
+          : { opacity: 0, y: 15, scale: 0.98 }
+      }
+      animate={
+        isAI ? { opacity: 1, y: 0, clipPath: "inset(0 0 0% 0)" } : { opacity: 1, y: 0, scale: 1 }
+      }
+      exit={{ opacity: 0, y: -10, scale: 0.98 }}
+      transition={
+        isAI
+          ? { duration: 0.7, ease: [0.2, 0.65, 0.3, 0.9] }
+          : { type: "spring", stiffness: 250, damping: 25 }
+      }
       className={cn("message-item scroll-mt-4 flex flex-col mb-4", {
         "justify-end items-end": message.sender === "user",
         "justify-start items-start": message.sender === "ai",

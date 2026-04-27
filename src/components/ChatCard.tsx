@@ -434,77 +434,94 @@ export function ChatCard({
         currentConversationId={conversationId}
       />
       <Divider className="mb-0" />
-      {messages.length > 0 ? (
-        <div
-          ref={scrollContainerRef}
-          className="min-h-0 flex-1 scroll-pt-4 space-y-4 overflow-y-auto scroll-smooth px-4 py-4 md:px-6 [&>*]:mx-auto [&>*]:max-w-4xl"
-        >
-          <AnimatePresence>
-            {messages.map((message, index) => (
-              <ChatMessage
-                key={message.id}
-                message={message}
-                index={index}
-                onRetryFromError={handleRetryFromError}
-                onSourceClick={handleSourceClick}
-              />
-            ))}
-          </AnimatePresence>
-          {(isChatLoading || isLoadingConversation) && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2 }}
-              className="flex justify-start"
-            >
-              <Spinner />
-            </motion.div>
-          )}
-          <div style={{ height: inputHeight }} className="shrink-0" />
-        </div>
-      ) : (
-        <div className="flex max-h-full min-h-0 flex-grow flex-col overflow-y-auto px-4 [&>*]:mx-auto [&>*]:max-w-4xl">
-          {sourcesCount > 0 ? (
-            <div className="w-full">
-              <NotebookSummary
-                notebookSummary={notebookSummary}
-                isSummaryLoading={isSummaryLoading}
-                isAutoRegenerating={isAutoRegenerating}
-                isSummaryRegenerating={isSummaryRegenerating}
-                summaryGenerateError={summaryGenerateError}
-                readySourcesCount={readySourcesCount}
-                regenerateSummary={() => regenerateSummary()}
-              />
-              {messages.length === 0 && !isChatLoading && (
-                <ExampleQuestions
-                  exampleQuestionsError={exampleQuestionsError}
-                  skipExampleQuestionsFetch={skipExampleQuestionsFetch}
-                  isExampleQuestionsLoading={isExampleQuestionsLoading}
-                  isAutoRegenerating={isAutoRegenerating}
-                  readySourcesCount={readySourcesCount}
-                  exampleQuestions={exampleQuestions}
-                  refetchExampleQuestions={refetchExampleQuestions}
-                  onQuestionSelect={(q) => setInput(q)}
+      <AnimatePresence mode="wait">
+        {messages.length > 0 ? (
+          <motion.div
+            key="chat-messages"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            ref={scrollContainerRef}
+            className="min-h-0 flex-1 scroll-pt-4 space-y-4 overflow-y-auto scroll-smooth px-4 py-4 md:px-6 [&>*]:mx-auto [&>*]:max-w-4xl"
+          >
+            <AnimatePresence initial={false}>
+              {messages.map((message, index) => (
+                <ChatMessage
+                  key={message.id}
+                  message={message}
+                  index={index}
+                  onRetryFromError={handleRetryFromError}
+                  onSourceClick={handleSourceClick}
                 />
-              )}
-            </div>
-          ) : (
-            <div className="flex size-full flex-col items-center justify-start pt-24 text-center">
-              <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
-                <div className="size-10 text-blue-500 dark:text-blue-400">
-                  <FileIcon />
-                </div>
+              ))}
+            </AnimatePresence>
+            {(isChatLoading || isLoadingConversation) && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.2 }}
+                className="flex justify-start"
+              >
+                <Spinner />
+              </motion.div>
+            )}
+            <div style={{ height: inputHeight }} className="shrink-0" />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="chat-empty"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="flex max-h-full min-h-0 flex-grow flex-col overflow-y-auto px-4 [&>*]:mx-auto [&>*]:max-w-4xl"
+          >
+            {sourcesCount > 0 ? (
+              <div className="w-full">
+                <NotebookSummary
+                  notebookSummary={notebookSummary}
+                  isSummaryLoading={isSummaryLoading}
+                  isAutoRegenerating={isAutoRegenerating}
+                  isSummaryRegenerating={isSummaryRegenerating}
+                  summaryGenerateError={summaryGenerateError}
+                  readySourcesCount={readySourcesCount}
+                  regenerateSummary={() => regenerateSummary()}
+                />
+                {messages.length === 0 && !isChatLoading && (
+                  <ExampleQuestions
+                    exampleQuestionsError={exampleQuestionsError}
+                    skipExampleQuestionsFetch={skipExampleQuestionsFetch}
+                    isExampleQuestionsLoading={isExampleQuestionsLoading}
+                    isAutoRegenerating={isAutoRegenerating}
+                    readySourcesCount={readySourcesCount}
+                    exampleQuestions={exampleQuestions}
+                    refetchExampleQuestions={refetchExampleQuestions}
+                    onQuestionSelect={(q) => setInput(q)}
+                  />
+                )}
               </div>
-              <h3 className="text-foreground mb-2 text-lg font-semibold">This notebook is empty</h3>
-              <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                Add sources to start chatting with your documents. You can upload PDFs, paste text,
-                or add web links.
-              </p>
-            </div>
-          )}
-          <div style={{ height: inputHeight }} className="shrink-0" />
-        </div>
-      )}
+            ) : (
+              <div className="flex size-full flex-col items-center justify-start pt-24 text-center">
+                <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
+                  <div className="size-10 text-blue-500 dark:text-blue-400">
+                    <FileIcon />
+                  </div>
+                </div>
+                <h3 className="text-foreground mb-2 text-lg font-semibold">
+                  This notebook is empty
+                </h3>
+                <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                  Add sources to start chatting with your documents. You can upload PDFs, paste
+                  text, or add web links.
+                </p>
+              </div>
+            )}
+            <div style={{ height: inputHeight }} className="shrink-0" />
+          </motion.div>
+        )}
+      </AnimatePresence>
       <div className="pointer-events-none absolute inset-x-0 bottom-0 shrink-0">
         <div className="absolute inset-0 mx-4 bg-linear-to-t from-white from-50% to-transparent dark:from-gray-900/90 dark:from-50% dark:to-transparent" />
         <div
