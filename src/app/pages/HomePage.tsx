@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router";
 import { useState } from "react";
 import { useAuth, useFetch } from "@/hooks";
-import { HomeActionCard, HomeChipProduct, SEOMetadata } from "@/components";
+import { HomeActionCard, HomeChipProduct, SEOMetadata, TopBar } from "@/components";
 import { GaussianBlurGradientBackground } from "@/components/backgrounds/GaussianBlurGradientBackground";
 import { getRouteMetadata } from "@/lib/seo";
 import { NotebookIcon, NoteIcon, SettingsIcon, SendIcon } from "@/components/icons";
@@ -55,10 +55,11 @@ export default function HomePage() {
         image={metadata?.image}
         twitterCard={metadata?.twitterCard}
       />
+      <TopBar />
       <div className="relative flex-1 overflow-auto p-4 md:p-8">
         <GaussianBlurGradientBackground />
 
-        <div className="relative z-10 mx-auto max-w-4xl pt-8 md:pt-24">
+        <div className="relative z-10 mx-auto max-w-5xl pt-8 md:pt-12">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}

@@ -107,8 +107,16 @@ export function SourceChip({
           </div>
         )}
         {!isPending && !isFailed && (
-          <div id="checkbox" className="shrink-0">
-            <Checkbox checked={selected} onChange={(checked) => onToggle?.(checked)} />
+          <div
+            id="checkbox"
+            className="shrink-0"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onToggle?.(!selected);
+            }}
+          >
+            <Checkbox checked={selected} onChange={() => {}} />
           </div>
         )}
       </div>

@@ -12,15 +12,18 @@ import {
   SourceViewer,
   ToolsCard,
   SEOMetadata,
+  TopBar,
 } from "@/components";
 import { generateNotebookMetadata } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 import { ExpandIcon } from "@/components/icons";
-import { Tooltip, IconButton } from "@/components/ui";
+import { Tooltip, IconButton, Spinner } from "@/components/ui";
 import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
-import { NotebookErrorState, NotebookLoadingState } from "./notebook/NotebookStates";
+import { NotebookErrorState } from "./notebook/NotebookStates";
 import { RenameNotebookModal } from "./notebook/RenameNotebookModal";
-import { NotebookHeader } from "./notebook/NotebookHeader";
+
+import { ShareIcon } from "@/components/icons";
+import { MenuItem, Button } from "@/components/ui";
 
 export default function NotebookPage() {
   const notebookId: string = useLoaderData();
@@ -67,24 +70,29 @@ export default function NotebookPage() {
     }
   }, [notebook?.sources, refetchNotebook]);
 
+  const prevSourcesRef = useRef<string[]>([]);
+
   useEffect(() => {
     if (notebook?.sources) {
+      const currentIds = notebook.sources.map((s) => s.id);
       if (initialLoadRef.current) {
-        setSelectedSourceIds(notebook.sources.map((s) => s.id));
+        setSelectedSourceIds(currentIds);
+        prevSourcesRef.current = currentIds;
         initialLoadRef.current = false;
       } else {
         setSelectedSourceIds((prev) => {
-          const newIds = notebook.sources.map((s) => s.id);
-          const addedIds = newIds.filter((id) => !prev.includes(id));
-          if (addedIds.length > 0) {
-            return [...prev, ...addedIds];
-          }
-          const validIds = prev.filter((id) => newIds.includes(id));
-          if (validIds.length !== prev.length) {
-            return validIds;
+          // Identify truly new sources that weren't in the previous fetch
+          const newSources = currentIds.filter((id) => !prevSourcesRef.current.includes(id));
+
+          // Keep only selected ids that still exist
+          const validPrev = prev.filter((id) => currentIds.includes(id));
+
+          if (newSources.length > 0 || validPrev.length !== prev.length) {
+            return [...validPrev, ...newSources];
           }
           return prev;
         });
+        prevSourcesRef.current = currentIds;
       }
     }
   }, [notebook]);
@@ -280,11 +288,45 @@ export default function NotebookPage() {
   }
 
   if (error) {
-    return <NotebookErrorState error={error} />;
+    return (
+      <div className="flex h-screen max-h-full w-full flex-col">
+        <TopBar
+          title={
+            <div className="flex min-w-0 flex-1 items-baseline gap-1.5">
+              <span className="hidden shrink-0 text-xs font-medium tracking-wide text-gray-500 uppercase md:block dark:text-gray-400">
+                Notebook /{" "}
+              </span>
+              <span className="text-gray-400">Error loading notebook</span>
+            </div>
+          }
+        />
+        <div className="relative flex-1 overflow-hidden">
+          <SimpleBackground />
+          <NotebookErrorState error={error} />
+        </div>
+      </div>
+    );
   }
 
   if (loading) {
-    return <NotebookLoadingState />;
+    return (
+      <div className="flex h-screen max-h-full w-full flex-col">
+        <TopBar
+          title={
+            <div className="flex min-w-0 flex-1 items-baseline gap-1.5">
+              <span className="hidden shrink-0 text-xs font-medium tracking-wide text-gray-500 uppercase md:block dark:text-gray-400">
+                Notebook /{" "}
+              </span>
+              <span className="opacity-0">Loading</span>
+            </div>
+          }
+        />
+        <div className="relative flex flex-1 items-center justify-center overflow-hidden">
+          <SimpleBackground />
+          <Spinner />
+        </div>
+      </div>
+    );
   }
 
   const metadata = notebook ? generateNotebookMetadata(notebook.title, notebookId) : null;
@@ -388,11 +430,61 @@ export default function NotebookPage() {
           twitterCard={metadata.twitterCard}
         />
       )}
-      <NotebookHeader
-        title={notebook?.title}
-        isTablet={isTablet}
-        onRenameClick={() => setIsRenameModalOpen(true)}
-        onShareClick={() => {}}
+      <TopBar
+        title={
+          <div className="flex min-w-0 flex-1 items-baseline gap-1.5">
+            <span className="hidden shrink-0 text-xs font-medium tracking-wide text-gray-500 uppercase md:block dark:text-gray-400">
+              Notebook /{" "}
+            </span>
+            <input
+              className={cn(
+                "w-full truncate bg-transparent p-0 text-lg font-semibold transition-colors duration-200 focus:outline-none focus:ring-0 border-none",
+                {
+                  "text-blue-600 dark:text-blue-400": renamingNotebook,
+                },
+              )}
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              onBlur={() => {
+                if (newTitle.trim() && newTitle !== notebook?.title) {
+                  handleRenameNotebook();
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.currentTarget.blur();
+                }
+              }}
+              disabled={renamingNotebook}
+              placeholder="Enter notebook title"
+            />
+          </div>
+        }
+        actions={
+          !isTablet && (
+            <>
+              <Tooltip
+                text="Share your notebook with others to showcase your research and findings"
+                position="bottom"
+              >
+                <Button onClick={() => {}} size="sm" icon={<ShareIcon />}>
+                  Share notebook
+                </Button>
+              </Tooltip>
+            </>
+          )
+        }
+        extraMenuItems={
+          isTablet && (
+            <>
+              <MenuItem
+                label="Share notebook"
+                icon={<ShareIcon className="size-4" />}
+                onClick={() => {}}
+              />
+            </>
+          )
+        }
       />
 
       <div className="flex-1 overflow-hidden p-3 md:p-4">

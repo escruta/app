@@ -225,7 +225,11 @@ export function SourcesCard({
         <div className="w-full flex-1 overflow-y-auto px-4">
           {(() => {
             if (isLoading) {
-              return <div className="text-center text-sm text-gray-500">Loading sources...</div>;
+              return (
+                <div className="flex size-full items-center justify-center">
+                  <Spinner />
+                </div>
+              );
             }
             if (sources && sources.length > 0) {
               return (

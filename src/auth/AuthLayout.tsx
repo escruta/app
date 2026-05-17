@@ -25,7 +25,7 @@ export function AuthLayout() {
   return (
     <main>
       <div className="flex h-dvh justify-center sm:h-screen">
-        <div className="z-10 flex flex-1 justify-center bg-white p-8 pt-12 sm:items-center sm:pt-8 dark:bg-gray-900">
+        <div className="z-10 flex flex-1 justify-center bg-white p-8 pt-12 sm:items-center sm:pt-8 dark:bg-gray-950">
           <div className="w-full max-w-sm">
             <Outlet />
           </div>

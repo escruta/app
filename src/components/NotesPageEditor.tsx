@@ -4,33 +4,24 @@ import { cn } from "@/lib/utils";
 import { useFetch } from "@/hooks";
 import type { Note } from "@/interfaces";
 import { CloseIcon, CompressIcon, DeleteIcon, ExpandIcon } from "@/components/icons";
-import { Button, Card, Divider, IconButton, Modal, Spinner, Tooltip } from "@/components/ui";
+import { Button, Divider, IconButton, Modal, Spinner, Tooltip } from "@/components/ui";
+import { CanvasModal } from "@/components/ui/CanvasModal";
 const Editor = lazy(() => import("./Editor").then((module) => ({ default: module.Editor })));
 
-interface NoteEditorProps {
+interface NotesPageEditorProps {
   note: Note;
   handleCloseNote: () => void;
   onNoteDeleted: () => void;
   onNoteUpdated?: (note: Note) => void;
-  onExpandedChange?: (isExpanded: boolean) => void;
-  className?: string;
 }
 
-export function NoteEditor({
+export function NotesPageEditor({
   note,
   handleCloseNote,
-  className,
   onNoteDeleted,
   onNoteUpdated,
-  onExpandedChange,
-}: NoteEditorProps) {
+}: NotesPageEditorProps) {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (onExpandedChange) {
-      onExpandedChange(isExpanded);
-    }
-  }, [isExpanded, onExpandedChange]);
 
   const {
     data: fullNote,
@@ -140,10 +131,13 @@ export function NoteEditor({
 
   return (
     <>
-      <Card
-        isExpanded={isExpanded}
-        setIsExpanded={setIsExpanded}
-        className={cn("flex flex-1 flex-col overflow-hidden p-0 h-full", className)}
+      <CanvasModal
+        isOpen={true}
+        onClose={handleCloseNote}
+        fullScreen={isExpanded}
+        width="xl"
+        className={cn("flex flex-col overflow-hidden", isExpanded ? "h-full border-none" : "h-5/6")}
+        contentClassname="p-0 flex flex-1 flex-col overflow-hidden"
       >
         <div className="mb-2 flex shrink-0 flex-row items-center justify-between px-4 pt-4">
           <div className="flex min-w-0 flex-1 items-baseline gap-1.5">
@@ -214,11 +208,13 @@ export function NoteEditor({
         <Divider className="mb-0" />
 
         {loading && (
-          <div className="flex size-full items-center justify-center">
+          <div className="flex h-full items-center justify-center">
             <Spinner />
           </div>
         )}
-        {error && <div className="text-sm text-red-500">Error loading note: {error.message}</div>}
+        {error && (
+          <div className="p-8 text-sm text-red-500">Error loading note: {error.message}</div>
+        )}
         {fullNote && !loading && !error && (
           <div className="flex flex-1 flex-col overflow-hidden">
             <Editor
@@ -229,7 +225,7 @@ export function NoteEditor({
             />
           </div>
         )}
-      </Card>
+      </CanvasModal>
 
       {/* Delete Note Modal */}
       <Modal

@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { Outlet } from "react-router";
 import { useAuth, useCookie } from "@/hooks";
 import type { User } from "@/interfaces";
-import { SideMenu } from "@/components";
 
 export function AppLayout() {
   const { currentUser, fetchUserData } = useAuth();
@@ -19,8 +18,7 @@ export function AppLayout() {
   }, [fetchUserData]);
 
   return (
-    <div className="flex h-screen flex-col bg-white text-black select-none md:flex-row dark:bg-black dark:text-white">
-      <SideMenu />
+    <div className="flex h-screen flex-col bg-white text-black select-none dark:bg-black dark:text-white">
       <div className="flex-grow overflow-hidden">
         <Outlet />
       </div>

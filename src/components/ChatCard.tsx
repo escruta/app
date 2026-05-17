@@ -44,6 +44,7 @@ interface ChatCardProps {
   onSourceSelect?: (sourceId: string) => void;
   externalQuestion?: string | null;
   onExternalQuestionHandled?: () => void;
+  hideSummaryAndQuestions?: boolean;
 }
 
 export function ChatCard({
@@ -53,6 +54,7 @@ export function ChatCard({
   onSourceSelect,
   externalQuestion,
   onExternalQuestionHandled,
+  hideSummaryAndQuestions = false,
 }: ChatCardProps) {
   const sourcesCount = sources.length;
   const readySourcesCount = sources.filter((s) => s.status === "READY").length;
@@ -73,7 +75,11 @@ export function ChatCard({
     data: notebookSummaryData,
     loading: isSummaryLoading,
     refetch: refetchSummary,
-  } = useFetch<{ summary: string }>(`notebooks/${notebookId}/summary`, summaryOptions);
+  } = useFetch<{ summary: string }>(
+    `notebooks/${notebookId}/summary`,
+    summaryOptions,
+    !hideSummaryAndQuestions,
+  );
 
   const notebookSummary = notebookSummaryData?.summary;
 
@@ -132,7 +138,8 @@ export function ChatCard({
   }>(
     `notebooks/${notebookId}/example-questions`,
     exampleQuestionsOptions,
-    readySourcesCount > 0 &&
+    !hideSummaryAndQuestions &&
+      readySourcesCount > 0 &&
       !skipExampleQuestionsFetch &&
       (!cachedExampleQuestions || cachedExampleQuestions.count !== readySourcesCount),
   );
@@ -145,6 +152,11 @@ export function ChatCard({
   const prevReadySourcesCountRef = useRef<number>(readySourcesCount);
 
   useEffect(() => {
+    if (hideSummaryAndQuestions) {
+      prevReadySourcesCountRef.current = readySourcesCount;
+      return;
+    }
+
     const prevCount = prevReadySourcesCountRef.current;
     const currentCount = readySourcesCount;
 
@@ -480,16 +492,18 @@ export function ChatCard({
           >
             {sourcesCount > 0 ? (
               <div className="w-full">
-                <NotebookSummary
-                  notebookSummary={notebookSummary}
-                  isSummaryLoading={isSummaryLoading}
-                  isAutoRegenerating={isAutoRegenerating}
-                  isSummaryRegenerating={isSummaryRegenerating}
-                  summaryGenerateError={summaryGenerateError}
-                  readySourcesCount={readySourcesCount}
-                  regenerateSummary={() => regenerateSummary()}
-                />
-                {messages.length === 0 && !isChatLoading && (
+                {!hideSummaryAndQuestions && (
+                  <NotebookSummary
+                    notebookSummary={notebookSummary}
+                    isSummaryLoading={isSummaryLoading}
+                    isAutoRegenerating={isAutoRegenerating}
+                    isSummaryRegenerating={isSummaryRegenerating}
+                    summaryGenerateError={summaryGenerateError}
+                    readySourcesCount={readySourcesCount}
+                    regenerateSummary={() => regenerateSummary()}
+                  />
+                )}
+                {!hideSummaryAndQuestions && messages.length === 0 && !isChatLoading && (
                   <ExampleQuestions
                     exampleQuestionsError={exampleQuestionsError}
                     skipExampleQuestionsFetch={skipExampleQuestionsFetch}
@@ -542,7 +556,7 @@ export function ChatCard({
               sourcesCount === 0
                 ? "Add sources to start chatting..."
                 : selectedSourceIds.length > 0
-                  ? `Ask a question (${selectedSourceIds.length} source${selectedSourceIds.length !== 1 ? "s" : ""} selected)...`
+                  ? `Ask a question ${hideSummaryAndQuestions ? "" : `(${selectedSourceIds.length} source${selectedSourceIds.length !== 1 ? "s" : ""} selected)...`}`
                   : "Select sources to start chatting..."
             }
             className="w-full rounded-t-xs border-0 bg-transparent py-3 pr-12 pl-4 shadow-none hover:border-transparent hover:ring-0 hover:ring-offset-0 focus:border-transparent focus:ring-0 focus:ring-offset-0 dark:hover:ring-offset-0 dark:focus:ring-0 dark:focus:ring-offset-0"

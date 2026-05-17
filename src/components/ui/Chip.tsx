@@ -4,7 +4,7 @@ type ChipVariants = "default" | "primary";
 type ChipSizes = "sm" | "md";
 
 interface ChipProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   onClick?: () => void;
   className?: string;
   variant?: ChipVariants;
@@ -59,12 +59,13 @@ export function Chip({
         sizeStyles[size],
         {
           "cursor-pointer": onClick,
+          "p-1.5": !children && icon,
         },
         className,
       )}
     >
       {icon && <span className="flex items-center">{icon}</span>}
-      <span className={multiline ? "text-clip" : "truncate"}>{children}</span>
+      {children && <span className={multiline ? "text-clip" : "truncate"}>{children}</span>}
     </div>
   );
 }

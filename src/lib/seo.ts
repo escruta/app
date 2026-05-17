@@ -11,6 +11,13 @@ export interface RouteMetadata {
 }
 
 export const routeMetadata: Record<string, RouteMetadata> = {
+  "/": {
+    title: "Home - Escruta",
+    description: "Access your notebooks, sources, and AI-powered research tools in Escruta.",
+    url: `${baseUrl}/`,
+    image: `${baseUrl}/OpenGraphImage.webp`,
+    twitterCard: "summary_large_image",
+  },
   "/notebooks": {
     title: "Notebooks - Escruta",
     description: "Access your notebooks, sources, and AI-powered research tools in Escruta.",
@@ -28,7 +35,7 @@ export const routeMetadata: Record<string, RouteMetadata> = {
 };
 
 export function getRouteMetadata(path: string): RouteMetadata {
-  return routeMetadata[path] || routeMetadata["/notebooks"];
+  return routeMetadata[path];
 }
 
 export function generateNotebookMetadata(notebookTitle: string, notebookId: string): RouteMetadata {

@@ -1,6 +1,7 @@
 export interface Note {
   id: string;
-  notebookId: string;
+  notebookId?: string;
+  folderId?: string;
   sourceId?: string;
   icon?: string;
   title: string;

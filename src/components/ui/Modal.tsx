@@ -73,8 +73,8 @@ export function Modal({
   const [scope, animate] = useAnimate();
   const { index } = useModalStack(isOpen);
 
-  const zIndexBackdrop = 40 + index * 10;
-  const zIndexContent = 50 + index * 10;
+  const zIndexBackdrop = 60 + index * 10;
+  const zIndexContent = 70 + index * 10;
 
   const maxHeight = isMobile && viewportHeight ? viewportHeight * 0.9 : undefined;
 

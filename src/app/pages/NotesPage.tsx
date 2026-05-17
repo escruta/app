@@ -1,41 +1,38 @@
-import { useState, useMemo, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router";
-import type { Note, Notebook } from "@/interfaces";
-import { useFetch, useCookie } from "@/hooks";
+import type { Note, Notebook, Folder } from "@/interfaces";
+import { useFetch } from "@/hooks";
+import { SEOMetadata, NotesPageEditor, TopBar } from "@/components";
+import { getRouteMetadata } from "@/lib/seo";
+import { motion } from "motion/react";
 import {
-  Button,
-  Modal,
-  TextField,
+  IconButton,
+  Tooltip,
   Spinner,
-  Dropdown,
+  CanvasModal,
+  Divider,
+  TextField,
+  Button,
+  ButtonGroup,
   Menu,
   MenuTrigger,
   MenuContent,
   MenuItem,
-  MenuLabel,
-  IconButton,
 } from "@/components/ui";
-import { CommonBar, SEOMetadata, NoteChip, NoteEditor } from "@/components";
 import {
   AddIcon,
-  NoteIcon,
-  NotebookIcon,
-  ChevronIcon,
-  CheckIcon,
+  EditIcon,
+  FolderIcon,
+  RestartIcon,
+  ZoomIcon,
   DotsVerticalIcon,
-  CloseIcon,
+  DeleteIcon,
+  NoteIcon,
 } from "@/components/icons";
-import { getRouteMetadata } from "@/lib/seo";
-import { motion } from "motion/react";
-import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
-import { cn } from "@/lib/utils";
+import { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router";
+import { Canvas, type CanvasHandle } from "@/components/canvas/Canvas";
+import { CanvasNoteCard } from "@/components/canvas/CanvasNoteCard";
 
-enum SortOptions {
-  Newest = "Newest",
-  Oldest = "Oldest",
-  Alphabetical = "Alphabetical",
-  ReverseAlphabetical = "Reverse Alphabetical",
-}
+import { cn } from "@/lib/utils";
 
 export default function NotesPage() {
   const {
@@ -44,166 +41,179 @@ export default function NotesPage() {
     error: notesError,
     refetch: refetchNotes,
   } = useFetch<Note[]>("/notes");
-  const {
-    data: notebooks,
-    loading: notebooksLoading,
-    error: notebooksError,
-  } = useFetch<Notebook[]>("/notebooks");
-
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [selectedNote, setSelectedNote] = useState<Note | null>(null);
-  const [noteTitle, setNoteTitle] = useState("");
-  const [selectedNotebookId, setSelectedNotebookId] = useState<string | null>(null);
-  const [expandedNotebooks, setExpandedNotebooks] = useCookie<Record<string, boolean>>(
-    "notesExpandedNotebooks",
-    {},
-  );
-  const [sortBy, setSortBy] = useCookie<SortOptions>("noteSortPreference", SortOptions.Newest);
+  const { data: notebooks } = useFetch<Notebook[]>("/notebooks");
+  const { data: folders, refetch: refetchFolders } = useFetch<Folder[]>("/folders");
 
   const location = useLocation();
-  const navigate = useNavigate();
+
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+  const [selectedNotebookId, setSelectedNotebookId] = useState<string>("");
+  const canvasRef = useRef<CanvasHandle>(null);
+  const initialNotebookSet = useRef(false);
+
+  const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
+  const [folderTitle, setFolderTitle] = useState("");
+  const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (notes && location.state?.noteId) {
-      const noteToSelect = notes.find((n) => n.id === location.state.noteId);
-      if (noteToSelect) {
-        setSelectedNote(noteToSelect);
-      }
-      navigate(location.pathname, { replace: true, state: {} });
+    if (location.state?.noteId && notes) {
+      const note = notes.find((n) => n.id === location.state.noteId);
+      if (note) setSelectedNote(note);
     }
-  }, [notes, location.state, navigate, location.pathname]);
+  }, [location.state, notes]);
 
-  const {
-    loading: savingNote,
-    error: saveError,
-    refetch: createNote,
-  } = useFetch<Note>(
+  useEffect(() => {
+    if (notebooks && notebooks.length > 0 && !initialNotebookSet.current && !selectedNotebookId) {
+      setSelectedNotebookId(notebooks[0].id);
+      initialNotebookSet.current = true;
+    }
+  }, [notebooks, selectedNotebookId]);
+
+  const { loading: addingNote, refetch: createNote } = useFetch<Note>(
     "/notes",
     {
       method: "POST",
       data: {
-        title: noteTitle,
-        notebookId: selectedNotebookId,
+        title: "New note",
       },
       onSuccess: (newNote) => {
         useFetch.clearCache();
-        closeModals();
-        refetchNotes(true);
-        if (newNote) setSelectedNote(newNote);
+        refetchNotes(true, false);
+        setSelectedNote(newNote);
       },
     },
     false,
   );
 
-  const closeModals = () => {
-    setIsCreateModalOpen(false);
-    setNoteTitle("");
-    setSelectedNotebookId(null);
-  };
-
-  const openCreateModal = () => {
-    setNoteTitle("");
-    setSelectedNotebookId(null);
-    setIsCreateModalOpen(true);
-  };
-
-  const handleSelectNote = (note: Note) => {
-    setSelectedNote(note);
-  };
-
-  const toggleNotebook = (notebookId: string) => {
-    setExpandedNotebooks({
-      ...expandedNotebooks,
-      [notebookId]: !expandedNotebooks?.[notebookId],
-    });
-  };
-
-  const { groupedNotes, unassignedNotes } = useMemo(() => {
-    if (!notes) return { groupedNotes: {}, unassignedNotes: [] };
-
-    const sortNotes = (notesArray: Note[]) => {
-      const sortedArray = [...notesArray];
-      switch (sortBy) {
-        case SortOptions.Newest:
-          return sortedArray.sort(
-            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-          );
-        case SortOptions.Oldest:
-          return sortedArray.sort(
-            (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-          );
-        case SortOptions.Alphabetical:
-          return sortedArray.sort((a, b) => a.title.localeCompare(b.title));
-        case SortOptions.ReverseAlphabetical:
-          return sortedArray.sort((a, b) => b.title.localeCompare(a.title));
-        default:
-          return sortedArray;
-      }
-    };
-
-    const result = notes.reduce(
-      (acc, note) => {
-        if (!note.notebookId) {
-          acc.unassignedNotes.push(note);
-        } else {
-          if (!acc.groupedNotes[note.notebookId]) {
-            acc.groupedNotes[note.notebookId] = [];
-          }
-          acc.groupedNotes[note.notebookId].push(note);
-        }
-        return acc;
+  const { loading: creatingFolder, refetch: createFolder } = useFetch<Folder>(
+    "/folders",
+    {
+      method: "POST",
+      data: { title: folderTitle },
+      onSuccess: () => {
+        useFetch.clearCache();
+        refetchFolders(true, false);
+        setIsFolderModalOpen(false);
+        setFolderTitle("");
       },
-      { groupedNotes: {} as Record<string, Note[]>, unassignedNotes: [] as Note[] },
-    );
+    },
+    false,
+  );
 
-    result.unassignedNotes = sortNotes(result.unassignedNotes);
-    for (const notebookId in result.groupedNotes) {
-      result.groupedNotes[notebookId] = sortNotes(result.groupedNotes[notebookId]);
+  const { loading: updatingFolder, refetch: updateFolder } = useFetch<Folder>(
+    `/folders/${editingFolderId}`,
+    {
+      method: "PATCH",
+      data: { title: folderTitle },
+      onSuccess: () => {
+        useFetch.clearCache();
+        refetchFolders(true, false);
+        setIsFolderModalOpen(false);
+        setFolderTitle("");
+        setEditingFolderId(null);
+      },
+    },
+    false,
+  );
+
+  const [folderToDelete, setFolderToDelete] = useState<Folder | null>(null);
+  const [moveTarget, setMoveTarget] = useState<{ noteId: string; folderId: string | null } | null>(
+    null,
+  );
+  const [dragState, setDragState] = useState<{
+    noteId: string;
+    sourceFolderId: string | null;
+  } | null>(null);
+  const [hoveredGroupId, setHoveredGroupId] = useState<string | null>(null);
+
+  const { loading: movingNote, refetch: executeMoveNote } = useFetch(
+    "/notes",
+    {
+      method: "PUT",
+      data: {
+        id: moveTarget?.noteId,
+        folderId: moveTarget?.folderId || null,
+        removeFolder: moveTarget?.folderId === null,
+      },
+      onSuccess: () => {
+        useFetch.clearCache();
+        refetchNotes(true, false);
+        setMoveTarget(null);
+      },
+      onError: () => {
+        setMoveTarget(null);
+      },
+    },
+    false,
+  );
+
+  useEffect(() => {
+    if (moveTarget) {
+      executeMoveNote();
     }
+  }, [moveTarget]);
 
-    return result;
-  }, [notes, sortBy]);
+  const { loading: deletingFolder, refetch: executeDeleteFolder } = useFetch(
+    `/folders/${folderToDelete?.id}`,
+    {
+      method: "DELETE",
+      onSuccess: () => {
+        useFetch.clearCache();
+        refetchFolders(true, false);
+        setFolderToDelete(null);
+      },
+    },
+    false,
+  );
 
-  if (notesLoading || notebooksLoading) {
+  const handleSaveFolder = () => {
+    if (editingFolderId) {
+      updateFolder();
+    } else {
+      createFolder();
+    }
+  };
+
+  const handleCreateFolder = () => {
+    setEditingFolderId(null);
+    setFolderTitle("");
+    setIsFolderModalOpen(true);
+  };
+
+  const handleEditFolder = (folder: Folder) => {
+    setEditingFolderId(folder.id);
+    setFolderTitle(folder.title);
+    setIsFolderModalOpen(true);
+  };
+
+  if (notesLoading) {
     return (
-      <div className="flex h-screen w-full flex-col justify-center">
-        <div className="border-y border-gray-200 bg-gray-50 px-6 py-5 dark:border-gray-700 dark:bg-gray-950">
-          <div className="flex items-center justify-center py-12">
-            <motion.div
-              className="text-center"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <motion.div
-                className="mb-4 inline-block h-8 w-8 rounded-xs border-2 border-blue-500 border-t-transparent"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
-              />
-              <p className="font-medium text-gray-600 dark:text-gray-400">Loading notes...</p>
-            </motion.div>
-          </div>
+      <div className="flex h-screen max-h-full w-full flex-col">
+        <TopBar title="Notes" />
+        <div className="flex w-full flex-1 items-center justify-center">
+          <Spinner />
         </div>
       </div>
     );
   }
 
-  if (notesError || notebooksError) {
+  if (notesError) {
     return (
-      <div className="flex h-screen w-full flex-col justify-center">
-        <div className="border-y border-gray-200 bg-gray-50 px-6 py-5 dark:border-gray-700 dark:bg-gray-950">
+      <div className="flex h-screen max-h-full w-full flex-col">
+        <TopBar title="Notes" />
+        <div className="flex w-full flex-1 flex-col justify-center">
           <motion.div
             className="flex items-center justify-center py-12"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="max-w-md text-center">
-              <h1 className="mb-2 text-lg font-medium text-red-600 dark:text-red-400">
-                Error loading notes
+            <div className="max-w-md rounded-xs border border-red-200 bg-red-50 p-8 text-center dark:border-red-900/30 dark:bg-red-950/20">
+              <h1 className="mb-2 text-lg font-semibold text-red-600 dark:text-red-400">
+                Workspace connection failed
               </h1>
-              <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                {notesError?.message || notebooksError?.message}
+              <p className="text-sm leading-relaxed text-red-500/80 dark:text-red-400/60">
+                {notesError?.message}
               </p>
             </div>
           </motion.div>
@@ -215,247 +225,426 @@ export default function NotesPage() {
   const metadata = getRouteMetadata("/notes") || { title: "Notes - Escruta" };
 
   return (
-    <div className="relative flex h-screen max-h-full w-full flex-col">
+    <div className="flex h-screen max-h-full w-full flex-col overflow-hidden">
       <SEOMetadata title={metadata.title} description={metadata.description} />
+      <TopBar title="Notes" />
 
-      <div className="z-20 border-b border-gray-200 bg-white px-4 py-4 md:px-6 dark:border-gray-700 dark:bg-black">
-        <div className="flex items-center justify-between gap-2">
-          <h1 className="flex min-w-0 flex-1 items-center gap-1.5 text-gray-900 select-text *:leading-7 dark:text-white">
-            <span className="truncate text-2xl font-bold">Notes</span>
-          </h1>
-        </div>
-      </div>
-
-      <div className="relative flex flex-1 flex-col overflow-hidden md:flex-row">
-        <SimpleBackground />
-
-        <div
-          className={cn(
-            "relative z-10 overflow-auto p-3 md:p-4 transition-all duration-300",
-            selectedNote ? "hidden md:block" : "block",
-            "w-full border-r border-gray-200 md:w-1/3 dark:border-gray-800",
-          )}
-        >
-          <CommonBar className="sticky top-0 z-20 mb-4 flex items-center justify-between gap-4">
-            <Button onClick={openCreateModal} className="w-full justify-center">
-              Create note
-            </Button>
-            {notes && notes.length > 0 && (
-              <Menu>
-                <MenuTrigger>
-                  <IconButton
-                    icon={<DotsVerticalIcon />}
-                    size="sm"
-                    ariaLabel="Options"
-                    variant="ghost"
-                  />
-                </MenuTrigger>
-                <MenuContent align="right" className="min-w-[12rem]">
-                  <div className="flex flex-col gap-0.5 p-0.5">
-                    <MenuLabel>Sort by</MenuLabel>
-                    {Object.values(SortOptions).map((option) => (
-                      <MenuItem
-                        key={option}
-                        label={option}
-                        onClick={() => setSortBy(option as SortOptions)}
-                        icon={
-                          sortBy === option ? (
-                            <CheckIcon className="size-4 text-blue-600 dark:text-blue-400" />
-                          ) : (
-                            <div className="size-4" />
-                          )
-                        }
-                        className={cn(
-                          sortBy === option &&
-                            "bg-blue-50 text-blue-700 dark:bg-gray-800 dark:text-blue-400",
-                        )}
-                      />
-                    ))}
-                  </div>
-                </MenuContent>
-              </Menu>
-            )}
-          </CommonBar>
-
-          {notes && notes.length > 0 ? (
-            <div className="mb-8 flex flex-col gap-2">
-              {Object.entries(groupedNotes).map(([notebookId, notebookNotes]) => {
-                const notebook = notebooks?.find((nb) => nb.id === notebookId);
-                const isExpanded = !!expandedNotebooks[notebookId];
-                const isCollapsed = !isExpanded;
-                return (
-                  <div key={notebookId} className="flex flex-col gap-2">
-                    <button
-                      onClick={() => toggleNotebook(notebookId)}
-                      className={cn(
-                        "group flex w-full items-center justify-between rounded-xs px-2 py-1.5 text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100/60 hover:text-gray-700 dark:text-gray-300 dark:hover:bg-gray-800/50 dark:hover:text-gray-100",
-                      )}
-                    >
-                      <div className="flex items-center gap-2">
-                        <NotebookIcon className="size-4" />
-                        <span>{notebook ? notebook.title : "Unknown Notebook"}</span>
-                      </div>
-                      <ChevronIcon
-                        direction={isCollapsed ? "right" : "down"}
-                        className="size-4 text-gray-400 transition-transform group-hover:text-gray-600 dark:text-gray-500 dark:group-hover:text-gray-300"
-                      />
-                    </button>
-                    {!isCollapsed && (
-                      <div className="mb-4 flex flex-col gap-2">
-                        {notebookNotes.map((note) => (
-                          <NoteChip
-                            key={note.id}
-                            note={note}
-                            onSelect={handleSelectNote}
-                            className={
-                              selectedNote?.id === note.id
-                                ? "border-blue-500 ring-1 ring-blue-500 dark:border-blue-500 dark:ring-blue-500"
-                                : ""
-                            }
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-
-              {unassignedNotes.length > 0 && (
-                <div className="mt-2 flex flex-col gap-2">
-                  {Object.keys(groupedNotes).length > 0 && (
-                    <p className="px-2 py-1 text-xs font-medium tracking-wider text-gray-400 uppercase dark:text-gray-500">
-                      Unassigned
-                    </p>
-                  )}
-                  {unassignedNotes.map((note) => (
-                    <NoteChip
-                      key={note.id}
-                      note={note}
-                      onSelect={handleSelectNote}
-                      className={
-                        selectedNote?.id === note.id
-                          ? "border-blue-500 ring-1 ring-blue-500 dark:border-blue-500 dark:ring-blue-500"
-                          : ""
-                      }
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
-              <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
-                <div className="size-10 text-blue-500 dark:text-blue-400">
-                  <NoteIcon />
-                </div>
-              </div>
-              <h3 className="text-foreground mb-3 text-xl font-semibold">No notes yet</h3>
-              <p className="mb-6 max-w-md text-base leading-relaxed text-gray-500 dark:text-gray-400">
-                Create your first note to start capturing ideas.
-              </p>
-            </div>
-          )}
-        </div>
-
-        <div
-          className={cn(
-            "z-30 flex-1 bg-white p-3 md:w-2/3 md:bg-transparent md:p-4 dark:bg-black md:dark:bg-transparent",
-            selectedNote
-              ? "block w-full"
-              : "hidden md:flex md:flex-col md:items-center md:justify-center",
-          )}
-        >
-          {selectedNote ? (
-            <NoteEditor
-              key={selectedNote.id}
-              note={selectedNote}
-              handleCloseNote={() => setSelectedNote(null)}
-              onNoteDeleted={() => {
-                setSelectedNote(null);
-                refetchNotes(true);
-              }}
-              onNoteUpdated={(updatedNote) => {
-                setSelectedNote(updatedNote);
-                refetchNotes(true);
-              }}
-              className="h-full w-full shadow-xl md:shadow-none"
-            />
-          ) : (
-            <div className="flex size-full flex-col items-center justify-center text-center">
-              <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
-                <div className="size-10 text-blue-500 dark:text-blue-400">
-                  <NoteIcon />
-                </div>
-              </div>
-              <h3 className="text-foreground mb-2 text-lg font-semibold">No note selected</h3>
-              <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                Select a note from the list on the left to view or edit its contents.
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Create Modal */}
-        <Modal
-          isOpen={isCreateModalOpen}
-          onClose={closeModals}
-          title="Create new note"
-          contentClassname="overflow-visible"
-          actions={
-            <>
-              <Button variant="secondary" onClick={closeModals} disabled={savingNote}>
-                Cancel
-              </Button>
+      <div className="flex min-h-0 flex-1">
+        {/* Notes Canvas Area */}
+        <div className="relative flex min-w-0 flex-1 flex-col overflow-hidden bg-gray-50/20 dark:bg-gray-950/15">
+          {/* Floating Bottom Bar */}
+          <div className="absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-xs border border-gray-200/80 bg-white/90 p-2 shadow-md dark:border-gray-800/80 dark:bg-gray-950/90">
+            <div className="flex items-center gap-2">
               <Button
                 variant="primary"
-                onClick={async () => await createNote()}
-                disabled={!noteTitle.trim() || savingNote}
-                icon={savingNote ? <Spinner /> : <AddIcon />}
+                size="sm"
+                onClick={() => createNote()}
+                disabled={addingNote}
+                icon={
+                  addingNote ? <Spinner className="size-3.5" /> : <AddIcon className="size-3.5" />
+                }
               >
-                {savingNote ? "Saving" : "Save"}
+                New note
               </Button>
-            </>
-          }
-        >
-          <div className="space-y-4">
-            <TextField
-              id="note-title"
-              label="Note title"
-              type="text"
-              value={noteTitle}
-              onChange={(e) => setNoteTitle(e.target.value)}
-              placeholder="Enter note title"
-              autoFocus
-            />
-
-            <div className="flex flex-col gap-1.5">
-              <div className="flex w-full items-end gap-2">
-                <Dropdown<string>
-                  label="Notebook"
-                  options={notebooks?.map((nb) => nb.id) || []}
-                  selectedOption={selectedNotebookId || undefined}
-                  onSelect={(val) => setSelectedNotebookId(val)}
-                  renderOption={(opt) => {
-                    const notebook: Notebook | undefined = notebooks?.find((n) => n.id === opt);
-                    return notebook ? notebook.title : "Unknown";
-                  }}
-                  placeholder="Select a notebook (optional)"
-                  className="min-w-0 flex-1 flex-col items-start gap-1.5"
-                />
-                {selectedNotebookId && (
-                  <IconButton
-                    icon={<CloseIcon />}
-                    onClick={() => setSelectedNotebookId(null)}
-                    variant="ghost"
-                    ariaLabel="Clear notebook selection"
-                  />
-                )}
-              </div>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleCreateFolder}
+                icon={<FolderIcon className="size-3.5" />}
+              >
+                New folder
+              </Button>
             </div>
 
-            {saveError && <div className="text-sm text-red-500">Error: {saveError.message}</div>}
+            <Divider orientation="vertical" className="h-5" />
+
+            <ButtonGroup>
+              <Tooltip text="Zoom out" position="top">
+                <IconButton
+                  variant="secondary"
+                  icon={<ZoomIcon type="out" className="size-4" />}
+                  onClick={() => canvasRef.current?.zoomOut()}
+                  ariaLabel="Zoom out"
+                  size="sm"
+                />
+              </Tooltip>
+              <Tooltip text="Reset zoom" position="top">
+                <IconButton
+                  variant="secondary"
+                  icon={<RestartIcon className="size-4" />}
+                  onClick={() => canvasRef.current?.reset()}
+                  ariaLabel="Reset zoom"
+                  size="sm"
+                />
+              </Tooltip>
+              <Tooltip text="Zoom in" position="top">
+                <IconButton
+                  variant="secondary"
+                  icon={<ZoomIcon type="in" className="size-4" />}
+                  onClick={() => canvasRef.current?.zoomIn()}
+                  ariaLabel="Zoom in"
+                  size="sm"
+                />
+              </Tooltip>
+            </ButtonGroup>
           </div>
-        </Modal>
+
+          <div className="relative flex-1 overflow-hidden">
+            {(notes && notes.length > 0) || (folders && folders.length > 0) ? (
+              (() => {
+                const sortedNotes = [...(notes || [])].sort((a, b) =>
+                  a.title.localeCompare(b.title),
+                );
+
+                const groups = [
+                  ...(folders?.map((folder) => ({
+                    id: folder.id,
+                    title: folder.title,
+                    notes: sortedNotes.filter((n) => n.folderId === folder.id),
+                  })) || []),
+                  {
+                    id: null,
+                    title: "",
+                    notes: sortedNotes.filter((n) => !n.folderId),
+                  },
+                ].filter(
+                  (group) =>
+                    group.id !== null ||
+                    group.notes.length > 0 ||
+                    (hoveredGroupId === "root" && dragState),
+                );
+
+                return (
+                  <Canvas ref={canvasRef} initialX={0} initialY={0}>
+                    <div
+                      className="flex h-full w-full items-center justify-center p-6"
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        if (dragState && hoveredGroupId !== "root") {
+                          setHoveredGroupId("root");
+                        }
+                      }}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const noteId = e.dataTransfer.getData("noteId");
+                        if (noteId && noteId !== "") {
+                          const sourceFolderId = e.dataTransfer.getData("sourceFolderId");
+                          if (sourceFolderId !== "") {
+                            setMoveTarget({ noteId, folderId: null });
+                          }
+                        }
+                        setDragState(null);
+                        setHoveredGroupId(null);
+                      }}
+                    >
+                      <div className="flex flex-col gap-6">
+                        {groups.map((group, index) => {
+                          const groupId = group.id || "root";
+                          const isHovered = hoveredGroupId === groupId;
+                          const showPlaceholder =
+                            isHovered &&
+                            dragState &&
+                            dragState.sourceFolderId !== (group.id || null);
+
+                          const notesWithPlaceholder = [...group.notes];
+                          if (showPlaceholder) {
+                            const draggedNote = notes?.find((n) => n.id === dragState.noteId);
+                            if (draggedNote) {
+                              const insertionIndex = group.notes.findIndex(
+                                (n) => n.title.localeCompare(draggedNote.title) > 0,
+                              );
+                              const finalIndex =
+                                insertionIndex === -1 ? group.notes.length : insertionIndex;
+                              notesWithPlaceholder.splice(finalIndex, 0, {
+                                id: "placeholder",
+                                title: "placeholder",
+                              } as Note);
+                            }
+                          }
+
+                          const effectiveNotesCount =
+                            group.notes.length + (showPlaceholder ? 1 : 0);
+
+                          return (
+                            <div
+                              key={group.id || index}
+                              className={cn(
+                                "flex flex-col gap-3 rounded-xs transition-all duration-200",
+                                isHovered && dragState && "ring ring-blue-500/50 p-4",
+                              )}
+                              onDragOver={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (hoveredGroupId !== groupId) {
+                                  setHoveredGroupId(groupId);
+                                }
+                              }}
+                              onDragLeave={(e) => {
+                                e.preventDefault();
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                if (
+                                  e.clientX < rect.left ||
+                                  e.clientX >= rect.right ||
+                                  e.clientY < rect.top ||
+                                  e.clientY >= rect.bottom
+                                ) {
+                                  setHoveredGroupId(null);
+                                }
+                              }}
+                              onDrop={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setHoveredGroupId(null);
+                                setDragState(null);
+                                const noteId = e.dataTransfer.getData("noteId");
+                                if (noteId && noteId !== "") {
+                                  const sourceFolderId = e.dataTransfer.getData("sourceFolderId");
+                                  if (sourceFolderId !== (group.id || "")) {
+                                    setMoveTarget({ noteId, folderId: group.id });
+                                  }
+                                }
+                              }}
+                            >
+                              {group.title && group.id && (
+                                <div className="flex items-center gap-2">
+                                  <h2 className="flex items-center gap-1.5 text-base font-semibold tracking-tight text-gray-900 transition-colors group-hover:text-blue-500 dark:text-gray-100">
+                                    <FolderIcon className="size-3 text-blue-500 dark:text-blue-400" />
+                                    {group.title}
+                                  </h2>
+                                  <Menu>
+                                    <MenuTrigger>
+                                      <IconButton
+                                        variant="ghost"
+                                        icon={<DotsVerticalIcon className="size-3" />}
+                                        size="xs"
+                                        ariaLabel="Folder options"
+                                      />
+                                    </MenuTrigger>
+                                    <MenuContent align="left">
+                                      <MenuItem
+                                        icon={<EditIcon className="size-4" />}
+                                        label="Edit folder"
+                                        onClick={() => {
+                                          const f = folders?.find((f) => f.id === group.id);
+                                          if (f) handleEditFolder(f);
+                                        }}
+                                      />
+                                      <MenuItem
+                                        icon={<DeleteIcon className="size-4" />}
+                                        label="Delete folder"
+                                        variant="danger"
+                                        onClick={() => {
+                                          const f = folders?.find((f) => f.id === group.id);
+                                          if (f) setFolderToDelete(f);
+                                        }}
+                                      />
+                                    </MenuContent>
+                                  </Menu>
+                                </div>
+                              )}
+                              <div
+                                className={cn(
+                                  "grid w-max gap-3 min-w-[12rem]",
+                                  group.id &&
+                                    "rounded-xs p-4 ring-1 ring-black/10 backdrop-blur-sm dark:ring-white/10",
+                                  {
+                                    "grid-cols-1": effectiveNotesCount <= 1,
+                                    "grid-cols-2": effectiveNotesCount === 2,
+                                    "grid-cols-3": effectiveNotesCount === 3,
+                                    "grid-cols-4": effectiveNotesCount >= 4,
+                                  },
+                                  movingNote && "opacity-50 pointer-events-none",
+                                )}
+                              >
+                                {effectiveNotesCount === 0 ? (
+                                  <div className="flex h-24 w-48 flex-col items-center justify-center gap-2 rounded-xs border border-dashed border-gray-200 bg-white/50 text-center ring-1 ring-gray-500/5 dark:border-gray-800 dark:bg-gray-900/50 dark:ring-gray-500/10">
+                                    <span className="text-sm font-medium text-gray-400">
+                                      {group.id ? "Empty folder" : "No notes"}
+                                    </span>
+                                  </div>
+                                ) : (
+                                  notesWithPlaceholder.map((note) => {
+                                    if (note.id === "placeholder") {
+                                      return (
+                                        <motion.div
+                                          key="placeholder"
+                                          layoutId="placeholder"
+                                          initial={{ opacity: 0, scale: 0.8 }}
+                                          animate={{ opacity: 1, scale: 1 }}
+                                          className="placeholder-item h-[3.25rem] w-48 rounded-xs border-2 border-dashed border-blue-400 bg-blue-50/50 dark:border-blue-500/50 dark:bg-blue-900/20"
+                                        />
+                                      );
+                                    }
+
+                                    const notebook = notebooks?.find(
+                                      (nb) => nb.id === note.notebookId,
+                                    );
+                                    return (
+                                      <div
+                                        key={note.id}
+                                        draggable
+                                        className="cursor-grab transition-all duration-200 active:cursor-grabbing"
+                                        onDragStart={(e) => {
+                                          setDragState({
+                                            noteId: note.id,
+                                            sourceFolderId: group.id || null,
+                                          });
+                                          e.dataTransfer.setData("noteId", note.id);
+                                          e.dataTransfer.setData("sourceFolderId", group.id || "");
+                                          e.dataTransfer.effectAllowed = "move";
+                                          setTimeout(() => {
+                                            if (e.target instanceof HTMLElement) {
+                                              e.target.classList.add("opacity-30", "scale-95");
+                                            }
+                                          }, 0);
+                                        }}
+                                        onDragEnd={(e) => {
+                                          setDragState(null);
+                                          setHoveredGroupId(null);
+                                          if (e.target instanceof HTMLElement) {
+                                            e.target.classList.remove("opacity-30", "scale-95");
+                                          }
+                                        }}
+                                      >
+                                        <CanvasNoteCard
+                                          key={note.id}
+                                          note={note}
+                                          notebookId={notebook?.id}
+                                          notebookName={notebook?.title}
+                                          className="!relative !top-0 !left-0 w-48 !transform-none"
+                                          onSelect={(n) => setSelectedNote(n)}
+                                        />
+                                      </div>
+                                    );
+                                  })
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </Canvas>
+                );
+              })()
+            ) : (
+              <div className="flex h-full items-center justify-center">
+                <div className="flex flex-col items-center justify-center rounded-xs border border-dashed border-gray-200 bg-white/50 p-12 text-center shadow-sm ring-1 ring-gray-500/5 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-950/50 dark:ring-gray-500/10">
+                  <div className="mb-4 flex size-12 items-center justify-center rounded-xs bg-blue-50 text-blue-600 ring-1 ring-blue-500/20 dark:bg-blue-900/20 dark:text-blue-400 dark:ring-blue-400/20">
+                    <NoteIcon className="size-6" />
+                  </div>
+                  <h3 className="mb-1 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                    No notes yet
+                  </h3>
+                  <p className="mb-6 max-w-[16rem] text-sm text-gray-500 dark:text-gray-400">
+                    Get started by creating a new note or folder to organize your thoughts
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="primary"
+                      onClick={() => createNote()}
+                      disabled={addingNote}
+                      icon={<AddIcon className="size-4" />}
+                    >
+                      Create note
+                    </Button>
+                    <Button variant="secondary" onClick={handleCreateFolder} icon={<FolderIcon />}>
+                      New folder
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Folder Modals */}
+          <CanvasModal
+            isOpen={isFolderModalOpen}
+            onClose={() => setIsFolderModalOpen(false)}
+            width="sm"
+            minHeight="min-h-fit"
+            title={editingFolderId ? "Edit folder" : "New folder"}
+            actions={
+              <>
+                <Button variant="ghost" onClick={() => setIsFolderModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => handleSaveFolder()}
+                  disabled={creatingFolder || updatingFolder || !folderTitle.trim()}
+                >
+                  {creatingFolder || updatingFolder ? (
+                    <div className="flex items-center gap-2">
+                      <Spinner className="size-4" />
+                      {editingFolderId ? "Saving..." : "Creating..."}
+                    </div>
+                  ) : editingFolderId ? (
+                    "Save changes"
+                  ) : (
+                    "Create folder"
+                  )}
+                </Button>
+              </>
+            }
+          >
+            <div className="space-y-4">
+              <TextField
+                id="folder-name-input"
+                label="Folder name"
+                value={folderTitle}
+                onChange={(e) => setFolderTitle(e.target.value)}
+                placeholder="E.g., Ideas"
+                autoFocus
+              />
+            </div>
+          </CanvasModal>
+
+          <CanvasModal
+            isOpen={!!folderToDelete}
+            onClose={() => setFolderToDelete(null)}
+            width="sm"
+            minHeight="min-h-fit"
+            title="Delete folder"
+            actions={
+              <>
+                <Button variant="ghost" onClick={() => setFolderToDelete(null)}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="danger"
+                  onClick={() => executeDeleteFolder()}
+                  disabled={deletingFolder}
+                >
+                  {deletingFolder ? (
+                    <div className="flex items-center gap-2">
+                      <Spinner className="size-4 text-white" />
+                      Deleting...
+                    </div>
+                  ) : (
+                    "Delete"
+                  )}
+                </Button>
+              </>
+            }
+          >
+            <p className="text-gray-600 dark:text-gray-300">
+              Are you sure you want to delete the folder{" "}
+              <span className="font-semibold">{folderToDelete?.title}</span>? This action cannot be
+              undone. Notes inside this folder will remain but will be moved out of the folder.
+            </p>
+          </CanvasModal>
+
+          {/* Note Editor Overlay */}
+          {selectedNote && (
+            <NotesPageEditor
+              note={selectedNote}
+              handleCloseNote={() => setSelectedNote(null)}
+              onNoteDeleted={() => refetchNotes(true, false)}
+              onNoteUpdated={() => refetchNotes(true, false)}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

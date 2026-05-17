@@ -14,6 +14,7 @@ type DropdownProps<T> = {
   size?: "sm" | "md";
   onOpenChange?: (isOpen: boolean) => void;
   align?: "left" | "right";
+  up?: boolean;
   renderOption?: (option: T) => React.ReactNode;
 };
 
@@ -26,6 +27,7 @@ export function Dropdown<T>({
   placeholder = "Select an option",
   disabled = false,
   size = "md",
+  up = false,
   onOpenChange,
   align = "left",
   renderOption = (opt) => String(opt),
@@ -102,7 +104,11 @@ export function Dropdown<T>({
             },
           )}
         >
-          <span className="block truncate">
+          <span
+            className={cn("block truncate", {
+              "text-gray-500 dark:text-gray-400 font-normal": selectedOption == null,
+            })}
+          >
             {selectedOption != null ? renderOption(selectedOption as T) : placeholder}
           </span>
 
@@ -114,7 +120,7 @@ export function Dropdown<T>({
             )}
           >
             <ChevronIcon
-              direction={isOpen ? "up" : "down"}
+              direction={isOpen !== up ? "up" : "down"}
               className={cn(
                 "text-gray-400 dark:text-gray-400 transition-transform duration-200",
                 size === "sm" ? "size-4" : "size-5",
@@ -127,16 +133,17 @@ export function Dropdown<T>({
         <AnimatePresence>
           {isOpen && !disabled && (
             <motion.div
-              initial={{ opacity: 0, y: -10 }}
+              initial={{ opacity: 0, y: up ? 10 : -10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
+              exit={{ opacity: 0, y: up ? 10 : -10 }}
               transition={{
                 duration: 0.2,
                 ease: "easeOut",
               }}
               className={cn(
-                "absolute z-50 min-w-full w-max mt-1.5",
+                "absolute z-50 min-w-full w-max my-1.5",
                 align === "right" ? "right-0" : "left-0",
+                up && "bottom-full",
                 "bg-white dark:bg-gray-900",
                 "border border-gray-300 dark:border-gray-600",
                 "rounded-xs shadow-lg shadow-gray-500/10 dark:shadow-black/20 ring-1 ring-gray-500/5 dark:ring-gray-500/10",

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 const BREAKPOINTS = {
   mobile: 640,
   tablet: 768,
-  laptop: 1280,
+  laptop: 1024,
 };
 
 function useMediaQuery(width: number) {

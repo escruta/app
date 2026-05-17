@@ -2,8 +2,16 @@
   outline: none;
   padding: 1rem 1.5rem;
   height: 100%;
+  margin: 0 auto;
+  width: 100%;
+  max-width: var(--container-5xl);
   box-sizing: border-box;
   overflow-y: auto;
+  caret-color: var(--color-blue-600);
+}
+
+html.dark .ProseMirror {
+  caret-color: var(--color-blue-300);
 }
 
 .ProseMirror p.is-editor-empty:first-child::before {

@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 
 interface BaseProps {
   children: React.ReactNode;
@@ -31,35 +32,42 @@ export function Card({
     return () => document.removeEventListener("keydown", onKey);
   }, [isExpanded, setIsExpanded]);
 
+  const content = (
+    <div
+      className={cn(
+        "bg-white dark:bg-gray-900 p-4 rounded-xs border border-gray-200 dark:border-gray-700 ring-1 ring-gray-500/5 dark:ring-gray-500/10",
+        {
+          "fixed z-50 m-auto overflow-auto inset-0": isExpanded,
+          "sm:inset-12 sm:max-h-5/6 sm:max-w-2xl": isExpanded,
+          "lg:max-h-4/5 lg:max-w-5xl": isExpanded,
+        },
+        !isExpanded && className,
+        isExpanded && className?.replace(/h-full/g, ""),
+      )}
+      style={{
+        position: isExpanded ? "fixed" : "relative",
+      }}
+    >
+      {children}
+    </div>
+  );
+
   return (
     <>
       {/* Backdrop */}
-      {isExpanded && (
-        <button
-          type="button"
-          className="animate-in fade-in fixed inset-0 z-40 cursor-default bg-black/30 backdrop-blur-[1px] duration-200 dark:bg-black/60"
-          onClick={() => setIsExpanded?.(false)}
-          aria-label="Close expanded view"
-        />
-      )}
+      {isExpanded &&
+        createPortal(
+          <button
+            type="button"
+            className="animate-in fade-in fixed inset-0 z-40 cursor-default bg-black/30 backdrop-blur-[1px] duration-200 dark:bg-black/60"
+            onClick={() => setIsExpanded?.(false)}
+            aria-label="Close expanded view"
+          />,
+          document.body,
+        )}
 
       {/* Card */}
-      <div
-        className={cn(
-          "bg-white dark:bg-gray-900 p-4 rounded-xs border border-gray-200 dark:border-gray-700 ring-1 ring-gray-500/5 dark:ring-gray-500/10",
-          {
-            "fixed z-50 m-auto overflow-auto inset-0": isExpanded,
-            "sm:inset-4 sm:max-h-[calc(100vh-4rem)] sm:max-w-[calc(100vw-4rem)]": isExpanded,
-            "lg:inset-12 lg:max-h-[calc(100vh-6rem)] lg:max-w-[calc(100vw-12rem)]": isExpanded,
-          },
-          className,
-        )}
-        style={{
-          position: isExpanded ? "fixed" : "relative",
-        }}
-      >
-        {children}
-      </div>
+      {isExpanded ? createPortal(content, document.body) : content}
     </>
   );
 }

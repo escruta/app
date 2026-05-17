@@ -1,5 +1,7 @@
 export * from "./Alert";
 export * from "./Button";
+export * from "./ButtonGroup";
+export * from "./CanvasModal";
 export * from "./Card";
 export * from "./Checkbox";
 export * from "./Chip";

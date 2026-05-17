@@ -1,9 +1,9 @@
 import type { Note } from "@/interfaces";
 import { AddIcon, EditIcon } from "@/components/icons";
 import { NoteChip } from "./NoteChip";
-import { Card, Button, Divider, Modal, TextField, Spinner } from "@/components/ui";
+import { Card, Button, Divider, Spinner } from "@/components/ui";
 import { useFetch } from "@/hooks";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 
 interface NotesCardProps {
   notebookId: string;
@@ -19,32 +19,24 @@ export function NotesCard({ notebookId, onNoteSelect, refreshTrigger }: NotesCar
     refetch: refetchNotes,
   } = useFetch<Note[]>(`/notes?notebookId=${notebookId}`);
 
-  const [isAddNoteModalOpen, setIsAddNoteModalOpen] = useState<boolean>(false);
-  const [newNoteTitle, setNewNoteTitle] = useState<string>("");
-
   useEffect(() => {
     if (refreshTrigger !== undefined) {
       refetchNotes(true);
     }
   }, [refreshTrigger]);
 
-  const {
-    loading: addingNote,
-    error: addingNoteError,
-    refetch: addNote,
-  } = useFetch<Note>(
+  const { loading: addingNote, refetch: createNote } = useFetch<Note>(
     `/notes`,
     {
       method: "POST",
       data: {
-        title: newNoteTitle,
+        title: "New Note",
         notebookId: notebookId,
       },
-      onSuccess: () => {
+      onSuccess: (newNote) => {
         useFetch.clearCache();
-        setNewNoteTitle("");
-        setIsAddNoteModalOpen(false);
         refetchNotes(true);
+        if (onNoteSelect) onNoteSelect(newNote);
       },
       onError: (error) => {
         console.error("Error adding note:", error.message);
@@ -60,13 +52,14 @@ export function NotesCard({ notebookId, onNoteSelect, refreshTrigger }: NotesCar
           <div className="flex flex-row items-center justify-between p-4">
             <h2 className="font-sans text-lg font-semibold">Notes</h2>
             <Button
-              icon={<AddIcon />}
+              icon={addingNote ? <Spinner /> : <AddIcon />}
               variant="primary"
               size="sm"
               className="flex-shrink-0"
-              onClick={() => setIsAddNoteModalOpen(true)}
+              onClick={() => createNote()}
+              disabled={addingNote}
             >
-              Add note
+              {addingNote ? "Adding..." : "Add note"}
             </Button>
           </div>
           <Divider className="my-0" />
@@ -74,7 +67,11 @@ export function NotesCard({ notebookId, onNoteSelect, refreshTrigger }: NotesCar
         <div className="w-full flex-1 overflow-y-auto px-4">
           {(() => {
             if (loading) {
-              return <div className="text-center text-sm text-gray-500">Loading notes...</div>;
+              return (
+                <div className="flex size-full items-center justify-center">
+                  <Spinner />
+                </div>
+              );
             }
             if (error) {
               return (
@@ -108,45 +105,6 @@ export function NotesCard({ notebookId, onNoteSelect, refreshTrigger }: NotesCar
           })()}
         </div>
       </Card>
-
-      {/* Add Note Modal */}
-      <Modal
-        isOpen={isAddNoteModalOpen}
-        onClose={() => setIsAddNoteModalOpen(false)}
-        title="Add note"
-        actions={
-          <>
-            <Button variant="secondary" onClick={() => setIsAddNoteModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              onClick={async () => {
-                await addNote();
-              }}
-              disabled={!newNoteTitle.trim() || addingNote}
-              icon={addingNote ? <Spinner /> : <AddIcon />}
-            >
-              {addingNote ? "Adding" : "Add"}
-            </Button>
-          </>
-        }
-      >
-        <div className="space-y-4">
-          <TextField
-            id="note-title"
-            label="Title of the note"
-            type="text"
-            value={newNoteTitle}
-            onChange={(e) => setNewNoteTitle(e.target.value)}
-            placeholder="Enter new note title"
-            autoFocus
-          />
-          {addingNoteError && (
-            <div className="text-sm text-red-500">Error: {addingNoteError.message}</div>
-          )}
-        </div>
-      </Modal>
     </>
   );
 }

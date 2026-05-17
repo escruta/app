@@ -318,7 +318,11 @@ export function SourceViewer({
           </div>
           <Divider className="my-0" />
         </div>
-        {loading && <div className="px-6 text-center text-sm text-gray-500">Loading source...</div>}
+        {loading && (
+          <div className="flex size-full items-center justify-center">
+            <Spinner />
+          </div>
+        )}
         {error && (
           <div className="px-6 text-sm text-red-500">Error loading source: {error.message}</div>
         )}

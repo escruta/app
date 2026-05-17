@@ -13,6 +13,7 @@ body {
   font-family: var(--font-sans);
   background-color: var(--color-gray-900);
   color: var(--color-gray-900);
+  caret-shape: underscore;
 }
 
 html.dark body {

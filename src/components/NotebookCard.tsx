@@ -176,7 +176,6 @@ export function NotebookCard({ notebook, viewMode = "grid", onChange }: Notebook
         className={cn(baseClasses, {
           [gridClasses]: viewMode === "grid",
           [listClasses]: viewMode === "list",
-          "md:min-w-44 md:max-w-52": viewMode === "grid",
         })}
         onClick={handleCardClick}
         onKeyDown={handleCardKeyDown}

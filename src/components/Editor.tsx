@@ -302,7 +302,7 @@ export function Editor({
 
   return (
     <div className="relative flex h-full w-full flex-col">
-      <div className="top-0 z-10 flex items-center gap-1 overflow-x-auto overflow-y-hidden bg-white px-2 py-1 dark:bg-gray-900">
+      <div className="top-0 z-10 mx-auto flex w-full max-w-5xl items-center gap-1 overflow-x-auto overflow-y-hidden bg-white px-2 py-1 dark:bg-gray-900">
         <ToolbarButton
           isActive={editor.isActive("heading", { level: 1 })}
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
