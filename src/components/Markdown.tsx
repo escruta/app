@@ -6,13 +6,24 @@ import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 import { cn } from "../lib/utils";
 import { CodeBlock } from "./CodeBlock";
+import { type CitedSource } from "./chat/ChatMessage";
+import { Tooltip, Chip } from "./ui";
 
 interface MarkdownProps {
   text: string;
   baseUrl?: string;
+  showLinks?: boolean;
+  citedSources?: CitedSource[];
+  onSourceClick?: (sourceId: string) => void;
 }
 
-export const Markdown = memo(function Markdown({ text, baseUrl }: MarkdownProps) {
+export const Markdown = memo(function Markdown({
+  text,
+  baseUrl,
+  showLinks = true,
+  citedSources,
+  onSourceClick,
+}: MarkdownProps) {
   const processedText = text
     .replace(/\\\[/g, "$$$$")
     .replace(/\\\]/g, "$$$$")
@@ -94,6 +105,48 @@ export const Markdown = memo(function Markdown({ text, baseUrl }: MarkdownProps)
           </u>
         ),
         a: ({ href, children }) => {
+          if (href?.startsWith("#cite-")) {
+            const sourceId = href.replace("#cite-", "");
+            const sourceIndex = citedSources?.findIndex((s) => s.id === sourceId) ?? -1;
+            const number = sourceIndex !== -1 ? sourceIndex + 1 : "?";
+            const source = citedSources?.find((s) => s.id === sourceId);
+            const documentId = source?.documentId || sourceId;
+            const title = source?.title || "Unknown source";
+            const citeText = source?.text || "";
+
+            return (
+              <Tooltip
+                text={
+                  <div className="flex max-h-40 w-full flex-col">
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSourceClick?.(documentId);
+                      }}
+                      className="sticky top-0 z-10 shrink-0 cursor-pointer truncate rounded-t-xs border-b border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold transition-colors dark:border-gray-700 dark:bg-gray-900"
+                    >
+                      {title}
+                    </div>
+                    <div className="overflow-y-auto p-3 text-sm leading-relaxed break-words whitespace-pre-wrap text-gray-700 dark:text-gray-300">
+                      <Markdown text={citeText} baseUrl={baseUrl} showLinks={false} />
+                    </div>
+                  </div>
+                }
+                position="top"
+              >
+                <span className="mx-0.5 inline-flex align-text-top">
+                  <Chip
+                    size="sm"
+                    onClick={() => onSourceClick?.(documentId)}
+                    className="h-4 !min-h-0 !px-1.5 !py-0 !text-[0.65rem]"
+                  >
+                    {number}
+                  </Chip>
+                </span>
+              </Tooltip>
+            );
+          }
+
           let resolvedHref = href;
           if (baseUrl && href) {
             try {
@@ -103,7 +156,7 @@ export const Markdown = memo(function Markdown({ text, baseUrl }: MarkdownProps)
             }
           }
 
-          return (
+          return showLinks ? (
             <a
               href={resolvedHref}
               target="_blank"
@@ -112,6 +165,8 @@ export const Markdown = memo(function Markdown({ text, baseUrl }: MarkdownProps)
             >
               {children}
             </a>
+          ) : (
+            children
           );
         },
         img: ({ src, alt, title }) => {

@@ -13,7 +13,9 @@ type Sender = "user" | "ai";
 
 export interface CitedSource {
   id: string;
+  documentId: string;
   title: string;
+  text?: string;
 }
 
 export interface Message {
@@ -25,7 +27,11 @@ export interface Message {
   selectedSourcesCount?: number;
 }
 
-function processMessage(message: Message, onRetry?: () => void): ReactNode {
+function processMessage(
+  message: Message,
+  onRetry?: () => void,
+  onSourceClick?: (sourceId: string) => void,
+): ReactNode {
   if (message.error) {
     return (
       <div className="flex flex-col gap-3">
@@ -89,7 +95,12 @@ function processMessage(message: Message, onRetry?: () => void): ReactNode {
 
     return (
       <div key={index}>
-        <Markdown text={part.content} />
+        <Markdown
+          text={part.content.replace(/\[source_([a-fA-F0-9-]+)\]/g, "[cite](#cite-$1)")}
+          citedSources={message.citedSources}
+          onSourceClick={onSourceClick}
+          showLinks={false}
+        />
       </div>
     );
   });
@@ -141,7 +152,11 @@ export function ChatMessage({ message, index, onRetryFromError, onSourceClick }:
             "text-gray-950 dark:text-gray-50": message.sender === "ai",
           })}
         >
-          {processMessage(message, message.error ? () => onRetryFromError(index) : undefined)}
+          {processMessage(
+            message,
+            message.error ? () => onRetryFromError(index) : undefined,
+            onSourceClick,
+          )}
         </div>
 
         {message.sender === "ai" && message.citedSources && message.citedSources.length > 0 && (
@@ -149,11 +164,21 @@ export function ChatMessage({ message, index, onRetryFromError, onSourceClick }:
             <div className="mb-3 text-xs font-bold tracking-widest text-gray-500 uppercase select-none dark:text-gray-400">
               Cited sources
             </div>
-            <div className="flex flex-wrap gap-2">
-              {message.citedSources.map((source, idx) => (
+            <div className="flex flex-wrap gap-2 px-1">
+              {Object.values(
+                message.citedSources.reduce(
+                  (acc, source) => {
+                    if (!acc[source.documentId]) {
+                      acc[source.documentId] = source;
+                    }
+                    return acc;
+                  },
+                  {} as Record<string, CitedSource>,
+                ),
+              ).map((source, idx) => (
                 <Chip
-                  key={source.id}
-                  onClick={() => onSourceClick(source.id)}
+                  key={source.documentId}
+                  onClick={() => onSourceClick(source.documentId)}
                   title={source.title}
                   size="sm"
                   className="max-w-full"
@@ -169,7 +194,7 @@ export function ChatMessage({ message, index, onRetryFromError, onSourceClick }:
       {message.sender === "user" &&
         message.selectedSourcesCount !== undefined &&
         message.selectedSourcesCount > 0 && (
-          <div className="mt-2 flex justify-end">
+          <div className="mt-2 mr-1 flex justify-end">
             <Chip size="sm" icon={<FileIcon className="size-2.5" />}>
               {message.selectedSourcesCount} source
               {message.selectedSourcesCount !== 1 ? "s" : ""} selected

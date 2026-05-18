@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 
 interface TooltipProps {
   children: React.ReactNode;
-  text: string;
+  text: React.ReactNode;
   position?: "top" | "bottom" | "left" | "right";
   disabled?: boolean;
   className?: string;
@@ -82,7 +82,8 @@ export function Tooltip({
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
 
-        const tooltipWidth = tooltipRef.current?.offsetWidth || Math.min(text.length * 8 + 24, 250);
+        const textLength = typeof text === "string" ? text.length : 20;
+        const tooltipWidth = tooltipRef.current?.offsetWidth || Math.min(textLength * 8 + 24, 250);
         const tooltipHeight = tooltipRef.current?.offsetHeight || 40;
 
         const triggerCenter = {
@@ -225,12 +226,16 @@ export function Tooltip({
                   "drop-shadow(0 10px 15px rgba(0, 0, 0, 0.1)) drop-shadow(0 4px 6px rgba(0, 0, 0, 0.05))",
               }}
               className={cn(
-                "pointer-events-auto rounded-xs px-3 py-1.5 text-center text-sm font-medium whitespace-normal break-words select-text",
-                "w-max max-w-60",
+                "pointer-events-auto rounded-xs shadow-md select-text",
+                "w-max max-w-xs md:max-w-sm",
                 "bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100",
                 "backdrop-blur-md",
                 "border border-gray-200 dark:border-gray-800",
                 "ring-1 ring-black/5 dark:ring-white/5",
+                typeof text === "string"
+                  ? "px-3 py-1.5 text-center text-sm font-medium whitespace-normal break-words"
+                  : "flex flex-col overflow-hidden text-left p-0",
+                className,
               )}
             >
               {text}
