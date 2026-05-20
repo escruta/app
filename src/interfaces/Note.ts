@@ -3,7 +3,6 @@ export interface Note {
   notebookId?: string;
   folderId?: string;
   sourceId?: string;
-  icon?: string;
   title: string;
   content?: string;
   createdAt: Date;

@@ -34,15 +34,9 @@ export function NoteChip({ note, className, onSelect }: NoteChipProps) {
     >
       <div className="relative flex h-full items-center gap-3 p-3">
         <div className="shrink-0 rounded-xs bg-blue-100 p-2 dark:bg-blue-900/50">
-          {note.icon ? (
-            <span className="flex size-4 items-center justify-center text-sm leading-none">
-              {note.icon}
-            </span>
-          ) : (
-            <div className="size-4 text-blue-600 dark:text-blue-400">
-              <NoteIcon />
-            </div>
-          )}
+          <div className="size-4 text-blue-600 dark:text-blue-400">
+            <NoteIcon />
+          </div>
         </div>
         <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
           <h2 className="line-clamp-1 text-sm font-medium text-gray-900 transition-colors duration-300 group-hover:text-blue-900 dark:text-gray-100 dark:group-hover:text-blue-100">

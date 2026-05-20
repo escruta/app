@@ -185,15 +185,7 @@ export default function HomePage() {
                       <HomeChipProduct
                         key={note.id}
                         title={note.title}
-                        icon={
-                          note.icon ? (
-                            <span className="flex size-4 items-center justify-center text-sm leading-none">
-                              {note.icon}
-                            </span>
-                          ) : (
-                            <NoteIcon className="size-4 text-blue-500 dark:text-blue-400" />
-                          )
-                        }
+                        icon={<NoteIcon className="size-4 text-blue-500 dark:text-blue-400" />}
                         onClick={() => navigate("/notes", { state: { noteId: note.id } })}
                         date={formatDate(note.updatedAt)}
                       />
