@@ -1,6 +1,5 @@
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
-import { createPortal } from "react-dom";
 
 interface BaseProps {
   children: React.ReactNode;
@@ -54,20 +53,18 @@ export function Card({
 
   return (
     <>
-      {/* Backdrop */}
-      {isExpanded &&
-        createPortal(
-          <button
-            type="button"
-            className="animate-in fade-in fixed inset-0 z-40 cursor-default bg-black/30 backdrop-blur-[1px] duration-200 dark:bg-black/60"
-            onClick={() => setIsExpanded?.(false)}
-            aria-label="Close expanded view"
-          />,
-          document.body,
-        )}
+      {/* Backdrop — inline, position:fixed covers viewport regardless of DOM position */}
+      {isExpanded && (
+        <button
+          type="button"
+          className="animate-in fade-in fixed inset-0 z-40 cursor-default bg-black/30 backdrop-blur-[1px] duration-200 dark:bg-black/60"
+          onClick={() => setIsExpanded?.(false)}
+          aria-label="Close expanded view"
+        />
+      )}
 
-      {/* Card */}
-      {isExpanded ? createPortal(content, document.body) : content}
+      {/* Card — always inline; position:fixed on expanded handles overlay */}
+      {content}
     </>
   );
 }
