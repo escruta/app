@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useFetch, useCookie } from "@/hooks";
-import { AUTH_TOKEN_KEY } from "@/config";
-import type { GenerationJob, JobType, Token } from "@/interfaces";
+import { useFetch, useAuth } from "@/hooks";
+import type { GenerationJob, JobType } from "@/interfaces";
 
 interface UseGenerationJobOptions {
   pollingInterval?: number;
@@ -21,7 +20,7 @@ export function useGenerationJob(
 ) {
   const { pollingInterval = 2000, onCompleted, onFailed } = options;
 
-  const [token] = useCookie<Token>(AUTH_TOKEN_KEY);
+  const { token } = useAuth();
   const [job, setJob] = useState<GenerationJob | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -109,14 +108,14 @@ export function useGenerationJob(
   );
 
   const startGeneration = useCallback(async () => {
-    if (!token?.token) {
+    if (!token) {
       setError("Not authenticated");
       return;
     }
 
     setError(null);
     callStartGeneration();
-  }, [token?.token, callStartGeneration]);
+  }, [token, callStartGeneration]);
 
   useEffect(() => {
     if (job && (job.status === "PENDING" || job.status === "PROCESSING") && !pollingRef.current) {
