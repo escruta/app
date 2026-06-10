@@ -2,18 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link
-      id="favicon-light"
-      href="/LightIcon.svg"
-      rel="icon"
-      media="(prefers-color-scheme: light)"
-    />
-    <link id="favicon-dark" href="/DarkIcon.svg" rel="icon" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"
     />
-    <meta name="theme-color" content="#121212" />
+    <meta name="theme-color" content="#0A0A0A" />
     <title>Escruta</title>
     <meta name="application-name" content="Escruta" />
     <meta name="format-detection" content="telephone=no" />
@@ -50,26 +46,6 @@
         }
 
         initializeTheme();
-      })();
-    </script>
-
-    <script>
-      (() => {
-        const version = Date.now();
-        function updateFavicon() {
-          const faviconLight = document.getElementById("favicon-light");
-          const faviconDark = document.getElementById("favicon-dark");
-
-          if (document.hidden) {
-            faviconLight.href = `/LightIcon.svg?v=${version}`;
-            faviconDark.href = `/DarkIcon.svg?v=${version}`;
-          } else {
-            faviconLight.href = `/Icon.svg?v=${version}`;
-            faviconDark.href = `/Icon.svg?v=${version}`;
-          }
-        }
-        updateFavicon();
-        document.addEventListener("visibilitychange", updateFavicon);
       })();
     </script>
 
