@@ -6,8 +6,10 @@ import {
   LinkIcon,
   NoteIcon,
   CompressIcon,
+  SearchIcon,
 } from "@/components/icons";
 import { SourceChip } from "./SourceChip";
+import { SearchSourcesModal } from "./SearchSourcesModal";
 import {
   Card,
   Button,
@@ -53,6 +55,7 @@ export function SourcesCard({
   onToggleCollapse,
 }: SourcesCardProps) {
   const [isAddSourceModalOpen, setIsAddSourceModalOpen] = useState<boolean>(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState<boolean>(false);
 
   const [sourceType, setSourceType] = useState<SourceType>("File");
   const [newSourceLink, setNewSourceLink] = useState<string>("");
@@ -205,6 +208,11 @@ export function SourcesCard({
                     label="Direct text"
                     onClick={() => handleOpenModal("Text")}
                   />
+                  <MenuItem
+                    icon={<SearchIcon />}
+                    label="Search web"
+                    onClick={() => setIsSearchModalOpen(true)}
+                  />
                 </MenuContent>
               </Menu>
               {onToggleCollapse && (
@@ -270,6 +278,16 @@ export function SourcesCard({
           })()}
         </div>
       </Card>
+
+      {/* Search Web Modal */}
+      <SearchSourcesModal
+        isOpen={isSearchModalOpen}
+        onClose={() => setIsSearchModalOpen(false)}
+        notebookId={notebookId}
+        onSourcesAdded={() => {
+          onSourcesChange?.();
+        }}
+      />
 
       {/* Add Source Modal */}
       {isAddSourceModalOpen && (

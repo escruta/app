@@ -7,6 +7,7 @@ export type * from "./Note";
 export type * from "./Notebook";
 export type * from "./NotebookContent";
 export type * from "./QuestionnaireResponse";
+export type * from "./SearchResult";
 export type * from "./Source";
 export type * from "./StudyGuideResponse";
 export type * from "./Token";
