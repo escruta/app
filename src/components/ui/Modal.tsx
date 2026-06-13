@@ -5,6 +5,7 @@ import { IconButton } from "./IconButton";
 import { CloseIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { useIsMobile, useVisualViewportHeight } from "@/hooks";
+import { Tooltip } from "./Tooltip";
 
 const modalListeners = new Set<() => void>();
 const openModals: string[] = [];
@@ -157,13 +158,15 @@ export function Modal({
                 {subtitle && <p className="text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>}
               </div>
               {!canDismiss ? null : (
-                <IconButton
-                  icon={<CloseIcon />}
-                  onClick={handleClose}
-                  variant="ghost"
-                  size="sm"
-                  ariaLabel="Close modal"
-                />
+                <Tooltip text="Close">
+                  <IconButton
+                    icon={<CloseIcon />}
+                    onClick={handleClose}
+                    variant="ghost"
+                    size="sm"
+                    ariaLabel="Close modal"
+                  />
+                </Tooltip>
               )}
             </div>
 
@@ -213,13 +216,15 @@ export function Modal({
                 {subtitle && <p className="text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>}
               </div>
               {!canDismiss ? null : (
-                <IconButton
-                  icon={<CloseIcon />}
-                  onClick={onClose}
-                  variant="ghost"
-                  size="sm"
-                  ariaLabel="Close modal"
-                />
+                <Tooltip text="Close">
+                  <IconButton
+                    icon={<CloseIcon />}
+                    onClick={onClose}
+                    variant="ghost"
+                    size="sm"
+                    ariaLabel="Close modal"
+                  />
+                </Tooltip>
               )}
             </div>
 
