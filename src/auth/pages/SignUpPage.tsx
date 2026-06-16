@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router";
-import { useAuth, useToast } from "@/hooks";
+import { useAuth } from "@/hooks";
 import { motion, AnimatePresence } from "motion/react";
 import { SEOMetadata } from "@/components";
 import { Button, TextField, Spinner } from "@/components/ui";
@@ -17,7 +17,6 @@ export function SignUpPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { signUp } = useAuth();
-  const { showToast } = useToast();
   const navigate = useNavigate();
 
   const checkPasswordStrength = (password: string) => {
@@ -100,9 +99,6 @@ export function SignUpPage() {
     try {
       const response = await signUp(email, password, name);
       if (response.status === 201) {
-        showToast("Registration successful! Redirecting...", "success", {
-          duration: 1500,
-        });
         setTimeout(() => {
           navigate("/");
         }, 1500);

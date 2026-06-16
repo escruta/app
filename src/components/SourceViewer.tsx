@@ -1,6 +1,6 @@
 import { useEffect, useState, useTransition, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { useFetch, useToast } from "@/hooks";
+import { useFetch } from "@/hooks";
 import type { Source } from "@/interfaces";
 import {
   CloseIcon,
@@ -61,8 +61,6 @@ export function SourceViewer({
   const [contentChunks, setContentChunks] = useState<string[]>([]);
   const [visibleChunks, setVisibleChunks] = useState<number>(0);
   const [_, startTransition] = useTransition();
-
-  const { showToast } = useToast();
 
   const youtubeVideoId =
     source.type === "YouTube Video" ? getYouTubeVideoId(fullSource?.link || source.link) : null;
@@ -232,12 +230,7 @@ export function SourceViewer({
                           source.type === "YouTube Video"
                             ? fullSource?.link || source.link
                             : fullSource?.content || "";
-                        const message =
-                          source.type === "YouTube Video"
-                            ? "Video URL copied to clipboard"
-                            : "Source content copied to clipboard";
                         navigator.clipboard.writeText(textToCopy);
-                        showToast(message, "success", { duration: 1500 });
                       }}
                     />
                     {source.type === "Website" && (
@@ -350,12 +343,7 @@ export function SourceViewer({
                             <MenuItem
                               icon={<CopyIcon />}
                               label="Copy summary"
-                              onClick={() => {
-                                navigator.clipboard.writeText(sourceSummary);
-                                showToast("Summary copied to clipboard", "success", {
-                                  duration: 1500,
-                                });
-                              }}
+                              onClick={() => navigator.clipboard.writeText(sourceSummary)}
                               disabled={isSummaryLoading || isRegeneratingSummary}
                             />
                             <MenuItem

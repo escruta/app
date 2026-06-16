@@ -18,5 +18,4 @@ export * from "./Spinner";
 export * from "./Switch";
 export * from "./Tab";
 export * from "./TextField";
-export * from "./Toast";
 export * from "./Tooltip";

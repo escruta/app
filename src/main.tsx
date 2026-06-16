@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router";
-import { AuthProvider, ThemeProvider, ToastProvider } from "./providers";
+import { AuthProvider, ThemeProvider } from "./providers";
 
 import { AuthLayout } from "./auth/AuthLayout";
 import { SignInPage } from "./auth/pages/SignInPage";
@@ -42,9 +42,7 @@ if (!root) {
 createRoot(root).render(
   <AuthProvider>
     <ThemeProvider>
-      <ToastProvider>
-        <RouterProvider router={router} />
-      </ToastProvider>
+      <RouterProvider router={router} />
     </ThemeProvider>
   </AuthProvider>,
 );
