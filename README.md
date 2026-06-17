@@ -11,7 +11,7 @@ Built with React, TypeScript, Tailwind CSS, and Vite.
 
 ### Prerequisites
 
-- Node.js (version 20 or higher).
+- Node.js (version 24 or higher).
 - Escruta Core running (see [core README](https://github.com/escruta/core)).
 
 ### Development Scripts
