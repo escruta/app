@@ -1,6 +1,15 @@
 import { useState, useRef } from "react";
 import { useFetch } from "@/hooks";
-import { Button, TextField, Modal, Spinner, IconButton, Checkbox, Tooltip } from "@/components/ui";
+import {
+  Button,
+  TextField,
+  Modal,
+  Spinner,
+  IconButton,
+  Checkbox,
+  Tooltip,
+  Alert,
+} from "@/components/ui";
 import { SearchIcon, AddIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import type { SearchResult } from "@/interfaces";
@@ -160,7 +169,7 @@ export function SearchSourcesModal({
         </div>
 
         {searchError && (
-          <div className="text-sm text-red-500">Search failed. Please try again.</div>
+          <Alert variant="danger" title="Search failed" message="Please try again." />
         )}
 
         {!isSearching && results.length > 0 && (
