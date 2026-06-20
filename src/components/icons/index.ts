@@ -25,6 +25,7 @@ export * from "./Heading2Icon";
 export * from "./Heading3Icon";
 export * from "./HighlightIcon";
 export * from "./HomeIcon";
+export * from "./InfoIcon";
 export * from "./ItalicIcon";
 export * from "./LinkIcon";
 export * from "./ListIcon";

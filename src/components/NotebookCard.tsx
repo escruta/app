@@ -263,27 +263,21 @@ export function NotebookCard({ notebook, viewMode = "grid", onChange }: Notebook
         }
       >
         <div className="space-y-4">
-          <Alert
-            variant="danger"
-            title="Warning: This action cannot be undone"
-            message={`Are you sure you want to delete "${notebook.title}"? All notes and data associated with this notebook will be permanently deleted.`}
-          />
-
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Please type <span className="font-bold">delete this notebook</span> to confirm.
+            <span className="font-semibold">This action cannot be undone.</span> All notes and data
+            associated with this notebook will be permanently deleted.
           </p>
 
           <TextField
             id="delete-confirmation"
-            label="Confirmation"
+            label="Type 'delete this notebook' to confirm"
             type="text"
             value={deleteConfirmation}
             onChange={(e) => setDeleteConfirmation(e.target.value)}
-            placeholder="Type 'delete this notebook' to confirm"
             autoFocus
           />
 
-          {deleteError && <div className="text-sm text-red-500">Error: {deleteError.message}</div>}
+          {deleteError && <Alert variant="danger" title={deleteError.message} />}
         </div>
       </Modal>
     </>

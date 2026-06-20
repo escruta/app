@@ -423,7 +423,6 @@ export function SourceViewer({
                       ) : summaryGenerateError ? (
                         <div className="flex flex-col gap-3">
                           <Alert
-                            title="Error"
                             message={getHttpErrorMessage(summaryGenerateError.status)}
                             variant="danger"
                           />

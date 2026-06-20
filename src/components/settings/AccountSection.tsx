@@ -348,25 +348,20 @@ export function AccountSection() {
         }
       >
         <div className="space-y-4">
-          <Alert
-            variant="danger"
-            title="Warning: This action cannot be undone"
-            message="This will permanently delete your account and all your data."
-          />
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Please type <span className="font-bold">delete my account</span> to confirm account
-            deletion.
+            <span className="font-semibold">This action cannot be undone.</span> This will
+            permanently delete your account and all your data.
           </p>
+
           <TextField
             id="delete-confirmation"
-            label="Confirmation"
+            label="Type 'delete my account' to confirm"
             type="text"
             value={deleteConfirmation}
             onChange={(e) => setDeleteConfirmation(e.target.value)}
-            placeholder="Type 'delete my account' to confirm"
             autoFocus
           />
-          {errorDeleteMessage && <div className="text-sm text-red-500">{errorDeleteMessage}</div>}
+          {errorDeleteMessage && <Alert variant="danger" message={errorDeleteMessage} />}
         </div>
       </Modal>
     </CommonBar>

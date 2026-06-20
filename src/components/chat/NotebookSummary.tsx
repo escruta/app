@@ -81,11 +81,7 @@ export function NotebookSummary({
             <Skeleton lines={6} className="w-full" />
           ) : summaryGenerateError ? (
             <div className="flex flex-col gap-3">
-              <Alert
-                title="Error"
-                message={getHttpErrorMessage(summaryGenerateError?.status)}
-                variant="danger"
-              />
+              <Alert variant="danger" message={getHttpErrorMessage(summaryGenerateError?.status)} />
               <Button
                 onClick={regenerateSummary}
                 disabled={isSummaryRegenerating}

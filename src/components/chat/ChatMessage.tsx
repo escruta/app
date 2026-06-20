@@ -35,7 +35,7 @@ function processMessage(
   if (message.error) {
     return (
       <div className="flex flex-col gap-3">
-        <Alert title="Error" message={message.text} variant="danger" />
+        <Alert message={message.text} variant="danger" />
         {onRetry && (
           <Button
             onClick={onRetry}

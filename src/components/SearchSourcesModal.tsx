@@ -168,9 +168,7 @@ export function SearchSourcesModal({
           </Tooltip>
         </div>
 
-        {searchError && (
-          <Alert variant="danger" title="Search failed" message="Please try again." />
-        )}
+        {searchError && <Alert variant="danger" message="Search failed, please try again." />}
 
         {!isSearching && results.length > 0 && (
           <div className="flex flex-col gap-2">
