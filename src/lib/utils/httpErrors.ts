@@ -1,22 +1,22 @@
 export function getHttpErrorMessage(status: number): string {
   switch (status) {
     case 400:
-      return "Bad request. Please check your input.";
+      return "Something went wrong with your request. Please check your input and try again.";
     case 401:
-      return "Authentication failed. Please sign in again.";
+      return "It seems something went wrong. Please try signing in again.";
     case 403:
-      return "Access denied. You don't have permission to perform this action.";
+      return "You don't have permission to perform this action. Please contact support if you believe this is an error.";
     case 404:
-      return "Resource not found.";
+      return "The item you're looking for can't be found. Please check the URL or try a different search.";
     case 429:
-      return "Too many requests. Please try again later.";
+      return "Too many requests. Please wait a moment and try again.";
     case 500:
-      return "Internal server error. Please try again later.";
+      return "It seems something went wrong on our end. Please try again later.";
     case 502:
-      return "Service temporarily unavailable. Please try again later.";
+      return "The service is temporarily unavailable. Please try again in a few minutes.";
     case 503:
-      return "Service temporarily unavailable. Please try again later.";
+      return "The service is temporarily unavailable. Please try again in a few minutes.";
     default:
-      return "An unexpected error occurred. Please try again later.";
+      return "It seems something went wrong. Please try again later.";
   }
 }
