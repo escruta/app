@@ -34,4 +34,4 @@ When combining Tailwind CSS conditional classes, you must use the `cn()` utility
 
 During the task resolution process, begin by carefully reading the request to determine exactly which component requires modification. Always prioritize the use of existing hooks and components instead of reinventing the wheel.
 
-After making the changes, run the command `npm run check` to verify that the changes are correct.
+After making the changes, run the command `pnpm run check` to verify that the changes are correct.
