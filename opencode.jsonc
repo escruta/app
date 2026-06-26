@@ -3,7 +3,8 @@
   "permission": {
     "bash": {
       "npm *": "deny",
-      "npm run check": "allow",
+      "pnpm *": "deny",
+      "pnpm run check": "allow",
     },
   },
 }
