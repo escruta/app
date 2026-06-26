@@ -16,14 +16,14 @@ Built with React, TypeScript, Tailwind CSS, and Vite.
 
 ### Development Scripts
 
-- `npm install` - Install dependencies.
-- `npm run dev` - Start development server ([localhost:5173](http://localhost:5173/)).
-- `npm run build` - Create production build.
-- `npm run lint` - Run Oxlint for code quality checks and fix issues.
-- `npm run format` - Run Oxfmt for code formatting and fix issues.
-- `npm run typecheck` - Run TypeScript for type checking.
-- `npm run check` - Run lint, format, and typecheck.
-- `npm run preview` - Preview production build locally.
+- `pnpm install` - Install dependencies.
+- `pnpm run dev` - Start development server ([localhost:5173](http://localhost:5173/)).
+- `pnpm run build` - Create production build.
+- `pnpm run lint` - Run Oxlint for code quality checks and fix issues.
+- `pnpm run format` - Run Oxfmt for code formatting and fix issues.
+- `pnpm run typecheck` - Run TypeScript for type checking.
+- `pnpm run check` - Run lint, format, and typecheck.
+- `pnpm run preview` - Preview production build locally.
 
 ## Configuration
 
