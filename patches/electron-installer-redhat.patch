@@ -1,0 +1,24 @@
+diff --git a/resources/spec.ejs b/resources/spec.ejs
+index e07a8a3dac52b7ac5e165d203bc26d0ac336c6ec..388316f7f5a2103fcc4ebffea581a8759fc83a19 100644
+--- a/resources/spec.ejs
++++ b/resources/spec.ejs
+@@ -24,7 +24,7 @@ print('\n\n\n') }
+ 
+ %>%install
+ mkdir -p %{buildroot}/usr/
+-cp <%= process.platform === 'darwin' ? '-R' : '-r' %> usr/* %{buildroot}/usr/
++cp <%= process.platform === 'darwin' ? '-R' : '-r' %> %{_topdir}/BUILD/usr/* %{buildroot}/usr/
+ 
+ 
+ %files
+diff --git a/resources/desktop.ejs b/resources/desktop.ejs
+index 7658a4e..d12f7e2 100644
+--- a/resources/desktop.ejs
++++ b/resources/desktop.ejs
+@@ -6,5 +6,6 @@ Exec=<%= name %>%U<% if (execArguments && execArguments.length) { %> <%= execArgu
+ Icon=<%= name %>
+ Type=Application
+ StartupNotify=true
++StartupWMClass=<%= name %>
+ Categories=<%= categories.join(';') %>;
+ <% if (mimeType.length) { %>MimeType=<%= mimeType.join(';') %>;<% } %>

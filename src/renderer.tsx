@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router";
+import { createHashRouter, RouterProvider } from "react-router";
 import { AuthProvider, ThemeProvider } from "./providers";
 
 import { AuthLayout } from "./auth/AuthLayout";
@@ -12,7 +12,7 @@ import { NotFound } from "./NotFound";
 
 import "./index.css";
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   {
     path: "signin",
     Component: AuthLayout,

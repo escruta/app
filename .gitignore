@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Electron Forge
+.vite
+out
+release
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

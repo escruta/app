@@ -1,8 +1,8 @@
 # Escruta - App
 
-Frontend application for the Escruta research platform. It provides a web interface for source management, notebook organization, and AI-assisted document analysis.
+Desktop application for the Escruta research platform. It provides an interface for source management, notebook organization, and AI-assisted document analysis.
 
-Built with React, TypeScript, Tailwind CSS, and Vite.
+Built with React, TypeScript, Tailwind CSS, Vite, and Electron.
 
 > [!IMPORTANT]
 > This application is part of the Escruta ecosystem and requires the core service to be running for full functionality. The project is under development and may contain incomplete features or breaking changes.
@@ -17,13 +17,12 @@ Built with React, TypeScript, Tailwind CSS, and Vite.
 ### Development Scripts
 
 - `pnpm install` - Install dependencies.
-- `pnpm run dev` - Start development server ([localhost:5173](http://localhost:5173/)).
-- `pnpm run build` - Create production build.
+- `pnpm run dev` - Launch the app in development with hot reload (Vite dev server for the renderer, electron-forge for the main process).
+- `pnpm run build` - Build and package installable desktop applications (output in `out/`).
 - `pnpm run lint` - Run Oxlint for code quality checks and fix issues.
 - `pnpm run format` - Run Oxfmt for code formatting and fix issues.
 - `pnpm run typecheck` - Run TypeScript for type checking.
 - `pnpm run check` - Run lint, format, and typecheck.
-- `pnpm run preview` - Preview production build locally.
 
 ## Configuration
 
