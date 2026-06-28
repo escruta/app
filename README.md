@@ -9,19 +9,9 @@ Built with React, TypeScript, Tailwind CSS, Vite, and Electron.
 
 ## Getting Started
 
-### Prerequisites
-
-- Node.js (version 24 or higher).
-- Escruta Core running (see [core README](https://github.com/escruta/core)).
-
-### Development Scripts
-
 - `pnpm install` - Install dependencies.
 - `pnpm run dev` - Launch the app in development with hot reload (Vite dev server for the renderer, electron-forge for the main process).
 - `pnpm run build` - Build and package installable desktop applications (output in `out/`).
-- `pnpm run lint` - Run Oxlint for code quality checks and fix issues.
-- `pnpm run format` - Run Oxfmt for code formatting and fix issues.
-- `pnpm run typecheck` - Run TypeScript for type checking.
 - `pnpm run check` - Run lint, format, and typecheck.
 
 ## Configuration
