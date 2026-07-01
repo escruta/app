@@ -25,7 +25,6 @@ import {
   ZoomIcon,
   DotsVerticalIcon,
   DeleteIcon,
-  NoteIcon,
 } from "@/components/icons";
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router";
@@ -290,32 +289,32 @@ export default function NotesPage() {
           </div>
 
           <div className="relative flex-1 overflow-hidden">
-            {(notes && notes.length > 0) || (folders && folders.length > 0) ? (
-              (() => {
-                const sortedNotes = [...(notes || [])].sort((a, b) =>
-                  a.title.localeCompare(b.title),
-                );
+            <Canvas ref={canvasRef} initialX={0} initialY={0}>
+              {(notes && notes.length > 0) || (folders && folders.length > 0) ? (
+                (() => {
+                  const sortedNotes = [...(notes || [])].sort((a, b) =>
+                    a.title.localeCompare(b.title),
+                  );
 
-                const groups = [
-                  ...(folders?.map((folder) => ({
-                    id: folder.id,
-                    title: folder.title,
-                    notes: sortedNotes.filter((n) => n.folderId === folder.id),
-                  })) || []),
-                  {
-                    id: null,
-                    title: "",
-                    notes: sortedNotes.filter((n) => !n.folderId),
-                  },
-                ].filter(
-                  (group) =>
-                    group.id !== null ||
-                    group.notes.length > 0 ||
-                    (hoveredGroupId === "root" && dragState),
-                );
+                  const groups = [
+                    ...(folders?.map((folder) => ({
+                      id: folder.id,
+                      title: folder.title,
+                      notes: sortedNotes.filter((n) => n.folderId === folder.id),
+                    })) || []),
+                    {
+                      id: null,
+                      title: "",
+                      notes: sortedNotes.filter((n) => !n.folderId),
+                    },
+                  ].filter(
+                    (group) =>
+                      group.id !== null ||
+                      group.notes.length > 0 ||
+                      (hoveredGroupId === "root" && dragState),
+                  );
 
-                return (
-                  <Canvas ref={canvasRef} initialX={0} initialY={0}>
+                  return (
                     <div
                       className="flex h-full w-full items-center justify-center p-6"
                       onDragOver={(e) => {
@@ -524,37 +523,16 @@ export default function NotesPage() {
                         })}
                       </div>
                     </div>
-                  </Canvas>
-                );
-              })()
-            ) : (
-              <div className="flex h-full items-center justify-center">
-                <div className="flex flex-col items-center justify-center rounded-xs border border-dashed border-gray-200 bg-white/50 p-12 text-center shadow-sm ring-1 ring-gray-500/5 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-950/50 dark:ring-gray-500/10">
-                  <div className="mb-4 flex size-12 items-center justify-center rounded-xs bg-blue-50 text-blue-600 ring-1 ring-blue-500/20 dark:bg-blue-900/20 dark:text-blue-400 dark:ring-blue-400/20">
-                    <NoteIcon className="size-6" />
-                  </div>
-                  <h3 className="mb-1 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  );
+                })()
+              ) : (
+                <div className="flex h-full items-center justify-center">
+                  <p className="pointer-events-none text-sm text-gray-300 select-none dark:text-gray-700">
                     No notes yet
-                  </h3>
-                  <p className="mb-6 max-w-[16rem] text-sm text-gray-500 dark:text-gray-400">
-                    Get started by creating a new note or folder to organize your thoughts
                   </p>
-                  <div className="flex items-center gap-3">
-                    <Button
-                      variant="primary"
-                      onClick={() => createNote()}
-                      disabled={addingNote}
-                      icon={<AddIcon className="size-4" />}
-                    >
-                      Create note
-                    </Button>
-                    <Button variant="secondary" onClick={handleCreateFolder} icon={<FolderIcon />}>
-                      New folder
-                    </Button>
-                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </Canvas>
           </div>
 
           {/* Folder Modals */}
