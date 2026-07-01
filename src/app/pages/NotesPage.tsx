@@ -443,7 +443,7 @@ export default function NotesPage() {
                               )}
                               <div
                                 className={cn(
-                                  "grid w-max gap-3 min-w-[12rem]",
+                                  "grid w-max gap-3 min-w-48",
                                   group.id &&
                                     "rounded-xs p-4 ring-1 ring-black/10 backdrop-blur-sm dark:ring-white/10",
                                   {
@@ -470,7 +470,7 @@ export default function NotesPage() {
                                           layoutId="placeholder"
                                           initial={{ opacity: 0, scale: 0.8 }}
                                           animate={{ opacity: 1, scale: 1 }}
-                                          className="placeholder-item h-[3.25rem] w-48 rounded-xs border-2 border-dashed border-blue-400 bg-blue-50/50 dark:border-blue-500/50 dark:bg-blue-900/20"
+                                          className="placeholder-item h-13 w-48 rounded-xs border-2 border-dashed border-blue-400 bg-blue-50/50 dark:border-blue-500/50 dark:bg-blue-900/20"
                                         />
                                       );
                                     }
@@ -510,7 +510,7 @@ export default function NotesPage() {
                                           note={note}
                                           notebookId={notebook?.id}
                                           notebookName={notebook?.title}
-                                          className="!relative !top-0 !left-0 w-48 !transform-none"
+                                          className="relative! top-0! left-0! w-48 transform-none!"
                                           onSelect={(n) => setSelectedNote(n)}
                                         />
                                       </div>
