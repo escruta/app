@@ -143,7 +143,7 @@ export function NoteEditor({
       <Card
         isExpanded={isExpanded}
         setIsExpanded={setIsExpanded}
-        className={cn("flex flex-1 flex-col overflow-hidden p-0 h-full", className)}
+        className={cn("flex flex-col overflow-hidden p-0", className)}
       >
         <div className="mb-2 flex shrink-0 flex-row items-center justify-between px-4 pt-4">
           <div className="flex min-w-0 flex-1 items-baseline gap-1.5">

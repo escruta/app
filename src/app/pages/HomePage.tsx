@@ -128,7 +128,7 @@ export default function HomePage() {
                         key={note.id}
                         title={note.title}
                         icon={<NoteIcon className="size-4 text-blue-500 dark:text-blue-400" />}
-                        onClick={() => navigate("/notes", { state: { noteId: note.id } })}
+                        onClick={() => navigate(`/note/${note.id}`)}
                         date={formatDate(note.updatedAt)}
                       />
                     ))}

@@ -5,6 +5,7 @@ export * from "./HomeActionCard.tsx";
 export * from "./HomeChipProduct.tsx";
 export * from "./Logotype.tsx";
 export * from "./NotebookCard.tsx";
+export * from "./NoteCard.tsx";
 export * from "./NoteChip.tsx";
 export * from "./NoteEditor.tsx";
 export * from "./NotesPageEditor.tsx";

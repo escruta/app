@@ -45,6 +45,8 @@ export default function NotebookPage() {
   const [selectedSource, setSelectedSource] = useState<Source | null>(null);
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
   const [notesRefreshKey, setNotesRefreshKey] = useState<number>(0);
+  const [isSourceExpanded, setIsSourceExpanded] = useState<boolean>(false);
+  const [isNoteExpanded, setIsNoteExpanded] = useState<boolean>(false);
   const [leftPanelWidth, setLeftPanelWidth] = useCookie<number>("notebookLeftPanelWidth", 30);
   const [rightPanelWidth, setRightPanelWidth] = useCookie<number>("notebookRightPanelWidth", 30);
   const [isLeftCollapsed, setIsLeftCollapsed] = useCookie<boolean>("notebookLeftCollapsed", false);
@@ -345,6 +347,7 @@ export default function NotebookPage() {
                 setSelectedSource(null);
                 refetchNotebook(true, false);
               }}
+              onExpandedChange={setIsSourceExpanded}
               className="h-full"
             />
           </motion.div>
@@ -394,6 +397,7 @@ export default function NotebookPage() {
                 setSelectedNote(null);
                 setNotesRefreshKey((prev) => prev + 1);
               }}
+              onExpandedChange={setIsNoteExpanded}
             />
           </motion.div>
         ) : null}
@@ -487,6 +491,9 @@ export default function NotebookPage() {
           <div
             className={cn(
               "min-h-0 flex flex-col overflow-hidden transition-[width,background-color,border-color] duration-200 ease-out shrink-0",
+              {
+                "z-30": isSourceExpanded,
+              },
             )}
             style={{ width: isLeftCollapsed ? "48px" : `${leftPanelWidth ?? 25}%` }}
           >
@@ -565,6 +572,9 @@ export default function NotebookPage() {
           <div
             className={cn(
               "min-h-0 flex flex-col overflow-hidden transition-[width,background-color,border-color] duration-200 ease-out shrink-0",
+              {
+                "z-30": isNoteExpanded,
+              },
             )}
             style={{ width: isRightCollapsed ? "48px" : `${rightPanelWidth ?? 25}%` }}
           >

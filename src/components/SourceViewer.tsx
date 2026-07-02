@@ -38,6 +38,7 @@ interface SourceViewerProps {
   source: Source;
   handleCloseSource: () => void;
   onSourceDelete: () => void;
+  onExpandedChange?: (isExpanded: boolean) => void;
   className?: string;
 }
 
@@ -46,10 +47,17 @@ export function SourceViewer({
   source,
   handleCloseSource,
   onSourceDelete,
+  onExpandedChange,
   className,
 }: SourceViewerProps) {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [summaryGenerateError, setSummaryGenerateError] = useState<FetchError | null>(null);
+
+  useEffect(() => {
+    if (onExpandedChange) {
+      onExpandedChange(isExpanded);
+    }
+  }, [isExpanded, onExpandedChange]);
   const {
     data: fullSource,
     loading,
