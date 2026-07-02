@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef } from "react";
 import { useLoaderData, useLocation } from "react-router";
-import { useFetch, useCookie, useIsTablet, useIsLaptop } from "@/hooks";
+import { useFetch, useCookie, useIsTablet } from "@/hooks";
 import type { Note, Source, Notebook, NotebookContent } from "@/interfaces";
-import { Tabs, type TabsRef } from "@/components/ui";
+import { Tabs } from "@/components/ui";
 import { motion, AnimatePresence } from "motion/react";
 import {
   SourcesCard,
@@ -54,7 +54,6 @@ export default function NotebookPage() {
     false,
   );
   const [activeResizer, setActiveResizer] = useState<"left" | "right" | null>(null);
-  const tabsRef = useRef<TabsRef>(null);
   const sectionRef = useRef<HTMLElement>(null);
 
   const initialLoadRef = useRef(true);
@@ -109,7 +108,7 @@ export default function NotebookPage() {
       updatedAt: new Date(),
     };
     setSelectedSource(tempSource);
-    tabsRef.current?.setActiveTab("1");
+    setIsLeftCollapsed(false);
   };
 
   const handleToggleSource = (sourceId: string) => {
@@ -128,9 +127,6 @@ export default function NotebookPage() {
 
   const handleNodeSelect = (question: string) => {
     setChatQuestion(question);
-    if (isLaptop) {
-      tabsRef.current?.setActiveTab("chat");
-    }
   };
 
   useEffect(() => {
@@ -274,7 +270,6 @@ export default function NotebookPage() {
   );
 
   const isTablet = useIsTablet();
-  const isLaptop = useIsLaptop();
 
   async function handleRenameNotebook() {
     if (!newTitle.trim()) return;
@@ -374,7 +369,7 @@ export default function NotebookPage() {
           onSourcesChange={() => {
             refetchNotebook(true, false);
           }}
-          onToggleCollapse={!isLaptop ? () => setIsLeftCollapsed(true) : undefined}
+          onToggleCollapse={() => setIsLeftCollapsed(true)}
         />
       </div>
     </div>
@@ -489,180 +484,135 @@ export default function NotebookPage() {
 
       <div className="flex-1 overflow-hidden p-3 md:p-4">
         <SimpleBackground />
-        {isLaptop ? (
-          <Tabs
-            ref={tabsRef}
-            className="h-full"
-            defaultActiveTab="chat"
-            items={[
-              {
-                id: "chat",
-                label: "Chat",
-                content: (
-                  <ChatCard
-                    notebookId={notebookId}
-                    sources={notebook?.sources || []}
-                    selectedSourceIds={selectedSourceIds}
-                    onSourceSelect={handleSourceSelectFromChat}
-                    externalQuestion={chatQuestion}
-                    onExternalQuestionHandled={() => setChatQuestion(null)}
+        <section ref={sectionRef} className="flex h-full gap-1 overflow-hidden">
+          <div
+            className={cn(
+              "min-h-0 flex flex-col overflow-hidden transition-[width,background-color,border-color] duration-200 ease-out shrink-0",
+            )}
+            style={{ width: isLeftCollapsed ? "48px" : `${leftPanelWidth ?? 25}%` }}
+          >
+            {isLeftCollapsed && (
+              <div className="flex h-full w-full flex-col items-center py-3">
+                <Tooltip text="Expand Sources" position="right">
+                  <IconButton
+                    icon={<ExpandIcon />}
+                    onClick={expandLeft}
+                    variant="secondary"
+                    size="sm"
+                    aria-label="Expand Sources"
                   />
-                ),
-              },
-              {
-                id: "1",
-                label: "Sources",
-                content: sourcesTabContent,
-              },
-              {
-                id: "2",
-                label: "Notes",
-                content: notesTabContent,
-              },
-              {
-                id: "3",
-                label: "Tools",
-                content: (
-                  <ToolsCard
-                    notebookId={notebookId}
-                    onNodeSelect={handleNodeSelect}
-                    hasSources={(notebook?.sources?.length ?? 0) > 0}
-                  />
-                ),
-              },
-            ]}
-          />
-        ) : (
-          <section ref={sectionRef} className="flex h-full gap-1 overflow-hidden">
-            <div
-              className={cn(
-                "min-h-0 flex flex-col overflow-hidden transition-[width,background-color,border-color] duration-200 ease-out shrink-0",
-              )}
-              style={{ width: isLeftCollapsed ? "48px" : `${leftPanelWidth ?? 25}%` }}
-            >
-              {isLeftCollapsed && (
-                <div className="flex h-full w-full flex-col items-center py-3">
-                  <Tooltip text="Expand Sources" position="right">
-                    <IconButton
-                      icon={<ExpandIcon />}
-                      onClick={expandLeft}
-                      variant="secondary"
-                      size="sm"
-                      aria-label="Expand Sources"
-                    />
-                  </Tooltip>
-                  <div
-                    className="mt-4 flex-1 text-xs font-medium tracking-widest text-gray-400 uppercase select-none [writing-mode:vertical-rl]"
-                    style={{ transform: "rotate(180deg)" }}
-                  >
-                    Sources
-                  </div>
-                </div>
-              )}
-
-              <div className={cn("h-full w-full", { hidden: isLeftCollapsed })}>
-                {sourcesTabContent}
-              </div>
-            </div>
-
-            {/* Left Resizer */}
-            {!isLeftCollapsed && (
-              <div
-                className="group z-5 flex w-2 cursor-col-resize items-center justify-center"
-                onMouseDown={handleMouseDownLeft}
-                onDoubleClick={handleDoubleClickLeft}
-                title="Double click to toggle"
-              >
+                </Tooltip>
                 <div
-                  className={cn("w-px h-1/12 rounded-xs transition-all duration-150", {
-                    "bg-blue-500 dark:bg-blue-400": activeResizer === "left",
-                    "bg-gray-300/60 dark:bg-gray-600 group-hover:bg-blue-400 dark:group-hover:bg-blue-500":
-                      activeResizer !== "left",
-                  })}
-                />
+                  className="mt-4 flex-1 text-xs font-medium tracking-widest text-gray-400 uppercase select-none [writing-mode:vertical-rl]"
+                  style={{ transform: "rotate(180deg)" }}
+                >
+                  Sources
+                </div>
               </div>
             )}
 
-            <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-              <ChatCard
-                notebookId={notebookId}
-                sources={notebook?.sources || []}
-                selectedSourceIds={selectedSourceIds}
-                onSourceSelect={handleSourceSelectFromChat}
-                externalQuestion={chatQuestion}
-                onExternalQuestionHandled={() => setChatQuestion(null)}
+            <div className={cn("h-full w-full", { hidden: isLeftCollapsed })}>
+              {sourcesTabContent}
+            </div>
+          </div>
+
+          {/* Left Resizer */}
+          {!isLeftCollapsed && (
+            <div
+              className="group z-5 flex w-2 cursor-col-resize items-center justify-center"
+              onMouseDown={handleMouseDownLeft}
+              onDoubleClick={handleDoubleClickLeft}
+              title="Double click to toggle"
+            >
+              <div
+                className={cn("w-px h-1/12 rounded-xs transition-all duration-150", {
+                  "bg-blue-500 dark:bg-blue-400": activeResizer === "left",
+                  "bg-gray-300/60 dark:bg-gray-600 group-hover:bg-blue-400 dark:group-hover:bg-blue-500":
+                    activeResizer !== "left",
+                })}
               />
             </div>
+          )}
 
-            {/* Right Resizer */}
-            {!isRightCollapsed && (
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+            <ChatCard
+              notebookId={notebookId}
+              sources={notebook?.sources || []}
+              selectedSourceIds={selectedSourceIds}
+              onSourceSelect={handleSourceSelectFromChat}
+              externalQuestion={chatQuestion}
+              onExternalQuestionHandled={() => setChatQuestion(null)}
+            />
+          </div>
+
+          {/* Right Resizer */}
+          {!isRightCollapsed && (
+            <div
+              className="group z-5 flex w-2 cursor-col-resize items-center justify-center"
+              onMouseDown={handleMouseDownRight}
+              onDoubleClick={handleDoubleClickRight}
+              title="Double click to toggle"
+            >
               <div
-                className="group z-5 flex w-2 cursor-col-resize items-center justify-center"
-                onMouseDown={handleMouseDownRight}
-                onDoubleClick={handleDoubleClickRight}
-                title="Double click to toggle"
-              >
-                <div
-                  className={cn("w-px h-1/12 rounded-xs transition-all duration-150", {
-                    "bg-blue-500 dark:bg-blue-400": activeResizer === "right",
-                    "bg-gray-300/60 dark:bg-gray-600 group-hover:bg-blue-400 dark:group-hover:bg-blue-500":
-                      activeResizer !== "right",
-                  })}
-                />
+                className={cn("w-px h-1/12 rounded-xs transition-all duration-150", {
+                  "bg-blue-500 dark:bg-blue-400": activeResizer === "right",
+                  "bg-gray-300/60 dark:bg-gray-600 group-hover:bg-blue-400 dark:group-hover:bg-blue-500":
+                    activeResizer !== "right",
+                })}
+              />
+            </div>
+          )}
+
+          <div
+            className={cn(
+              "min-h-0 flex flex-col overflow-hidden transition-[width,background-color,border-color] duration-200 ease-out shrink-0",
+            )}
+            style={{ width: isRightCollapsed ? "48px" : `${rightPanelWidth ?? 25}%` }}
+          >
+            {isRightCollapsed && (
+              <div className="flex h-full w-full flex-col items-center py-3">
+                <Tooltip text="Expand Notes & Tools" position="left">
+                  <IconButton
+                    icon={<ExpandIcon />}
+                    onClick={expandRight}
+                    variant="secondary"
+                    size="sm"
+                    aria-label="Expand Notes & Tools"
+                  />
+                </Tooltip>
+                <div className="mt-4 flex-1 text-xs font-medium tracking-widest text-gray-400 uppercase select-none [writing-mode:vertical-rl]">
+                  Notes & Tools
+                </div>
               </div>
             )}
 
-            <div
-              className={cn(
-                "min-h-0 flex flex-col overflow-hidden transition-[width,background-color,border-color] duration-200 ease-out shrink-0",
-              )}
-              style={{ width: isRightCollapsed ? "48px" : `${rightPanelWidth ?? 25}%` }}
-            >
-              {isRightCollapsed && (
-                <div className="flex h-full w-full flex-col items-center py-3">
-                  <Tooltip text="Expand Notes & Tools" position="left">
-                    <IconButton
-                      icon={<ExpandIcon />}
-                      onClick={expandRight}
-                      variant="secondary"
-                      size="sm"
-                      aria-label="Expand Notes & Tools"
-                    />
-                  </Tooltip>
-                  <div className="mt-4 flex-1 text-xs font-medium tracking-widest text-gray-400 uppercase select-none [writing-mode:vertical-rl]">
-                    Notes & Tools
-                  </div>
-                </div>
-              )}
-
-              <div className={cn("h-full w-full", { hidden: isRightCollapsed })}>
-                <Tabs
-                  className="h-full"
-                  onToggleCollapse={() => setIsRightCollapsed(true)}
-                  items={[
-                    {
-                      id: "notes",
-                      label: "Notes",
-                      content: notesTabContent,
-                    },
-                    {
-                      id: "tools",
-                      label: "Tools",
-                      content: (
-                        <ToolsCard
-                          notebookId={notebookId}
-                          onNodeSelect={handleNodeSelect}
-                          hasSources={(notebook?.sources?.length ?? 0) > 0}
-                        />
-                      ),
-                    },
-                  ]}
-                  defaultActiveTab="notes"
-                />
-              </div>
+            <div className={cn("h-full w-full", { hidden: isRightCollapsed })}>
+              <Tabs
+                className="h-full"
+                onToggleCollapse={() => setIsRightCollapsed(true)}
+                items={[
+                  {
+                    id: "notes",
+                    label: "Notes",
+                    content: notesTabContent,
+                  },
+                  {
+                    id: "tools",
+                    label: "Tools",
+                    content: (
+                      <ToolsCard
+                        notebookId={notebookId}
+                        onNodeSelect={handleNodeSelect}
+                        hasSources={(notebook?.sources?.length ?? 0) > 0}
+                      />
+                    ),
+                  },
+                ]}
+                defaultActiveTab="notes"
+              />
             </div>
-          </section>
-        )}
+          </div>
+        </section>
       </div>
 
       <RenameNotebookModal
