@@ -25,6 +25,15 @@ import { RenameNotebookModal } from "./notebook/RenameNotebookModal";
 import { ShareIcon } from "@/components/icons";
 import { MenuItem, Button } from "@/components/ui";
 
+const MIN_SIDE_PANEL_PX = 280;
+const MIN_CENTER_PANEL_PX = 400;
+
+function getPixelConstraints(containerWidth: number) {
+  const minSidePercent = (MIN_SIDE_PANEL_PX / containerWidth) * 100;
+  const minCenterPercent = (MIN_CENTER_PANEL_PX / containerWidth) * 100;
+  return { minSidePercent, minCenterPercent };
+}
+
 export default function NotebookPage() {
   const notebookId: string = useLoaderData();
   const {
@@ -142,21 +151,21 @@ export default function NotebookPage() {
 
       const rect = sectionRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left;
-      const minCenterWidth = 30;
+      const { minSidePercent, minCenterPercent } = getPixelConstraints(rect.width);
 
       if (activeResizer === "left") {
-        const currentRight = isRightCollapsed ? 0 : (rightPanelWidth ?? 25);
-        const maxAvailable = 100 - minCenterWidth - currentRight;
+        const currentRight = isRightCollapsed ? 0 : Math.max(minSidePercent, rightPanelWidth ?? 25);
+        const maxAvailable = 100 - minCenterPercent - currentRight;
         const maxLimit = Math.min(50, maxAvailable);
-        const newWidth = Math.min(Math.max((x / rect.width) * 100, 30), maxLimit);
+        const newWidth = Math.min(Math.max((x / rect.width) * 100, minSidePercent), maxLimit);
         setLeftPanelWidth(newWidth);
         setIsLeftCollapsed(false);
       } else if (activeResizer === "right") {
         const rightX = rect.width - x;
-        const currentLeft = isLeftCollapsed ? 0 : (leftPanelWidth ?? 25);
-        const maxAvailable = 100 - minCenterWidth - currentLeft;
+        const currentLeft = isLeftCollapsed ? 0 : Math.max(minSidePercent, leftPanelWidth ?? 25);
+        const maxAvailable = 100 - minCenterPercent - currentLeft;
         const maxLimit = Math.min(50, maxAvailable);
-        const newWidth = Math.min(Math.max((rightX / rect.width) * 100, 30), maxLimit);
+        const newWidth = Math.min(Math.max((rightX / rect.width) * 100, minSidePercent), maxLimit);
         setRightPanelWidth(newWidth);
         setIsRightCollapsed(false);
       }
@@ -187,34 +196,28 @@ export default function NotebookPage() {
   ]);
 
   const expandLeft = () => {
-    let desiredLeft = Math.max(30, leftPanelWidth ?? 30);
-    const currentRight = isRightCollapsed ? 0 : Math.max(30, rightPanelWidth ?? 30);
+    const containerWidth = sectionRef.current?.getBoundingClientRect().width ?? window.innerWidth;
+    const { minSidePercent, minCenterPercent } = getPixelConstraints(containerWidth);
 
-    if (desiredLeft + currentRight + 30 > 100) {
-      const availableForRight = 100 - 30 - desiredLeft;
-      if (availableForRight < 30 && !isRightCollapsed) {
-        setRightPanelWidth(30);
-        desiredLeft = 40;
-      } else if (!isRightCollapsed) {
-        setRightPanelWidth(availableForRight);
-      }
+    let desiredLeft = Math.max(minSidePercent, leftPanelWidth ?? 30);
+    const currentRight = isRightCollapsed ? 0 : Math.max(minSidePercent, rightPanelWidth ?? 30);
+
+    if (desiredLeft + currentRight + minCenterPercent > 100 && !isRightCollapsed) {
+      setIsRightCollapsed(true);
     }
     setLeftPanelWidth(desiredLeft);
     setIsLeftCollapsed(false);
   };
 
   const expandRight = () => {
-    let desiredRight = Math.max(30, rightPanelWidth ?? 30);
-    const currentLeft = isLeftCollapsed ? 0 : Math.max(30, leftPanelWidth ?? 30);
+    const containerWidth = sectionRef.current?.getBoundingClientRect().width ?? window.innerWidth;
+    const { minSidePercent, minCenterPercent } = getPixelConstraints(containerWidth);
 
-    if (desiredRight + currentLeft + 30 > 100) {
-      const availableForLeft = 100 - 30 - desiredRight;
-      if (availableForLeft < 30 && !isLeftCollapsed) {
-        setLeftPanelWidth(30);
-        desiredRight = 40;
-      } else if (!isLeftCollapsed) {
-        setLeftPanelWidth(availableForLeft);
-      }
+    let desiredRight = Math.max(minSidePercent, rightPanelWidth ?? 30);
+    const currentLeft = isLeftCollapsed ? 0 : Math.max(minSidePercent, leftPanelWidth ?? 30);
+
+    if (desiredRight + currentLeft + minCenterPercent > 100 && !isLeftCollapsed) {
+      setIsLeftCollapsed(true);
     }
     setRightPanelWidth(desiredRight);
     setIsRightCollapsed(false);
@@ -226,11 +229,14 @@ export default function NotebookPage() {
   };
 
   const handleDoubleClickLeft = () => {
+    const containerWidth = sectionRef.current?.getBoundingClientRect().width ?? window.innerWidth;
+    const { minSidePercent, minCenterPercent } = getPixelConstraints(containerWidth);
+
     if (!isRightCollapsed) {
-      setLeftPanelWidth(30);
+      setLeftPanelWidth(minSidePercent);
     } else {
-      const currentRight = isRightCollapsed ? 0 : Math.max(30, rightPanelWidth ?? 30);
-      const maxAvailable = 100 - 30 - currentRight;
+      const currentRight = isRightCollapsed ? 0 : Math.max(minSidePercent, rightPanelWidth ?? 30);
+      const maxAvailable = 100 - minCenterPercent - currentRight;
       const maxLimit = Math.min(50, maxAvailable);
       setLeftPanelWidth(maxLimit);
     }
@@ -243,11 +249,14 @@ export default function NotebookPage() {
   };
 
   const handleDoubleClickRight = () => {
+    const containerWidth = sectionRef.current?.getBoundingClientRect().width ?? window.innerWidth;
+    const { minSidePercent, minCenterPercent } = getPixelConstraints(containerWidth);
+
     if (!isLeftCollapsed) {
-      setRightPanelWidth(30);
+      setRightPanelWidth(minSidePercent);
     } else {
-      const currentLeft = isLeftCollapsed ? 0 : Math.max(30, leftPanelWidth ?? 30);
-      const maxAvailable = 100 - 30 - currentLeft;
+      const currentLeft = isLeftCollapsed ? 0 : Math.max(minSidePercent, leftPanelWidth ?? 30);
+      const maxAvailable = 100 - minCenterPercent - currentLeft;
       const maxLimit = Math.min(50, maxAvailable);
       setRightPanelWidth(maxLimit);
     }
