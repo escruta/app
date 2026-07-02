@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useNavigate } from "react-router";
 import { useAuth, useFetch } from "@/hooks";
 import { HomeActionCard, HomeChipProduct, SEOMetadata, TopBar } from "@/components";
@@ -7,10 +8,119 @@ import { NotebookIcon, NoteIcon, SettingsIcon } from "@/components/icons";
 import { motion } from "motion/react";
 import type { Notebook, Note } from "@/interfaces";
 
+const GREETINGS = [
+  "Welcome",
+  "Good to see you",
+  "Glad you're here",
+  "Hello",
+  "Hey there",
+  "Hi",
+  "Great to have you back",
+  "Nice to see you again",
+  "Howdy",
+  "Greetings",
+  "Salutations",
+  "Ahoy",
+  "What's up",
+  "Yo",
+  "Hiya",
+  "Good day",
+  "Pleased to meet your acquaintance",
+  "Look who's back",
+  "Long time no see",
+  "Welcome aboard",
+  "Welcome back",
+  "Good morning",
+  "Good afternoon",
+  "Good evening",
+  "Bonjour",
+  "Hola",
+  "Ciao",
+  "Aloha",
+  "Cheers",
+  "How goes it",
+  "Top of the morning",
+  "Lovely to see you",
+  "Delighted to have you",
+  "Fantastic to see you",
+  "Wonderful to have you here",
+  "Thrilled you stopped by",
+  "Always a pleasure",
+  "The legend returns",
+  "Back in action",
+  "You made it",
+  "There you are",
+  "Fancy seeing you here",
+  "Well, well, well",
+  "Welcome to the hub",
+  "Let's get to work",
+  "Ready for another great day",
+  "Hope you're doing well",
+  "It's a beautiful day",
+  "Make yourself at home",
+  "Step right in",
+];
+
+const SUBTITLES = [
+  "What would you like to work on today?",
+  "Ready to tackle something new?",
+  "What's on your mind today?",
+  "How can we make progress today?",
+  "Pick up where you left off?",
+  "What shall we dive into?",
+  "What's the plan for today?",
+  "Ready to create something great?",
+  "Where shall we begin?",
+  "What are we building today?",
+  "Let's get something done today.",
+  "Time to make things happen.",
+  "What's your focus for today?",
+  "Ready to dive back in?",
+  "What deserves your attention?",
+  "Let's make today productive.",
+  "Something new or something familiar?",
+  "Where to next?",
+  "What sparks your interest today?",
+  "Shall we pick up where we left off?",
+  "Your next breakthrough awaits.",
+  "What's the priority for today?",
+  "Time to turn ideas into reality.",
+  "What challenge are we tackling?",
+  "Let's pick a project and run with it.",
+  "What's calling your name today?",
+  "The day is yours — where to first?",
+  "Ready for a productive session?",
+  "What do you feel like working on?",
+  "What story are we writing today?",
+  "Let's get those gears turning.",
+  "What's the first thing on your list?",
+  "Where shall we make progress?",
+  "Something big or something quick?",
+  "What's the mission for today?",
+  "Ready to check things off the list?",
+  "What would make today a win?",
+  "Your dashboard awaits, captain.",
+  "Let's make some magic happen.",
+  "Time to roll up the sleeves.",
+  "What are we conquering today?",
+  "What's inspiring you today?",
+  "Let's turn plans into progress.",
+  "What shall we explore?",
+  "What's the next move?",
+  "Your workspace is ready — dive in.",
+  "What are you in the mood for?",
+  "Let's get the ball rolling.",
+  "What's the first order of business?",
+  "Pick your adventure for today.",
+];
+
 export default function HomePage() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const metadata = getRouteMetadata("/");
+
+  const greeting = useMemo(() => GREETINGS[Math.floor(Math.random() * GREETINGS.length)], []);
+  const subtitle = useMemo(() => SUBTITLES[Math.floor(Math.random() * SUBTITLES.length)], []);
 
   const { data: notebooksData } = useFetch<Notebook[]>("/notebooks", {
     method: "GET",
@@ -58,11 +168,9 @@ export default function HomePage() {
             className="mb-8"
           >
             <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
-              Welcome, {currentUser?.name?.split(" ")[0] || "User"}
+              {greeting}, {currentUser?.name?.split(" ")[0] || "User"}
             </h2>
-            <p className="text-gray-600 dark:text-gray-400">
-              What would you like to work on today?
-            </p>
+            <p className="text-gray-600 dark:text-gray-400">{subtitle}</p>
           </motion.div>
 
           <motion.div
