@@ -94,6 +94,7 @@ interface EditorProps {
   onContentChange?: (content: string) => void;
   placeholder?: string;
   autoFocus?: boolean;
+  scrollable?: boolean;
 }
 
 export function Editor({
@@ -101,6 +102,7 @@ export function Editor({
   onContentChange,
   placeholder,
   autoFocus,
+  scrollable = true,
 }: EditorProps) {
   const isUpdatingRef = useRef(false);
   const [, setForceUpdate] = useState(0);
@@ -301,8 +303,18 @@ export function Editor({
   }
 
   return (
-    <div className="relative flex h-full w-full flex-col">
-      <div className="top-0 z-10 mx-auto flex w-full max-w-5xl items-center gap-1 overflow-x-auto overflow-y-hidden bg-white px-2 py-1 dark:bg-gray-900">
+    <div className={cn("relative flex w-full flex-col", { "h-full": scrollable })}>
+      <div
+        className={cn(
+          "mx-auto flex w-full max-w-5xl items-center gap-1 overflow-x-auto overflow-y-hidden bg-white py-1 dark:bg-gray-900",
+          {
+            "top-0 z-10 px-2": scrollable,
+            "border border-gray-200 dark:border-gray-700": !scrollable,
+            "sticky top-0 z-10 px-1": !scrollable,
+            "dark:bg-gray-950 justify-center w-auto": !scrollable,
+          },
+        )}
+      >
         <ToolbarButton
           isActive={editor.isActive("heading", { level: 1 })}
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
@@ -468,11 +480,14 @@ export function Editor({
         </ToolbarButton>
       </div>
 
-      <Divider orientation="horizontal" className="my-0" />
+      {scrollable && <Divider orientation="horizontal" className="my-0" />}
 
       <EditorContent
         editor={editor}
-        className="flex min-h-0 w-full flex-1 flex-col overflow-hidden [&>div]:flex-1 [&>div]:overflow-y-auto"
+        className={cn("flex w-full flex-col", {
+          "min-h-0 flex-1 overflow-hidden [&>div]:flex-1 [&>div]:overflow-y-auto": scrollable,
+          "[&>div]:overflow-visible min-h-[60vh]": !scrollable,
+        })}
       />
 
       <Modal

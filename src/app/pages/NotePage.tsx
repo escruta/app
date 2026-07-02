@@ -195,15 +195,16 @@ export default function NotePage() {
         }
       />
 
-      <div className="relative flex-1 overflow-hidden p-3 md:p-4">
+      <div className="relative flex-1 overflow-y-auto p-3 md:p-4">
         <SimpleBackground />
-        <div className="mx-auto flex h-full max-w-4xl flex-col overflow-hidden">
+        <div className="mx-auto flex min-h-full max-w-4xl flex-col">
           {note && !loading && !error && (
             <Editor
               initialContent={note.content || ""}
               onContentChange={setContent}
               placeholder="Write your note content here..."
               autoFocus
+              scrollable={false}
             />
           )}
         </div>
