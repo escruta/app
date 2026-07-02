@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useLoaderData, useLocation } from "react-router";
+import { useLoaderData } from "react-router";
 import { useFetch, useCookie, useIsTablet } from "@/hooks";
 import type { Note, Source, Notebook, NotebookContent } from "@/interfaces";
 import { Tabs } from "@/components/ui";
@@ -40,8 +40,7 @@ export default function NotebookPage() {
 
   const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
   const [newTitle, setNewTitle] = useState<string>("");
-  const location = useLocation();
-  const [chatQuestion, setChatQuestion] = useState<string | null>(location.state?.question || null);
+  const [chatQuestion, setChatQuestion] = useState<string | null>(null);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [selectedSource, setSelectedSource] = useState<Source | null>(null);
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);

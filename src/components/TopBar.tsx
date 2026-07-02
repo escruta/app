@@ -1,4 +1,4 @@
-import { NavLink, useLocation, useNavigate } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import { useAuth } from "@/hooks";
 import {
   Tooltip,
@@ -11,43 +11,9 @@ import {
   MenuItem,
   MenuSeparator,
 } from "@/components/ui";
-import {
-  SettingsIcon,
-  SignOutIcon,
-  NoteIcon,
-  NotebookIcon,
-  DotsVerticalIcon,
-} from "@/components/icons";
+import { SettingsIcon, SignOutIcon, DotsVerticalIcon } from "@/components/icons";
 import { useState } from "react";
 import { AppIcon } from "./AppIcon";
-
-interface TopItemMenuProps {
-  icon: React.ReactNode;
-  label: string;
-  onClick: () => void;
-  isActive?: boolean;
-  position?: "bottom";
-}
-
-function TopItemMenu({
-  icon,
-  label,
-  onClick,
-  isActive = false,
-  position = "bottom",
-}: TopItemMenuProps) {
-  return (
-    <Tooltip text={label} position={position}>
-      <IconButton
-        size="sm"
-        icon={icon}
-        onClick={onClick}
-        variant={isActive ? "primary" : "ghost"}
-        ariaLabel={label}
-      />
-    </Tooltip>
-  );
-}
 
 interface TopBarProps {
   title?: React.ReactNode;
@@ -57,7 +23,6 @@ interface TopBarProps {
 
 export function TopBar({ title, actions, extraMenuItems }: TopBarProps = {}) {
   const navigate = useNavigate();
-  const location = useLocation();
   const { signOut } = useAuth();
   const [showSignOutModal, setShowSignOutModal] = useState(false);
 
@@ -73,25 +38,6 @@ export function TopBar({ title, actions, extraMenuItems }: TopBarProps = {}) {
         <NavLink to="/" className="group grid h-10 w-10 shrink-0 place-items-center">
           <AppIcon className="h-8 w-8 fill-gray-800 transition-all duration-300 group-hover:fill-blue-500 dark:fill-gray-50 dark:group-hover:fill-blue-400" />
         </NavLink>
-
-        <div className="mx-2 h-6 w-px bg-gray-200 dark:bg-gray-800" />
-
-        <div className="flex flex-row items-center gap-2">
-          <TopItemMenu
-            icon={<NotebookIcon className="size-5" />}
-            label="Notebooks"
-            onClick={() => navigate("/notebooks")}
-            isActive={location.pathname === "/notebooks"}
-            position="bottom"
-          />
-          <TopItemMenu
-            icon={<NoteIcon className="size-5" />}
-            label="Notes"
-            onClick={() => navigate("/notes")}
-            isActive={location.pathname === "/notes"}
-            position="bottom"
-          />
-        </div>
 
         {title && (
           <>
