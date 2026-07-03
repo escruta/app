@@ -1,17 +1,25 @@
-import type { Note } from "@/interfaces";
+import type { Folder, Note } from "@/interfaces";
 import {
   Button,
   Chip,
   Modal,
   Menu,
+  MenuLabel,
   IconButton,
+  SelectList,
   Spinner,
   Tooltip,
   MenuTrigger,
   MenuContent,
   MenuItem,
 } from "@/components/ui";
-import { NoteIcon, DotsVerticalIcon, DeleteIcon, NotebookIcon } from "@/components/icons";
+import {
+  NoteIcon,
+  DotsVerticalIcon,
+  DeleteIcon,
+  NotebookIcon,
+  FolderIcon,
+} from "@/components/icons";
 import { useState } from "react";
 import { useFetch } from "@/hooks";
 import { useNavigate } from "react-router";
@@ -21,12 +29,21 @@ interface NoteCardProps {
   note: Note;
   viewMode?: "grid" | "list";
   notebookTitle?: string;
+  folders?: Folder[];
   onChange?: () => void;
 }
 
-export function NoteCard({ note, viewMode = "grid", notebookTitle, onChange }: NoteCardProps) {
+export function NoteCard({
+  note,
+  viewMode = "grid",
+  notebookTitle,
+  folders,
+  onChange,
+}: NoteCardProps) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [isDeleted, setIsDeleted] = useState<boolean>(false);
+  const [isMoveModalOpen, setIsMoveModalOpen] = useState<boolean>(false);
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(note.folderId ?? null);
   const navigate = useNavigate();
 
   const {
@@ -45,6 +62,24 @@ export function NoteCard({ note, viewMode = "grid", notebookTitle, onChange }: N
     false,
   );
 
+  const { loading: movingNote, refetch: moveNote } = useFetch<Note>(
+    `/notes`,
+    {
+      method: "PUT",
+      data: {
+        id: note.id,
+        folderId: selectedFolderId,
+        removeFolder: selectedFolderId === null,
+      },
+      onSuccess: () => {
+        useFetch.clearCache("/notes");
+        setIsMoveModalOpen(false);
+        onChange?.();
+      },
+    },
+    false,
+  );
+
   async function handleDeleteNote() {
     try {
       await deleteNote();
@@ -56,6 +91,40 @@ export function NoteCard({ note, viewMode = "grid", notebookTitle, onChange }: N
       console.error("Error deleting note:", error);
     }
   }
+
+  function handleOpenMoveModal() {
+    setSelectedFolderId(note.folderId ?? null);
+    setIsMoveModalOpen(true);
+  }
+
+  async function handleMoveNote() {
+    if ((note.folderId ?? null) === selectedFolderId) {
+      setIsMoveModalOpen(false);
+      return;
+    }
+    await moveNote();
+  }
+
+  const moveToFolderBody = (
+    <div className="flex flex-col gap-2">
+      <MenuLabel>Move to folder</MenuLabel>
+      <SelectList
+        options={(folders ?? []).map((folder) => ({
+          id: folder.id,
+          label: folder.title,
+          icon: <FolderIcon />,
+        }))}
+        selectedId={selectedFolderId}
+        onSelect={setSelectedFolderId}
+        emptyText="No folders yet"
+      />
+      {selectedFolderId === null && (note.folderId ?? null) !== null && (
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          This will remove the note from its current folder.
+        </p>
+      )}
+    </div>
+  );
 
   const formatDate = (date: Date) => {
     return new Date(date)
@@ -115,6 +184,11 @@ export function NoteCard({ note, viewMode = "grid", notebookTitle, onChange }: N
           />
         </MenuTrigger>
         <MenuContent>
+          <MenuItem
+            icon={<FolderIcon className="size-4" />}
+            label="Move to folder"
+            onClick={handleOpenMoveModal}
+          />
           <MenuItem
             icon={<DeleteIcon />}
             label="Delete"
@@ -242,6 +316,30 @@ export function NoteCard({ note, viewMode = "grid", notebookTitle, onChange }: N
           </p>
           {deleteError && <div className="text-sm text-red-500">Error: {deleteError.message}</div>}
         </div>
+      </Modal>
+
+      {/* Move to Folder Modal */}
+      <Modal
+        isOpen={isMoveModalOpen}
+        onClose={() => setIsMoveModalOpen(false)}
+        title={`Move "${note.title}"`}
+        actions={
+          <>
+            <Button variant="secondary" onClick={() => setIsMoveModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleMoveNote}
+              disabled={movingNote}
+              icon={movingNote ? <Spinner className="size-4" /> : undefined}
+            >
+              {movingNote ? "Moving" : "Move"}
+            </Button>
+          </>
+        }
+      >
+        {moveToFolderBody}
       </Modal>
     </>
   );

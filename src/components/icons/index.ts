@@ -16,6 +16,7 @@ export * from "./EditIcon";
 export * from "./ExpandIcon";
 export * from "./FileIcon";
 export * from "./FireIcon";
+export * from "./FolderAddIcon";
 export * from "./FolderIcon";
 export * from "./FormatListBulletedIcon";
 export * from "./FormatListNumberedIcon";

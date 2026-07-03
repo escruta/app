@@ -12,6 +12,7 @@ export * from "./FilePicker";
 export * from "./IconButton";
 export * from "./Menu";
 export * from "./Modal";
+export * from "./SelectList";
 export * from "./SegmentedButtons";
 export * from "./Skeleton";
 export * from "./Spinner";
