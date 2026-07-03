@@ -1,3 +1,4 @@
+import { useBreakpoint } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
 
@@ -22,6 +23,14 @@ export function Card({
   isExpanded,
   setIsExpanded,
 }: ControlledProps | UncontrolledProps) {
+  const breakpoint = useBreakpoint();
+
+  useEffect(() => {
+    if (breakpoint === "compact") {
+      setIsExpanded?.(true);
+    }
+  }, [breakpoint]);
+
   useEffect(() => {
     if (!isExpanded) return;
     const onKey = (e: KeyboardEvent) => {
@@ -37,7 +46,7 @@ export function Card({
         "bg-white dark:bg-gray-900 p-4 rounded-xs border border-gray-200 dark:border-gray-700 ring-1 ring-gray-500/5 dark:ring-gray-500/10",
         {
           "fixed z-50 m-auto overflow-auto inset-0": isExpanded,
-          "sm:inset-12 sm:max-h-5/6 sm:max-w-2xl": isExpanded,
+          "md:inset-12 md:max-h-5/6 md:max-w-2xl": isExpanded,
           "lg:max-h-4/5 lg:max-w-5xl": isExpanded,
         },
         !isExpanded && className,

@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useLoaderData } from "react-router";
-import { useFetch, useCookie, useIsTablet } from "@/hooks";
+import { useFetch, useCookie, useIsTablet, useBreakpoint } from "@/hooks";
 import type { Note, Source, Notebook, NotebookContent } from "@/interfaces";
 import { Tabs } from "@/components/ui";
 import { motion, AnimatePresence } from "motion/react";
@@ -65,6 +65,11 @@ export default function NotebookPage() {
   );
   const [activeResizer, setActiveResizer] = useState<"left" | "right" | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
+
+  const isTablet = useIsTablet();
+  const mode = useBreakpoint();
+  const [compactTab, setCompactTab] = useState<"sources" | "chat" | "notes" | "tools">("chat");
+  const handleCompactCollapse = () => setCompactTab("chat");
 
   const initialLoadRef = useRef(true);
 
@@ -160,6 +165,13 @@ export default function NotebookPage() {
         const newWidth = Math.min(Math.max((x / rect.width) * 100, minSidePercent), maxLimit);
         setLeftPanelWidth(newWidth);
         setIsLeftCollapsed(false);
+        if (
+          !isRightCollapsed &&
+          mode !== "extensive" &&
+          currentRight + newWidth > 100 - minCenterPercent
+        ) {
+          setIsRightCollapsed(true);
+        }
       } else if (activeResizer === "right") {
         const rightX = rect.width - x;
         const currentLeft = isLeftCollapsed ? 0 : Math.max(minSidePercent, leftPanelWidth ?? 25);
@@ -168,6 +180,13 @@ export default function NotebookPage() {
         const newWidth = Math.min(Math.max((rightX / rect.width) * 100, minSidePercent), maxLimit);
         setRightPanelWidth(newWidth);
         setIsRightCollapsed(false);
+        if (
+          !isLeftCollapsed &&
+          mode !== "extensive" &&
+          currentLeft + newWidth > 100 - minCenterPercent
+        ) {
+          setIsLeftCollapsed(true);
+        }
       }
     };
 
@@ -202,6 +221,27 @@ export default function NotebookPage() {
     let desiredLeft = Math.max(minSidePercent, leftPanelWidth ?? 30);
     const currentRight = isRightCollapsed ? 0 : Math.max(minSidePercent, rightPanelWidth ?? 30);
 
+    if (mode === "extensive") {
+      if (isRightCollapsed) {
+        const maxAvailable = 100 - minCenterPercent;
+        setLeftPanelWidth(Math.min(desiredLeft, maxAvailable));
+        setIsLeftCollapsed(false);
+        return;
+      }
+      let openLeft = desiredLeft;
+      let openRight = currentRight;
+      const free = 100 - minCenterPercent;
+      if (openLeft + openRight > free) {
+        const ratio = free / (openLeft + openRight);
+        openLeft = Math.max(minSidePercent, openLeft * ratio);
+        openRight = Math.max(minSidePercent, openRight * ratio);
+      }
+      setLeftPanelWidth(openLeft);
+      setRightPanelWidth(openRight);
+      setIsLeftCollapsed(false);
+      return;
+    }
+
     if (desiredLeft + currentRight + minCenterPercent > 100 && !isRightCollapsed) {
       setIsRightCollapsed(true);
     }
@@ -216,6 +256,27 @@ export default function NotebookPage() {
     let desiredRight = Math.max(minSidePercent, rightPanelWidth ?? 30);
     const currentLeft = isLeftCollapsed ? 0 : Math.max(minSidePercent, leftPanelWidth ?? 30);
 
+    if (mode === "extensive") {
+      if (isLeftCollapsed) {
+        const maxAvailable = 100 - minCenterPercent;
+        setRightPanelWidth(Math.min(desiredRight, maxAvailable));
+        setIsRightCollapsed(false);
+        return;
+      }
+      let openRight = desiredRight;
+      let openLeft = currentLeft;
+      const free = 100 - minCenterPercent;
+      if (openRight + openLeft > free) {
+        const ratio = free / (openRight + openLeft);
+        openRight = Math.max(minSidePercent, openRight * ratio);
+        openLeft = Math.max(minSidePercent, openLeft * ratio);
+      }
+      setRightPanelWidth(openRight);
+      setLeftPanelWidth(openLeft);
+      setIsRightCollapsed(false);
+      return;
+    }
+
     if (desiredRight + currentLeft + minCenterPercent > 100 && !isLeftCollapsed) {
       setIsLeftCollapsed(true);
     }
@@ -227,6 +288,70 @@ export default function NotebookPage() {
     e.preventDefault();
     setActiveResizer("left");
   };
+
+  useEffect(() => {
+    if (mode === "standard" && !isLeftCollapsed && !isRightCollapsed) {
+      setIsRightCollapsed(true);
+    }
+  }, [mode, isLeftCollapsed, isRightCollapsed, setIsRightCollapsed]);
+
+  useEffect(() => {
+    if (mode === "compact" || !sectionRef.current) return;
+
+    const clampPanelWidths = (containerWidth: number) => {
+      const { minSidePercent, minCenterPercent } = getPixelConstraints(containerWidth);
+
+      const left = isLeftCollapsed ? 0 : (leftPanelWidth ?? 30);
+      const right = isRightCollapsed ? 0 : (rightPanelWidth ?? 30);
+
+      let clampedLeft = left;
+      let clampedRight = right;
+
+      if (left > 0 && left < minSidePercent) {
+        clampedLeft = minSidePercent;
+      }
+      if (right > 0 && right < minSidePercent) {
+        clampedRight = minSidePercent;
+      }
+
+      const total = clampedLeft + clampedRight + minCenterPercent;
+      if (total > 100) {
+        if (mode === "extensive") {
+          const free = 100 - minCenterPercent;
+          if (clampedLeft + clampedRight > free) {
+            const ratio = free / (clampedLeft + clampedRight);
+            clampedLeft = Math.max(minSidePercent, clampedLeft * ratio);
+            clampedRight = Math.max(minSidePercent, clampedRight * ratio);
+          }
+        } else {
+          if (!isRightCollapsed && clampedLeft > 0) {
+            setIsRightCollapsed(true);
+          }
+        }
+      }
+
+      if (clampedLeft !== left) setLeftPanelWidth(clampedLeft);
+      if (clampedRight !== right) setRightPanelWidth(clampedRight);
+    };
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        clampPanelWidths(entry.contentRect.width);
+      }
+    });
+
+    observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, [
+    mode,
+    isLeftCollapsed,
+    isRightCollapsed,
+    leftPanelWidth,
+    rightPanelWidth,
+    setLeftPanelWidth,
+    setRightPanelWidth,
+    setIsRightCollapsed,
+  ]);
 
   const handleDoubleClickLeft = () => {
     const containerWidth = sectionRef.current?.getBoundingClientRect().width ?? window.innerWidth;
@@ -278,8 +403,6 @@ export default function NotebookPage() {
     },
     false,
   );
-
-  const isTablet = useIsTablet();
 
   async function handleRenameNotebook() {
     if (!newTitle.trim()) return;
@@ -336,7 +459,7 @@ export default function NotebookPage() {
 
   const metadata = notebook ? generateNotebookMetadata(notebook.title, notebookId) : null;
 
-  const sourcesTabContent = (
+  const renderSourcesTabContent = (onToggleCollapse: () => void) => (
     <div className="relative h-full w-full">
       <AnimatePresence>
         {selectedSource ? (
@@ -380,11 +503,15 @@ export default function NotebookPage() {
           onSourcesChange={() => {
             refetchNotebook(true, false);
           }}
-          onToggleCollapse={() => setIsLeftCollapsed(true)}
+          onToggleCollapse={onToggleCollapse}
         />
       </div>
     </div>
   );
+
+  const sourcesTabContent = renderSourcesTabContent(() => setIsLeftCollapsed(true));
+  const sourcesTabContentWithCollapse = (onToggleCollapse: () => void) =>
+    renderSourcesTabContent(onToggleCollapse);
 
   const notesTabContent = (
     <div className="relative h-full w-full">
@@ -496,141 +623,206 @@ export default function NotebookPage() {
 
       <div className="flex-1 overflow-hidden p-3 md:p-4">
         <SimpleBackground />
-        <section ref={sectionRef} className="flex h-full gap-1 overflow-hidden">
-          <div
-            className={cn(
-              "min-h-0 flex flex-col overflow-hidden transition-[width,background-color,border-color] duration-200 ease-out shrink-0",
-              {
-                "z-30": isSourceExpanded,
-              },
-            )}
-            style={{ width: isLeftCollapsed ? "48px" : `${leftPanelWidth ?? 25}%` }}
-          >
-            {isLeftCollapsed && (
-              <div className="flex h-full w-full flex-col items-center py-3">
-                <Tooltip text="Expand Sources" position="right">
-                  <IconButton
-                    icon={<ExpandIcon />}
-                    onClick={expandLeft}
-                    variant="secondary"
-                    size="sm"
-                    aria-label="Expand Sources"
-                  />
-                </Tooltip>
+        {mode === "compact" ? (
+          <section className="flex h-full flex-col gap-2 overflow-hidden">
+            <div className="no-scrollbar flex w-full shrink-0 overflow-x-auto rounded-xs border border-gray-200 bg-white p-1 dark:border-gray-600 dark:bg-gray-900">
+              {(
+                [
+                  { id: "sources", label: "Sources" },
+                  { id: "chat", label: "Chat" },
+                  { id: "notes", label: "Notes" },
+                  { id: "tools", label: "Tools" },
+                ] as const
+              ).map((tab) => (
+                <div key={tab.id} className="group relative min-w-max flex-1">
+                  {compactTab === tab.id && (
+                    <div className="absolute inset-0 rounded-xs border border-gray-200/50 bg-white transition-all duration-150 ease-out dark:border-gray-600/50 dark:bg-gray-800" />
+                  )}
+                  {compactTab !== tab.id && (
+                    <div className="absolute inset-0 rounded-xs bg-gray-100/40 opacity-0 transition-opacity duration-150 group-hover:opacity-100 dark:bg-gray-700/40" />
+                  )}
+                  <button
+                    onClick={() => setCompactTab(tab.id)}
+                    type="button"
+                    className="relative w-full cursor-pointer rounded-xs px-6 py-1.5 text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-200 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-gray-600 dark:focus-visible:ring-offset-gray-900"
+                  >
+                    <span
+                      className={cn("text-sm transition-all duration-150", {
+                        "font-semibold text-gray-800 dark:text-gray-100": compactTab === tab.id,
+                        "font-medium text-gray-600 group-hover:text-gray-800 dark:text-gray-400 dark:group-hover:text-gray-200":
+                          compactTab !== tab.id,
+                      })}
+                    >
+                      {tab.label}
+                    </span>
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="relative min-h-0 flex-1 overflow-hidden">
+              <div className={cn("absolute inset-0 h-full", { hidden: compactTab !== "sources" })}>
+                {sourcesTabContentWithCollapse(handleCompactCollapse)}
+              </div>
+              <div className={cn("absolute inset-0 h-full", { hidden: compactTab !== "chat" })}>
+                <ChatCard
+                  notebookId={notebookId}
+                  sources={notebook?.sources || []}
+                  selectedSourceIds={selectedSourceIds}
+                  onSourceSelect={handleSourceSelectFromChat}
+                  externalQuestion={chatQuestion}
+                  onExternalQuestionHandled={() => setChatQuestion(null)}
+                />
+              </div>
+              <div className={cn("absolute inset-0 h-full", { hidden: compactTab !== "notes" })}>
+                {notesTabContent}
+              </div>
+              <div className={cn("absolute inset-0 h-full", { hidden: compactTab !== "tools" })}>
+                <ToolsCard
+                  notebookId={notebookId}
+                  onNodeSelect={handleNodeSelect}
+                  hasSources={(notebook?.sources?.length ?? 0) > 0}
+                />
+              </div>
+            </div>
+          </section>
+        ) : (
+          <section ref={sectionRef} className="flex h-full gap-1 overflow-hidden">
+            <div
+              className={cn(
+                "min-h-0 flex flex-col overflow-hidden transition-[width,background-color,border-color] duration-200 ease-out shrink-0",
+                {
+                  "z-30": isSourceExpanded,
+                },
+              )}
+              style={{ width: isLeftCollapsed ? "48px" : `${leftPanelWidth ?? 25}%` }}
+            >
+              {isLeftCollapsed && (
+                <div className="flex h-full w-full flex-col items-center py-3">
+                  <Tooltip text="Expand Sources" position="right">
+                    <IconButton
+                      icon={<ExpandIcon />}
+                      onClick={expandLeft}
+                      variant="secondary"
+                      size="sm"
+                      aria-label="Expand Sources"
+                    />
+                  </Tooltip>
+                  <div
+                    className="mt-4 flex-1 text-xs font-medium tracking-widest text-gray-400 uppercase select-none [writing-mode:vertical-rl]"
+                    style={{ transform: "rotate(180deg)" }}
+                  >
+                    Sources
+                  </div>
+                </div>
+              )}
+
+              <div className={cn("h-full w-full", { hidden: isLeftCollapsed })}>
+                {sourcesTabContent}
+              </div>
+            </div>
+
+            {/* Left Resizer */}
+            {!isLeftCollapsed && (
+              <div
+                className="group z-5 flex w-2 cursor-col-resize items-center justify-center"
+                onMouseDown={handleMouseDownLeft}
+                onDoubleClick={handleDoubleClickLeft}
+                title="Double click to toggle"
+              >
                 <div
-                  className="mt-4 flex-1 text-xs font-medium tracking-widest text-gray-400 uppercase select-none [writing-mode:vertical-rl]"
-                  style={{ transform: "rotate(180deg)" }}
-                >
-                  Sources
-                </div>
+                  className={cn("w-px h-1/12 rounded-xs transition-all duration-150", {
+                    "bg-blue-500 dark:bg-blue-400": activeResizer === "left",
+                    "bg-gray-300/60 dark:bg-gray-600 group-hover:bg-blue-400 dark:group-hover:bg-blue-500":
+                      activeResizer !== "left",
+                  })}
+                />
               </div>
             )}
 
-            <div className={cn("h-full w-full", { hidden: isLeftCollapsed })}>
-              {sourcesTabContent}
-            </div>
-          </div>
-
-          {/* Left Resizer */}
-          {!isLeftCollapsed && (
-            <div
-              className="group z-5 flex w-2 cursor-col-resize items-center justify-center"
-              onMouseDown={handleMouseDownLeft}
-              onDoubleClick={handleDoubleClickLeft}
-              title="Double click to toggle"
-            >
-              <div
-                className={cn("w-px h-1/12 rounded-xs transition-all duration-150", {
-                  "bg-blue-500 dark:bg-blue-400": activeResizer === "left",
-                  "bg-gray-300/60 dark:bg-gray-600 group-hover:bg-blue-400 dark:group-hover:bg-blue-500":
-                    activeResizer !== "left",
-                })}
+            <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+              <ChatCard
+                notebookId={notebookId}
+                sources={notebook?.sources || []}
+                selectedSourceIds={selectedSourceIds}
+                onSourceSelect={handleSourceSelectFromChat}
+                externalQuestion={chatQuestion}
+                onExternalQuestionHandled={() => setChatQuestion(null)}
               />
             </div>
-          )}
 
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-            <ChatCard
-              notebookId={notebookId}
-              sources={notebook?.sources || []}
-              selectedSourceIds={selectedSourceIds}
-              onSourceSelect={handleSourceSelectFromChat}
-              externalQuestion={chatQuestion}
-              onExternalQuestionHandled={() => setChatQuestion(null)}
-            />
-          </div>
-
-          {/* Right Resizer */}
-          {!isRightCollapsed && (
-            <div
-              className="group z-5 flex w-2 cursor-col-resize items-center justify-center"
-              onMouseDown={handleMouseDownRight}
-              onDoubleClick={handleDoubleClickRight}
-              title="Double click to toggle"
-            >
+            {/* Right Resizer */}
+            {!isRightCollapsed && (
               <div
-                className={cn("w-px h-1/12 rounded-xs transition-all duration-150", {
-                  "bg-blue-500 dark:bg-blue-400": activeResizer === "right",
-                  "bg-gray-300/60 dark:bg-gray-600 group-hover:bg-blue-400 dark:group-hover:bg-blue-500":
-                    activeResizer !== "right",
-                })}
-              />
-            </div>
-          )}
-
-          <div
-            className={cn(
-              "min-h-0 flex flex-col overflow-hidden transition-[width,background-color,border-color] duration-200 ease-out shrink-0",
-              {
-                "z-30": isNoteExpanded,
-              },
-            )}
-            style={{ width: isRightCollapsed ? "48px" : `${rightPanelWidth ?? 25}%` }}
-          >
-            {isRightCollapsed && (
-              <div className="flex h-full w-full flex-col items-center py-3">
-                <Tooltip text="Expand Notes & Tools" position="left">
-                  <IconButton
-                    icon={<ExpandIcon />}
-                    onClick={expandRight}
-                    variant="secondary"
-                    size="sm"
-                    aria-label="Expand Notes & Tools"
-                  />
-                </Tooltip>
-                <div className="mt-4 flex-1 text-xs font-medium tracking-widest text-gray-400 uppercase select-none [writing-mode:vertical-rl]">
-                  Notes & Tools
-                </div>
+                className="group z-5 flex w-2 cursor-col-resize items-center justify-center"
+                onMouseDown={handleMouseDownRight}
+                onDoubleClick={handleDoubleClickRight}
+                title="Double click to toggle"
+              >
+                <div
+                  className={cn("w-px h-1/12 rounded-xs transition-all duration-150", {
+                    "bg-blue-500 dark:bg-blue-400": activeResizer === "right",
+                    "bg-gray-300/60 dark:bg-gray-600 group-hover:bg-blue-400 dark:group-hover:bg-blue-500":
+                      activeResizer !== "right",
+                  })}
+                />
               </div>
             )}
 
-            <div className={cn("h-full w-full", { hidden: isRightCollapsed })}>
-              <Tabs
-                className="h-full"
-                onToggleCollapse={() => setIsRightCollapsed(true)}
-                items={[
-                  {
-                    id: "notes",
-                    label: "Notes",
-                    content: notesTabContent,
-                  },
-                  {
-                    id: "tools",
-                    label: "Tools",
-                    content: (
-                      <ToolsCard
-                        notebookId={notebookId}
-                        onNodeSelect={handleNodeSelect}
-                        hasSources={(notebook?.sources?.length ?? 0) > 0}
-                      />
-                    ),
-                  },
-                ]}
-                defaultActiveTab="notes"
-              />
+            <div
+              className={cn(
+                "min-h-0 flex flex-col overflow-hidden transition-[width,background-color,border-color] duration-200 ease-out shrink-0",
+                {
+                  "z-30": isNoteExpanded,
+                },
+              )}
+              style={{ width: isRightCollapsed ? "48px" : `${rightPanelWidth ?? 25}%` }}
+            >
+              {isRightCollapsed && (
+                <div className="flex h-full w-full flex-col items-center py-3">
+                  <Tooltip text="Expand Notes & Tools" position="left">
+                    <IconButton
+                      icon={<ExpandIcon />}
+                      onClick={expandRight}
+                      variant="secondary"
+                      size="sm"
+                      aria-label="Expand Notes & Tools"
+                    />
+                  </Tooltip>
+                  <div className="mt-4 flex-1 text-xs font-medium tracking-widest text-gray-400 uppercase select-none [writing-mode:vertical-rl]">
+                    Notes & Tools
+                  </div>
+                </div>
+              )}
+
+              <div className={cn("h-full w-full", { hidden: isRightCollapsed })}>
+                <Tabs
+                  className="h-full"
+                  onToggleCollapse={() => setIsRightCollapsed(true)}
+                  items={[
+                    {
+                      id: "notes",
+                      label: "Notes",
+                      content: notesTabContent,
+                    },
+                    {
+                      id: "tools",
+                      label: "Tools",
+                      content: (
+                        <ToolsCard
+                          notebookId={notebookId}
+                          onNodeSelect={handleNodeSelect}
+                          hasSources={(notebook?.sources?.length ?? 0) > 0}
+                        />
+                      ),
+                    },
+                  ]}
+                  defaultActiveTab="notes"
+                />
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
       </div>
 
       <RenameNotebookModal
