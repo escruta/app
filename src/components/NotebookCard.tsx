@@ -7,6 +7,7 @@ import {
   IconButton,
   Spinner,
   TextField,
+  Tooltip,
   MenuTrigger,
   MenuContent,
   MenuItem,
@@ -148,12 +149,14 @@ export function NotebookCard({ notebook, viewMode = "grid", onChange }: Notebook
     >
       <Menu>
         <MenuTrigger>
-          <IconButton
-            icon={<DotsVerticalIcon />}
-            size="sm"
-            ariaLabel="More options"
-            variant="ghost"
-          />
+          <Tooltip text="More options" position="top">
+            <IconButton
+              icon={<DotsVerticalIcon />}
+              size="sm"
+              ariaLabel="More options"
+              variant="ghost"
+            />
+          </Tooltip>
         </MenuTrigger>
         <MenuContent>
           <MenuItem icon={<EditIcon />} label="Rename" onClick={() => setIsRenameModalOpen(true)} />

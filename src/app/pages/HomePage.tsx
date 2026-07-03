@@ -12,6 +12,7 @@ import {
   Modal,
   Spinner,
   TextField,
+  Tooltip,
 } from "@/components/ui";
 import { NotebookCard, NoteCard, SEOMetadata, TopBar } from "@/components";
 import { GaussianBlurGradientBackground } from "@/components/backgrounds/GaussianBlurGradientBackground";
@@ -359,12 +360,14 @@ export default function HomePage() {
     return (
       <Menu>
         <MenuTrigger>
-          <IconButton
-            icon={<DotsVerticalIcon className="size-4" />}
-            variant="ghost"
-            size="sm"
-            ariaLabel={ariaLabel}
-          />
+          <Tooltip text="Options" position="top">
+            <IconButton
+              icon={<DotsVerticalIcon className="size-4" />}
+              variant="ghost"
+              size="sm"
+              ariaLabel={ariaLabel}
+            />
+          </Tooltip>
         </MenuTrigger>
         <MenuContent align="right" className="min-w-[12rem]">
           <div className="flex flex-col gap-0.5 p-0.5">
@@ -464,13 +467,15 @@ export default function HomePage() {
                 Notebooks
               </span>
               <div className="flex items-center gap-1">
-                <IconButton
-                  icon={<SearchIcon className="size-4" />}
-                  variant="ghost"
-                  size="sm"
-                  ariaLabel="Search notebooks"
-                  onClick={() => navigate("/notebooks")}
-                />
+                <Tooltip text="Search notebooks" position="top">
+                  <IconButton
+                    icon={<SearchIcon className="size-4" />}
+                    variant="ghost"
+                    size="sm"
+                    ariaLabel="Search notebooks"
+                    onClick={() => navigate("/notebooks")}
+                  />
+                </Tooltip>
                 {notebooks &&
                   notebooks.length > 0 &&
                   renderOptionsMenu(
@@ -480,12 +485,14 @@ export default function HomePage() {
                     setNotebookSort,
                     "Notebook options",
                   )}
-                <IconButton
-                  icon={<AddIcon className="size-4" />}
-                  size="sm"
-                  ariaLabel="Create notebook"
-                  onClick={() => setIsCreateNotebookOpen(true)}
-                />
+                <Tooltip text="Create notebook" position="top">
+                  <IconButton
+                    icon={<AddIcon className="size-4" />}
+                    size="sm"
+                    ariaLabel="Create notebook"
+                    onClick={() => setIsCreateNotebookOpen(true)}
+                  />
+                </Tooltip>
               </div>
             </h3>
 
@@ -565,13 +572,15 @@ export default function HomePage() {
                 Notes
               </span>
               <div className="flex items-center gap-1">
-                <IconButton
-                  icon={<SearchIcon className="size-4" />}
-                  variant="ghost"
-                  size="sm"
-                  ariaLabel="Search notes"
-                  onClick={() => navigate("/notes")}
-                />
+                <Tooltip text="Search notes" position="top">
+                  <IconButton
+                    icon={<SearchIcon className="size-4" />}
+                    variant="ghost"
+                    size="sm"
+                    ariaLabel="Search notes"
+                    onClick={() => navigate("/notes")}
+                  />
+                </Tooltip>
                 {hasNoteContent &&
                   renderOptionsMenu(
                     noteViewMode,
@@ -580,22 +589,26 @@ export default function HomePage() {
                     setNoteSort,
                     "Note options",
                   )}
-                <IconButton
-                  icon={<FolderAddIcon className="size-4" />}
-                  variant="ghost"
-                  size="sm"
-                  ariaLabel="New folder"
-                  onClick={handleCreateFolder}
-                />
-                <IconButton
-                  icon={
-                    addingNote ? <Spinner className="size-4" /> : <AddIcon className="size-4" />
-                  }
-                  size="sm"
-                  ariaLabel="New note"
-                  onClick={() => createNote()}
-                  disabled={addingNote}
-                />
+                <Tooltip text="New folder" position="top">
+                  <IconButton
+                    icon={<FolderAddIcon className="size-4" />}
+                    variant="ghost"
+                    size="sm"
+                    ariaLabel="New folder"
+                    onClick={handleCreateFolder}
+                  />
+                </Tooltip>
+                <Tooltip text="New note" position="top">
+                  <IconButton
+                    icon={
+                      addingNote ? <Spinner className="size-4" /> : <AddIcon className="size-4" />
+                    }
+                    size="sm"
+                    ariaLabel="New note"
+                    onClick={() => createNote()}
+                    disabled={addingNote}
+                  />
+                </Tooltip>
               </div>
             </h3>
 
@@ -668,12 +681,14 @@ export default function HomePage() {
                               >
                                 <Menu>
                                   <MenuTrigger>
-                                    <IconButton
-                                      variant="ghost"
-                                      icon={<DotsVerticalIcon className="size-3" />}
-                                      size="xs"
-                                      ariaLabel="Folder options"
-                                    />
+                                    <Tooltip text="Folder options" position="top">
+                                      <IconButton
+                                        variant="ghost"
+                                        icon={<DotsVerticalIcon className="size-3" />}
+                                        size="xs"
+                                        ariaLabel="Folder options"
+                                      />
+                                    </Tooltip>
                                   </MenuTrigger>
                                   <MenuContent align="right">
                                     <MenuItem

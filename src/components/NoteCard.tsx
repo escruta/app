@@ -176,12 +176,14 @@ export function NoteCard({
     >
       <Menu>
         <MenuTrigger>
-          <IconButton
-            icon={<DotsVerticalIcon />}
-            size="sm"
-            ariaLabel="More options"
-            variant="ghost"
-          />
+          <Tooltip text="More options" position="top">
+            <IconButton
+              icon={<DotsVerticalIcon />}
+              size="sm"
+              ariaLabel="More options"
+              variant="ghost"
+            />
+          </Tooltip>
         </MenuTrigger>
         <MenuContent>
           <MenuItem
