@@ -1,10 +1,13 @@
-import type { Notebook } from "@/interfaces";
+import type { Folder, Notebook } from "@/interfaces";
 import {
   Alert,
   Button,
+  Chip,
   Menu,
+  MenuLabel,
   Modal,
   IconButton,
+  SelectList,
   Spinner,
   TextField,
   Tooltip,
@@ -12,7 +15,13 @@ import {
   MenuContent,
   MenuItem,
 } from "@/components/ui";
-import { NotebookIcon, DotsVerticalIcon, EditIcon, DeleteIcon } from "@/components/icons";
+import {
+  NotebookIcon,
+  DotsVerticalIcon,
+  EditIcon,
+  DeleteIcon,
+  FolderIcon,
+} from "@/components/icons";
 import { useState } from "react";
 import { useFetch } from "@/hooks";
 import { useNavigate } from "react-router";
@@ -22,15 +31,27 @@ import { RenameNotebookModal } from "@/app/pages/notebook/RenameNotebookModal";
 interface NotebookCardProps {
   notebook: Notebook;
   viewMode?: "grid" | "list";
+  folders?: Folder[];
+  folderTitle?: string;
   onChange?: () => void;
 }
 
-export function NotebookCard({ notebook, viewMode = "grid", onChange }: NotebookCardProps) {
+export function NotebookCard({
+  notebook,
+  viewMode = "grid",
+  folders,
+  folderTitle,
+  onChange,
+}: NotebookCardProps) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState<string>("");
   const [isDeleted, setIsDeleted] = useState<boolean>(false);
   const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
   const [newTitle, setNewTitle] = useState<string>(notebook.title);
+  const [isMoveModalOpen, setIsMoveModalOpen] = useState<boolean>(false);
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(
+    notebook.folderId ?? null,
+  );
   const navigate = useNavigate();
 
   const {
@@ -84,6 +105,37 @@ export function NotebookCard({ notebook, viewMode = "grid", onChange }: Notebook
     } catch (error) {
       console.error("Error renaming notebook:", error);
     }
+  }
+
+  const { loading: movingNotebook, refetch: moveNotebook } = useFetch<Notebook>(
+    "/notebooks",
+    {
+      method: "PUT",
+      data: {
+        id: notebook.id,
+        folderId: selectedFolderId,
+        removeFolder: selectedFolderId === null,
+      },
+      onSuccess: () => {
+        useFetch.clearCache("/notebooks");
+        setIsMoveModalOpen(false);
+        onChange?.();
+      },
+    },
+    false,
+  );
+
+  function handleOpenMoveModal() {
+    setSelectedFolderId(notebook.folderId ?? null);
+    setIsMoveModalOpen(true);
+  }
+
+  async function handleMoveNotebook() {
+    if ((notebook.folderId ?? null) === selectedFolderId) {
+      setIsMoveModalOpen(false);
+      return;
+    }
+    await moveNotebook();
   }
 
   async function handleDeleteNotebook() {
@@ -148,17 +200,22 @@ export function NotebookCard({ notebook, viewMode = "grid", onChange }: Notebook
       onKeyDown={(e) => e.key === "Enter" && handleMenuClick(e as unknown as React.MouseEvent)}
     >
       <Menu>
-        <MenuTrigger>
-          <Tooltip text="More options" position="top">
+        <Tooltip text="More options" position="top">
+          <MenuTrigger>
             <IconButton
               icon={<DotsVerticalIcon />}
               size="sm"
               ariaLabel="More options"
               variant="ghost"
             />
-          </Tooltip>
-        </MenuTrigger>
+          </MenuTrigger>
+        </Tooltip>
         <MenuContent>
+          <MenuItem
+            icon={<FolderIcon className="size-4" />}
+            label="Move to folder"
+            onClick={handleOpenMoveModal}
+          />
           <MenuItem icon={<EditIcon />} label="Rename" onClick={() => setIsRenameModalOpen(true)} />
           <MenuItem
             icon={<DeleteIcon />}
@@ -191,7 +248,23 @@ export function NotebookCard({ notebook, viewMode = "grid", onChange }: Notebook
                   <NotebookIcon />
                 </div>
               </div>
-              {renderMenu()}
+              <div className="flex items-center gap-2">
+                {notebook.folderId && folderTitle && (
+                  <div
+                    onPointerDown={(e) => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Tooltip text={folderTitle} position="top">
+                      <Chip
+                        size="sm"
+                        icon={<FolderIcon className="size-2.5" />}
+                        className="border-none bg-gray-50/40 opacity-40 transition-opacity hover:opacity-100 dark:bg-gray-800/40"
+                      />
+                    </Tooltip>
+                  </div>
+                )}
+                {renderMenu()}
+              </div>
             </div>
 
             <div>
@@ -281,6 +354,47 @@ export function NotebookCard({ notebook, viewMode = "grid", onChange }: Notebook
           />
 
           {deleteError && <Alert variant="danger" title={deleteError.message} />}
+        </div>
+      </Modal>
+
+      {/* Move to Folder Modal */}
+      <Modal
+        isOpen={isMoveModalOpen}
+        onClose={() => setIsMoveModalOpen(false)}
+        title={`Move "${notebook.title}"`}
+        actions={
+          <>
+            <Button variant="secondary" onClick={() => setIsMoveModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleMoveNotebook}
+              disabled={movingNotebook}
+              icon={movingNotebook ? <Spinner className="size-4" /> : undefined}
+            >
+              {movingNotebook ? "Moving" : "Move"}
+            </Button>
+          </>
+        }
+      >
+        <div className="flex flex-col gap-2">
+          <MenuLabel>Move to folder</MenuLabel>
+          <SelectList
+            options={(folders ?? []).map((folder) => ({
+              id: folder.id,
+              label: folder.title,
+              icon: <FolderIcon />,
+            }))}
+            selectedId={selectedFolderId}
+            onSelect={setSelectedFolderId}
+            emptyText="No folders yet"
+          />
+          {selectedFolderId === null && (notebook.folderId ?? null) !== null && (
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              This will remove the notebook from its current folder.
+            </p>
+          )}
         </div>
       </Modal>
     </>

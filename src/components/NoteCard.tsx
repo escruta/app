@@ -175,16 +175,16 @@ export function NoteCard({
       onKeyDown={(e) => e.key === "Enter" && handleMenuClick(e as unknown as React.MouseEvent)}
     >
       <Menu>
-        <MenuTrigger>
-          <Tooltip text="More options" position="top">
+        <Tooltip text="More options" position="top">
+          <MenuTrigger>
             <IconButton
               icon={<DotsVerticalIcon />}
               size="sm"
               ariaLabel="More options"
               variant="ghost"
             />
-          </Tooltip>
-        </MenuTrigger>
+          </MenuTrigger>
+        </Tooltip>
         <MenuContent>
           <MenuItem
             icon={<FolderIcon className="size-4" />}

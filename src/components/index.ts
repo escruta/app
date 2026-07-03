@@ -1,6 +1,7 @@
 export * from "./AppIcon.tsx";
 export * from "./ChatCard.tsx";
 export * from "./CommonBar.tsx";
+export * from "./FolderGroup.tsx";
 export * from "./HomeActionCard.tsx";
 export * from "./HomeChipProduct.tsx";
 export * from "./Logotype.tsx";

@@ -14,16 +14,13 @@ import {
   TextField,
   Tooltip,
 } from "@/components/ui";
-import { NotebookCard, NoteCard, SEOMetadata, TopBar } from "@/components";
+import { NotebookCard, NoteCard, SEOMetadata, TopBar, FolderGroup } from "@/components";
 import { GaussianBlurGradientBackground } from "@/components/backgrounds/GaussianBlurGradientBackground";
 import { getRouteMetadata } from "@/lib/seo";
 import {
   AddIcon,
   CheckIcon,
-  ChevronIcon,
-  DeleteIcon,
   DotsVerticalIcon,
-  EditIcon,
   FireIcon,
   FolderAddIcon,
   FolderIcon,
@@ -31,7 +28,7 @@ import {
   NoteIcon,
   SearchIcon,
 } from "@/components/icons";
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import type { Folder, Note, Notebook } from "@/interfaces";
 
@@ -296,6 +293,7 @@ export default function HomePage() {
         useFetch.clearCache();
         refetchFolders(true, false);
         refetchNotes(true, false);
+        refetchNotebooks(true, false);
         setFolderToDelete(null);
       },
     },
@@ -305,26 +303,41 @@ export default function HomePage() {
   const notebookViewMode = notebookView || "grid";
   const noteViewMode = noteView || "grid";
 
-  const sortedNotebooks = getSortedItems(notebooks || [], notebookSort || SortOptions.Newest);
+  const folderItems = (folders ?? []).map((folder) => {
+    const folderNotebooks = (notebooks ?? []).filter((nb) => nb.folderId === folder.id);
+    const folderNotes = (notes ?? []).filter((n) => n.folderId === folder.id);
+    return {
+      folder,
+      notebooks: folderNotebooks,
+      notes: folderNotes,
+      total: folderNotebooks.length + folderNotes.length,
+    };
+  });
 
-  const noteGroups = [
-    ...(folders?.map((folder) => ({
-      id: folder.id as string,
-      title: folder.title,
-      notes: getSortedItems(
-        (notes || []).filter((n) => n.folderId === folder.id),
-        noteSort || SortOptions.Newest,
-      ),
-    })) || []),
-    {
-      id: null as string | null,
-      title: "",
-      notes: getSortedItems(
-        (notes || []).filter((n) => !n.folderId),
-        noteSort || SortOptions.Newest,
-      ),
-    },
-  ].filter((group) => group.id !== null || group.notes.length > 0);
+  type FolderEntry = {
+    folder: Folder;
+    count: number;
+    items: (
+      | { kind: "notebook"; id: string; createdAt: Date | string; item: Notebook }
+      | { kind: "note"; id: string; createdAt: Date | string; item: Note }
+    )[];
+  };
+  const folderEntries: FolderEntry[] = folderItems.map(({ folder, notebooks: nb, notes: nn }) => {
+    const items: FolderEntry["items"] = [
+      ...nb.map((n) => ({ kind: "notebook" as const, id: n.id, createdAt: n.createdAt, item: n })),
+      ...nn.map((n) => ({ kind: "note" as const, id: n.id, createdAt: n.createdAt, item: n })),
+    ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return { folder, count: items.length, items };
+  });
+
+  const unfiledNotebooks = (notebooks ?? []).filter((nb) => !nb.folderId);
+  const unfiledNotes = (notes ?? []).filter((n) => !n.folderId);
+
+  const sortedUnfiledNotebooks = getSortedItems(
+    unfiledNotebooks,
+    notebookSort || SortOptions.Newest,
+  );
+  const sortedUnfiledNotes = getSortedItems(unfiledNotes, noteSort || SortOptions.Newest);
 
   const handleSaveFolder = () => {
     if (editingFolderId) {
@@ -346,7 +359,15 @@ export default function HomePage() {
     setIsFolderModalOpen(true);
   };
 
-  const hasNoteContent = !!notes?.length || !!folders?.length;
+  const handleCloseFolderModal = () => {
+    setIsFolderModalOpen(false);
+    setEditingFolderId(null);
+    setFolderTitle("");
+  };
+
+  const hasNoteContent = !!unfiledNotes.length;
+  const hasNotebookContent = !!unfiledNotebooks.length;
+  const hasFolders = !!folders?.length;
 
   const renderOptionsMenu = (
     viewMode: ViewMode | undefined,
@@ -359,17 +380,17 @@ export default function HomePage() {
     const currentView = viewMode || "grid";
     return (
       <Menu>
-        <MenuTrigger>
-          <Tooltip text="Options" position="top">
+        <Tooltip text="Options" position="top">
+          <MenuTrigger>
             <IconButton
               icon={<DotsVerticalIcon className="size-4" />}
               variant="ghost"
               size="sm"
               ariaLabel={ariaLabel}
             />
-          </Tooltip>
-        </MenuTrigger>
-        <MenuContent align="right" className="min-w-[12rem]">
+          </MenuTrigger>
+        </Tooltip>
+        <MenuContent align="right" className="min-w-48">
           <div className="flex flex-col gap-0.5 p-0.5">
             <MenuLabel>View Mode</MenuLabel>
             <MenuItem
@@ -438,15 +459,14 @@ export default function HomePage() {
         twitterCard={metadata?.twitterCard}
       />
       <TopBar />
-      <div className="relative flex-1 overflow-auto p-4 md:p-8">
+      <div className="relative overflow-auto p-4 md:p-8">
         <GaussianBlurGradientBackground />
 
-        <div className="relative z-10 mx-auto max-w-5xl pt-8 md:pt-12">
+        <div className="relative z-10 mx-auto flex max-w-5xl flex-col gap-6 px-6 pt-8 md:pt-12">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="mb-8"
           >
             <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
               {greeting}, {currentUser?.name?.split(" ")[0] || "User"}
@@ -454,12 +474,91 @@ export default function HomePage() {
             <p className="text-gray-600 dark:text-gray-400">{subtitle}</p>
           </motion.div>
 
+          {/* Folders section */}
+          <motion.section
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+          >
+            <h3 className="mb-3 flex items-center justify-between gap-2 text-base font-semibold tracking-tight text-gray-900 dark:text-gray-100">
+              <span className="flex items-center gap-1.5">
+                <FolderIcon className="size-3.5 text-blue-500 dark:text-blue-400" />
+                Folders
+              </span>
+              <div className="flex items-center gap-1">
+                <Tooltip text="New folder" position="top">
+                  <IconButton
+                    icon={<FolderAddIcon className="size-4" />}
+                    variant="primary"
+                    size="sm"
+                    ariaLabel="New folder"
+                    onClick={handleCreateFolder}
+                  />
+                </Tooltip>
+              </div>
+            </h3>
+
+            {hasFolders ? (
+              <div className="flex flex-col gap-2">
+                {folderEntries.map(({ folder, count, items }) => (
+                  <FolderGroup
+                    key={folder.id}
+                    folder={folder}
+                    itemCount={count}
+                    isCollapsed={collapsedFolders.has(folder.id)}
+                    onToggleCollapse={() => toggleFolderCollapse(folder.id)}
+                    onEditFolder={() => handleEditFolder(folder)}
+                    onDeleteFolder={() => setFolderToDelete(folder)}
+                  >
+                    {count > 0 ? (
+                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4">
+                        {items.map(({ kind, id, item }) =>
+                          kind === "notebook" ? (
+                            <NotebookCard
+                              key={id}
+                              notebook={item}
+                              viewMode="grid"
+                              folders={folders ?? undefined}
+                              folderTitle={folder.title}
+                              onChange={() => refetchNotebooks(true, false)}
+                            />
+                          ) : (
+                            <NoteCard
+                              key={id}
+                              note={item}
+                              viewMode="grid"
+                              notebookTitle={
+                                notebooks?.find((nb) => nb.id === item.notebookId)?.title
+                              }
+                              folders={folders ?? undefined}
+                              onChange={() => refetchNotes(true, false)}
+                            />
+                          ),
+                        )}
+                      </div>
+                    ) : (
+                      <p className="px-4 py-2 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                        This folder is empty.
+                      </p>
+                    )}
+                  </FolderGroup>
+                ))}
+              </div>
+            ) : (
+              <div className="flex w-full flex-col items-center justify-center gap-1 rounded-xs border-2 border-dashed border-blue-400/60 bg-gray-50/60 px-6 py-8 text-center dark:border-blue-600/60 dark:bg-gray-900/30">
+                <h3 className="text-foreground text-lg font-semibold">No folders yet</h3>
+                <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                  Create a folder to group your notebooks and notes together.
+                </p>
+              </div>
+            )}
+          </motion.section>
+
           {/* Notebooks section */}
           <motion.section
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1 }}
-            className="mb-12"
           >
             <h3 className="mb-3 flex items-center justify-between gap-2 text-base font-semibold tracking-tight text-gray-900 dark:text-gray-100">
               <span className="flex items-center gap-1.5">
@@ -467,17 +566,18 @@ export default function HomePage() {
                 Notebooks
               </span>
               <div className="flex items-center gap-1">
-                <Tooltip text="Search notebooks" position="top">
-                  <IconButton
-                    icon={<SearchIcon className="size-4" />}
-                    variant="ghost"
-                    size="sm"
-                    ariaLabel="Search notebooks"
-                    onClick={() => navigate("/notebooks")}
-                  />
-                </Tooltip>
-                {notebooks &&
-                  notebooks.length > 0 &&
+                {hasNotebookContent && (
+                  <Tooltip text="Search notebooks" position="top">
+                    <IconButton
+                      icon={<SearchIcon className="size-4" />}
+                      variant="ghost"
+                      size="sm"
+                      ariaLabel="Search notebooks"
+                      onClick={() => navigate("/notebooks")}
+                    />
+                  </Tooltip>
+                )}
+                {hasNotebookContent &&
                   renderOptionsMenu(
                     notebookViewMode,
                     setNotebookView,
@@ -526,33 +626,37 @@ export default function HomePage() {
             ) : (
               <>
                 {notebooks && notebooks.length > 0 ? (
-                  <div
-                    className={
-                      notebookViewMode === "grid"
-                        ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
-                        : "flex flex-col gap-3"
-                    }
-                  >
-                    {sortedNotebooks.map((notebook) => (
-                      <NotebookCard
-                        key={notebook.id}
-                        notebook={notebook}
-                        viewMode={notebookViewMode}
-                        onChange={() => refetchNotebooks(true, false)}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
-                    <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
-                      <div className="size-10 text-blue-500 dark:text-blue-400">
-                        <NotebookIcon />
-                      </div>
+                  sortedUnfiledNotebooks.length > 0 ? (
+                    <div
+                      className={
+                        notebookViewMode === "grid"
+                          ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
+                          : "flex flex-col gap-3"
+                      }
+                    >
+                      {sortedUnfiledNotebooks.map((notebook) => (
+                        <NotebookCard
+                          key={notebook.id}
+                          notebook={notebook}
+                          viewMode={notebookViewMode}
+                          folders={folders ?? undefined}
+                          onChange={() => refetchNotebooks(true, false)}
+                        />
+                      ))}
                     </div>
-                    <h4 className="text-foreground mb-3 text-xl font-semibold">No notebooks yet</h4>
-                    <p className="mb-6 max-w-md text-base leading-relaxed text-gray-500 dark:text-gray-400">
-                      Create your first notebook to start organizing your sources, notes, and
-                      AI-powered insights.
+                  ) : (
+                    <div className="flex w-full flex-col items-center justify-center gap-1 rounded-xs border-2 border-dashed border-gray-400/30 bg-gray-50/60 px-6 py-8 text-center dark:border-gray-600/30 dark:bg-gray-900/30">
+                      <h3 className="text-foreground text-md font-semibold">
+                        All your notebooks are inside folders.
+                      </h3>
+                    </div>
+                  )
+                ) : (
+                  <div className="flex w-full flex-col items-center justify-center gap-1 rounded-xs border-2 border-dashed border-blue-400/60 bg-gray-50/60 px-6 py-8 text-center dark:border-blue-600/60 dark:bg-gray-900/30">
+                    <h3 className="text-foreground text-lg font-semibold">No notebooks yet</h3>
+                    <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                      Create your first notebook to start organizing your sources and AI-powered
+                      insights.
                     </p>
                   </div>
                 )}
@@ -572,15 +676,17 @@ export default function HomePage() {
                 Notes
               </span>
               <div className="flex items-center gap-1">
-                <Tooltip text="Search notes" position="top">
-                  <IconButton
-                    icon={<SearchIcon className="size-4" />}
-                    variant="ghost"
-                    size="sm"
-                    ariaLabel="Search notes"
-                    onClick={() => navigate("/notes")}
-                  />
-                </Tooltip>
+                {hasNoteContent && (
+                  <Tooltip text="Search notes" position="top">
+                    <IconButton
+                      icon={<SearchIcon className="size-4" />}
+                      variant="ghost"
+                      size="sm"
+                      ariaLabel="Search notes"
+                      onClick={() => navigate("/notes")}
+                    />
+                  </Tooltip>
+                )}
                 {hasNoteContent &&
                   renderOptionsMenu(
                     noteViewMode,
@@ -589,15 +695,6 @@ export default function HomePage() {
                     setNoteSort,
                     "Note options",
                   )}
-                <Tooltip text="New folder" position="top">
-                  <IconButton
-                    icon={<FolderAddIcon className="size-4" />}
-                    variant="ghost"
-                    size="sm"
-                    ariaLabel="New folder"
-                    onClick={handleCreateFolder}
-                  />
-                </Tooltip>
                 <Tooltip text="New note" position="top">
                   <IconButton
                     icon={
@@ -641,131 +738,37 @@ export default function HomePage() {
               </div>
             ) : (
               <>
-                {hasNoteContent ? (
-                  <div className="flex flex-col gap-2">
-                    {noteGroups.map((group, index) => {
-                      const folder = folders?.find((f) => f.id === group.id);
-                      const isFolderGroup = !!group.title && !!group.id;
-                      const isCollapsed = isFolderGroup && collapsedFolders.has(group.id!);
-                      const hasFolders = noteGroups.some((g) => g.id !== null);
-
-                      return (
-                        <div
-                          key={group.id || index}
-                          className={cn("flex flex-col rounded-xs transition-colors duration-200", {
-                            "border border-gray-200 dark:border-gray-800": isFolderGroup,
-                            "bg-gray-50/40 dark:bg-gray-900/30": isFolderGroup,
-                          })}
-                        >
-                          {isFolderGroup ? (
-                            <button
-                              type="button"
-                              onClick={() => toggleFolderCollapse(group.id!)}
-                              className="flex w-full items-center gap-2 rounded-xs px-2.5 py-2 text-left transition-colors duration-200 hover:bg-gray-100/60 dark:hover:bg-gray-800/40"
-                              aria-expanded={!isCollapsed}
-                            >
-                              <ChevronIcon
-                                direction={isCollapsed ? "right" : "down"}
-                                className="size-3.5 text-gray-400 transition-transform duration-200 dark:text-gray-500"
-                              />
-                              <FolderIcon className="size-3.5 text-blue-500 dark:text-blue-400" />
-                              <h4 className="flex-1 text-sm font-semibold tracking-tight text-gray-900 dark:text-gray-100">
-                                {group.title}
-                              </h4>
-                              <span className="text-xs font-normal text-gray-400 dark:text-gray-500">
-                                {group.notes.length}
-                              </span>
-                              <span
-                                onClick={(e) => e.stopPropagation()}
-                                className="flex items-center"
-                              >
-                                <Menu>
-                                  <MenuTrigger>
-                                    <Tooltip text="Folder options" position="top">
-                                      <IconButton
-                                        variant="ghost"
-                                        icon={<DotsVerticalIcon className="size-3" />}
-                                        size="xs"
-                                        ariaLabel="Folder options"
-                                      />
-                                    </Tooltip>
-                                  </MenuTrigger>
-                                  <MenuContent align="right">
-                                    <MenuItem
-                                      icon={<EditIcon className="size-4" />}
-                                      label="Edit folder"
-                                      onClick={() => folder && handleEditFolder(folder)}
-                                    />
-                                    <MenuItem
-                                      icon={<DeleteIcon className="size-4" />}
-                                      label="Delete folder"
-                                      variant="danger"
-                                      onClick={() => folder && setFolderToDelete(folder)}
-                                    />
-                                  </MenuContent>
-                                </Menu>
-                              </span>
-                            </button>
-                          ) : (
-                            hasFolders && (
-                              <div className="flex items-center gap-2 px-2.5 py-2">
-                                <h4 className="text-sm font-semibold tracking-tight text-gray-400 dark:text-gray-500">
-                                  Unfiled notes
-                                </h4>
-                                <span className="text-xs font-normal text-gray-400 dark:text-gray-500">
-                                  {group.notes.length}
-                                </span>
-                              </div>
-                            )
-                          )}
-
-                          <AnimatePresence initial={false}>
-                            {!isCollapsed && (
-                              <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: "auto", opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                transition={{ duration: 0.2, ease: "easeOut" }}
-                                className="overflow-hidden"
-                              >
-                                <div className={cn("p-2.5 pt-1", isFolderGroup && "px-2.5 pb-2.5")}>
-                                  <div
-                                    className={
-                                      noteViewMode === "grid"
-                                        ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
-                                        : "flex flex-col gap-3"
-                                    }
-                                  >
-                                    {group.notes.map((note) => (
-                                      <NoteCard
-                                        key={note.id}
-                                        note={note}
-                                        viewMode={noteViewMode}
-                                        notebookTitle={
-                                          notebooks?.find((nb) => nb.id === note.notebookId)?.title
-                                        }
-                                        folders={folders ?? undefined}
-                                        onChange={() => refetchNotes(true, false)}
-                                      />
-                                    ))}
-                                  </div>
-                                </div>
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
-                    <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
-                      <div className="size-10 text-blue-500 dark:text-blue-400">
-                        <NoteIcon />
-                      </div>
+                {notes && notes.length > 0 ? (
+                  sortedUnfiledNotes.length > 0 ? (
+                    <div
+                      className={
+                        noteViewMode === "grid"
+                          ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
+                          : "flex flex-col gap-3"
+                      }
+                    >
+                      {sortedUnfiledNotes.map((note) => (
+                        <NoteCard
+                          key={note.id}
+                          note={note}
+                          viewMode={noteViewMode}
+                          notebookTitle={notebooks?.find((nb) => nb.id === note.notebookId)?.title}
+                          folders={folders ?? undefined}
+                          onChange={() => refetchNotes(true, false)}
+                        />
+                      ))}
                     </div>
-                    <h4 className="text-foreground mb-3 text-xl font-semibold">No notes yet</h4>
-                    <p className="mb-6 max-w-md text-base leading-relaxed text-gray-500 dark:text-gray-400">
+                  ) : (
+                    <div className="flex w-full flex-col items-center justify-center gap-1 rounded-xs border-2 border-dashed border-gray-400/30 bg-gray-50/60 px-6 py-8 text-center dark:border-gray-600/30 dark:bg-gray-900/30">
+                      <h3 className="text-foreground text-md font-semibold">
+                        All your notes are inside folders.
+                      </h3>
+                    </div>
+                  )
+                ) : (
+                  <div className="flex w-full flex-col items-center justify-center gap-1 rounded-xs border-2 border-dashed border-blue-400/60 bg-gray-50/60 px-6 py-8 text-center dark:border-blue-600/60 dark:bg-gray-900/30">
+                    <h3 className="text-foreground text-lg font-semibold">No notes yet</h3>
+                    <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
                       Create your first note to start capturing your ideas and insights.
                     </p>
                   </div>
@@ -825,11 +828,11 @@ export default function HomePage() {
         {/* Folder Modal */}
         <Modal
           isOpen={isFolderModalOpen}
-          onClose={() => setIsFolderModalOpen(false)}
-          title={editingFolderId ? "Edit folder" : "New folder"}
+          onClose={handleCloseFolderModal}
+          title={editingFolderId ? "Rename folder" : "New folder"}
           actions={
             <>
-              <Button variant="secondary" onClick={() => setIsFolderModalOpen(false)}>
+              <Button variant="secondary" onClick={handleCloseFolderModal}>
                 Cancel
               </Button>
               <Button
@@ -843,7 +846,7 @@ export default function HomePage() {
                     {editingFolderId ? "Saving..." : "Creating..."}
                   </div>
                 ) : editingFolderId ? (
-                  "Save changes"
+                  "Rename folder"
                 ) : (
                   "Create folder"
                 )}
@@ -893,7 +896,7 @@ export default function HomePage() {
           <p className="text-gray-600 dark:text-gray-300">
             Are you sure you want to delete the folder{" "}
             <span className="font-semibold">{folderToDelete?.title}</span>? This action cannot be
-            undone. Notes inside this folder will remain but will be moved out of the folder.
+            undone. Items inside this folder will remain but will be moved out of the folder.
           </p>
         </Modal>
       </div>
