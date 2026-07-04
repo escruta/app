@@ -1,4 +1,9 @@
-import { AccountSection, AppearanceSection, ViewModeSection } from "@/components/settings";
+import {
+  AccountSection,
+  AppearanceSection,
+  SortSection,
+  ViewModeSection,
+} from "@/components/settings";
 import { SEOMetadata, TopBar } from "@/components";
 
 export default function SettingsPage() {
@@ -17,6 +22,7 @@ export default function SettingsPage() {
         <div className="mx-auto max-w-5xl">
           <AppearanceSection />
           <ViewModeSection />
+          <SortSection />
           <AccountSection />
         </div>
       </div>

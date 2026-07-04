@@ -8,11 +8,13 @@ import { getRouteMetadata } from "@/lib/seo";
 import { motion } from "motion/react";
 import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
 import { TextField } from "@/components/ui";
+import { getSortedItems, type SortOption } from "@/components/settings";
 
 export default function NotebooksPage() {
   const { data } = useFetch<Notebook[]>("/notebooks");
   const [query, setQuery] = useState("");
   const [globalViewMode] = useCookie<"grid" | "list">("globalViewMode", "grid");
+  const [globalSort] = useCookie<SortOption>("globalSortPreference", "Newest");
   const viewMode = globalViewMode || "grid";
 
   const metadata = getRouteMetadata("/notebooks");
@@ -22,6 +24,8 @@ export default function NotebooksPage() {
     if (!q) return data || [];
     return (data || []).filter((notebook) => notebook.title.toLowerCase().includes(q));
   }, [data, query]);
+
+  const sorted = getSortedItems(filtered, globalSort || "Newest");
 
   return (
     <div className="flex h-screen max-h-full w-full flex-col">
@@ -48,7 +52,7 @@ export default function NotebooksPage() {
             autoFocus
           />
 
-          {filtered.length > 0 ? (
+          {sorted.length > 0 ? (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -59,7 +63,7 @@ export default function NotebooksPage() {
                   : "flex flex-col gap-3"
               }
             >
-              {filtered.map((notebook: Notebook) => (
+              {sorted.map((notebook: Notebook) => (
                 <NotebookCard key={notebook.id} notebook={notebook} viewMode={viewMode} />
               ))}
             </motion.div>

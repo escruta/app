@@ -8,12 +8,14 @@ import { getRouteMetadata } from "@/lib/seo";
 import { motion } from "motion/react";
 import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
 import { TextField } from "@/components/ui";
+import { getSortedItems, type SortOption } from "@/components/settings";
 
 export default function NotesPage() {
   const { data: notes } = useFetch<Note[]>("/notes");
   const { data: notebooks } = useFetch<Notebook[]>("/notebooks");
   const [query, setQuery] = useState("");
   const [globalViewMode] = useCookie<"grid" | "list">("globalViewMode", "grid");
+  const [globalSort] = useCookie<SortOption>("globalSortPreference", "Newest");
   const viewMode = globalViewMode || "grid";
 
   const metadata = getRouteMetadata("/notes") || { title: "Notes - Escruta" };
@@ -24,6 +26,8 @@ export default function NotesPage() {
     if (!q) return list;
     return list.filter((note) => note.title.toLowerCase().includes(q));
   }, [notes, query]);
+
+  const sorted = getSortedItems(filtered, globalSort || "Newest");
 
   return (
     <div className="flex h-screen max-h-full w-full flex-col">
@@ -44,7 +48,7 @@ export default function NotesPage() {
             autoFocus
           />
 
-          {filtered.length > 0 ? (
+          {sorted.length > 0 ? (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -55,7 +59,7 @@ export default function NotesPage() {
                   : "flex flex-col gap-3"
               }
             >
-              {filtered.map((note) => (
+              {sorted.map((note) => (
                 <NoteCard
                   key={note.id}
                   note={note}

@@ -1,26 +1,12 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth, useCookie, useFetch } from "@/hooks";
-import {
-  Button,
-  IconButton,
-  Menu,
-  MenuContent,
-  MenuItem,
-  MenuLabel,
-  MenuTrigger,
-  Modal,
-  Spinner,
-  TextField,
-  Tooltip,
-} from "@/components/ui";
+import { Button, IconButton, Modal, Spinner, TextField, Tooltip } from "@/components/ui";
 import { NotebookCard, NoteCard, SEOMetadata, TopBar, FolderGroup } from "@/components";
 import { GaussianBlurGradientBackground } from "@/components/backgrounds/GaussianBlurGradientBackground";
 import { getRouteMetadata } from "@/lib/seo";
 import {
   AddIcon,
-  CheckIcon,
-  DotsVerticalIcon,
   FireIcon,
   FolderAddIcon,
   FolderIcon,
@@ -29,17 +15,8 @@ import {
   SearchIcon,
 } from "@/components/icons";
 import { motion } from "motion/react";
-import { cn } from "@/lib/utils";
 import type { Folder, Note, Notebook } from "@/interfaces";
-
-enum SortOptions {
-  Newest = "Newest",
-  Oldest = "Oldest",
-  Alphabetical = "Alphabetical",
-  ReverseAlphabetical = "Reverse Alphabetical",
-}
-
-type ViewMode = "grid" | "list";
+import { getSortedItems, type SortOption } from "@/components/settings";
 
 const GREETINGS = [
   "Welcome",
@@ -147,29 +124,6 @@ const SUBTITLES = [
   "Pick your adventure for today.",
 ];
 
-function getSortedItems<T extends { createdAt: Date | string; title: string }>(
-  items: T[],
-  sortBy: SortOptions,
-): T[] {
-  const sorted = [...items];
-  switch (sortBy) {
-    case SortOptions.Newest:
-      return sorted.sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      );
-    case SortOptions.Oldest:
-      return sorted.sort(
-        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-      );
-    case SortOptions.Alphabetical:
-      return sorted.sort((a, b) => a.title.localeCompare(b.title));
-    case SortOptions.ReverseAlphabetical:
-      return sorted.sort((a, b) => b.title.localeCompare(a.title));
-    default:
-      return sorted;
-  }
-}
-
 export default function HomePage() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
@@ -192,12 +146,9 @@ export default function HomePage() {
   } = useFetch<Note[]>("/notes");
   const { data: folders, refetch: refetchFolders } = useFetch<Folder[]>("/folders");
 
-  const [notebookSort, setNotebookSort] = useCookie<SortOptions>(
-    "notebookSortPreference",
-    SortOptions.Newest,
-  );
+  type ViewMode = "grid" | "list";
+  const [globalSort] = useCookie<SortOption>("globalSortPreference", "Newest");
   const [globalViewMode] = useCookie<ViewMode>("globalViewMode", "grid");
-  const [noteSort, setNoteSort] = useCookie<SortOptions>("noteSortPreference", SortOptions.Newest);
 
   const [isCreateNotebookOpen, setIsCreateNotebookOpen] = useState(false);
   const [newNotebookTitle, setNewNotebookTitle] = useState("");
@@ -331,11 +282,9 @@ export default function HomePage() {
   const unfiledNotebooks = (notebooks ?? []).filter((nb) => !nb.folderId);
   const unfiledNotes = (notes ?? []).filter((n) => !n.folderId);
 
-  const sortedUnfiledNotebooks = getSortedItems(
-    unfiledNotebooks,
-    notebookSort || SortOptions.Newest,
-  );
-  const sortedUnfiledNotes = getSortedItems(unfiledNotes, noteSort || SortOptions.Newest);
+  const sortBy = globalSort || "Newest";
+  const sortedUnfiledNotebooks = getSortedItems(unfiledNotebooks, sortBy);
+  const sortedUnfiledNotes = getSortedItems(unfiledNotes, sortBy);
 
   const handleSaveFolder = () => {
     if (editingFolderId) {
@@ -366,51 +315,6 @@ export default function HomePage() {
   const hasNoteContent = !!unfiledNotes.length;
   const hasNotebookContent = !!unfiledNotebooks.length;
   const hasFolders = !!folders?.length;
-
-  const renderOptionsMenu = (
-    sortBy: SortOptions | undefined,
-    setSortBy: (sort: SortOptions) => void,
-    ariaLabel: string,
-  ) => {
-    const currentSort = sortBy || SortOptions.Newest;
-    return (
-      <Menu>
-        <Tooltip text="More options" position="top">
-          <MenuTrigger>
-            <IconButton
-              icon={<DotsVerticalIcon className="size-4" />}
-              variant="ghost"
-              size="sm"
-              ariaLabel={ariaLabel}
-            />
-          </MenuTrigger>
-        </Tooltip>
-        <MenuContent align="right" className="min-w-48">
-          <div className="flex flex-col gap-0.5 p-0.5">
-            <MenuLabel>Sort by</MenuLabel>
-            {Object.values(SortOptions).map((option) => (
-              <MenuItem
-                key={option}
-                label={option}
-                onClick={() => setSortBy(option as SortOptions)}
-                icon={
-                  currentSort === option ? (
-                    <CheckIcon className="size-4 text-blue-600 dark:text-blue-400" />
-                  ) : (
-                    <div className="size-4" />
-                  )
-                }
-                className={cn(
-                  currentSort === option &&
-                    "bg-blue-50 text-blue-700 dark:bg-gray-800 dark:text-blue-400",
-                )}
-              />
-            ))}
-          </div>
-        </MenuContent>
-      </Menu>
-    );
-  };
 
   return (
     <div className="flex h-screen max-h-full w-full flex-col">
@@ -546,8 +450,6 @@ export default function HomePage() {
                     />
                   </Tooltip>
                 )}
-                {hasNotebookContent &&
-                  renderOptionsMenu(notebookSort, setNotebookSort, "Notebook options")}
                 <Tooltip text="Create notebook" position="top">
                   <IconButton
                     icon={<AddIcon className="size-4" />}
@@ -650,7 +552,6 @@ export default function HomePage() {
                     />
                   </Tooltip>
                 )}
-                {hasNoteContent && renderOptionsMenu(noteSort, setNoteSort, "Note options")}
                 <Tooltip text="New note" position="top">
                   <IconButton
                     icon={
