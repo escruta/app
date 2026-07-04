@@ -201,6 +201,7 @@ export function Tooltip({
         className={cn("relative inline-block", className)}
         onMouseEnter={showTooltip}
         onMouseLeave={hideTooltip}
+        onClick={hideTooltip}
       >
         {children}
       </div>
