@@ -1,8 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useLoaderData } from "react-router";
-import { useFetch, useCookie, useIsTablet, useBreakpoint } from "@/hooks";
+import { useFetch, useCookie, useBreakpoint } from "@/hooks";
 import type { Note, Source, Notebook, NotebookContent } from "@/interfaces";
-import { Tabs } from "@/components/ui";
 import { motion, AnimatePresence } from "motion/react";
 import {
   SourcesCard,
@@ -17,13 +16,10 @@ import {
 import { generateNotebookMetadata } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 import { ExpandIcon } from "@/components/icons";
-import { Tooltip, IconButton, Spinner } from "@/components/ui";
+import { Tabs, Tooltip, IconButton, Spinner } from "@/components/ui";
 import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
 import { NotebookErrorState } from "./notebook/NotebookStates";
 import { RenameNotebookModal } from "./notebook/RenameNotebookModal";
-
-import { ShareIcon } from "@/components/icons";
-import { MenuItem, Button } from "@/components/ui";
 
 const MIN_SIDE_PANEL_PX = 280;
 const MIN_CENTER_PANEL_PX = 400;
@@ -66,7 +62,6 @@ export default function NotebookPage() {
   const [activeResizer, setActiveResizer] = useState<"left" | "right" | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
 
-  const isTablet = useIsTablet();
   const mode = useBreakpoint();
   const [compactTab, setCompactTab] = useState<"sources" | "chat" | "notes" | "tools">("chat");
   const handleCompactCollapse = () => setCompactTab("chat");
@@ -593,31 +588,6 @@ export default function NotebookPage() {
               placeholder="Enter notebook title"
             />
           </div>
-        }
-        actions={
-          !isTablet && (
-            <>
-              <Tooltip
-                text="Share your notebook with others to showcase your research and findings"
-                position="bottom"
-              >
-                <Button onClick={() => {}} size="sm" icon={<ShareIcon />}>
-                  Share notebook
-                </Button>
-              </Tooltip>
-            </>
-          )
-        }
-        extraMenuItems={
-          isTablet && (
-            <>
-              <MenuItem
-                label="Share notebook"
-                icon={<ShareIcon className="size-4" />}
-                onClick={() => {}}
-              />
-            </>
-          )
         }
       />
 

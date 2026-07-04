@@ -116,7 +116,7 @@ export function SourceChip({
               onToggle?.(!selected);
             }}
           >
-            <Checkbox checked={selected} onChange={() => {}} />
+            <Checkbox checked={selected} />
           </div>
         )}
       </div>

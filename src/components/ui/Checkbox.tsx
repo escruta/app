@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 
 interface CheckboxProps {
   checked: boolean;
-  onChange: (checked: boolean) => void;
+  onChange?: (checked: boolean) => void;
   disabled?: boolean;
   className?: string;
   id?: string;
@@ -39,7 +39,7 @@ export function Checkbox({
           id={id}
           className="sr-only"
           checked={checked}
-          onChange={(e) => onChange(e.target.checked)}
+          onChange={(e) => onChange?.(e.target.checked)}
           disabled={disabled}
         />
         <div className="flex size-3.5 items-center justify-center">

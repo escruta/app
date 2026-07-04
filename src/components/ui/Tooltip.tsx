@@ -187,8 +187,6 @@ export function Tooltip({
           animate: { opacity: 1, x: "0%", y: "-50%", scale: 1 },
           exit: { opacity: 0, x: `calc(0% - ${distance}px)`, y: "-50%", scale: 0.95 },
         };
-      default:
-        return {};
     }
   };
 

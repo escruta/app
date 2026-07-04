@@ -41,7 +41,6 @@ export function SearchSourcesModal({
     {
       method: "POST",
       data: { query: searchTerm, maxResults: 10 },
-      onError: () => {},
       onSuccess: (data) => {
         setResults(data.results);
       },

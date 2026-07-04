@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { AnimatePresence } from "motion/react";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { MindMapIcon, StudyIcon, CardIcon, QuestionnaireIcon } from "@/components/icons";
 import { Card, Divider } from "@/components/ui";
 import { cn } from "@/lib/utils";
