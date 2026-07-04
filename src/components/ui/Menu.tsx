@@ -3,6 +3,7 @@ import {
   useRef,
   useEffect,
   useCallback,
+  useLayoutEffect,
   createContext,
   useContext,
   cloneElement,
@@ -106,18 +107,55 @@ export function MenuContent({
   className?: string;
 }) {
   const context = useContext(MenuContext);
-  const [position, setPosition] = useState({ top: 0, left: 0, right: 0 });
+  const [position, setPosition] = useState<{
+    top?: number;
+    bottom?: number;
+    left?: number;
+    right?: number;
+  }>({});
+
+  const calculatePosition = useCallback(() => {
+    if (!context?.triggerRef?.current) return;
+    const rect = context.triggerRef.current.getBoundingClientRect();
+    const gap = 8;
+    const estimatedMenuHeight = 320;
+    const spaceBelow = window.innerHeight - rect.bottom - gap;
+    const spaceAbove = rect.top - gap;
+    const pos: typeof position = {};
+
+    if (spaceBelow >= estimatedMenuHeight || spaceBelow >= spaceAbove) {
+      pos.top = rect.bottom + gap;
+    } else {
+      pos.bottom = window.innerHeight - rect.top + gap;
+    }
+
+    if (align === "right") {
+      pos.right = Math.max(0, window.innerWidth - rect.right);
+    } else {
+      pos.left = Math.max(0, rect.left);
+    }
+
+    setPosition(pos);
+  }, [context?.triggerRef, align]);
+
+  useLayoutEffect(() => {
+    if (context?.isOpen) {
+      calculatePosition();
+    }
+  }, [context?.isOpen, calculatePosition]);
 
   useEffect(() => {
-    if (context?.triggerRef?.current && context?.isOpen) {
-      const rect = context.triggerRef.current.getBoundingClientRect();
-      setPosition({
-        top: rect.bottom + window.scrollY + 8,
-        left: rect.left + window.scrollX,
-        right: window.innerWidth - rect.right - window.scrollX,
-      });
-    }
-  }, [context?.triggerRef, context?.isOpen]);
+    if (!context?.isOpen) return;
+    const handleScroll = () => {
+      calculatePosition();
+    };
+    window.addEventListener("scroll", handleScroll, { capture: true, passive: true });
+    window.addEventListener("resize", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll, { capture: true });
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, [context?.isOpen, calculatePosition]);
 
   const setContentRef = useCallback(
     (node: HTMLDivElement | null) => {
@@ -142,11 +180,10 @@ export function MenuContent({
           transition={{ duration: 0.15, ease: "easeOut" }}
           style={{
             position: "fixed",
-            top: position.top,
-            ...(align === "right" ? { right: position.right } : { left: position.left }),
+            ...position,
           }}
           className={cn(
-            "z-[9999] min-w-[10rem] rounded-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 p-1.5 shadow-lg shadow-gray-500/10 dark:shadow-black/20 ring-1 ring-gray-500/5 dark:ring-gray-500/10",
+            "z-9999 min-w-40 rounded-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 p-1.5 shadow-lg shadow-gray-500/10 dark:shadow-black/20 ring-1 ring-gray-500/5 dark:ring-gray-500/10",
             className,
           )}
         >
@@ -225,9 +262,7 @@ export function MenuItem({
       }}
       onKeyDown={handleKeyDown}
     >
-      {icon && (
-        <span className="flex size-4 flex-shrink-0 items-center justify-center">{icon}</span>
-      )}
+      {icon && <span className="flex size-4 shrink-0 items-center justify-center">{icon}</span>}
       <span className="flex-1 text-left font-medium">{label}</span>
     </button>
   );

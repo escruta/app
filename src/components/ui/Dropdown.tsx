@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
@@ -51,26 +51,56 @@ export function Dropdown<T>({
     }
   };
 
-  useEffect(() => {
-    if (isOpen && dropdownRef.current) {
-      const rect = dropdownRef.current.getBoundingClientRect();
-      const pos: typeof position = { minWidth: rect.width };
+  const calculatePosition = useCallback(() => {
+    if (!dropdownRef.current) return;
+    const rect = dropdownRef.current.getBoundingClientRect();
+    const gap = 6;
+    const estimatedMenuHeight = 240;
+    const pos: typeof position = { minWidth: rect.width };
+    const spaceBelow = window.innerHeight - rect.bottom - gap;
+    const spaceAbove = rect.top - gap;
 
-      if (up) {
-        pos.bottom = window.innerHeight - rect.top + window.scrollY + 6;
+    if (up) {
+      if (spaceAbove >= estimatedMenuHeight || spaceAbove >= spaceBelow) {
+        pos.bottom = window.innerHeight - rect.top + gap;
       } else {
-        pos.top = rect.bottom + window.scrollY + 6;
+        pos.top = rect.bottom + gap;
       }
-
-      if (align === "right") {
-        pos.right = window.innerWidth - rect.right - window.scrollX;
+    } else {
+      if (spaceBelow >= estimatedMenuHeight || spaceBelow >= spaceAbove) {
+        pos.top = rect.bottom + gap;
       } else {
-        pos.left = rect.left + window.scrollX;
+        pos.bottom = window.innerHeight - rect.top + gap;
       }
-
-      setPosition(pos);
     }
-  }, [isOpen, up, align]);
+
+    if (align === "right") {
+      pos.right = Math.max(0, window.innerWidth - rect.right);
+    } else {
+      pos.left = Math.max(0, rect.left);
+    }
+
+    setPosition(pos);
+  }, [up, align]);
+
+  useLayoutEffect(() => {
+    if (isOpen && !disabled) {
+      calculatePosition();
+    }
+  }, [isOpen, disabled, calculatePosition]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleScroll = () => {
+      calculatePosition();
+    };
+    window.addEventListener("scroll", handleScroll, { capture: true, passive: true });
+    window.addEventListener("resize", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll, { capture: true });
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, [isOpen, calculatePosition]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -180,7 +210,7 @@ export function Dropdown<T>({
                   ...position,
                 }}
                 className={cn(
-                  "z-[9999] w-max",
+                  "z-9999 w-max",
                   "bg-white dark:bg-gray-900",
                   "border border-gray-300 dark:border-gray-600",
                   "rounded-xs shadow-lg shadow-gray-500/10 dark:shadow-black/20 ring-1 ring-gray-500/5 dark:ring-gray-500/10",
