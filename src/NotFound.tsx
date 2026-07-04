@@ -1,5 +1,4 @@
 import { Link } from "react-router";
-import { SEOMetadata } from "@/components";
 import { Button } from "@/components/ui";
 import { motion } from "motion/react";
 import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
@@ -13,13 +12,7 @@ export function NotFound() {
 
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-white px-6 text-center dark:bg-gray-950">
-      <SEOMetadata
-        title="404 - Page Not Found - Escruta"
-        description="The page you are looking for does not exist. Return to Escruta's homepage to continue your research journey."
-        url="https://escruta.com/404"
-        image="https://escruta.com/OpenGraphImage.webp"
-        twitterCard="summary_large_image"
-      />
+      <title>404 - Page Not Found - Escruta</title>
       <SimpleBackground />
 
       <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center space-y-6">

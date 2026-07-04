@@ -2,9 +2,8 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth, useCookie, useFetch } from "@/hooks";
 import { Button, IconButton, Modal, Spinner, TextField, Tooltip } from "@/components/ui";
-import { NotebookCard, NoteCard, SEOMetadata, TopBar, FolderGroup } from "@/components";
+import { NotebookCard, NoteCard, TopBar, FolderGroup } from "@/components";
 import { GaussianBlurGradientBackground } from "@/components/backgrounds/GaussianBlurGradientBackground";
-import { getRouteMetadata } from "@/lib/seo";
 import {
   AddIcon,
   FireIcon,
@@ -127,8 +126,6 @@ const SUBTITLES = [
 export default function HomePage() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const metadata = getRouteMetadata("/");
-
   const greeting = useMemo(() => GREETINGS[Math.floor(Math.random() * GREETINGS.length)], []);
   const subtitle = useMemo(() => SUBTITLES[Math.floor(Math.random() * SUBTITLES.length)], []);
 
@@ -318,13 +315,7 @@ export default function HomePage() {
 
   return (
     <div className="flex h-screen max-h-full w-full flex-col">
-      <SEOMetadata
-        title={metadata?.title || "Home"}
-        description={metadata?.description || "Dashboard"}
-        url={metadata?.url || "/"}
-        image={metadata?.image}
-        twitterCard={metadata?.twitterCard}
-      />
+      <title>Home - Escruta</title>
       <TopBar />
       <div className="relative overflow-auto">
         <GaussianBlurGradientBackground />

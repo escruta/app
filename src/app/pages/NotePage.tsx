@@ -4,7 +4,7 @@ import { useFetch } from "@/hooks";
 import type { Note } from "@/interfaces";
 import { Button, IconButton, Modal, Spinner, Tooltip } from "@/components/ui";
 import { DeleteIcon } from "@/components/icons";
-import { SEOMetadata, TopBar } from "@/components";
+import { TopBar } from "@/components";
 import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
 import { cn } from "@/lib/utils";
 
@@ -143,10 +143,7 @@ export default function NotePage() {
 
   return (
     <div className="flex h-screen max-h-full w-full flex-col">
-      <SEOMetadata
-        title={`${note?.title || "Note"} - Escruta`}
-        description="View and edit your note."
-      />
+      <title>{`${note?.title || "Note"} - Note - Escruta`}</title>
       <TopBar
         title={renderTopBarTitle(
           <input

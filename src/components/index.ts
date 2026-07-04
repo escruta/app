@@ -9,7 +9,6 @@ export * from "./NoteChip.tsx";
 export * from "./NoteEditor.tsx";
 export * from "./NotesCard.tsx";
 export * from "./SearchSourcesModal.tsx";
-export * from "./SEOMetadata.tsx";
 export * from "./TopBar.tsx";
 export * from "./SourceChip.tsx";
 export * from "./SourcesCard.tsx";

@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router";
 import { useAuth, useCookie } from "@/hooks";
 import { motion, AnimatePresence } from "motion/react";
-import { SEOMetadata } from "@/components";
 import { Button, TextField, Spinner, Checkbox } from "@/components/ui";
 import { getSignErrorMessage } from "@/lib/utils";
 
@@ -66,13 +65,7 @@ export function SignInPage() {
 
   return (
     <>
-      <SEOMetadata
-        title="Sign in - Escruta"
-        description="Sign in to your Escruta account to access your research notebooks, notes, and AI-powered study tools."
-        url="https://escruta.com/signin"
-        image="https://escruta.com/OpenGraphImage.webp"
-        twitterCard="summary_large_image"
-      />
+      <title>Sign in - Escruta</title>
       <motion.form
         onSubmit={handleSubmit}
         className="relative w-full bg-transparent pb-6 text-gray-800 dark:text-gray-200"

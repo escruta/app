@@ -1,10 +1,9 @@
 import { useMemo, useState } from "react";
 import type { Notebook } from "@/interfaces";
 import { useCookie, useFetch } from "@/hooks";
-import { SEOMetadata, TopBar } from "@/components";
+import { TopBar } from "@/components";
 import { NotebookCard } from "@/components";
 import { NotebookIcon, SearchIcon } from "@/components/icons";
-import { getRouteMetadata } from "@/lib/seo";
 import { motion } from "motion/react";
 import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
 import { TextField } from "@/components/ui";
@@ -17,8 +16,6 @@ export default function NotebooksPage() {
   const [globalSort] = useCookie<SortOption>("globalSortPreference", "Newest");
   const viewMode = globalViewMode || "grid";
 
-  const metadata = getRouteMetadata("/notebooks");
-
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return data || [];
@@ -29,13 +26,7 @@ export default function NotebooksPage() {
 
   return (
     <div className="flex h-screen max-h-full w-full flex-col">
-      <SEOMetadata
-        title={metadata.title}
-        description={metadata.description}
-        url={metadata.url}
-        image={metadata.image}
-        twitterCard={metadata.twitterCard}
-      />
+      <title>Notebooks - Escruta</title>
       <TopBar title="Notebooks" />
 
       <div className="flex-1 overflow-auto py-4">

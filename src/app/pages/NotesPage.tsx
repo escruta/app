@@ -1,10 +1,9 @@
 import { useMemo, useState } from "react";
 import type { Note, Notebook } from "@/interfaces";
 import { useCookie, useFetch } from "@/hooks";
-import { SEOMetadata, TopBar } from "@/components";
+import { TopBar } from "@/components";
 import { NoteCard } from "@/components";
 import { NoteIcon, SearchIcon } from "@/components/icons";
-import { getRouteMetadata } from "@/lib/seo";
 import { motion } from "motion/react";
 import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
 import { TextField } from "@/components/ui";
@@ -18,8 +17,6 @@ export default function NotesPage() {
   const [globalSort] = useCookie<SortOption>("globalSortPreference", "Newest");
   const viewMode = globalViewMode || "grid";
 
-  const metadata = getRouteMetadata("/notes") || { title: "Notes - Escruta" };
-
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     const list = notes || [];
@@ -31,7 +28,7 @@ export default function NotesPage() {
 
   return (
     <div className="flex h-screen max-h-full w-full flex-col">
-      <SEOMetadata title={metadata.title} description={metadata.description} />
+      <title>Notes - Escruta</title>
       <TopBar title="Notes" />
 
       <div className="flex-1 overflow-auto py-4">

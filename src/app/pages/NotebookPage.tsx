@@ -10,10 +10,8 @@ import {
   NoteEditor,
   SourceViewer,
   ToolsCard,
-  SEOMetadata,
   TopBar,
 } from "@/components";
-import { generateNotebookMetadata } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 import { ExpandIcon } from "@/components/icons";
 import { Tabs, Tooltip, IconButton, Spinner } from "@/components/ui";
@@ -452,8 +450,6 @@ export default function NotebookPage() {
     );
   }
 
-  const metadata = notebook ? generateNotebookMetadata(notebook.title, notebookId) : null;
-
   const renderSourcesTabContent = (onToggleCollapse: () => void) => (
     <div className="relative h-full w-full">
       <AnimatePresence>
@@ -550,15 +546,7 @@ export default function NotebookPage() {
 
   return (
     <div className="flex h-screen max-h-full w-full flex-col">
-      {metadata && (
-        <SEOMetadata
-          title={metadata.title}
-          description={metadata.description}
-          url={metadata.url}
-          image={metadata.image}
-          twitterCard={metadata.twitterCard}
-        />
-      )}
+      <title>{notebook?.title ? `${notebook.title} - Notebook - Escruta` : "Escruta"}</title>
       <TopBar
         title={
           <div className="flex min-w-0 flex-1 items-baseline gap-1.5">
