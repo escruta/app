@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import type { Note, Notebook } from "@/interfaces";
-import { useFetch } from "@/hooks";
+import { useCookie, useFetch } from "@/hooks";
 import { SEOMetadata, TopBar } from "@/components";
 import { NoteCard } from "@/components";
 import { NoteIcon, SearchIcon } from "@/components/icons";
@@ -13,6 +13,8 @@ export default function NotesPage() {
   const { data: notes } = useFetch<Note[]>("/notes");
   const { data: notebooks } = useFetch<Notebook[]>("/notebooks");
   const [query, setQuery] = useState("");
+  const [globalViewMode] = useCookie<"grid" | "list">("globalViewMode", "grid");
+  const viewMode = globalViewMode || "grid";
 
   const metadata = getRouteMetadata("/notes") || { title: "Notes - Escruta" };
 
@@ -28,10 +30,10 @@ export default function NotesPage() {
       <SEOMetadata title={metadata.title} description={metadata.description} />
       <TopBar title="Notes" />
 
-      <div className="flex-1 overflow-auto p-3 md:p-4">
+      <div className="flex-1 overflow-auto py-4">
         <SimpleBackground />
 
-        <div className="mx-auto max-w-5xl">
+        <div className="mx-auto max-w-5xl px-6">
           <div className="sticky top-0 z-20 mb-4">
             <TextField
               id="note-search"
@@ -49,13 +51,17 @@ export default function NotesPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
+              className={
+                viewMode === "grid"
+                  ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
+                  : "flex flex-col gap-3"
+              }
             >
               {filtered.map((note) => (
                 <NoteCard
                   key={note.id}
                   note={note}
-                  viewMode="grid"
+                  viewMode={viewMode}
                   notebookTitle={notebooks?.find((nb) => nb.id === note.notebookId)?.title}
                 />
               ))}

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import type { Notebook } from "@/interfaces";
-import { useFetch } from "@/hooks";
+import { useCookie, useFetch } from "@/hooks";
 import { SEOMetadata, TopBar } from "@/components";
 import { NotebookCard } from "@/components";
 import { NotebookIcon, SearchIcon } from "@/components/icons";
@@ -12,6 +12,8 @@ import { TextField } from "@/components/ui";
 export default function NotebooksPage() {
   const { data } = useFetch<Notebook[]>("/notebooks");
   const [query, setQuery] = useState("");
+  const [globalViewMode] = useCookie<"grid" | "list">("globalViewMode", "grid");
+  const viewMode = globalViewMode || "grid";
 
   const metadata = getRouteMetadata("/notebooks");
 
@@ -32,10 +34,10 @@ export default function NotebooksPage() {
       />
       <TopBar title="Notebooks" />
 
-      <div className="flex-1 overflow-auto p-3 md:p-4">
+      <div className="flex-1 overflow-auto py-4">
         <SimpleBackground />
 
-        <div className="mx-auto max-w-5xl">
+        <div className="mx-auto max-w-5xl px-6">
           <div className="sticky top-0 z-20 mb-4">
             <TextField
               id="notebook-search"
@@ -53,10 +55,14 @@ export default function NotebooksPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
+              className={
+                viewMode === "grid"
+                  ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
+                  : "flex flex-col gap-3"
+              }
             >
               {filtered.map((notebook: Notebook) => (
-                <NotebookCard key={notebook.id} notebook={notebook} viewMode="grid" />
+                <NotebookCard key={notebook.id} notebook={notebook} viewMode={viewMode} />
               ))}
             </motion.div>
           ) : (

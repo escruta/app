@@ -196,9 +196,8 @@ export default function HomePage() {
     "notebookSortPreference",
     SortOptions.Newest,
   );
-  const [notebookView, setNotebookView] = useCookie<ViewMode>("notebookViewMode", "grid");
+  const [globalViewMode] = useCookie<ViewMode>("globalViewMode", "grid");
   const [noteSort, setNoteSort] = useCookie<SortOptions>("noteSortPreference", SortOptions.Newest);
-  const [noteView, setNoteView] = useCookie<ViewMode>("noteViewMode", "grid");
 
   const [isCreateNotebookOpen, setIsCreateNotebookOpen] = useState(false);
   const [newNotebookTitle, setNewNotebookTitle] = useState("");
@@ -300,8 +299,7 @@ export default function HomePage() {
     false,
   );
 
-  const notebookViewMode = notebookView || "grid";
-  const noteViewMode = noteView || "grid";
+  const viewMode = globalViewMode || "grid";
 
   const folderItems = (folders ?? []).map((folder) => {
     const folderNotebooks = (notebooks ?? []).filter((nb) => nb.folderId === folder.id);
@@ -370,17 +368,14 @@ export default function HomePage() {
   const hasFolders = !!folders?.length;
 
   const renderOptionsMenu = (
-    viewMode: ViewMode | undefined,
-    setViewMode: (mode: ViewMode) => void,
     sortBy: SortOptions | undefined,
     setSortBy: (sort: SortOptions) => void,
     ariaLabel: string,
   ) => {
     const currentSort = sortBy || SortOptions.Newest;
-    const currentView = viewMode || "grid";
     return (
       <Menu>
-        <Tooltip text="Options" position="top">
+        <Tooltip text="More options" position="top">
           <MenuTrigger>
             <IconButton
               icon={<DotsVerticalIcon className="size-4" />}
@@ -392,38 +387,6 @@ export default function HomePage() {
         </Tooltip>
         <MenuContent align="right" className="min-w-48">
           <div className="flex flex-col gap-0.5 p-0.5">
-            <MenuLabel>View Mode</MenuLabel>
-            <MenuItem
-              label="Grid"
-              onClick={() => setViewMode("grid")}
-              icon={
-                currentView === "grid" ? (
-                  <CheckIcon className="size-4 text-blue-600 dark:text-blue-400" />
-                ) : (
-                  <div className="size-4" />
-                )
-              }
-              className={cn(
-                currentView === "grid" &&
-                  "bg-blue-50 text-blue-700 dark:bg-gray-800 dark:text-blue-400",
-              )}
-            />
-            <MenuItem
-              label="List"
-              onClick={() => setViewMode("list")}
-              icon={
-                currentView === "list" ? (
-                  <CheckIcon className="size-4 text-blue-600 dark:text-blue-400" />
-                ) : (
-                  <div className="size-4" />
-                )
-              }
-              className={cn(
-                currentView === "list" &&
-                  "bg-blue-50 text-blue-700 dark:bg-gray-800 dark:text-blue-400",
-              )}
-            />
-            <div className="my-1 h-px bg-gray-200 dark:bg-gray-700" />
             <MenuLabel>Sort by</MenuLabel>
             {Object.values(SortOptions).map((option) => (
               <MenuItem
@@ -459,7 +422,7 @@ export default function HomePage() {
         twitterCard={metadata?.twitterCard}
       />
       <TopBar />
-      <div className="relative overflow-auto p-4 md:p-8">
+      <div className="relative overflow-auto">
         <GaussianBlurGradientBackground />
 
         <div className="relative z-10 mx-auto flex max-w-5xl flex-col gap-6 px-6 pt-8 md:pt-12">
@@ -511,13 +474,19 @@ export default function HomePage() {
                     onDeleteFolder={() => setFolderToDelete(folder)}
                   >
                     {count > 0 ? (
-                      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4">
+                      <div
+                        className={
+                          viewMode === "grid"
+                            ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
+                            : "flex flex-col gap-3"
+                        }
+                      >
                         {items.map(({ kind, id, item }) =>
                           kind === "notebook" ? (
                             <NotebookCard
                               key={id}
                               notebook={item}
-                              viewMode="grid"
+                              viewMode={viewMode}
                               folders={folders ?? undefined}
                               folderTitle={folder.title}
                               onChange={() => refetchNotebooks(true, false)}
@@ -526,7 +495,7 @@ export default function HomePage() {
                             <NoteCard
                               key={id}
                               note={item}
-                              viewMode="grid"
+                              viewMode={viewMode}
                               notebookTitle={
                                 notebooks?.find((nb) => nb.id === item.notebookId)?.title
                               }
@@ -578,13 +547,7 @@ export default function HomePage() {
                   </Tooltip>
                 )}
                 {hasNotebookContent &&
-                  renderOptionsMenu(
-                    notebookViewMode,
-                    setNotebookView,
-                    notebookSort,
-                    setNotebookSort,
-                    "Notebook options",
-                  )}
+                  renderOptionsMenu(notebookSort, setNotebookSort, "Notebook options")}
                 <Tooltip text="Create notebook" position="top">
                   <IconButton
                     icon={<AddIcon className="size-4" />}
@@ -629,7 +592,7 @@ export default function HomePage() {
                   sortedUnfiledNotebooks.length > 0 ? (
                     <div
                       className={
-                        notebookViewMode === "grid"
+                        viewMode === "grid"
                           ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
                           : "flex flex-col gap-3"
                       }
@@ -638,7 +601,7 @@ export default function HomePage() {
                         <NotebookCard
                           key={notebook.id}
                           notebook={notebook}
-                          viewMode={notebookViewMode}
+                          viewMode={viewMode}
                           folders={folders ?? undefined}
                           onChange={() => refetchNotebooks(true, false)}
                         />
@@ -687,14 +650,7 @@ export default function HomePage() {
                     />
                   </Tooltip>
                 )}
-                {hasNoteContent &&
-                  renderOptionsMenu(
-                    noteViewMode,
-                    setNoteView,
-                    noteSort,
-                    setNoteSort,
-                    "Note options",
-                  )}
+                {hasNoteContent && renderOptionsMenu(noteSort, setNoteSort, "Note options")}
                 <Tooltip text="New note" position="top">
                   <IconButton
                     icon={
@@ -742,7 +698,7 @@ export default function HomePage() {
                   sortedUnfiledNotes.length > 0 ? (
                     <div
                       className={
-                        noteViewMode === "grid"
+                        viewMode === "grid"
                           ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
                           : "flex flex-col gap-3"
                       }
@@ -751,7 +707,7 @@ export default function HomePage() {
                         <NoteCard
                           key={note.id}
                           note={note}
-                          viewMode={noteViewMode}
+                          viewMode={viewMode}
                           notebookTitle={notebooks?.find((nb) => nb.id === note.notebookId)?.title}
                           folders={folders ?? undefined}
                           onChange={() => refetchNotes(true, false)}

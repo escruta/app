@@ -1,4 +1,4 @@
-import { AccountSection, AppearanceSection } from "@/components/settings";
+import { AccountSection, AppearanceSection, ViewModeSection } from "@/components/settings";
 import { SEOMetadata, TopBar } from "@/components";
 
 export default function SettingsPage() {
@@ -16,6 +16,7 @@ export default function SettingsPage() {
       <div className="flex-1 overflow-auto bg-gray-50 p-3 md:p-4 dark:bg-gray-950">
         <div className="mx-auto max-w-5xl">
           <AppearanceSection />
+          <ViewModeSection />
           <AccountSection />
         </div>
       </div>

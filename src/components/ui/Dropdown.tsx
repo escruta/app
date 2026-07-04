@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { CheckIcon, ChevronIcon } from "@/components/icons";
@@ -34,6 +35,14 @@ export function Dropdown<T>({
 }: DropdownProps<T>) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState<{
+    top?: number;
+    bottom?: number;
+    left?: number;
+    right?: number;
+    minWidth?: number;
+  }>({});
 
   const handleOpenChange = (newIsOpen: boolean) => {
     setIsOpen(newIsOpen);
@@ -43,15 +52,39 @@ export function Dropdown<T>({
   };
 
   useEffect(() => {
+    if (isOpen && dropdownRef.current) {
+      const rect = dropdownRef.current.getBoundingClientRect();
+      const pos: typeof position = { minWidth: rect.width };
+
+      if (up) {
+        pos.bottom = window.innerHeight - rect.top + window.scrollY + 6;
+      } else {
+        pos.top = rect.bottom + window.scrollY + 6;
+      }
+
+      if (align === "right") {
+        pos.right = window.innerWidth - rect.right - window.scrollX;
+      } else {
+        pos.left = rect.left + window.scrollX;
+      }
+
+      setPosition(pos);
+    }
+  }, [isOpen, up, align]);
+
+  useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const insideTrigger = dropdownRef.current?.contains(target);
+      const insideMenu = menuRef.current?.contains(target);
+      if (!insideTrigger && !insideMenu) {
         handleOpenChange(false);
       }
     }
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [isOpen]);
 
   const handleSelect = (option: T) => {
     onSelect(option);
@@ -130,69 +163,75 @@ export function Dropdown<T>({
         </button>
 
         {/* Dropdown Menu */}
-        <AnimatePresence>
-          {isOpen && !disabled && (
-            <motion.div
-              initial={{ opacity: 0, y: up ? 10 : -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: up ? 10 : -10 }}
-              transition={{
-                duration: 0.2,
-                ease: "easeOut",
-              }}
-              className={cn(
-                "absolute z-50 min-w-full w-max my-1.5",
-                align === "right" ? "right-0" : "left-0",
-                up && "bottom-full",
-                "bg-white dark:bg-gray-900",
-                "border border-gray-300 dark:border-gray-600",
-                "rounded-xs shadow-lg shadow-gray-500/10 dark:shadow-black/20 ring-1 ring-gray-500/5 dark:ring-gray-500/10",
-                "max-h-60 overflow-auto max-w-xs sm:max-w-sm",
-              )}
-            >
-              <div className="flex flex-col gap-0.5 p-1.5">
-                {options.map((option, index) => (
-                  <motion.button
-                    key={String(option)}
-                    type="button"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{
-                      duration: 0.05,
-                      delay: index * 0.015,
-                      ease: "easeOut",
-                    }}
-                    onClick={() => handleSelect(option)}
-                    className={cn(
-                      "relative flex w-full items-center text-left font-medium",
-                      size === "sm" ? "px-2 py-1.5 text-xs" : "px-3 py-2 text-sm",
-                      "text-gray-700 dark:text-gray-200",
-                      "transition-all duration-200 outline-none select-none cursor-pointer rounded-xs",
-                      "hover:bg-blue-50 hover:ring-1 hover:ring-blue-300 focus:bg-blue-50 dark:hover:bg-gray-700 dark:focus:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 active:bg-blue-100 dark:active:bg-gray-600",
-                      "focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900",
-                      {
-                        "bg-blue-100 dark:bg-gray-700 text-blue-700 dark:text-blue-300":
-                          selectedOption === option,
-                      },
-                    )}
-                  >
-                    <span className="flex-1 truncate pr-6">{renderOption(option)}</span>
-                    {selectedOption === option && (
-                      <span
-                        className={cn(
-                          "absolute inset-y-0 right-0 flex items-center text-blue-600 dark:text-blue-400",
-                          size === "sm" ? "pr-2" : "pr-3",
-                        )}
-                      >
-                        <CheckIcon className={size === "sm" ? "size-4" : "size-5"} />
-                      </span>
-                    )}
-                  </motion.button>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {createPortal(
+          <AnimatePresence>
+            {isOpen && !disabled && (
+              <motion.div
+                ref={menuRef}
+                initial={{ opacity: 0, y: up ? 10 : -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: up ? 10 : -10 }}
+                transition={{
+                  duration: 0.2,
+                  ease: "easeOut",
+                }}
+                style={{
+                  position: "fixed",
+                  ...position,
+                }}
+                className={cn(
+                  "z-[9999] w-max",
+                  "bg-white dark:bg-gray-900",
+                  "border border-gray-300 dark:border-gray-600",
+                  "rounded-xs shadow-lg shadow-gray-500/10 dark:shadow-black/20 ring-1 ring-gray-500/5 dark:ring-gray-500/10",
+                  "max-h-60 overflow-auto max-w-xs sm:max-w-sm",
+                )}
+              >
+                <div className="flex flex-col gap-0.5 p-1.5">
+                  {options.map((option, index) => (
+                    <motion.button
+                      key={String(option)}
+                      type="button"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{
+                        duration: 0.05,
+                        delay: index * 0.015,
+                        ease: "easeOut",
+                      }}
+                      onClick={() => handleSelect(option)}
+                      className={cn(
+                        "relative flex w-full items-center text-left font-medium",
+                        size === "sm" ? "px-2 py-1.5 text-xs" : "px-3 py-2 text-sm",
+                        "text-gray-700 dark:text-gray-200",
+                        "transition-all duration-200 outline-none select-none cursor-pointer rounded-xs",
+                        "hover:bg-blue-50 hover:ring-1 hover:ring-blue-300 focus:bg-blue-50 dark:hover:bg-gray-700 dark:focus:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 active:bg-blue-100 dark:active:bg-gray-600",
+                        "focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900",
+                        {
+                          "bg-blue-100 dark:bg-gray-700 text-blue-700 dark:text-blue-300":
+                            selectedOption === option,
+                        },
+                      )}
+                    >
+                      <span className="flex-1 truncate pr-6">{renderOption(option)}</span>
+                      {selectedOption === option && (
+                        <span
+                          className={cn(
+                            "absolute inset-y-0 right-0 flex items-center text-blue-600 dark:text-blue-400",
+                            size === "sm" ? "pr-2" : "pr-3",
+                          )}
+                        >
+                          <CheckIcon className={size === "sm" ? "size-4" : "size-5"} />
+                        </span>
+                      )}
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body,
+        )}
       </div>
     </div>
   );
