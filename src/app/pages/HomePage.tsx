@@ -425,7 +425,7 @@ export default function HomePage() {
       <div className="relative overflow-auto">
         <GaussianBlurGradientBackground />
 
-        <div className="relative z-10 mx-auto flex max-w-5xl flex-col gap-6 px-6 pt-8 md:pt-12">
+        <div className="relative z-10 mx-auto flex max-w-5xl flex-col gap-6 px-6 py-8 md:py-12">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}

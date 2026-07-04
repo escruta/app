@@ -33,18 +33,16 @@ export default function NotesPage() {
       <div className="flex-1 overflow-auto py-4">
         <SimpleBackground />
 
-        <div className="mx-auto max-w-5xl px-6">
-          <div className="sticky top-0 z-20 mb-4">
-            <TextField
-              id="note-search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onClear={() => setQuery("")}
-              placeholder="Search notes..."
-              search
-              autoFocus
-            />
-          </div>
+        <div className="mx-auto max-w-5xl space-y-4 px-6">
+          <TextField
+            id="note-search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onClear={() => setQuery("")}
+            placeholder="Search notes..."
+            search
+            autoFocus
+          />
 
           {filtered.length > 0 ? (
             <motion.div
