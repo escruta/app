@@ -55,7 +55,7 @@ export function NotesCard({ notebookId, onNoteSelect, refreshTrigger }: NotesCar
               icon={addingNote ? <Spinner /> : <AddIcon />}
               variant="primary"
               size="sm"
-              className="flex-shrink-0"
+              className="shrink-0"
               onClick={() => createNote()}
               disabled={addingNote}
             >

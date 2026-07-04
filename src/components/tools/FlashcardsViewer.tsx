@@ -120,7 +120,7 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
       tabIndex={0}
     >
       {/* ── Top Bar (fixed) ── */}
-      <div className="flex flex-shrink-0 flex-col gap-3 border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+      <div className="flex shrink-0 flex-col gap-3 border-b border-gray-200 px-6 py-4 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="flex flex-col">
@@ -258,7 +258,7 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
       </div>
 
       {/* ── Bottom Bar (fixed) ── */}
-      <div className="flex flex-shrink-0 flex-col items-center gap-3 border-t border-gray-200 px-6 py-3 dark:border-gray-700">
+      <div className="flex shrink-0 flex-col items-center gap-3 border-t border-gray-200 px-6 py-3 dark:border-gray-700">
         <div className="mx-auto grid w-full max-w-2xl grid-cols-[1fr_auto_1fr] items-center">
           <div className="flex justify-start">
             <Tooltip text="Previous card" position="top">
@@ -279,7 +279,7 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
               variant={knownCards.has(currentIndex) ? "success" : "primary"}
               size="sm"
               icon={knownCards.has(currentIndex) ? <CheckIcon /> : undefined}
-              className="min-w-[130px]"
+              className="min-w-32.5"
             >
               {knownCards.has(currentIndex) ? "Learned" : "Mark as learned"}
             </Button>
@@ -315,7 +315,7 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
             >
               <div
                 className={cn(
-                  "size-[5px] rounded-full transition-all duration-200",
+                  "size-1.25 rounded-full transition-all duration-200",
                   idx === currentIndex
                     ? knownCards.has(idx)
                       ? "bg-green-500 scale-125 ring-2 ring-green-500/30"

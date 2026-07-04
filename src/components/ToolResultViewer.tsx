@@ -132,7 +132,7 @@ export function ToolResultViewer({
       )}
     >
       <div className="sticky top-0 z-10 py-2">
-        <div className="flex h-12 flex-shrink-0 items-center justify-between gap-3 px-6">
+        <div className="flex h-12 shrink-0 items-center justify-between gap-3 px-6">
           <h2 className="flex min-w-0 flex-1 items-baseline gap-1.5">
             <span className="shrink-0 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
               Tool /{" "}

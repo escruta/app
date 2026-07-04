@@ -210,7 +210,7 @@ export function Dropdown<T>({
                   ...position,
                 }}
                 className={cn(
-                  "z-9999 w-max",
+                  "z-40 w-max",
                   "bg-white dark:bg-gray-900",
                   "border border-gray-300 dark:border-gray-600",
                   "rounded-xs shadow-lg shadow-gray-500/10 dark:shadow-black/20 ring-1 ring-gray-500/5 dark:ring-gray-500/10",

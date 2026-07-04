@@ -112,7 +112,7 @@ function BranchNode({
   return (
     <div className="flex items-center py-1.5">
       {/* Connection line from parent */}
-      <div className={cn("h-px w-8 flex-shrink-0", getLineColor(level - 1))} />
+      <div className={cn("h-px w-8 shrink-0", getLineColor(level - 1))} />
 
       <div className="flex items-center">
         {/* Node Container */}
@@ -176,7 +176,7 @@ function BranchNode({
               animate={{ opacity: 1, width: 24 }}
               exit={{ opacity: 0, width: 0 }}
               transition={{ duration: 0.2, ease: "easeInOut" }}
-              className={cn("h-px flex-shrink-0", getLineColor(level))}
+              className={cn("h-px shrink-0", getLineColor(level))}
             />
           )}
         </AnimatePresence>
@@ -321,7 +321,7 @@ function MainBranch({
               animate={{ opacity: 1, width: 32 }}
               exit={{ opacity: 0, width: 0 }}
               transition={{ duration: 0.2, ease: "easeInOut" }}
-              className={cn("h-px flex-shrink-0", getLineColor(1))}
+              className={cn("h-px shrink-0", getLineColor(1))}
             />
           )}
         </AnimatePresence>
@@ -530,7 +530,7 @@ export function MindMapViewer({
           >
             +
           </button>
-          <span className="flex h-full min-w-[48px] items-center justify-center border-x border-gray-200 px-2 text-center text-xs font-medium text-gray-600 dark:border-gray-600 dark:text-gray-300">
+          <span className="flex h-full min-w-12 items-center justify-center border-x border-gray-200 px-2 text-center text-xs font-medium text-gray-600 dark:border-gray-600 dark:text-gray-300">
             {Math.round(transform.scale * 100)}%
           </span>
           <button

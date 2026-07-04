@@ -153,7 +153,7 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
   return (
     <div className={cn("flex flex-col h-full", className)}>
       {/* ── Top Bar (fixed) ── */}
-      <div className="flex flex-shrink-0 flex-col gap-3 border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+      <div className="flex shrink-0 flex-col gap-3 border-b border-gray-200 px-6 py-4 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="flex flex-col">
@@ -299,7 +299,7 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
 
       {/* ── Bottom Bar (fixed) ── */}
       {!showResults && (
-        <div className="flex-shrink-0 border-t border-gray-200 px-6 py-3 dark:border-gray-700">
+        <div className="shrink-0 border-t border-gray-200 px-6 py-3 dark:border-gray-700">
           <div className="mx-auto grid max-w-3xl grid-cols-[1fr_auto_1fr] items-center">
             <div className="flex justify-start">
               <Tooltip text="Previous question" position="top">
@@ -330,7 +330,7 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
                   >
                     <div
                       className={cn(
-                        "size-[5px] rounded-full transition-all duration-200",
+                        "size-1.25 rounded-full transition-all duration-200",
                         idx === currentIndex
                           ? questionStates[idx].isCorrect === true
                             ? "bg-green-500 scale-125 ring-2 ring-green-500/30"
@@ -421,7 +421,7 @@ function QuestionContent({
       <div className="flex items-start gap-3">
         <span
           className={cn(
-            "flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-xs text-sm font-medium transition-colors duration-200",
+            "shrink-0 w-8 h-8 flex items-center justify-center rounded-xs text-sm font-medium transition-colors duration-200",
             state.answered
               ? state.isCorrect === true
                 ? "bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-300"
@@ -454,7 +454,7 @@ function QuestionContent({
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
               className={cn(
-                "flex-shrink-0 flex items-center gap-1 px-2 py-1 rounded-xs text-xs font-medium",
+                "shrink-0 flex items-center gap-1 px-2 py-1 rounded-xs text-xs font-medium",
                 state.isCorrect
                   ? "bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300"
                   : "bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300",

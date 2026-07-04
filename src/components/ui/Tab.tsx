@@ -96,7 +96,7 @@ export const Tabs = forwardRef<TabsRef, TabsProps>(
             ))}
           </div>
         </div>
-        <div className="absolute inset-x-0 bottom-0 mt-2 h-[calc(100%-3.5rem)] max-h-full flex-grow overflow-hidden">
+        <div className="absolute inset-x-0 bottom-0 mt-2 h-[calc(100%-3.5rem)] max-h-full grow overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTabId}

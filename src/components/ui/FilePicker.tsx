@@ -100,7 +100,7 @@ export function FilePicker({
           multiple={multiple}
         />
 
-        <div className="pointer-events-none flex h-full min-h-[200px] flex-col items-center justify-center p-12 text-center">
+        <div className="pointer-events-none flex h-full min-h-50 flex-col items-center justify-center p-12 text-center">
           <div className="relative mb-3">
             {value ? (
               <div className="relative inline-flex">
@@ -116,7 +116,7 @@ export function FilePicker({
 
           {value ? (
             <div className="text-sm">
-              <div className="max-w-[250px] truncate font-semibold text-gray-900 dark:text-gray-100">
+              <div className="max-w-62.5 truncate font-semibold text-gray-900 dark:text-gray-100">
                 {value.name}
               </div>
               <div className="mt-1 text-gray-500 dark:text-gray-400">

@@ -353,7 +353,7 @@ export function NotebookCard({
             autoFocus
           />
 
-          {deleteError && <Alert variant="danger" title={deleteError.message} />}
+          {deleteError && <Alert variant="danger" message={deleteError.message} />}
         </div>
       </Modal>
 

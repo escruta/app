@@ -28,7 +28,7 @@ export function ExampleQuestions({
     <div className="mt-6 px-4 pb-8">
       {exampleQuestionsError && !skipExampleQuestionsFetch ? (
         <div className="flex flex-col gap-3">
-          <Alert title={getHttpErrorMessage(exampleQuestionsError?.status)} variant="danger" />
+          <Alert message={getHttpErrorMessage(exampleQuestionsError?.status)} variant="danger" />
           <Button
             onClick={() => refetchExampleQuestions(true)}
             disabled={isExampleQuestionsLoading}

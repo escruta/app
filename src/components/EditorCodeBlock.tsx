@@ -91,7 +91,7 @@ export function EditorCodeBlock({ node, updateAttributes }: NodeViewProps) {
       </div>
       <pre
         className={cn(
-          "block bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xs p-4 overflow-x-auto font-mono text-sm font-medium leading-[1.5] whitespace-pre",
+          "block bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xs p-4 overflow-x-auto font-mono text-sm font-medium leading-normal whitespace-pre",
         )}
       >
         <NodeViewContent

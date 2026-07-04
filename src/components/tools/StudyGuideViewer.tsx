@@ -86,7 +86,7 @@ export function StudyGuideViewer({ data, className }: StudyGuideViewerProps) {
                 key={index}
                 className="flex flex-col rounded-xs border border-gray-100 bg-gray-50 p-3 sm:flex-row sm:gap-4 dark:border-gray-700 dark:bg-gray-800"
               >
-                <dt className="flex-shrink-0 text-base font-medium text-blue-600 select-text sm:max-w-[180px] sm:min-w-[180px] dark:text-blue-400">
+                <dt className="shrink-0 text-base font-medium text-blue-600 select-text sm:max-w-45 sm:min-w-45 dark:text-blue-400">
                   {concept.term}
                 </dt>
                 <dd className="mt-1 text-base leading-relaxed text-gray-700 select-text sm:mt-0 dark:text-gray-200">
@@ -108,7 +108,7 @@ export function StudyGuideViewer({ data, className }: StudyGuideViewerProps) {
           <ul className="flex flex-col gap-2">
             {importantDetails.map((detail, index) => (
               <li key={index} className="flex items-start gap-3">
-                <span className="mt-[7px] h-1.5 w-1.5 flex-shrink-0 rounded-full bg-blue-500" />
+                <span className="mt-1.75 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-500" />
                 <span className="text-base leading-relaxed text-gray-700 select-text dark:text-gray-200">
                   {detail}
                 </span>
@@ -128,7 +128,7 @@ export function StudyGuideViewer({ data, className }: StudyGuideViewerProps) {
           <ul className="flex flex-col gap-2">
             {connections.map((connection, index) => (
               <li key={index} className="flex items-start gap-3">
-                <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-xs bg-blue-100 text-xs font-medium text-blue-600 dark:bg-blue-900/50 dark:text-blue-300">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-xs bg-blue-100 text-xs font-medium text-blue-600 dark:bg-blue-900/50 dark:text-blue-300">
                   {index + 1}
                 </span>
                 <span className="pt-0.5 text-base leading-relaxed text-gray-700 select-text dark:text-gray-200">
@@ -150,7 +150,7 @@ export function StudyGuideViewer({ data, className }: StudyGuideViewerProps) {
           <ol className="flex flex-col gap-3">
             {reviewQuestions.map((question, index) => (
               <li key={index} className="flex items-start gap-3">
-                <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-xs bg-green-100 text-xs font-medium text-green-600 dark:bg-green-900/50 dark:text-green-300">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-xs bg-green-100 text-xs font-medium text-green-600 dark:bg-green-900/50 dark:text-green-300">
                   {index + 1}
                 </span>
                 <span className="pt-0.5 text-base leading-relaxed text-gray-700 select-text dark:text-gray-200">

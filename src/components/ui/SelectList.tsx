@@ -54,7 +54,7 @@ export function SelectList({
               {option.icon && (
                 <span
                   className={cn(
-                    "flex size-4 flex-shrink-0 items-center justify-center transition-colors duration-200",
+                    "flex size-4 shrink-0 items-center justify-center transition-colors duration-200",
                     isSelected
                       ? "text-blue-600 dark:text-blue-400"
                       : "text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300",
@@ -64,7 +64,7 @@ export function SelectList({
                 </span>
               )}
               <span className="flex-1 truncate text-left">{option.label}</span>
-              <span className="flex size-4 flex-shrink-0 items-center justify-center">
+              <span className="flex size-4 shrink-0 items-center justify-center">
                 <AnimatePresence mode="wait">
                   {isSelected && (
                     <motion.span

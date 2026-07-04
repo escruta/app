@@ -99,7 +99,7 @@ export function CodeBlock({ children, className, inline }: CodeBlockProps) {
       <div className="overflow-x-auto p-4">
         <code
           ref={codeRef}
-          className="block font-mono text-sm leading-[1.5] font-medium whitespace-pre"
+          className="block font-mono text-sm leading-normal font-medium whitespace-pre"
         >
           {children}
         </code>

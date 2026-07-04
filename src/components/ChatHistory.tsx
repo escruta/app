@@ -205,7 +205,7 @@ export function ChatHistory({
       title="Chat history"
       subtitle={`${total} conversation${total !== 1 ? "s" : ""} ${debouncedSearch ? "matching your search" : ""}`}
       width="xl"
-      contentClassname="flex flex-col h-[28rem]"
+      contentClassname="flex flex-col h-112"
       actions={
         <Button onClick={handleNewConversation} icon={<AddIcon />}>
           New conversation

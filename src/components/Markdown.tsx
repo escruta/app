@@ -45,13 +45,13 @@ export const Markdown = memo(function Markdown({
           <h3 className="my-4 text-[1.25rem] leading-[1.4] font-semibold">{children}</h3>
         ),
         h4: ({ children }) => (
-          <h4 className="my-4 text-base leading-[1.5] font-semibold">{children}</h4>
+          <h4 className="my-4 text-base leading-normal font-semibold">{children}</h4>
         ),
         h5: ({ children }) => (
-          <h5 className="my-4 text-base leading-[1.5] font-semibold">{children}</h5>
+          <h5 className="my-4 text-base leading-normal font-semibold">{children}</h5>
         ),
         h6: ({ children }) => (
-          <h6 className="my-4 text-base leading-[1.5] font-semibold">{children}</h6>
+          <h6 className="my-4 text-base leading-normal font-semibold">{children}</h6>
         ),
         p: ({ children }) => <p>{children}</p>,
         ul: ({ className, children }) => (
@@ -71,7 +71,7 @@ export const Markdown = memo(function Markdown({
         li: ({ className, children }) => (
           <li
             className={cn(
-              "mb-2 leading-[1.5]",
+              "mb-2 leading-normal",
               className?.includes("task-list-item") ? "flex items-start" : "",
               className,
             )}
@@ -127,7 +127,7 @@ export const Markdown = memo(function Markdown({
                     >
                       {title}
                     </div>
-                    <div className="overflow-y-auto p-3 text-sm leading-relaxed break-words whitespace-pre-wrap text-gray-700 dark:text-gray-300">
+                    <div className="overflow-y-auto p-3 text-sm leading-relaxed wrap-break-word whitespace-pre-wrap text-gray-700 dark:text-gray-300">
                       <Markdown text={citeText} baseUrl={baseUrl} showLinks={false} />
                     </div>
                   </div>
@@ -138,7 +138,7 @@ export const Markdown = memo(function Markdown({
                   <Chip
                     size="sm"
                     onClick={() => onSourceClick?.(documentId)}
-                    className="h-4 !min-h-0 !px-1.5 !py-0 !text-[0.65rem]"
+                    className="h-4 min-h-0! px-1.5! py-0! text-[0.65rem]!"
                   >
                     {number}
                   </Chip>

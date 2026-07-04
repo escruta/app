@@ -33,7 +33,7 @@ export function TopBar({ title, actions, extraMenuItems }: TopBarProps = {}) {
   };
 
   return (
-    <div className="z-10 flex w-full shrink-0 flex-row items-center justify-between border-b border-gray-200 bg-white px-4 py-2 md:px-6 dark:border-gray-800 dark:bg-black">
+    <div className="z-50 flex w-full shrink-0 flex-row items-center justify-between border-b border-gray-200 bg-white px-4 py-2 md:px-6 dark:border-gray-800 dark:bg-black">
       <div className="flex items-center gap-4">
         <NavLink to="/" className="group grid h-10 w-10 shrink-0 place-items-center">
           <AppIcon className="h-8 w-8 fill-gray-800 transition-all duration-300 group-hover:fill-blue-500 dark:fill-gray-50 dark:group-hover:fill-blue-400" />
@@ -68,7 +68,7 @@ export function TopBar({ title, actions, extraMenuItems }: TopBarProps = {}) {
               />
             </MenuTrigger>
           </Tooltip>
-          <MenuContent align="right">
+          <MenuContent align="right" className="z-60">
             {extraMenuItems}
             {extraMenuItems && <MenuSeparator />}
             <MenuItem

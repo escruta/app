@@ -455,7 +455,7 @@ export function ChatCard({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             ref={scrollContainerRef}
-            className="min-h-0 flex-1 scroll-pt-4 space-y-4 overflow-y-auto scroll-smooth px-4 py-4 md:px-6 [&>*]:mx-auto [&>*]:max-w-4xl"
+            className="min-h-0 flex-1 scroll-pt-4 space-y-4 overflow-y-auto scroll-smooth px-4 py-4 *:mx-auto *:max-w-4xl md:px-6"
           >
             <AnimatePresence initial={false}>
               {messages.map((message, index) => (
@@ -488,7 +488,7 @@ export function ChatCard({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="flex max-h-full min-h-0 flex-grow flex-col overflow-y-auto px-4 [&>*]:mx-auto [&>*]:max-w-4xl"
+            className="flex max-h-full min-h-0 grow flex-col overflow-y-auto px-4 *:mx-auto *:max-w-4xl"
           >
             {sourcesCount > 0 ? (
               <div className="w-full">

@@ -232,7 +232,7 @@ export function Tooltip({
                 "border border-gray-200 dark:border-gray-800",
                 "ring-1 ring-black/5 dark:ring-white/5",
                 typeof text === "string"
-                  ? "px-3 py-1.5 text-center text-sm font-medium whitespace-normal break-words"
+                  ? "px-3 py-1.5 text-center text-sm font-medium whitespace-normal wrap-break-word"
                   : "flex flex-col overflow-hidden text-left p-0",
                 className,
               )}
@@ -252,15 +252,15 @@ export function Tooltip({
                   }}
                   className={cn(
                     "absolute size-2.5 bg-inherit border-inherit",
-                    "border-b border-r mb-[-1px]",
+                    "border-b border-r -mb-px",
                     {
-                      "-bottom-[5.5px] -translate-x-1/2 rotate-45 border-t-0 border-l-0":
+                      "bottom-[-5.5px] -translate-x-1/2 rotate-45 border-t-0 border-l-0":
                         position === "top",
-                      "-top-[5.5px] -translate-x-1/2 rotate-[225deg] border-t-0 border-l-0":
+                      "top-[-5.5px] -translate-x-1/2 rotate-225 border-t-0 border-l-0":
                         position === "bottom",
-                      "-right-[5.5px] -translate-y-1/2 rotate-[-45deg] border-t-0 border-l-0":
+                      "right-[-5.5px] -translate-y-1/2 -rotate-45 border-t-0 border-l-0":
                         position === "left",
-                      "-left-[5.5px] -translate-y-1/2 rotate-[135deg] border-t-0 border-l-0":
+                      "left-[-5.5px] -translate-y-1/2 rotate-135 border-t-0 border-l-0":
                         position === "right",
                     },
                     (position === "top" || position === "bottom") && !arrowOffset.x && "left-1/2",

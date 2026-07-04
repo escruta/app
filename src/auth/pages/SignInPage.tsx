@@ -166,7 +166,7 @@ export function SignInPage() {
           transition={{ duration: 0.3, delay: 0.6 }}
           className="my-6 flex items-center px-12"
         >
-          <div className="h-px flex-grow bg-gray-300/65 dark:bg-gray-600/65"></div>
+          <div className="h-px grow bg-gray-300/65 dark:bg-gray-600/65"></div>
         </motion.div>
 
         <motion.div

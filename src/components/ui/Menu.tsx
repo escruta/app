@@ -183,7 +183,7 @@ export function MenuContent({
             ...position,
           }}
           className={cn(
-            "z-9999 min-w-40 rounded-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 p-1.5 shadow-lg shadow-gray-500/10 dark:shadow-black/20 ring-1 ring-gray-500/5 dark:ring-gray-500/10",
+            "z-40 min-w-40 rounded-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 p-1.5 shadow-lg shadow-gray-500/10 dark:shadow-black/20 ring-1 ring-gray-500/5 dark:ring-gray-500/10",
             className,
           )}
         >

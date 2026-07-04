@@ -475,14 +475,14 @@ export function SourceViewer({
                       />
                     </div>
                     {fullSource.content && (
-                      <div className="overflow-x-hidden break-words select-text">
+                      <div className="overflow-x-hidden wrap-break-word select-text">
                         <div className="max-w-none leading-relaxed">
                           {contentChunks.length > 0 ? (
                             <Suspense
                               fallback={
                                 <Skeleton
                                   lines={10}
-                                  className="[&>div]:!bg-gray-200 dark:[&>div]:!bg-gray-800"
+                                  className="[&>div]:bg-gray-200! dark:[&>div]:bg-gray-800!"
                                 />
                               }
                             >
@@ -497,7 +497,7 @@ export function SourceViewer({
                           ) : (
                             <Skeleton
                               lines={10}
-                              className="[&>div]:!bg-gray-200 dark:[&>div]:!bg-gray-800"
+                              className="[&>div]:bg-gray-200! dark:[&>div]:bg-gray-800!"
                             />
                           )}
                         </div>
@@ -505,14 +505,14 @@ export function SourceViewer({
                     )}
                   </div>
                 ) : (
-                  <div className="h-auto min-h-[80%] w-full overflow-x-hidden px-6 py-8 break-words select-text">
+                  <div className="h-auto min-h-[80%] w-full overflow-x-hidden px-6 py-8 wrap-break-word select-text">
                     <div className="max-w-none leading-relaxed">
                       {contentChunks.length > 0 ? (
                         <Suspense
                           fallback={
                             <Skeleton
                               lines={10}
-                              className="[&>div]:!bg-gray-200 dark:[&>div]:!bg-gray-800"
+                              className="[&>div]:bg-gray-200! dark:[&>div]:bg-gray-800!"
                             />
                           }
                         >
@@ -527,7 +527,7 @@ export function SourceViewer({
                       ) : (
                         <Skeleton
                           lines={10}
-                          className="[&>div]:!bg-gray-200 dark:[&>div]:!bg-gray-800"
+                          className="[&>div]:bg-gray-200! dark:[&>div]:bg-gray-800!"
                         />
                       )}
                     </div>
