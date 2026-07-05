@@ -6,3 +6,9 @@ export interface Notebook {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface NotebooksPageResponse {
+  notebooks: Notebook[];
+  total: number;
+  hasMore: boolean;
+}

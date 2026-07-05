@@ -159,3 +159,43 @@ export function Skeleton(props: SkeletonProps) {
     />
   );
 }
+
+interface CardSkeletonProps {
+  viewMode?: "grid" | "list";
+}
+
+export function CardSkeleton({ viewMode = "grid" }: CardSkeletonProps) {
+  const baseClasses = cn(
+    "rounded-xs border bg-white dark:bg-gray-900",
+    "border-gray-200 dark:border-gray-700",
+  );
+
+  if (viewMode === "grid") {
+    return (
+      <div className={cn(baseClasses, "h-40 w-full p-4 flex flex-col justify-between")}>
+        <div className="flex items-start justify-between">
+          <Shimmer style={{ width: 32, height: 32 }} />
+          <Shimmer style={{ width: 20, height: 20 }} delay={0.05} />
+        </div>
+        <div>
+          <Shimmer className="mb-1.5 h-4" style={{ width: "80%" }} delay={0.1} />
+          <Shimmer className="mb-1.5 h-4" style={{ width: "50%" }} delay={0.15} />
+          <Shimmer className="h-3" style={{ width: "35%" }} delay={0.2} />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn(baseClasses, "h-20 w-full p-4 flex flex-row items-center justify-between")}>
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        <Shimmer style={{ width: 32, height: 32 }} />
+        <div className="min-w-0 flex-1">
+          <Shimmer className="mb-1.5 h-4" style={{ width: "60%" }} delay={0.1} />
+          <Shimmer className="h-3" style={{ width: "35%" }} delay={0.15} />
+        </div>
+      </div>
+      <Shimmer style={{ width: 20, height: 20 }} delay={0.2} />
+    </div>
+  );
+}

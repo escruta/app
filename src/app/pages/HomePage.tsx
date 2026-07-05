@@ -283,6 +283,12 @@ export default function HomePage() {
   const sortedUnfiledNotebooks = getSortedItems(unfiledNotebooks, sortBy);
   const sortedUnfiledNotes = getSortedItems(unfiledNotes, sortBy);
 
+  const MAX_HOME_ITEMS: number = 5;
+  const displayNotebooks = sortedUnfiledNotebooks.slice(0, MAX_HOME_ITEMS);
+  const hasMoreNotebooks = sortedUnfiledNotebooks.length > MAX_HOME_ITEMS;
+  const displayNotes = sortedUnfiledNotes.slice(0, MAX_HOME_ITEMS);
+  const hasMoreNotes = sortedUnfiledNotes.length > MAX_HOME_ITEMS;
+
   const handleSaveFolder = () => {
     if (editingFolderId) {
       updateFolder();
@@ -430,13 +436,13 @@ export default function HomePage() {
                 Notebooks
               </span>
               <div className="flex items-center gap-1">
-                {hasNotebookContent && (
-                  <Tooltip text="Search notebooks" position="top">
+                {(hasNotebookContent || hasMoreNotebooks) && (
+                  <Tooltip text="View all notebooks" position="top">
                     <IconButton
                       icon={<SearchIcon className="size-4" />}
                       variant="ghost"
                       size="sm"
-                      ariaLabel="Search notebooks"
+                      ariaLabel="View all notebooks"
                       onClick={() => navigate("/notebooks")}
                     />
                   </Tooltip>
@@ -483,23 +489,33 @@ export default function HomePage() {
               <>
                 {notebooks && notebooks.length > 0 ? (
                   sortedUnfiledNotebooks.length > 0 ? (
-                    <div
-                      className={
-                        viewMode === "grid"
-                          ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
-                          : "flex flex-col gap-3"
-                      }
-                    >
-                      {sortedUnfiledNotebooks.map((notebook) => (
-                        <NotebookCard
-                          key={notebook.id}
-                          notebook={notebook}
-                          viewMode={viewMode}
-                          folders={folders ?? undefined}
-                          onChange={() => refetchNotebooks(true, false)}
-                        />
-                      ))}
-                    </div>
+                    <>
+                      <div
+                        className={
+                          viewMode === "grid"
+                            ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
+                            : "flex flex-col gap-3"
+                        }
+                      >
+                        {displayNotebooks.map((notebook) => (
+                          <NotebookCard
+                            key={notebook.id}
+                            notebook={notebook}
+                            viewMode={viewMode}
+                            folders={folders ?? undefined}
+                            onChange={() => refetchNotebooks(true, false)}
+                          />
+                        ))}
+                      </div>
+                      {hasMoreNotebooks && (
+                        <button
+                          className="mt-3 w-full rounded-xs border border-dashed border-gray-200 bg-gray-50/50 px-4 py-2.5 text-sm font-medium text-blue-600 transition-colors hover:border-blue-300 hover:bg-blue-50/70 dark:border-gray-700 dark:bg-gray-800/30 dark:text-blue-400 dark:hover:border-blue-800 dark:hover:bg-blue-900/30"
+                          onClick={() => navigate("/notebooks")}
+                        >
+                          View all {sortedUnfiledNotebooks.length} notebooks
+                        </button>
+                      )}
+                    </>
                   ) : (
                     <div className="flex w-full flex-col items-center justify-center gap-1 rounded-xs border-2 border-dashed border-gray-400/30 bg-gray-50/60 px-6 py-8 text-center dark:border-gray-600/30 dark:bg-gray-900/30">
                       <h3 className="text-foreground text-md font-semibold">
@@ -532,13 +548,13 @@ export default function HomePage() {
                 Notes
               </span>
               <div className="flex items-center gap-1">
-                {hasNoteContent && (
-                  <Tooltip text="Search notes" position="top">
+                {(hasNoteContent || hasMoreNotes) && (
+                  <Tooltip text="View all notes" position="top">
                     <IconButton
                       icon={<SearchIcon className="size-4" />}
                       variant="ghost"
                       size="sm"
-                      ariaLabel="Search notes"
+                      ariaLabel="View all notes"
                       onClick={() => navigate("/notes")}
                     />
                   </Tooltip>
@@ -588,24 +604,36 @@ export default function HomePage() {
               <>
                 {notes && notes.length > 0 ? (
                   sortedUnfiledNotes.length > 0 ? (
-                    <div
-                      className={
-                        viewMode === "grid"
-                          ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
-                          : "flex flex-col gap-3"
-                      }
-                    >
-                      {sortedUnfiledNotes.map((note) => (
-                        <NoteCard
-                          key={note.id}
-                          note={note}
-                          viewMode={viewMode}
-                          notebookTitle={notebooks?.find((nb) => nb.id === note.notebookId)?.title}
-                          folders={folders ?? undefined}
-                          onChange={() => refetchNotes(true, false)}
-                        />
-                      ))}
-                    </div>
+                    <>
+                      <div
+                        className={
+                          viewMode === "grid"
+                            ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
+                            : "flex flex-col gap-3"
+                        }
+                      >
+                        {displayNotes.map((note) => (
+                          <NoteCard
+                            key={note.id}
+                            note={note}
+                            viewMode={viewMode}
+                            notebookTitle={
+                              notebooks?.find((nb) => nb.id === note.notebookId)?.title
+                            }
+                            folders={folders ?? undefined}
+                            onChange={() => refetchNotes(true, false)}
+                          />
+                        ))}
+                      </div>
+                      {hasMoreNotes && (
+                        <button
+                          className="mt-3 w-full rounded-xs border border-dashed border-gray-200 bg-gray-50/50 px-4 py-2.5 text-sm font-medium text-blue-600 transition-colors hover:border-blue-300 hover:bg-blue-50/70 dark:border-gray-700 dark:bg-gray-800/30 dark:text-blue-400 dark:hover:border-blue-800 dark:hover:bg-blue-900/30"
+                          onClick={() => navigate("/notes")}
+                        >
+                          View all {sortedUnfiledNotes.length} notes
+                        </button>
+                      )}
+                    </>
                   ) : (
                     <div className="flex w-full flex-col items-center justify-center gap-1 rounded-xs border-2 border-dashed border-gray-400/30 bg-gray-50/60 px-6 py-8 text-center dark:border-gray-600/30 dark:bg-gray-900/30">
                       <h3 className="text-foreground text-md font-semibold">

@@ -8,3 +8,9 @@ export interface Note {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface NotesPageResponse {
+  notes: Note[];
+  total: number;
+  hasMore: boolean;
+}

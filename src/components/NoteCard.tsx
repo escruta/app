@@ -20,7 +20,7 @@ import {
   NotebookIcon,
   FolderIcon,
 } from "@/components/icons";
-import { useState } from "react";
+import { useState, useRef, useLayoutEffect } from "react";
 import { useFetch } from "@/hooks";
 import { useNavigate } from "react-router";
 import { cn } from "@/lib/utils";
@@ -45,6 +45,31 @@ export function NoteCard({
   const [isMoveModalOpen, setIsMoveModalOpen] = useState<boolean>(false);
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(note.folderId ?? null);
   const navigate = useNavigate();
+
+  const firstDateRef = useRef<HTMLSpanElement>(null);
+  const secondDateRef = useRef<HTMLSpanElement>(null);
+  const [sameLine, setSameLine] = useState(true);
+
+  useLayoutEffect(() => {
+    const check = () => {
+      const first = firstDateRef.current;
+      const second = secondDateRef.current;
+      if (first && second) {
+        setSameLine(
+          Math.abs(first.getBoundingClientRect().top - second.getBoundingClientRect().top) < 1,
+        );
+      }
+    };
+    check();
+    const observer = new ResizeObserver(check);
+    const parent = firstDateRef.current?.parentElement;
+    if (parent) observer.observe(parent);
+    window.addEventListener("resize", check);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", check);
+    };
+  }, []);
 
   const {
     loading: deletingNote,
@@ -152,7 +177,7 @@ export function NoteCard({
     "hover:border-blue-300 dark:hover:border-gray-500",
   );
 
-  const gridClasses = cn("h-40 w-full p-4 flex flex-col justify-between");
+  const gridClasses = cn("h-42 w-full p-4 flex flex-col justify-between");
   const listClasses = cn("h-20 w-full p-4 flex flex-row items-center justify-between");
 
   const handleCardClick = () => {
@@ -247,7 +272,13 @@ export function NoteCard({
                 {note.title}
               </h2>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                {formatDate(note.updatedAt)}
+                <span ref={firstDateRef} className="whitespace-nowrap">
+                  Created {formatDate(note.createdAt)}
+                </span>
+                {sameLine ? " - " : " "}
+                <span ref={secondDateRef} className="whitespace-nowrap">
+                  Modified {formatDate(note.updatedAt)}
+                </span>
               </p>
             </div>
           </>
@@ -264,7 +295,7 @@ export function NoteCard({
                   {note.title}
                 </h2>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {formatDate(note.updatedAt)}
+                  Created {formatDate(note.createdAt)} - Modified {formatDate(note.updatedAt)}
                 </p>
               </div>
             </div>

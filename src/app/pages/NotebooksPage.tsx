@@ -1,28 +1,109 @@
-import { useMemo, useState } from "react";
-import type { Notebook } from "@/interfaces";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { Notebook, NotebooksPageResponse } from "@/interfaces";
 import { useCookie, useFetch } from "@/hooks";
 import { TopBar } from "@/components";
 import { NotebookCard } from "@/components";
 import { NotebookIcon, SearchIcon } from "@/components/icons";
 import { motion } from "motion/react";
 import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
-import { TextField } from "@/components/ui";
-import { getSortedItems, type SortOption } from "@/components/settings";
+import { TextField, CardSkeleton } from "@/components/ui";
+import type { SortOption } from "@/components/settings";
+
+const PAGE_SIZE: number = 20;
 
 export default function NotebooksPage() {
-  const { data } = useFetch<Notebook[]>("/notebooks");
-  const [query, setQuery] = useState("");
   const [globalViewMode] = useCookie<"grid" | "list">("globalViewMode", "grid");
   const [globalSort] = useCookie<SortOption>("globalSortPreference", "Newest");
   const viewMode = globalViewMode || "grid";
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return data || [];
-    return (data || []).filter((notebook) => notebook.title.toLowerCase().includes(q));
-  }, [data, query]);
+  const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [page, setPage] = useState(0);
+  const [items, setItems] = useState<Notebook[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
-  const sorted = getSortedItems(filtered, globalSort || "Newest");
+  const sort = globalSort || "Newest";
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initialLoadRef = useRef(true);
+  const hasMoreRef = useRef(true);
+  const loadingRef = useRef(false);
+
+  const onSuccessRef = useRef<(data: NotebooksPageResponse) => void>(undefined);
+  onSuccessRef.current = (data) => {
+    initialLoadRef.current = false;
+    setIsSearching(false);
+    if (page === 0) {
+      setItems(data.notebooks);
+    } else {
+      setItems((prev) => [...prev, ...data.notebooks]);
+    }
+    hasMoreRef.current = data.hasMore;
+  };
+
+  const params = useMemo(() => {
+    const p: Record<string, string> = {
+      limit: String(PAGE_SIZE),
+      offset: String(page * PAGE_SIZE),
+      sort,
+    };
+    if (debouncedQuery) p.search = debouncedQuery;
+    return p;
+  }, [page, sort, debouncedQuery]);
+
+  const { loading } = useFetch<NotebooksPageResponse>(
+    "/notebooks/page",
+    {
+      params,
+      skipCache: true,
+      onSuccess: (data) => onSuccessRef.current?.(data),
+    },
+    true,
+  );
+
+  loadingRef.current = loading;
+
+  const handleSearch = useCallback((newQuery: string) => {
+    setQuery(newQuery);
+    setIsSearching(true);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setPage(0);
+      setItems([]);
+      hasMoreRef.current = true;
+      setDebouncedQuery(newQuery);
+    }, 300);
+  }, []);
+
+  const sentinelCallbackRef = useCallback((node: HTMLDivElement | null) => {
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (
+          entries[0].isIntersecting &&
+          hasMoreRef.current &&
+          !loadingRef.current &&
+          !initialLoadRef.current
+        ) {
+          setPage((prev) => prev + 1);
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: "0px 0px 400px 0px",
+      },
+    );
+
+    observer.observe(node);
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
 
   return (
     <div className="flex h-screen max-h-full w-full flex-col">
@@ -36,28 +117,58 @@ export default function NotebooksPage() {
           <TextField
             id="notebook-search"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onClear={() => setQuery("")}
+            onChange={(e) => handleSearch(e.target.value)}
+            onClear={() => handleSearch("")}
             placeholder="Search notebooks..."
             search
             autoFocus
           />
 
-          {sorted.length > 0 ? (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
+          {initialLoadRef.current || isSearching || (loading && items.length === 0) ? (
+            <div
               className={
                 viewMode === "grid"
                   ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
                   : "flex flex-col gap-3"
               }
             >
-              {sorted.map((notebook: Notebook) => (
-                <NotebookCard key={notebook.id} notebook={notebook} viewMode={viewMode} />
+              {Array.from({ length: 8 }).map((_, i) => (
+                <CardSkeleton key={i} viewMode={viewMode} />
               ))}
-            </motion.div>
+            </div>
+          ) : items.length > 0 ? (
+            <>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className={
+                  viewMode === "grid"
+                    ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
+                    : "flex flex-col gap-3"
+                }
+              >
+                {items.map((notebook: Notebook) => (
+                  <NotebookCard key={notebook.id} notebook={notebook} viewMode={viewMode} />
+                ))}
+              </motion.div>
+
+              {loading && (
+                <div
+                  className={
+                    viewMode === "grid"
+                      ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
+                      : "flex flex-col gap-3"
+                  }
+                >
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <CardSkeleton key={`more-${i}`} viewMode={viewMode} />
+                  ))}
+                </div>
+              )}
+
+              <div ref={sentinelCallbackRef} className="h-px" />
+            </>
           ) : (
             <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
               <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
