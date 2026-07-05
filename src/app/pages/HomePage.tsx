@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth, useCookie, useFetch } from "@/hooks";
-import { Button, IconButton, Modal, Spinner, TextField, Tooltip } from "@/components/ui";
+import { Button, Modal, Spinner, TextField, Tooltip } from "@/components/ui";
 import { NotebookCard, NoteCard, TopBar, FolderGroup } from "@/components";
 import { GaussianBlurGradientBackground } from "@/components/backgrounds/GaussianBlurGradientBackground";
 import {
@@ -350,15 +350,14 @@ export default function HomePage() {
                 Folders
               </span>
               <div className="flex items-center gap-1">
-                <Tooltip text="New folder" position="top">
-                  <IconButton
-                    icon={<FolderAddIcon className="size-4" />}
-                    variant="primary"
-                    size="sm"
-                    ariaLabel="New folder"
-                    onClick={handleCreateFolder}
-                  />
-                </Tooltip>
+                <Button
+                  icon={<FolderAddIcon className="size-4" />}
+                  variant="primary"
+                  size="sm"
+                  onClick={handleCreateFolder}
+                >
+                  New folder
+                </Button>
               </div>
             </h3>
 
@@ -437,24 +436,22 @@ export default function HomePage() {
               </span>
               <div className="flex items-center gap-1">
                 {(hasNotebookContent || hasMoreNotebooks) && (
-                  <Tooltip text="View all notebooks" position="top">
-                    <IconButton
-                      icon={<SearchIcon className="size-4" />}
-                      variant="ghost"
-                      size="sm"
-                      ariaLabel="View all notebooks"
-                      onClick={() => navigate("/notebooks")}
-                    />
-                  </Tooltip>
-                )}
-                <Tooltip text="Create notebook" position="top">
-                  <IconButton
-                    icon={<AddIcon className="size-4" />}
+                  <Button
+                    icon={<SearchIcon className="size-4" />}
+                    variant="secondary"
                     size="sm"
-                    ariaLabel="Create notebook"
-                    onClick={() => setIsCreateNotebookOpen(true)}
-                  />
-                </Tooltip>
+                    onClick={() => navigate("/notebooks")}
+                  >
+                    View all notebooks
+                  </Button>
+                )}
+                <Button
+                  icon={<AddIcon className="size-4" />}
+                  size="sm"
+                  onClick={() => setIsCreateNotebookOpen(true)}
+                >
+                  Create notebook
+                </Button>
               </div>
             </h3>
 
@@ -549,26 +546,27 @@ export default function HomePage() {
               </span>
               <div className="flex items-center gap-1">
                 {(hasNoteContent || hasMoreNotes) && (
-                  <Tooltip text="View all notes" position="top">
-                    <IconButton
-                      icon={<SearchIcon className="size-4" />}
-                      variant="ghost"
-                      size="sm"
-                      ariaLabel="View all notes"
-                      onClick={() => navigate("/notes")}
-                    />
-                  </Tooltip>
+                  <Button
+                    icon={<SearchIcon className="size-4" />}
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => navigate("/notes")}
+                  >
+                    View all notes
+                  </Button>
                 )}
                 <Tooltip text="New note" position="top">
-                  <IconButton
+                  <Button
                     icon={
                       addingNote ? <Spinner className="size-4" /> : <AddIcon className="size-4" />
                     }
+                    variant="primary"
                     size="sm"
-                    ariaLabel="New note"
                     onClick={() => createNote()}
                     disabled={addingNote}
-                  />
+                  >
+                    New note
+                  </Button>
                 </Tooltip>
               </div>
             </h3>
