@@ -17,7 +17,7 @@ export function NotebookLoadingState() {
               animate={{ rotate: 360 }}
               transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
             />
-            <p className="font-medium text-gray-600 dark:text-gray-400">Loading notebook...</p>
+            <p className="font-medium text-gray-600 dark:text-gray-400">Loading your notebook...</p>
           </motion.div>
         </div>
       </div>
@@ -50,7 +50,7 @@ export function NotebookErrorState({ error }: ErrorProps) {
                 Notebook not found
               </h1>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                The notebook you're looking for doesn't exist or has been deleted.
+                We couldn't find this notebook — it may have been deleted.
               </p>
             </div>
           </motion.div>
@@ -79,7 +79,7 @@ export function NotebookErrorState({ error }: ErrorProps) {
                 Access denied
               </h1>
               <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                You do not have permission to access this notebook.
+                You don't have permission to access this notebook.
               </p>
             </div>
           </motion.div>
@@ -104,7 +104,7 @@ export function NotebookErrorState({ error }: ErrorProps) {
               </div>
             </div>
             <h1 className="mb-2 text-lg font-medium text-red-600 dark:text-red-400">
-              Error loading notebook
+              We couldn't load your notebook
             </h1>
             <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
               {error.message}

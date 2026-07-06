@@ -36,7 +36,7 @@ export function ExampleQuestions({
             size="sm"
             icon={<RestartIcon className="h-4 w-4" />}
           >
-            Regenerate example questions
+            Try generating questions again
           </Button>
         </div>
       ) : (

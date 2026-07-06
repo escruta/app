@@ -102,7 +102,7 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
   if (!flashcards || flashcards.length === 0) {
     return (
       <div className="flex items-center justify-center p-8 text-gray-500 dark:text-gray-400">
-        No flashcards available
+        No flashcards to show yet.
       </div>
     );
   }

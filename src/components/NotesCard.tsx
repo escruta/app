@@ -75,7 +75,9 @@ export function NotesCard({ notebookId, onNoteSelect, refreshTrigger }: NotesCar
             }
             if (error) {
               return (
-                <div className="text-sm text-red-500">Error loading notes: {error.message}</div>
+                <div className="text-sm text-red-500">
+                  We couldn't load your notes: {error.message}
+                </div>
               );
             }
             if (notes && notes.length > 0) {

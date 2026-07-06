@@ -25,7 +25,7 @@ export function Dropdown<T>({
   onSelect,
   label,
   className = "",
-  placeholder = "Select an option",
+  placeholder = "Choose an option",
   disabled = false,
   size = "md",
   up = false,

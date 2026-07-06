@@ -523,9 +523,7 @@ export function ChatCard({
                     <FileIcon />
                   </div>
                 </div>
-                <h3 className="text-foreground mb-2 text-lg font-semibold">
-                  This notebook is empty
-                </h3>
+                <h3 className="text-foreground mb-2 text-lg font-semibold">No sources here yet</h3>
                 <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
                   Add sources to start chatting with your documents. You can upload PDFs, paste
                   text, or add web links.
@@ -566,12 +564,12 @@ export function ChatCard({
             multiline
           />
           <div className="absolute right-2 bottom-2">
-            <Tooltip text="Send message" position="top">
+            <Tooltip text="Send your question" position="top">
               <IconButton
                 icon={<SendIcon />}
                 onClick={handleSendMessage}
                 disabled={isChatLoading || !input.trim() || selectedSourceIds.length === 0}
-                aria-label="Send message"
+                aria-label="Send your question"
                 size="sm"
                 variant="primary"
               />

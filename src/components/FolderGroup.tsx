@@ -55,13 +55,13 @@ export function FolderGroup({
         <span className="text-xs font-normal text-gray-400 dark:text-gray-500">{itemCount}</span>
         <span onClick={(e) => e.stopPropagation()} className="flex items-center">
           <Menu>
-            <Tooltip text="Folder options" position="top">
+            <Tooltip text="Folder settings" position="top">
               <MenuTrigger>
                 <IconButton
                   variant="ghost"
                   icon={<DotsVerticalIcon className="size-3" />}
                   size="xs"
-                  ariaLabel="Folder options"
+                  ariaLabel="Folder settings"
                 />
               </MenuTrigger>
             </Tooltip>

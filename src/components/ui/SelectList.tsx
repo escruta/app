@@ -21,7 +21,7 @@ export function SelectList({
   selectedId,
   onSelect,
   className,
-  emptyText = "No options available",
+  emptyText = "No options to choose from",
 }: SelectListProps) {
   return (
     <div

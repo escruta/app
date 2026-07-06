@@ -88,13 +88,13 @@ export function SourceChip({
           </h2>
           {isFailed && (
             <p className="mt-0.5 text-xs text-red-600 dark:text-red-400">
-              Failed to process source
+              We couldn't process this source
             </p>
           )}
         </div>
         {isFailed && notebookId && (
           <div className="z-10 shrink-0" onClick={(e) => e.stopPropagation()}>
-            <Tooltip text="Delete failed source" position="top">
+            <Tooltip text="Remove this failed source" position="top">
               <IconButton
                 icon={deletingSource ? <Spinner size={16} /> : <DeleteIcon />}
                 variant="ghost"

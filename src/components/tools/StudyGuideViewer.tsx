@@ -79,7 +79,7 @@ export function StudyGuideViewer({ data, className }: StudyGuideViewerProps) {
 
       {/* Key Concepts */}
       {keyConcepts && keyConcepts.length > 0 && (
-        <CollapsibleSection title="Key Concepts" badge={keyConcepts.length} defaultOpen={true}>
+        <CollapsibleSection title="Key concepts" badge={keyConcepts.length} defaultOpen={true}>
           <div className="flex flex-col gap-2">
             {keyConcepts.map((concept, index) => (
               <div
@@ -101,7 +101,7 @@ export function StudyGuideViewer({ data, className }: StudyGuideViewerProps) {
       {/* Important Details */}
       {importantDetails && importantDetails.length > 0 && (
         <CollapsibleSection
-          title="Important Details"
+          title="Important details"
           badge={importantDetails.length}
           defaultOpen={true}
         >
@@ -121,7 +121,7 @@ export function StudyGuideViewer({ data, className }: StudyGuideViewerProps) {
       {/* Connections */}
       {connections && connections.length > 0 && (
         <CollapsibleSection
-          title="Connections & Relationships"
+          title="Connections & relationships"
           badge={connections.length}
           defaultOpen={false}
         >
@@ -143,7 +143,7 @@ export function StudyGuideViewer({ data, className }: StudyGuideViewerProps) {
       {/* Review Questions */}
       {reviewQuestions && reviewQuestions.length > 0 && (
         <CollapsibleSection
-          title="Review Questions"
+          title="Review questions"
           badge={reviewQuestions.length}
           defaultOpen={false}
         >

@@ -30,7 +30,7 @@ export function AccountSection() {
         fetchUserData();
       },
       onError: (error) => {
-        setErrorNameMessage(error.message || "Unknown error");
+        setErrorNameMessage(error.message || "Something went wrong. Please try again.");
         console.error("Error updating name:", error.message);
       },
     },
@@ -51,7 +51,7 @@ export function AccountSection() {
         signOut();
       },
       onError: (error) => {
-        setErrorPasswordMessage(error.message || "Unknown error");
+        setErrorPasswordMessage(error.message || "Something went wrong. Please try again.");
         console.error("Error changing password:", error.message);
       },
     },
@@ -68,7 +68,7 @@ export function AccountSection() {
         signOut();
       },
       onError: (error) => {
-        setErrorDeleteMessage(error.message || "Unknown error");
+        setErrorDeleteMessage(error.message || "Something went wrong. Please try again.");
         console.error("Error deleting account:", error.message);
       },
     },
@@ -116,12 +116,12 @@ export function AccountSection() {
 
   const handlePasswordChange = () => {
     if (!currentPassword.trim()) {
-      setErrorPasswordMessage("Current password is required.");
+      setErrorPasswordMessage("Please enter your current password.");
       return;
     }
 
     if (!newPassword.trim()) {
-      setErrorPasswordMessage("New password is required.");
+      setErrorPasswordMessage("Please enter a new password.");
       return;
     }
 
@@ -132,7 +132,7 @@ export function AccountSection() {
     }
 
     if (newPassword !== confirmPassword) {
-      setErrorPasswordMessage("Passwords don't match");
+      setErrorPasswordMessage("Passwords don't match — please try again.");
       return;
     }
     changePassword();
@@ -349,13 +349,13 @@ export function AccountSection() {
       >
         <div className="space-y-4">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            <span className="font-semibold">This action cannot be undone.</span> This will
-            permanently delete your account and all your data.
+            <span className="font-semibold">This is permanent.</span> Deleting your account will
+            erase all your notebooks, notes, and sources, and it can't be undone.
           </p>
 
           <TextField
             id="delete-confirmation"
-            label="Type 'delete my account' to confirm"
+            label="Type 'delete my account' below to confirm"
             type="text"
             value={deleteConfirmation}
             onChange={(e) => setDeleteConfirmation(e.target.value)}

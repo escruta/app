@@ -141,7 +141,7 @@ export function Editor({
         },
         inlineOptions: {
           onClick: async (node, pos) => {
-            const katex = await promptUser("Enter new calculation:", node.attrs.latex);
+            const katex = await promptUser("Enter a new calculation:", node.attrs.latex);
             if (katex !== null) {
               editor.chain().setNodeSelection(pos).updateInlineMath({ latex: katex }).focus().run();
             }
@@ -149,7 +149,7 @@ export function Editor({
         },
         blockOptions: {
           onClick: async (node, pos) => {
-            const katex = await promptUser("Enter new calculation:", node.attrs.latex);
+            const katex = await promptUser("Enter a new calculation:", node.attrs.latex);
             if (katex !== null) {
               editor.chain().setNodeSelection(pos).updateBlockMath({ latex: katex }).focus().run();
             }
@@ -434,7 +434,7 @@ export function Editor({
             let latex: string | null = currentLatex;
 
             if (empty || isInline || isBlock) {
-              latex = await promptUser("Mathematical expression (LaTeX):", currentLatex);
+              latex = await promptUser("Type your math expression (LaTeX):", currentLatex);
             }
 
             if (latex !== null && latex.trim() !== "") {
@@ -501,7 +501,7 @@ export function Editor({
               Cancel
             </Button>
             <Button variant="primary" onClick={() => promptState.onConfirm(promptState.value)}>
-              Confirm
+              Save
             </Button>
           </>
         }

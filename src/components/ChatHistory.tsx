@@ -218,7 +218,7 @@ export function ChatHistory({
           search
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder={total > 0 ? `Search conversations...` : "No conversations yet"}
+          placeholder={total > 0 ? `Search your conversations...` : "No conversations yet"}
           onClear={() => setSearchQuery("")}
           autoFocus
         />
@@ -235,7 +235,9 @@ export function ChatHistory({
           </>
         ) : conversations.length === 0 ? (
           <div className="py-8 text-center text-gray-500 dark:text-gray-400">
-            {debouncedSearch ? "No conversations match your search" : "No conversations yet"}
+            {debouncedSearch
+              ? "No conversations match that — try another search"
+              : "No conversations yet"}
           </div>
         ) : (
           <>

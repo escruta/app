@@ -491,7 +491,7 @@ export function MindMapViewer({
   if (!central || !branches || branches.length === 0) {
     return (
       <div className="flex items-center justify-center p-8 text-gray-500 dark:text-gray-400">
-        No mind map data available
+        There's no mind map to show here yet.
       </div>
     );
   }
@@ -506,14 +506,14 @@ export function MindMapViewer({
             onClick={handleExpandAll}
             className="flex h-7 items-center justify-center rounded-xs border border-gray-200 bg-white px-2.5 text-xs font-medium text-gray-600 shadow-xs transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
           >
-            Expand All
+            Expand all
           </button>
           <button
             type="button"
             onClick={handleCollapseAll}
             className="flex h-7 items-center justify-center rounded-xs border border-gray-200 bg-white px-2.5 text-xs font-medium text-gray-600 shadow-xs transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
           >
-            Collapse All
+            Collapse all
           </button>
         </div>
         <div className="h-4 w-px bg-gray-200 dark:bg-gray-600" />

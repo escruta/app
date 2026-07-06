@@ -131,11 +131,13 @@ export default function NotePage() {
     return (
       <div className="flex h-screen max-h-full w-full flex-col">
         <TopBar
-          title={renderTopBarTitle(<span className="text-gray-400">Error loading note</span>)}
+          title={renderTopBarTitle(
+            <span className="text-gray-400">We couldn't load your note</span>,
+          )}
         />
         <div className="relative flex flex-1 items-center justify-center overflow-hidden">
           <SimpleBackground />
-          <div className="text-sm text-red-500">Error loading note: {error.message}</div>
+          <div className="text-sm text-red-500">We couldn't load this note: {error.message}</div>
         </div>
       </div>
     );
@@ -166,7 +168,7 @@ export default function NotePage() {
               }
             }}
             disabled={updatingNote}
-            placeholder="Enter note title"
+            placeholder="Give your note a title..."
           />,
         )}
         actions={
@@ -231,9 +233,13 @@ export default function NotePage() {
       >
         <div className="space-y-4">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Are you sure you want to delete this note? This action cannot be undone.
+            This will permanently delete the note, and you won't be able to undo it.
           </p>
-          {deleteError && <div className="text-sm text-red-500">Error: {deleteError.message}</div>}
+          {deleteError && (
+            <div className="text-sm text-red-500">
+              We couldn't delete this note: {deleteError.message}
+            </div>
+          )}
         </div>
       </Modal>
     </div>

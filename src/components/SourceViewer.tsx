@@ -213,7 +213,7 @@ export function SourceViewer({
                 Source /{" "}
               </span>
               <span className="truncate font-semibold">
-                {fullSource?.title || source.title || "Source viewer"}
+                {fullSource?.title || source.title || "Viewing source"}
               </span>
             </h2>
             <div className="flex gap-2">
@@ -325,7 +325,9 @@ export function SourceViewer({
           </div>
         )}
         {error && (
-          <div className="px-6 text-sm text-red-500">Error loading source: {error.message}</div>
+          <div className="px-6 text-sm text-red-500">
+            We couldn't load this source: {error.message}
+          </div>
         )}
         {fullSource && !loading && !error && (
           <div className="w-full flex-1 overflow-y-auto">
@@ -564,9 +566,13 @@ export function SourceViewer({
       >
         <div className="space-y-4">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Are you sure you want to delete this source? This action cannot be undone.
+            This will permanently delete the source, and you won't be able to undo it.
           </p>
-          {deleteError && <div className="text-sm text-red-500">Error: {deleteError.message}</div>}
+          {deleteError && (
+            <div className="text-sm text-red-500">
+              We couldn't delete this source: {deleteError.message}
+            </div>
+          )}
         </div>
       </Modal>
     </>

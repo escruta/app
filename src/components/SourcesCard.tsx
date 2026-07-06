@@ -107,7 +107,7 @@ export function SourcesCard({
       },
       onError: (error) => {
         console.error("Error adding source:", error.message);
-        setNewSourceLinkError("Failed to add source. " + error.message);
+        setNewSourceLinkError("We couldn't add this source: " + error.message);
       },
     },
     false,
@@ -118,7 +118,7 @@ export function SourcesCard({
 
     if (sourceType === "File") {
       if (!newSourceFile) {
-        setNewSourceLinkError("Please select a file");
+        setNewSourceLinkError("Please choose a file first");
         return;
       }
 
@@ -129,7 +129,7 @@ export function SourcesCard({
       }
     } else if (sourceType === "Text") {
       if (!newSourceTextTitle.trim() || !newSourceTextContent.trim()) {
-        setNewSourceLinkError("Please enter both title and content");
+        setNewSourceLinkError("Please add both a title and some content");
         return;
       }
     } else {

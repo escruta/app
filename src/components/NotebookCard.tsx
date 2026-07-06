@@ -372,13 +372,13 @@ export function NotebookCard({
       >
         <div className="space-y-4">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            <span className="font-semibold">This action cannot be undone.</span> All notes and data
-            associated with this notebook will be permanently deleted.
+            <span className="font-semibold">This is permanent.</span> Deleting this notebook will
+            erase all notes and data inside it, and it can't be undone.
           </p>
 
           <TextField
             id="delete-confirmation"
-            label="Type 'delete this notebook' to confirm"
+            label="Type 'delete this notebook' below to confirm"
             type="text"
             value={deleteConfirmation}
             onChange={(e) => setDeleteConfirmation(e.target.value)}
@@ -420,7 +420,7 @@ export function NotebookCard({
             }))}
             selectedId={selectedFolderId}
             onSelect={setSelectedFolderId}
-            emptyText="No folders yet"
+            emptyText="You don't have any folders yet — create one to organize your notebooks."
           />
           {selectedFolderId === null && (notebook.folderId ?? null) !== null && (
             <p className="text-sm text-gray-500 dark:text-gray-400">

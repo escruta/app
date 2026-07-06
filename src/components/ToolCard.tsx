@@ -156,7 +156,7 @@ export function ToolCard({
               : isCompleted && hasResult
                 ? "Ready!"
                 : isFailed
-                  ? "Failed."
+                  ? "Couldn't generate."
                   : description}
           </p>
         </div>

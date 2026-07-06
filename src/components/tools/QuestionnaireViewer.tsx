@@ -145,7 +145,7 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
   if (!questions || questions.length === 0) {
     return (
       <div className="flex items-center justify-center p-8 text-gray-500 dark:text-gray-400">
-        No questions available
+        No questions to show yet.
       </div>
     );
   }
@@ -262,7 +262,7 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
 
                 <div className="flex justify-center">
                   <Button variant="primary" onClick={resetQuiz}>
-                    Try Again
+                    Try again
                   </Button>
                 </div>
               </motion.div>
@@ -360,7 +360,7 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
                 >
                   {score.answered === score.total ? (
                     <Button variant="primary" size="sm" onClick={() => setShowResults(true)}>
-                      Show Results
+                      Show results
                     </Button>
                   ) : currentIndex < totalQuestions - 1 ? (
                     <Button variant="primary" size="sm" onClick={handleNext}>
@@ -595,7 +595,7 @@ function QuestionContent({
                   onClick={onShortAnswerSubmit}
                   disabled={!state.textAnswer.trim()}
                 >
-                  Check Answer
+                  Check answer
                 </Button>
               </div>
             )}
@@ -609,7 +609,7 @@ function QuestionContent({
                 >
                   <div className="mt-3 rounded-xs border border-blue-200 bg-blue-50 p-3 dark:border-blue-700 dark:bg-blue-900/20">
                     <p className="mb-1 text-[10px] font-medium tracking-wider text-blue-600 uppercase dark:text-blue-400">
-                      Sample Answer
+                      Sample answer
                     </p>
                     <p className="text-sm leading-relaxed text-gray-700 dark:text-gray-200">
                       {question.sampleAnswer}

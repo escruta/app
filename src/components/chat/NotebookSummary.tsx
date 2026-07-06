@@ -26,7 +26,7 @@ export function NotebookSummary({
   return (
     <div className="w-full px-4 py-8 pb-0">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-xl font-semibold">Summary of the notebook</h3>
+        <h3 className="text-xl font-semibold">Summary of this notebook</h3>
         <div className="flex gap-2">
           {notebookSummary && !isSummaryLoading && !isAutoRegenerating && (
             <>

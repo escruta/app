@@ -48,7 +48,7 @@ export function ToolsCard({ notebookId, onNodeSelect, hasSources = true }: Tools
     {
       icon: <CardIcon />,
       title: "Flashcards",
-      description: "Spaced repetition cards",
+      description: "Quiz yourself with spaced repetition",
       type: "FLASHCARDS",
     },
     {

@@ -121,7 +121,7 @@ export default function NotesPage() {
             value={query}
             onChange={(e) => handleSearch(e.target.value)}
             onClear={() => handleSearch("")}
-            placeholder="Search notes..."
+            placeholder="Search your notes..."
             search
             autoFocus
           />
@@ -195,7 +195,7 @@ export default function NotesPage() {
               <p className="mb-6 max-w-md text-base leading-relaxed text-gray-500 dark:text-gray-400">
                 {query.trim()
                   ? "Try a different search term."
-                  : "Create your first note from the Home page."}
+                  : "Head to the Home page to create your first note."}
               </p>
             </div>
           )}

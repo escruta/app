@@ -42,7 +42,7 @@ function parseContent(content: string, type: JobType): ParsedContent {
     const data = JSON.parse(content);
     return { type, data } as ParsedContent;
   } catch {
-    return { type: "error", error: "Failed to parse content" };
+    return { type: "error", error: "We couldn't read this content" };
   }
 }
 
@@ -76,7 +76,7 @@ export function ToolResultViewer({
     if (!parsedContent) {
       return (
         <div className="flex flex-1 items-center justify-center p-6">
-          <p className="text-gray-500 dark:text-gray-400">No content available</p>
+          <p className="text-gray-500 dark:text-gray-400">Nothing to show here yet.</p>
         </div>
       );
     }
@@ -87,7 +87,7 @@ export function ToolResultViewer({
           <div className="text-center">
             <p className="mb-2 text-red-500 dark:text-red-400">{parsedContent.error}</p>
             <p className="text-sm text-gray-400 dark:text-gray-500">
-              The content could not be displayed properly
+              We couldn't display this content properly — try regenerating it.
             </p>
           </div>
         </div>
@@ -113,7 +113,9 @@ export function ToolResultViewer({
       default:
         return (
           <div className="flex flex-1 items-center justify-center p-6">
-            <p className="text-gray-500 dark:text-gray-400">Unknown content type</p>
+            <p className="text-gray-500 dark:text-gray-400">
+              We don't recognize this content type — try regenerating.
+            </p>
           </div>
         );
     }

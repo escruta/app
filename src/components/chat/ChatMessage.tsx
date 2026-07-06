@@ -43,7 +43,7 @@ function processMessage(
             size="sm"
             icon={<RestartIcon className="size-4" />}
           >
-            Retry message
+            Try again
           </Button>
         )}
       </div>

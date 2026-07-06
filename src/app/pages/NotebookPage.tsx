@@ -417,7 +417,7 @@ export default function NotebookPage() {
               <span className="hidden shrink-0 text-xs font-medium tracking-wide text-gray-500 uppercase md:block dark:text-gray-400">
                 Notebook /{" "}
               </span>
-              <span className="text-gray-400">Error loading notebook</span>
+              <span className="text-gray-400">We couldn't load your notebook</span>
             </div>
           }
         />
@@ -573,7 +573,7 @@ export default function NotebookPage() {
                 }
               }}
               disabled={renamingNotebook}
-              placeholder="Enter notebook title"
+              placeholder="Give your notebook a title..."
             />
           </div>
         }
@@ -657,13 +657,13 @@ export default function NotebookPage() {
             >
               {isLeftCollapsed && (
                 <div className="flex h-full w-full flex-col items-center py-3">
-                  <Tooltip text="Expand Sources" position="right">
+                  <Tooltip text="Expand sources" position="right">
                     <IconButton
                       icon={<ExpandIcon />}
                       onClick={expandLeft}
                       variant="secondary"
                       size="sm"
-                      aria-label="Expand Sources"
+                      aria-label="Expand sources"
                     />
                   </Tooltip>
                   <div

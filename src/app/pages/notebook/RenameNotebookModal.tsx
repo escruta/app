@@ -44,16 +44,16 @@ export function RenameNotebookModal({
       <div className="space-y-6">
         <TextField
           id="notebook-title"
-          label="Notebook Title"
+          label="Name your notebook"
           type="text"
           value={newTitle}
           onChange={(e) => setNewTitle(e.target.value)}
-          placeholder="Enter new notebook title"
+          placeholder="Give your notebook a title..."
           autoFocus
         />
         {renameError && (
           <div className="rounded-xs border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-500 dark:border-red-800 dark:bg-red-950">
-            Error: {renameError.message}
+            We couldn't rename the notebook: {renameError.message}
           </div>
         )}
       </div>

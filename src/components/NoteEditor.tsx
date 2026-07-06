@@ -171,7 +171,7 @@ export function NoteEditor({
                 }
               }}
               disabled={updatingNote}
-              placeholder="Enter note title"
+              placeholder="Give your note a title..."
             />
           </div>
           <div className="flex gap-2">
@@ -218,7 +218,9 @@ export function NoteEditor({
             <Spinner />
           </div>
         )}
-        {error && <div className="text-sm text-red-500">Error loading note: {error.message}</div>}
+        {error && (
+          <div className="text-sm text-red-500">We couldn't load this note: {error.message}</div>
+        )}
         {fullNote && !loading && !error && (
           <div className="flex flex-1 flex-col overflow-hidden">
             <Editor
@@ -256,9 +258,13 @@ export function NoteEditor({
       >
         <div className="space-y-4">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Are you sure you want to delete this note? This action cannot be undone.
+            This will permanently delete the note, and you won't be able to undo it.
           </p>
-          {deleteError && <div className="text-sm text-red-500">Error: {deleteError.message}</div>}
+          {deleteError && (
+            <div className="text-sm text-red-500">
+              We couldn't delete this note: {deleteError.message}
+            </div>
+          )}
         </div>
       </Modal>
     </>

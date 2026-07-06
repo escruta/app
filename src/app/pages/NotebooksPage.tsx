@@ -119,7 +119,7 @@ export default function NotebooksPage() {
             value={query}
             onChange={(e) => handleSearch(e.target.value)}
             onClear={() => handleSearch("")}
-            placeholder="Search notebooks..."
+            placeholder="Search your notebooks..."
             search
             autoFocus
           />
@@ -188,7 +188,7 @@ export default function NotebooksPage() {
               <p className="mb-6 max-w-md text-base leading-relaxed text-gray-500 dark:text-gray-400">
                 {query.trim()
                   ? "Try a different search term."
-                  : "Create your first notebook from the Home page."}
+                  : "Head to the Home page to create your first notebook."}
               </p>
             </div>
           )}

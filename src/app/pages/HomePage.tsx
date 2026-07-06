@@ -192,7 +192,7 @@ export default function HomePage() {
     "/notes",
     {
       method: "POST",
-      data: { title: "New note" },
+      data: { title: "Untitled note" },
       onSuccess: (newNote) => {
         useFetch.clearCache();
         navigate(`/note/${newNote.id}`);
@@ -407,7 +407,7 @@ export default function HomePage() {
                       </div>
                     ) : (
                       <p className="px-4 py-2 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                        This folder is empty.
+                        This folder is empty — drop a notebook or note in here to get started.
                       </p>
                     )}
                   </FolderGroup>
@@ -417,7 +417,8 @@ export default function HomePage() {
               <div className="flex w-full flex-col items-center justify-center gap-1 rounded-xs border-2 border-dashed border-blue-400/60 bg-gray-50/60 px-6 py-8 text-center dark:border-blue-600/60 dark:bg-gray-900/30">
                 <h3 className="text-foreground text-lg font-semibold">No folders yet</h3>
                 <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                  Create a folder to group your notebooks and notes together.
+                  Folders are a handy way to keep related notebooks and notes together. Create your
+                  first one to start organizing.
                 </p>
               </div>
             )}
@@ -450,7 +451,7 @@ export default function HomePage() {
                   size="sm"
                   onClick={() => setIsCreateNotebookOpen(true)}
                 >
-                  Create notebook
+                  New notebook
                 </Button>
               </div>
             </h3>
@@ -474,7 +475,7 @@ export default function HomePage() {
                       </div>
                     </div>
                     <h4 className="mb-2 text-lg font-medium text-red-600 dark:text-red-400">
-                      Error loading notebooks
+                      We couldn't load your notebooks
                     </h4>
                     <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
                       {notebooksError.message}
@@ -516,16 +517,19 @@ export default function HomePage() {
                   ) : (
                     <div className="flex w-full flex-col items-center justify-center gap-1 rounded-xs border-2 border-dashed border-gray-400/30 bg-gray-50/60 px-6 py-8 text-center dark:border-gray-600/30 dark:bg-gray-900/30">
                       <h3 className="text-foreground text-md font-semibold">
-                        All your notebooks are inside folders.
+                        All your notebooks are tucked into folders.
                       </h3>
+                      <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                        Open a folder above to find them, or create a new notebook to start fresh.
+                      </p>
                     </div>
                   )
                 ) : (
                   <div className="flex w-full flex-col items-center justify-center gap-1 rounded-xs border-2 border-dashed border-blue-400/60 bg-gray-50/60 px-6 py-8 text-center dark:border-blue-600/60 dark:bg-gray-900/30">
                     <h3 className="text-foreground text-lg font-semibold">No notebooks yet</h3>
                     <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                      Create your first notebook to start organizing your sources and AI-powered
-                      insights.
+                      Notebooks bring your sources and AI-powered insights together in one place.
+                      Create your first one to get started.
                     </p>
                   </div>
                 )}
@@ -590,7 +594,7 @@ export default function HomePage() {
                       </div>
                     </div>
                     <h4 className="mb-2 text-lg font-medium text-red-600 dark:text-red-400">
-                      Error loading notes
+                      We couldn't load your notes
                     </h4>
                     <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
                       {notesError.message}
@@ -635,15 +639,20 @@ export default function HomePage() {
                   ) : (
                     <div className="flex w-full flex-col items-center justify-center gap-1 rounded-xs border-2 border-dashed border-gray-400/30 bg-gray-50/60 px-6 py-8 text-center dark:border-gray-600/30 dark:bg-gray-900/30">
                       <h3 className="text-foreground text-md font-semibold">
-                        All your notes are inside folders.
+                        All your notes are tucked into folders.
                       </h3>
+                      <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                        Open a folder above to find them, or create a new note to jot something
+                        down.
+                      </p>
                     </div>
                   )
                 ) : (
                   <div className="flex w-full flex-col items-center justify-center gap-1 rounded-xs border-2 border-dashed border-blue-400/60 bg-gray-50/60 px-6 py-8 text-center dark:border-blue-600/60 dark:bg-gray-900/30">
                     <h3 className="text-foreground text-lg font-semibold">No notes yet</h3>
                     <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                      Create your first note to start capturing your ideas and insights.
+                      Notes are perfect for quick thoughts, ideas, and insights. Create your first
+                      one to start capturing them.
                     </p>
                   </div>
                 )}
@@ -656,7 +665,7 @@ export default function HomePage() {
         <Modal
           isOpen={isCreateNotebookOpen}
           onClose={() => setIsCreateNotebookOpen(false)}
-          title="Create new notebook"
+          title="New notebook"
           actions={
             <>
               <Button
@@ -680,7 +689,7 @@ export default function HomePage() {
           <div className="space-y-4">
             <TextField
               id="notebook-title"
-              label="Notebook title"
+              label="Name your notebook"
               type="text"
               value={newNotebookTitle}
               onChange={(e) => setNewNotebookTitle(e.target.value)}
@@ -690,11 +699,13 @@ export default function HomePage() {
                   await createNotebook();
                 }
               }}
-              placeholder="Enter notebook title"
+              placeholder="e.g., Research on climate policy"
               autoFocus
             />
             {createNotebookError && (
-              <div className="text-sm text-red-500">Error: {createNotebookError.message}</div>
+              <div className="text-sm text-red-500">
+                Something went wrong while creating the notebook: {createNotebookError.message}
+              </div>
             )}
           </div>
         </Modal>
@@ -731,10 +742,10 @@ export default function HomePage() {
           <div className="space-y-4">
             <TextField
               id="folder-name-input"
-              label="Folder name"
+              label="Name your folder"
               value={folderTitle}
               onChange={(e) => setFolderTitle(e.target.value)}
-              placeholder="E.g., Ideas"
+              placeholder="e.g., Ideas, Thesis, Travel…"
               autoFocus
             />
           </div>
@@ -768,9 +779,9 @@ export default function HomePage() {
           }
         >
           <p className="text-gray-600 dark:text-gray-300">
-            Are you sure you want to delete the folder{" "}
-            <span className="font-semibold">{folderToDelete?.title}</span>? This action cannot be
-            undone. Items inside this folder will remain but will be moved out of the folder.
+            You're about to delete <span className="font-semibold">{folderToDelete?.title}</span>.
+            This can't be undone—any notebooks and notes inside will stay in your library, just
+            moved out of the folder.
           </p>
         </Modal>
       </div>
