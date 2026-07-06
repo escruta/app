@@ -112,7 +112,7 @@ export default function NotesPage() {
       <title>Notes - Escruta</title>
       <TopBar title="Notes" />
 
-      <div className="flex-1 overflow-auto py-4">
+      <div className="flex-1 overflow-y-scroll py-4">
         <SimpleBackground />
 
         <div className="mx-auto max-w-5xl space-y-4 px-6">

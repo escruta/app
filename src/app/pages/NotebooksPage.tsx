@@ -110,7 +110,7 @@ export default function NotebooksPage() {
       <title>Notebooks - Escruta</title>
       <TopBar title="Notebooks" />
 
-      <div className="flex-1 overflow-auto py-4">
+      <div className="flex-1 overflow-y-scroll py-4">
         <SimpleBackground />
 
         <div className="mx-auto max-w-5xl space-y-4 px-6">
