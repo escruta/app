@@ -3,6 +3,7 @@ export * from "./useBreakpoint";
 export * from "./useCookie";
 export * from "./useFetch";
 export * from "./useGenerationJob";
+export * from "./useGreeting";
 export * from "./useIsDevice";
 export * from "./useTheme";
 export * from "./useVisualViewportHeight";
