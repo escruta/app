@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router";
+import { NavLink, useLocation, useNavigate } from "react-router";
 import { useAuth } from "@/hooks";
 import {
   Tooltip,
@@ -11,7 +11,7 @@ import {
   MenuItem,
   MenuSeparator,
 } from "@/components/ui";
-import { SettingsIcon, SignOutIcon, DotsVerticalIcon } from "@/components/icons";
+import { ChevronIcon, SettingsIcon, SignOutIcon, DotsVerticalIcon } from "@/components/icons";
 import { useState } from "react";
 import { AppIcon } from "./AppIcon";
 
@@ -23,6 +23,7 @@ interface TopBarProps {
 
 export function TopBar({ title, actions, extraMenuItems }: TopBarProps = {}) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { signOut } = useAuth();
   const [showSignOutModal, setShowSignOutModal] = useState(false);
 
@@ -35,9 +36,27 @@ export function TopBar({ title, actions, extraMenuItems }: TopBarProps = {}) {
   return (
     <div className="z-50 flex w-full shrink-0 flex-row items-center justify-between border-b border-gray-200 bg-white px-4 py-2 md:px-6 dark:border-gray-800 dark:bg-black">
       <div className="flex items-center gap-4">
-        <NavLink to="/" className="group grid h-10 w-10 shrink-0 place-items-center">
-          <AppIcon className="h-8 w-8 fill-gray-800 transition-all duration-300 group-hover:fill-blue-500 dark:fill-gray-50 dark:group-hover:fill-blue-400" />
-        </NavLink>
+        {location.pathname !== "/" ? (
+          <Tooltip
+            text="Previous page"
+            position="right"
+            className="group relative grid size-10 shrink-0 place-items-center"
+          >
+            <AppIcon className="col-start-1 row-start-1 size-8 fill-gray-800 transition-opacity duration-200 group-hover:opacity-0 dark:fill-gray-50" />
+            <IconButton
+              icon={<ChevronIcon direction="left" className="size-5" />}
+              onClick={() => navigate(-1)}
+              variant="ghost"
+              size="sm"
+              className="col-start-1 row-start-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+              ariaLabel="Previous page"
+            />
+          </Tooltip>
+        ) : (
+          <NavLink to="/" className="group grid h-10 w-10 shrink-0 place-items-center">
+            <AppIcon className="size-8 fill-gray-800 transition-all duration-300 group-hover:fill-blue-500 dark:fill-gray-50 dark:group-hover:fill-blue-400" />
+          </NavLink>
+        )}
 
         {title && (
           <>

@@ -234,7 +234,6 @@ export function Tooltip({
                 typeof text === "string"
                   ? "px-3 py-1.5 text-center text-sm font-medium whitespace-normal wrap-break-word"
                   : "flex flex-col overflow-hidden text-left p-0",
-                className,
               )}
             >
               {text}
