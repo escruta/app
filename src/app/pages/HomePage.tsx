@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { useAuth, useCookie, useFetch, useGreeting } from "@/hooks";
+import { useAuth, useCookie, useFetch, useGreeting, useMediaQuery } from "@/hooks";
+import { BREAKPOINTS } from "@/hooks/useBreakpoint";
 import { Button, Modal, Spinner, TextField, Tooltip } from "@/components/ui";
 import { NotebookCard, NoteCard, TopBar, FolderGroup } from "@/components";
 import { GaussianBlurGradientBackground } from "@/components/backgrounds/GaussianBlurGradientBackground";
@@ -142,6 +143,11 @@ export default function HomePage() {
 
   const viewMode = globalViewMode || "grid";
 
+  const isBelowSm = useMediaQuery(BREAKPOINTS.mobile - 1);
+  const isBelowMd = useMediaQuery(BREAKPOINTS.tablet - 1);
+  const gridColumns = isBelowSm ? 2 : isBelowMd ? 3 : 4;
+  const MAX_HOME_ITEMS = viewMode === "grid" ? gridColumns * 2 : 5;
+
   const folderItems = (folders ?? []).map((folder) => {
     const folderNotebooks = (notebooks ?? []).filter((nb) => nb.folderId === folder.id);
     const folderNotes = (notes ?? []).filter((n) => n.folderId === folder.id);
@@ -176,7 +182,6 @@ export default function HomePage() {
   const sortedUnfiledNotebooks = getSortedItems(unfiledNotebooks, sortBy);
   const sortedUnfiledNotes = getSortedItems(unfiledNotes, sortBy);
 
-  const MAX_HOME_ITEMS: number = 5;
   const displayNotebooks = sortedUnfiledNotebooks.slice(0, MAX_HOME_ITEMS);
   const hasMoreNotebooks = sortedUnfiledNotebooks.length > MAX_HOME_ITEMS;
   const displayNotes = sortedUnfiledNotes.slice(0, MAX_HOME_ITEMS);
