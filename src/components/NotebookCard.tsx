@@ -352,6 +352,11 @@ export function NotebookCard({
           setDeleteConfirmation("");
         }}
         title={`Delete notebook "${notebook.title}"`}
+        onSubmit={() => {
+          if (deleteConfirmation.toLowerCase() === "delete this notebook" && !deletingNotebook) {
+            handleDeleteNotebook();
+          }
+        }}
         actions={
           <>
             <Button variant="secondary" onClick={() => setIsDeleteModalOpen(false)}>

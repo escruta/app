@@ -55,6 +55,7 @@ interface ModalProps {
   closeOnOutsideClick?: boolean;
   closeOnEscape?: boolean;
   contentClassname?: string;
+  onSubmit?: () => void;
 }
 
 export function Modal({
@@ -68,6 +69,7 @@ export function Modal({
   closeOnOutsideClick = true,
   closeOnEscape = true,
   contentClassname,
+  onSubmit,
 }: ModalProps) {
   const isMobile = useIsMobile();
   const viewportHeight = useVisualViewportHeight();
@@ -86,6 +88,11 @@ export function Modal({
       await animate(scope.current, { y: "100%" }, { duration: 0.15, ease: "easeOut" });
     }
     onClose();
+  };
+
+  const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
+    e.preventDefault();
+    onSubmit?.();
   };
 
   useEffect(() => {
@@ -170,14 +177,30 @@ export function Modal({
               )}
             </div>
 
-            <div className={cn("overflow-y-auto", contentClassname)}>
-              <div className="p-4">{children}</div>
-            </div>
+            {onSubmit ? (
+              <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+                <div className={cn("overflow-y-auto flex-1 min-h-0", contentClassname)}>
+                  <div className="p-4">{children}</div>
+                </div>
 
-            {actions && (
-              <div className="flex justify-end gap-3 border-t border-gray-200 p-4 dark:border-gray-700">
-                {actions}
-              </div>
+                {actions && (
+                  <div className="flex justify-end gap-3 border-t border-gray-200 p-4 dark:border-gray-700">
+                    {actions}
+                  </div>
+                )}
+              </form>
+            ) : (
+              <>
+                <div className={cn("overflow-y-auto", contentClassname)}>
+                  <div className="p-4">{children}</div>
+                </div>
+
+                {actions && (
+                  <div className="flex justify-end gap-3 border-t border-gray-200 p-4 dark:border-gray-700">
+                    {actions}
+                  </div>
+                )}
+              </>
             )}
           </motion.div>
         </div>
@@ -228,14 +251,30 @@ export function Modal({
               )}
             </div>
 
-            <div className={cn("max-h-96 overflow-y-auto", contentClassname)}>
-              <div className="p-4">{children}</div>
-            </div>
+            {onSubmit ? (
+              <form onSubmit={handleSubmit}>
+                <div className={cn("max-h-96 overflow-y-auto", contentClassname)}>
+                  <div className="p-4">{children}</div>
+                </div>
 
-            {actions && (
-              <div className="flex justify-end gap-3 border-t border-gray-200 p-4 dark:border-gray-700">
-                {actions}
-              </div>
+                {actions && (
+                  <div className="flex justify-end gap-3 border-t border-gray-200 p-4 dark:border-gray-700">
+                    {actions}
+                  </div>
+                )}
+              </form>
+            ) : (
+              <>
+                <div className={cn("max-h-96 overflow-y-auto", contentClassname)}>
+                  <div className="p-4">{children}</div>
+                </div>
+
+                {actions && (
+                  <div className="flex justify-end gap-3 border-t border-gray-200 p-4 dark:border-gray-700">
+                    {actions}
+                  </div>
+                )}
+              </>
             )}
           </motion.div>
         </div>

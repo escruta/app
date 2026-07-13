@@ -564,6 +564,9 @@ export default function HomePage() {
           isOpen={isCreateNotebookOpen}
           onClose={() => setIsCreateNotebookOpen(false)}
           title="New notebook"
+          onSubmit={() => {
+            if (newNotebookTitle.trim() && !creatingNotebook) createNotebook();
+          }}
           actions={
             <>
               <Button
@@ -591,12 +594,6 @@ export default function HomePage() {
               type="text"
               value={newNotebookTitle}
               onChange={(e) => setNewNotebookTitle(e.target.value)}
-              onKeyDown={async (e) => {
-                if (e.key === "Enter" && newNotebookTitle.trim() && !creatingNotebook) {
-                  e.preventDefault();
-                  await createNotebook();
-                }
-              }}
               placeholder="e.g., Research on climate policy"
               autoFocus
             />
@@ -613,6 +610,9 @@ export default function HomePage() {
           isOpen={isFolderModalOpen}
           onClose={handleCloseFolderModal}
           title={editingFolderId ? "Rename folder" : "New folder"}
+          onSubmit={() => {
+            if (folderTitle.trim() && !creatingFolder && !updatingFolder) handleSaveFolder();
+          }}
           actions={
             <>
               <Button variant="secondary" onClick={handleCloseFolderModal}>

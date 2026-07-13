@@ -25,6 +25,9 @@ export function RenameNotebookModal({
       isOpen={isOpen}
       onClose={onClose}
       title="Rename notebook"
+      onSubmit={() => {
+        if (newTitle.trim() && !renamingNotebook) handleRenameNotebook();
+      }}
       actions={
         <>
           <Button variant="secondary" onClick={onClose} disabled={renamingNotebook}>

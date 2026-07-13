@@ -211,6 +211,9 @@ export function AccountSection() {
           setErrorNameMessage("");
         }}
         title="Change name"
+        onSubmit={() => {
+          if (newName && !isUpdatingName) updateName();
+        }}
         actions={
           <>
             <Button
@@ -254,6 +257,11 @@ export function AccountSection() {
           resetPasswordFields();
         }}
         title="Change password"
+        onSubmit={() => {
+          if (currentPassword && newPassword && confirmPassword && !isChangingPassword) {
+            handlePasswordChange();
+          }
+        }}
         actions={
           <>
             <Button
@@ -322,6 +330,11 @@ export function AccountSection() {
           setErrorDeleteMessage("");
         }}
         title="Delete account"
+        onSubmit={() => {
+          if (deleteConfirmation.toLowerCase() === "delete my account" && !isDeletingAccount) {
+            handleDeleteAccount();
+          }
+        }}
         actions={
           <>
             <Button
