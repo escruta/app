@@ -211,11 +211,13 @@ export function NoteCard({
           </MenuTrigger>
         </Tooltip>
         <MenuContent>
-          <MenuItem
-            icon={<FolderIcon className="size-4" />}
-            label="Move to folder"
-            onClick={handleOpenMoveModal}
-          />
+          {folders && (
+            <MenuItem
+              icon={<FolderIcon className="size-4" />}
+              label="Move to folder"
+              onClick={handleOpenMoveModal}
+            />
+          )}
           <MenuItem
             icon={<DeleteIcon />}
             label="Delete"

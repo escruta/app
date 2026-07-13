@@ -236,11 +236,13 @@ export function NotebookCard({
           </MenuTrigger>
         </Tooltip>
         <MenuContent>
-          <MenuItem
-            icon={<FolderIcon className="size-4" />}
-            label="Move to folder"
-            onClick={handleOpenMoveModal}
-          />
+          {folders && (
+            <MenuItem
+              icon={<FolderIcon className="size-4" />}
+              label="Move to folder"
+              onClick={handleOpenMoveModal}
+            />
+          )}
           <MenuItem icon={<EditIcon />} label="Rename" onClick={() => setIsRenameModalOpen(true)} />
           <MenuItem
             icon={<DeleteIcon />}
