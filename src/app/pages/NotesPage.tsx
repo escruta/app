@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Note, Notebook, NotesPageResponse } from "@/interfaces";
+import type { Folder, Note, Notebook, NotesPageResponse } from "@/interfaces";
 import { useCookie, useFetch } from "@/hooks";
 import { TopBar } from "@/components";
 import { NoteCard } from "@/components";
@@ -17,6 +17,7 @@ export default function NotesPage() {
   const viewMode = globalViewMode || "grid";
 
   const { data: notebooks } = useFetch<Notebook[]>("/notebooks");
+  const { data: folders } = useFetch<Folder[]>("/folders");
 
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -156,6 +157,7 @@ export default function NotesPage() {
                     note={note}
                     viewMode={viewMode}
                     notebookTitle={notebooks?.find((nb) => nb.id === note.notebookId)?.title}
+                    folders={folders ?? undefined}
                   />
                 ))}
               </motion.div>

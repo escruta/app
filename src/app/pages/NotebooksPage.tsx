@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { Notebook, NotebooksPageResponse } from "@/interfaces";
+import type { Folder, Notebook, NotebooksPageResponse } from "@/interfaces";
 import { useCookie, useFetch } from "@/hooks";
 import { TopBar } from "@/components";
 import { NotebookCard } from "@/components";
@@ -15,6 +15,8 @@ export default function NotebooksPage() {
   const [globalViewMode] = useCookie<"grid" | "list">("globalViewMode", "grid");
   const [globalSort] = useCookie<SortOption>("globalSortPreference", "Newest");
   const viewMode = globalViewMode || "grid";
+
+  const { data: folders } = useFetch<Folder[]>("/folders");
 
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -149,7 +151,12 @@ export default function NotebooksPage() {
                 }
               >
                 {items.map((notebook: Notebook) => (
-                  <NotebookCard key={notebook.id} notebook={notebook} viewMode={viewMode} />
+                  <NotebookCard
+                    key={notebook.id}
+                    notebook={notebook}
+                    viewMode={viewMode}
+                    folders={folders ?? undefined}
+                  />
                 ))}
               </motion.div>
 
