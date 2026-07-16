@@ -1,4 +1,4 @@
-import { useFetch, useCookie } from "@/hooks";
+import { useFetch, useCookie, useChatStream } from "@/hooks";
 import {
   FileIcon,
   SendIcon,
@@ -24,18 +24,11 @@ import { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { getHttpErrorMessage } from "@/lib/utils";
 
-import { ChatMessage, type Message, type CitedSource } from "./chat/ChatMessage";
+import { ChatMessage, type Message } from "./chat/ChatMessage";
 import { NotebookSummary } from "./chat/NotebookSummary";
 import { ExampleQuestions } from "./chat/ExampleQuestions";
 
 type Sender = "user" | "ai";
-
-interface ChatResponse {
-  content: string;
-  conversationId: string | null;
-  conversationTitle?: string;
-  citedSources: CitedSource[];
-}
 
 interface ChatCardProps {
   notebookId: string;
@@ -263,104 +256,97 @@ export function ChatCard({
     onSourceSelect?.(sourceId);
   };
 
+  const streamingMessageIdRef = useRef<string | null>(null);
+  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
+
+  const { stream: streamChat, isStreaming: isChatLoading } = useChatStream(
+    `notebooks/${notebookId}/chat/stream`,
+    {
+      onConversation: (id) => {
+        if (!conversationId) {
+          setConversationId(id);
+        }
+      },
+      onToken: (chunk) => {
+        const id = streamingMessageIdRef.current;
+        if (!id) return;
+        setIsWaitingForResponse(false);
+        setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, text: m.text + chunk } : m)));
+      },
+      onSources: (sources) => {
+        const id = streamingMessageIdRef.current;
+        if (!id) return;
+        setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, citedSources: sources } : m)));
+      },
+      onTitle: (title) => {
+        if (!conversationTitle) {
+          setConversationTitle(title);
+        }
+      },
+      onDone: () => {
+        pendingMessageRef.current = null;
+        streamingMessageIdRef.current = null;
+        setIsWaitingForResponse(false);
+      },
+      onError: (status, message) => {
+        console.error("Error streaming chat:", status, message);
+        const id = streamingMessageIdRef.current;
+        if (id) {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === id ? { ...m, text: getHttpErrorMessage(status) || message, error: true } : m,
+            ),
+          );
+        }
+        streamingMessageIdRef.current = null;
+        setIsWaitingForResponse(false);
+      },
+    },
+  );
+
+  const handleStreamChat = useCallback(
+    async (overrideConversationId: string | null = conversationId) => {
+      const aiMessageId = (Date.now() + 1).toString();
+      streamingMessageIdRef.current = aiMessageId;
+      const aiMessage: Message = { id: aiMessageId, text: "", sender: "ai" };
+      setMessages((prev) => [...prev, aiMessage]);
+      setIsWaitingForResponse(true);
+
+      await streamChat({
+        userInput: pendingMessageRef.current || "",
+        conversationId: overrideConversationId,
+        selectedSourceIds,
+      });
+    },
+    [conversationId, selectedSourceIds, streamChat],
+  );
+
   const handleSendMessage = async () => {
     if (!input.trim()) return;
 
     const userText = input.trim();
-    const newMessage: Message = {
+    const userMessage: Message = {
       id: Date.now().toString(),
       text: userText,
       sender: "user",
       selectedSourcesCount: selectedSourceIds.length,
     };
 
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
+    setMessages((prevMessages) => [...prevMessages, userMessage]);
     setInput("");
     pendingMessageRef.current = userText;
 
-    await fetchChatResponse(true);
+    await handleStreamChat();
   };
-
-  const chatDataRef = useRef({
-    userInput: "",
-    conversationId: null as string | null,
-    selectedSourceIds: [] as string[],
-  });
-
-  const chatOptions = useMemo(
-    () => ({
-      method: "POST" as const,
-      get data() {
-        return chatDataRef.current;
-      },
-      onSuccess: (response: ChatResponse) => {
-        const aiResponse: Message = {
-          id: (Date.now() + 1).toString(),
-          text: response.content,
-          sender: "ai",
-          citedSources: response.citedSources,
-        };
-        setMessages((prevMessages) => [...prevMessages, aiResponse]);
-        if (!conversationId && response.conversationId) {
-          const firstMessage = pendingMessageRef.current || "";
-          const defaultTitle =
-            firstMessage.length > 50 ? firstMessage.slice(0, 50) + "..." : firstMessage;
-          setConversationTitle(response.conversationTitle || defaultTitle);
-        }
-        setConversationId(response.conversationId);
-        pendingMessageRef.current = null;
-      },
-      onError: (error: FetchError) => {
-        console.error("Error sending message:", error.status, error.message);
-        const errorResponse: Message = {
-          id: (Date.now() + 1).toString(),
-          text: getHttpErrorMessage(error.status),
-          sender: "ai",
-          error: true,
-        };
-        setMessages((prevMessages) => [...prevMessages, errorResponse]);
-      },
-    }),
-    [],
-  );
-
-  const { loading: isChatLoading, refetch: fetchChatResponseRaw } = useFetch<ChatResponse>(
-    `notebooks/${notebookId}/chat`,
-    chatOptions,
-    false,
-  );
-
-  const fetchChatResponse = useCallback(
-    async (forcedUpdate = false) => {
-      chatDataRef.current = {
-        userInput: pendingMessageRef.current || "",
-        conversationId,
-        selectedSourceIds,
-      };
-      return fetchChatResponseRaw(forcedUpdate);
-    },
-    [conversationId, fetchChatResponseRaw, selectedSourceIds],
-  );
 
   const handleRetryFromError = useCallback(
     (messageIndex: number) => {
-      setMessages((prevMessages) => {
-        const newMessages = prevMessages.slice(0, messageIndex);
-        return newMessages;
-      });
+      if (!pendingMessageRef.current) return;
 
-      if (pendingMessageRef.current) {
-        const retryMessage: Message = {
-          id: Date.now().toString(),
-          text: pendingMessageRef.current,
-          sender: "user",
-          selectedSourcesCount: selectedSourceIds.length,
-        };
-        setMessages((prev) => [...prev, retryMessage]);
-        fetchChatResponse(true);
-      }
+      setMessages((prevMessages) => prevMessages.slice(0, messageIndex));
+      handleStreamChat();
     },
-    [fetchChatResponse],
+    [handleStreamChat],
   );
 
   useEffect(() => {
@@ -468,7 +454,7 @@ export function ChatCard({
                 />
               ))}
             </AnimatePresence>
-            {(isChatLoading || isLoadingConversation) && (
+            {(isWaitingForResponse || isLoadingConversation) && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
