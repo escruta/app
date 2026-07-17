@@ -650,7 +650,7 @@ export default function NotebookPage() {
               className={cn(
                 "min-h-0 flex flex-col overflow-hidden transition-[width,background-color,border-color] duration-200 ease-out shrink-0",
                 {
-                  "z-30": isSourceExpanded,
+                  "z-60": isSourceExpanded,
                 },
               )}
               style={{ width: isLeftCollapsed ? "48px" : `${leftPanelWidth ?? 25}%` }}
@@ -731,7 +731,7 @@ export default function NotebookPage() {
               className={cn(
                 "min-h-0 flex flex-col overflow-hidden transition-[width,background-color,border-color] duration-200 ease-out shrink-0",
                 {
-                  "z-30": isNoteExpanded,
+                  "z-60": isNoteExpanded,
                 },
               )}
               style={{ width: isRightCollapsed ? "48px" : `${rightPanelWidth ?? 25}%` }}
