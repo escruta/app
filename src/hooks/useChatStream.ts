@@ -83,7 +83,7 @@ export function useChatStream(endpoint: string, callbacks: ChatStreamCallbacks) 
           if (line.startsWith("event:")) {
             currentEvent = line.slice(6).trim();
           } else if (line.startsWith("data:")) {
-            dataLines.push(line.slice(5).replace(/^ /, ""));
+            dataLines.push(line.slice(5));
           }
         }
         dispatch();
