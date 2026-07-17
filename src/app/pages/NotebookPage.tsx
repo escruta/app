@@ -50,6 +50,7 @@ export default function NotebookPage() {
   const [notesRefreshKey, setNotesRefreshKey] = useState<number>(0);
   const [isSourceExpanded, setIsSourceExpanded] = useState<boolean>(false);
   const [isNoteExpanded, setIsNoteExpanded] = useState<boolean>(false);
+  const [isToolExpanded, setIsToolExpanded] = useState<boolean>(false);
   const [leftPanelWidth, setLeftPanelWidth] = useCookie<number>("notebookLeftPanelWidth", 30);
   const [rightPanelWidth, setRightPanelWidth] = useCookie<number>("notebookRightPanelWidth", 30);
   const [isLeftCollapsed, setIsLeftCollapsed] = useCookie<boolean>("notebookLeftCollapsed", false);
@@ -640,6 +641,7 @@ export default function NotebookPage() {
                   notebookId={notebookId}
                   onNodeSelect={handleNodeSelect}
                   hasSources={(notebook?.sources?.length ?? 0) > 0}
+                  onExpandedChange={setIsToolExpanded}
                 />
               </div>
             </div>
@@ -731,7 +733,7 @@ export default function NotebookPage() {
               className={cn(
                 "min-h-0 flex flex-col overflow-hidden transition-[width,background-color,border-color] duration-200 ease-out shrink-0",
                 {
-                  "z-60": isNoteExpanded,
+                  "z-60": isNoteExpanded || isToolExpanded,
                 },
               )}
               style={{ width: isRightCollapsed ? "48px" : `${rightPanelWidth ?? 25}%` }}
@@ -771,6 +773,7 @@ export default function NotebookPage() {
                           notebookId={notebookId}
                           onNodeSelect={handleNodeSelect}
                           hasSources={(notebook?.sources?.length ?? 0) > 0}
+                          onExpandedChange={setIsToolExpanded}
                         />
                       ),
                     },

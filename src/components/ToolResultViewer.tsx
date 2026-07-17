@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { CloseIcon, RestartIcon, ExpandIcon, CompressIcon } from "@/components/icons";
 import { Card, IconButton, Tooltip, Divider, Spinner } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -25,6 +25,7 @@ interface ToolResultViewerProps {
   onRegenerate?: () => void;
   className?: string;
   onNodeSelect?: (question: string) => void;
+  onExpandedChange?: (expanded: boolean) => void;
 }
 
 type ParsedContent =
@@ -55,8 +56,13 @@ export function ToolResultViewer({
   onRegenerate,
   className,
   onNodeSelect,
+  onExpandedChange,
 }: ToolResultViewerProps) {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
+
+  useEffect(() => {
+    onExpandedChange?.(isExpanded);
+  }, [isExpanded, onExpandedChange]);
 
   const parsedContent = useMemo(() => parseContent(content, type), [content, type]);
 
