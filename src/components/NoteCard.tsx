@@ -2,6 +2,10 @@ import type { Folder, Note } from "@/interfaces";
 import {
   Button,
   Chip,
+  ContextMenu,
+  ContextMenuTrigger,
+  ContextMenuContent,
+  ContextMenuItem,
   Modal,
   Menu,
   MenuLabel,
@@ -192,6 +196,42 @@ export function NoteCard({
     }
   };
 
+  const renderMenuItems = () => (
+    <>
+      {folders && (
+        <MenuItem
+          icon={<FolderIcon className="size-4" />}
+          label="Move to folder"
+          onClick={handleOpenMoveModal}
+        />
+      )}
+      <MenuItem
+        icon={<DeleteIcon />}
+        label="Delete"
+        onClick={() => setIsDeleteModalOpen(true)}
+        variant="danger"
+      />
+    </>
+  );
+
+  const renderContextMenuItems = () => (
+    <>
+      {folders && (
+        <ContextMenuItem
+          icon={<FolderIcon className="size-4" />}
+          label="Move to folder"
+          onClick={handleOpenMoveModal}
+        />
+      )}
+      <ContextMenuItem
+        icon={<DeleteIcon />}
+        label="Delete"
+        onClick={() => setIsDeleteModalOpen(true)}
+        variant="danger"
+      />
+    </>
+  );
+
   const renderMenu = () => (
     <div
       role="button"
@@ -210,45 +250,85 @@ export function NoteCard({
             />
           </MenuTrigger>
         </Tooltip>
-        <MenuContent>
-          {folders && (
-            <MenuItem
-              icon={<FolderIcon className="size-4" />}
-              label="Move to folder"
-              onClick={handleOpenMoveModal}
-            />
-          )}
-          <MenuItem
-            icon={<DeleteIcon />}
-            label="Delete"
-            onClick={() => setIsDeleteModalOpen(true)}
-            variant="danger"
-          />
-        </MenuContent>
+        <MenuContent>{renderMenuItems()}</MenuContent>
       </Menu>
     </div>
   );
 
   return (
-    <>
-      <div
-        role="button"
-        tabIndex={0}
-        className={cn(baseClasses, {
-          [gridClasses]: viewMode === "grid",
-          [listClasses]: viewMode === "list",
-        })}
-        onClick={handleCardClick}
-        onKeyDown={handleCardKeyDown}
-      >
-        {viewMode === "grid" ? (
-          <>
-            <div className="flex items-start justify-between">
-              <div className="shrink-0 rounded-xs bg-blue-100 p-2 dark:bg-blue-900/50">
-                <div className="flex size-4 items-center justify-center text-blue-600 dark:text-blue-400 [&>svg]:h-full [&>svg]:w-full">
-                  <NoteIcon />
+    <ContextMenu>
+      <ContextMenuTrigger>
+        <div
+          role="button"
+          tabIndex={0}
+          className={cn(baseClasses, {
+            [gridClasses]: viewMode === "grid",
+            [listClasses]: viewMode === "list",
+          })}
+          onClick={handleCardClick}
+          onKeyDown={handleCardKeyDown}
+        >
+          {viewMode === "grid" ? (
+            <>
+              <div className="flex items-start justify-between">
+                <div className="shrink-0 rounded-xs bg-blue-100 p-2 dark:bg-blue-900/50">
+                  <div className="flex size-4 items-center justify-center text-blue-600 dark:text-blue-400 [&>svg]:h-full [&>svg]:w-full">
+                    <NoteIcon />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {note.notebookId && notebookTitle && (
+                    <div
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Tooltip text={notebookTitle} position="top">
+                        <Chip
+                          size="sm"
+                          icon={<NotebookIcon className="size-2.5" />}
+                          onClick={() => navigate(`/notebook/${note.notebookId}`)}
+                          className="border-none bg-gray-50/40 opacity-40 transition-opacity hover:opacity-100 dark:bg-gray-800/40"
+                        />
+                      </Tooltip>
+                    </div>
+                  )}
+                  {renderMenu()}
                 </div>
               </div>
+
+              <div>
+                <h2 className="mb-1 line-clamp-2 text-lg font-semibold text-gray-900 transition-colors duration-300 group-hover:text-blue-900 dark:text-gray-100 dark:group-hover:text-blue-100">
+                  {note.title}
+                </h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <span ref={firstDateRef} className="whitespace-nowrap">
+                    Created {formatDate(note.createdAt)}
+                  </span>
+                  {sameLine ? " - " : " "}
+                  <span ref={secondDateRef} className="whitespace-nowrap">
+                    Modified {formatDate(note.updatedAt)}
+                  </span>
+                </p>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex min-w-0 flex-1 items-center gap-3">
+                <div className="shrink-0 rounded-xs bg-blue-100 p-2 dark:bg-blue-900/50">
+                  <div className="flex size-4 items-center justify-center text-blue-600 dark:text-blue-400 [&>svg]:h-full [&>svg]:w-full">
+                    <NoteIcon />
+                  </div>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h2 className="truncate text-lg font-semibold text-gray-900 transition-colors duration-300 group-hover:text-blue-900 dark:text-gray-100 dark:group-hover:text-blue-100">
+                    {note.title}
+                  </h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Created {formatDate(note.createdAt)} - Modified {formatDate(note.updatedAt)}
+                  </p>
+                </div>
+              </div>
+
               <div className="flex items-center gap-2">
                 {note.notebookId && notebookTitle && (
                   <div
@@ -267,62 +347,11 @@ export function NoteCard({
                 )}
                 {renderMenu()}
               </div>
-            </div>
-
-            <div>
-              <h2 className="mb-1 line-clamp-2 text-lg font-semibold text-gray-900 transition-colors duration-300 group-hover:text-blue-900 dark:text-gray-100 dark:group-hover:text-blue-100">
-                {note.title}
-              </h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                <span ref={firstDateRef} className="whitespace-nowrap">
-                  Created {formatDate(note.createdAt)}
-                </span>
-                {sameLine ? " - " : " "}
-                <span ref={secondDateRef} className="whitespace-nowrap">
-                  Modified {formatDate(note.updatedAt)}
-                </span>
-              </p>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="flex min-w-0 flex-1 items-center gap-3">
-              <div className="shrink-0 rounded-xs bg-blue-100 p-2 dark:bg-blue-900/50">
-                <div className="flex size-4 items-center justify-center text-blue-600 dark:text-blue-400 [&>svg]:h-full [&>svg]:w-full">
-                  <NoteIcon />
-                </div>
-              </div>
-              <div className="min-w-0 flex-1">
-                <h2 className="truncate text-lg font-semibold text-gray-900 transition-colors duration-300 group-hover:text-blue-900 dark:text-gray-100 dark:group-hover:text-blue-100">
-                  {note.title}
-                </h2>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Created {formatDate(note.createdAt)} - Modified {formatDate(note.updatedAt)}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {note.notebookId && notebookTitle && (
-                <div
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Tooltip text={notebookTitle} position="top">
-                    <Chip
-                      size="sm"
-                      icon={<NotebookIcon className="size-2.5" />}
-                      onClick={() => navigate(`/notebook/${note.notebookId}`)}
-                      className="border-none bg-gray-50/40 opacity-40 transition-opacity hover:opacity-100 dark:bg-gray-800/40"
-                    />
-                  </Tooltip>
-                </div>
-              )}
-              {renderMenu()}
-            </div>
-          </>
-        )}
-      </div>
+            </>
+          )}
+        </div>
+      </ContextMenuTrigger>
+      <ContextMenuContent>{renderContextMenuItems()}</ContextMenuContent>
 
       {/* Delete Modal */}
       <Modal
@@ -380,6 +409,6 @@ export function NoteCard({
       >
         {moveToFolderBody}
       </Modal>
-    </>
+    </ContextMenu>
   );
 }

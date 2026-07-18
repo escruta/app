@@ -2,6 +2,7 @@ export * from "./Alert";
 export * from "./Button";
 export * from "./Card";
 export * from "./Checkbox";
+export * from "./ContextMenu";
 export * from "./Chip";
 export * from "./CopyButton";
 export * from "./Divider";

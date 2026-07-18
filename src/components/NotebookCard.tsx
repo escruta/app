@@ -3,6 +3,10 @@ import {
   Alert,
   Button,
   Chip,
+  ContextMenu,
+  ContextMenuTrigger,
+  ContextMenuContent,
+  ContextMenuItem,
   Menu,
   MenuLabel,
   Modal,
@@ -217,6 +221,48 @@ export function NotebookCard({
     }
   };
 
+  const renderMenuItems = () => (
+    <>
+      {folders && (
+        <MenuItem
+          icon={<FolderIcon className="size-4" />}
+          label="Move to folder"
+          onClick={handleOpenMoveModal}
+        />
+      )}
+      <MenuItem icon={<EditIcon />} label="Rename" onClick={() => setIsRenameModalOpen(true)} />
+      <MenuItem
+        icon={<DeleteIcon />}
+        label="Delete"
+        onClick={() => setIsDeleteModalOpen(true)}
+        variant="danger"
+      />
+    </>
+  );
+
+  const renderContextMenuItems = () => (
+    <>
+      {folders && (
+        <ContextMenuItem
+          icon={<FolderIcon className="size-4" />}
+          label="Move to folder"
+          onClick={handleOpenMoveModal}
+        />
+      )}
+      <ContextMenuItem
+        icon={<EditIcon />}
+        label="Rename"
+        onClick={() => setIsRenameModalOpen(true)}
+      />
+      <ContextMenuItem
+        icon={<DeleteIcon />}
+        label="Delete"
+        onClick={() => setIsDeleteModalOpen(true)}
+        variant="danger"
+      />
+    </>
+  );
+
   const renderMenu = () => (
     <div
       role="button"
@@ -235,103 +281,91 @@ export function NotebookCard({
             />
           </MenuTrigger>
         </Tooltip>
-        <MenuContent>
-          {folders && (
-            <MenuItem
-              icon={<FolderIcon className="size-4" />}
-              label="Move to folder"
-              onClick={handleOpenMoveModal}
-            />
-          )}
-          <MenuItem icon={<EditIcon />} label="Rename" onClick={() => setIsRenameModalOpen(true)} />
-          <MenuItem
-            icon={<DeleteIcon />}
-            label="Delete"
-            onClick={() => setIsDeleteModalOpen(true)}
-            variant="danger"
-          />
-        </MenuContent>
+        <MenuContent>{renderMenuItems()}</MenuContent>
       </Menu>
     </div>
   );
 
   return (
-    <>
-      <div
-        role="button"
-        tabIndex={0}
-        className={cn(baseClasses, {
-          [gridClasses]: viewMode === "grid",
-          [listClasses]: viewMode === "list",
-        })}
-        onClick={handleCardClick}
-        onKeyDown={handleCardKeyDown}
-      >
-        {viewMode === "grid" ? (
-          <>
-            <div className="flex items-start justify-between">
-              <div className="shrink-0 rounded-xs bg-blue-100 p-2 dark:bg-blue-900/50">
-                <div className="flex size-4 items-center justify-center text-blue-600 dark:text-blue-400 [&>svg]:h-full [&>svg]:w-full">
-                  <NotebookIcon />
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                {notebook.folderId && folderTitle && (
-                  <div
-                    onPointerDown={(e) => e.stopPropagation()}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Tooltip text={folderTitle} position="top">
-                      <Chip
-                        size="sm"
-                        icon={<FolderIcon className="size-2.5" />}
-                        className="border-none bg-gray-50/40 opacity-40 transition-opacity hover:opacity-100 dark:bg-gray-800/40"
-                      />
-                    </Tooltip>
+    <ContextMenu>
+      <ContextMenuTrigger>
+        <div
+          role="button"
+          tabIndex={0}
+          className={cn(baseClasses, {
+            [gridClasses]: viewMode === "grid",
+            [listClasses]: viewMode === "list",
+          })}
+          onClick={handleCardClick}
+          onKeyDown={handleCardKeyDown}
+        >
+          {viewMode === "grid" ? (
+            <>
+              <div className="flex items-start justify-between">
+                <div className="shrink-0 rounded-xs bg-blue-100 p-2 dark:bg-blue-900/50">
+                  <div className="flex size-4 items-center justify-center text-blue-600 dark:text-blue-400 [&>svg]:h-full [&>svg]:w-full">
+                    <NotebookIcon />
                   </div>
-                )}
-                {renderMenu()}
-              </div>
-            </div>
-
-            <div>
-              <h2 className="mb-1 line-clamp-2 text-lg font-semibold text-gray-900 transition-colors duration-300 group-hover:text-blue-900 dark:text-gray-100 dark:group-hover:text-blue-100">
-                {notebook.title}
-              </h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                <span ref={firstDateRef} className="whitespace-nowrap">
-                  Created {formatDate(notebook.createdAt)}
-                </span>
-                {sameLine ? " - " : " "}
-                <span ref={secondDateRef} className="whitespace-nowrap">
-                  Modified {formatDate(notebook.updatedAt)}
-                </span>
-              </p>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="flex min-w-0 flex-1 items-center gap-3">
-              <div className="shrink-0 rounded-xs bg-blue-100 p-2 dark:bg-blue-900/50">
-                <div className="flex size-4 items-center justify-center text-blue-600 dark:text-blue-400 [&>svg]:h-full [&>svg]:w-full">
-                  <NotebookIcon />
+                </div>
+                <div className="flex items-center gap-2">
+                  {notebook.folderId && folderTitle && (
+                    <div
+                      onPointerDown={(e) => e.stopPropagation()}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Tooltip text={folderTitle} position="top">
+                        <Chip
+                          size="sm"
+                          icon={<FolderIcon className="size-2.5" />}
+                          className="border-none bg-gray-50/40 opacity-40 transition-opacity hover:opacity-100 dark:bg-gray-800/40"
+                        />
+                      </Tooltip>
+                    </div>
+                  )}
+                  {renderMenu()}
                 </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <h2 className="truncate text-lg font-semibold text-gray-900 transition-colors duration-300 group-hover:text-blue-900 dark:text-gray-100 dark:group-hover:text-blue-100">
+
+              <div>
+                <h2 className="mb-1 line-clamp-2 text-lg font-semibold text-gray-900 transition-colors duration-300 group-hover:text-blue-900 dark:text-gray-100 dark:group-hover:text-blue-100">
                   {notebook.title}
                 </h2>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Created {formatDate(notebook.createdAt)} - Modified{" "}
-                  {formatDate(notebook.updatedAt)}
+                  <span ref={firstDateRef} className="whitespace-nowrap">
+                    Created {formatDate(notebook.createdAt)}
+                  </span>
+                  {sameLine ? " - " : " "}
+                  <span ref={secondDateRef} className="whitespace-nowrap">
+                    Modified {formatDate(notebook.updatedAt)}
+                  </span>
                 </p>
               </div>
-            </div>
+            </>
+          ) : (
+            <>
+              <div className="flex min-w-0 flex-1 items-center gap-3">
+                <div className="shrink-0 rounded-xs bg-blue-100 p-2 dark:bg-blue-900/50">
+                  <div className="flex size-4 items-center justify-center text-blue-600 dark:text-blue-400 [&>svg]:h-full [&>svg]:w-full">
+                    <NotebookIcon />
+                  </div>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h2 className="truncate text-lg font-semibold text-gray-900 transition-colors duration-300 group-hover:text-blue-900 dark:text-gray-100 dark:group-hover:text-blue-100">
+                    {notebook.title}
+                  </h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Created {formatDate(notebook.createdAt)} - Modified{" "}
+                    {formatDate(notebook.updatedAt)}
+                  </p>
+                </div>
+              </div>
 
-            {renderMenu()}
-          </>
-        )}
-      </div>
+              {renderMenu()}
+            </>
+          )}
+        </div>
+      </ContextMenuTrigger>
+      <ContextMenuContent>{renderContextMenuItems()}</ContextMenuContent>
 
       <RenameNotebookModal
         isOpen={isRenameModalOpen}
@@ -436,6 +470,6 @@ export function NotebookCard({
           )}
         </div>
       </Modal>
-    </>
+    </ContextMenu>
   );
 }
