@@ -5,9 +5,18 @@ export interface Conversation {
   updatedAt: string;
 }
 
+export interface CitedSource {
+  id: string;
+  documentId: string;
+  title: string;
+  text?: string;
+}
+
 export interface ConversationMessage {
   content: string;
   type: "USER" | "ASSISTANT";
+  citedSources?: CitedSource[];
+  selectedSourcesCount?: number;
 }
 
 export interface ConversationMessages {

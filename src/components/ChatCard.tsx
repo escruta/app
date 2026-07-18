@@ -213,6 +213,8 @@ export function ChatCard({
             id: `${conversationToLoadId}-${index}`,
             text: m.content,
             sender: m.type === "USER" ? ("user" as Sender) : ("ai" as Sender),
+            citedSources: m.citedSources?.length ? m.citedSources : undefined,
+            selectedSourcesCount: m.selectedSourcesCount ?? undefined,
           }));
 
         setMessages(loadedMessages);
