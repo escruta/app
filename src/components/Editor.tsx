@@ -29,8 +29,21 @@ import {
   QuoteIcon,
   TaskListIcon,
   HighlightIcon,
+  CopyIcon,
+  CutIcon,
+  PasteIcon,
 } from "@/components/icons";
-import { Divider, Tooltip, Modal, TextField, Button } from "./ui";
+import {
+  Divider,
+  Tooltip,
+  Modal,
+  TextField,
+  Button,
+  ContextMenu,
+  ContextMenuTrigger,
+  ContextMenuContent,
+  ContextMenuItem,
+} from "./ui";
 import "katex/dist/katex.min.css";
 import "./Editor.css";
 
@@ -298,6 +311,74 @@ export function Editor({
     }
   }, [editor, initialContent]);
 
+  const [menuHasSelection, setMenuHasSelection] = useState(false);
+
+  const handleContextMenu = () => {
+    if (!editor) return;
+    setMenuHasSelection(!editor.state.selection.empty);
+  };
+
+  const handleCopy = () => {
+    if (!editor) return;
+    const { from, to, empty } = editor.state.selection;
+    if (empty) return;
+    const manager = editor.storage.markdown?.manager;
+    if (manager) {
+      const slice = editor.state.selection.content();
+      const markdown = manager.serialize({
+        type: "doc",
+        content: slice.content.toJSON(),
+      });
+      navigator.clipboard?.writeText(markdown);
+    } else {
+      const text = editor.state.doc.textBetween(from, to, "\n");
+      navigator.clipboard?.writeText(text);
+    }
+  };
+
+  const handleCut = () => {
+    if (!editor) return;
+    const { from, to, empty } = editor.state.selection;
+    if (empty) return;
+    const manager = editor.storage.markdown?.manager;
+    if (manager) {
+      const slice = editor.state.selection.content();
+      const markdown = manager.serialize({
+        type: "doc",
+        content: slice.content.toJSON(),
+      });
+      navigator.clipboard?.writeText(markdown);
+      editor.chain().focus().deleteRange({ from, to }).run();
+    } else {
+      const text = editor.state.doc.textBetween(from, to, "\n");
+      navigator.clipboard?.writeText(text);
+      editor.chain().focus().deleteRange({ from, to }).run();
+    }
+  };
+
+  const handlePaste = async () => {
+    if (!editor || editor.isActive("codeBlock")) return;
+    const { from } = editor.state.selection;
+    let text: string | null = null;
+    try {
+      text = await navigator.clipboard.readText();
+    } catch {
+      document.execCommand("paste");
+      return;
+    }
+    const trimmed = text?.trim();
+    if (!trimmed) return;
+    if (trimmed.includes("\n") || /^[-*#>`*~_[$]/.test(trimmed)) {
+      try {
+        editor.chain().focus().insertContentAt(from, trimmed, { contentType: "markdown" }).run();
+        return;
+      } catch (e) {
+        console.warn("Markdown paste failed, falling back to plain text:", e);
+      }
+    }
+    editor.chain().focus().insertContent(text).run();
+  };
+
   if (!editor) {
     return null;
   }
@@ -482,13 +563,39 @@ export function Editor({
 
       {scrollable && <Divider orientation="horizontal" className="my-0" />}
 
-      <EditorContent
-        editor={editor}
-        className={cn("flex w-full flex-col", {
-          "min-h-0 flex-1 overflow-hidden [&>div]:flex-1 [&>div]:overflow-y-auto": scrollable,
-          "[&>div]:overflow-visible min-h-[60vh]": !scrollable,
-        })}
-      />
+      <ContextMenu>
+        <ContextMenuTrigger>
+          <EditorContent
+            editor={editor}
+            onContextMenu={handleContextMenu}
+            className={cn("flex w-full flex-col", {
+              "min-h-0 flex-1 overflow-hidden [&>div]:flex-1 [&>div]:overflow-y-auto": scrollable,
+              "[&>div]:overflow-visible min-h-[60vh]": !scrollable,
+            })}
+          />
+        </ContextMenuTrigger>
+        <ContextMenuContent compact>
+          {menuHasSelection && (
+            <>
+              <ContextMenuItem
+                label="Cut"
+                icon={<CutIcon className="size-3.5" />}
+                onClick={handleCut}
+              />
+              <ContextMenuItem
+                label="Copy"
+                icon={<CopyIcon className="size-3.5" />}
+                onClick={handleCopy}
+              />
+            </>
+          )}
+          <ContextMenuItem
+            label="Paste"
+            icon={<PasteIcon className="size-3.5" />}
+            onClick={handlePaste}
+          />
+        </ContextMenuContent>
+      </ContextMenu>
 
       <Modal
         isOpen={promptState.isOpen}

@@ -28,6 +28,8 @@ interface ContextMenuContextType {
 
 const ContextMenuContext = createContext<ContextMenuContextType | null>(null);
 
+const CompactContext = createContext<boolean>(false);
+
 export function ContextMenu({ children }: { children: ReactNode }) {
   const [state, setState] = useState<ContextMenuState>({
     isOpen: false,
@@ -96,9 +98,11 @@ export function ContextMenuTrigger({
 export function ContextMenuContent({
   children,
   className,
+  compact = false,
 }: {
   children: ReactNode;
   className?: string;
+  compact?: boolean;
 }) {
   const context = useContext(ContextMenuContext);
   const [adjustedPosition, setAdjustedPosition] = useState<{
@@ -193,11 +197,15 @@ export function ContextMenuContent({
             ...adjustedPosition,
           }}
           className={cn(
-            "z-50 min-w-40 rounded-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 p-1.5 shadow-lg shadow-gray-500/10 dark:shadow-black/20 ring-1 ring-gray-500/5 dark:ring-gray-500/10",
+            "z-50 rounded-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 shadow-lg shadow-gray-500/10 dark:shadow-black/20 ring-1 ring-gray-500/5 dark:ring-gray-500/10",
+            {
+              "min-w-32 p-1": compact,
+              "min-w-40 p-1.5": !compact,
+            },
             className,
           )}
         >
-          {children}
+          <CompactContext.Provider value={compact}>{children}</CompactContext.Provider>
         </motion.div>
       )}
     </AnimatePresence>
@@ -213,10 +221,15 @@ export function ContextMenuLabel({
   children: ReactNode;
   className?: string;
 }) {
+  const compact = useContext(CompactContext);
   return (
     <div
       className={cn(
-        "px-3 py-1.5 text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400",
+        "font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400",
+        {
+          "px-2 py-1 text-[10px]": compact,
+          "px-3 py-1.5 text-xs": !compact,
+        },
         className,
       )}
     >
@@ -226,7 +239,19 @@ export function ContextMenuLabel({
 }
 
 export function ContextMenuSeparator({ className }: { className?: string }) {
-  return <div className={cn("-mx-1.5 my-1 h-px bg-gray-200 dark:bg-gray-700", className)} />;
+  const compact = useContext(CompactContext);
+  return (
+    <div
+      className={cn(
+        "h-px my-1 bg-gray-200 dark:bg-gray-700",
+        {
+          "-mx-1": compact,
+          "mx-1.5": !compact,
+        },
+        className,
+      )}
+    />
+  );
 }
 
 export function ContextMenuItem({
@@ -245,6 +270,7 @@ export function ContextMenuItem({
   disabled?: boolean;
 }) {
   const context = useContext(ContextMenuContext);
+  const compact = useContext(CompactContext);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
     if (disabled) return;
@@ -255,8 +281,9 @@ export function ContextMenuItem({
     }
   };
 
-  const baseStyles =
-    "flex w-full items-center gap-2 rounded-xs px-3 py-2 text-sm transition-all duration-200 outline-none select-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none";
+  const baseStyles = compact
+    ? "flex w-full items-center gap-1.5 rounded-xs px-2 py-1 text-xs transition-all duration-200 outline-none select-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-1 focus:ring-offset-white dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
+    : "flex w-full items-center gap-2 rounded-xs px-3 py-2 text-sm transition-all duration-200 outline-none select-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none";
 
   const variantStyles = {
     default:
@@ -278,7 +305,16 @@ export function ContextMenuItem({
       }}
       onKeyDown={handleKeyDown}
     >
-      {icon && <span className="flex size-4 shrink-0 items-center justify-center">{icon}</span>}
+      {icon && (
+        <span
+          className={cn("flex shrink-0 items-center justify-center", {
+            "size-3.5": compact,
+            "size-4": !compact,
+          })}
+        >
+          {icon}
+        </span>
+      )}
       <span className="flex-1 text-left font-medium">{label}</span>
     </button>
   );
