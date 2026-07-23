@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { useAuth, useCookie, useFetch, useGreeting, useMediaQuery } from "@/hooks";
 import { BREAKPOINTS } from "@/hooks/useBreakpoint";
 import { Button, Modal, Spinner, TextField, Tooltip } from "@/components/ui";
-import { NotebookCard, NoteCard, TopBar, FolderGroup } from "@/components";
+import { FolderCard, NotebookCard, NoteCard, TopBar } from "@/components";
 import { GaussianBlurGradientBackground } from "@/components/backgrounds/GaussianBlurGradientBackground";
 import {
   AddIcon,
@@ -48,19 +48,6 @@ export default function HomePage() {
   const [folderTitle, setFolderTitle] = useState("");
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
   const [folderToDelete, setFolderToDelete] = useState<Folder | null>(null);
-  const [collapsedFolders, setCollapsedFolders] = useState<Set<string>>(new Set());
-
-  function toggleFolderCollapse(folderId: string) {
-    setCollapsedFolders((prev) => {
-      const next = new Set(prev);
-      if (next.has(folderId)) {
-        next.delete(folderId);
-      } else {
-        next.add(folderId);
-      }
-      return next;
-    });
-  }
 
   const {
     loading: creatingNotebook,
@@ -148,32 +135,7 @@ export default function HomePage() {
   const gridColumns = isBelowSm ? 2 : isBelowMd ? 3 : 4;
   const MAX_HOME_ITEMS = viewMode === "grid" ? gridColumns * 2 : 5;
 
-  const folderItems = (folders ?? []).map((folder) => {
-    const folderNotebooks = (notebooks ?? []).filter((nb) => nb.folderId === folder.id);
-    const folderNotes = (notes ?? []).filter((n) => n.folderId === folder.id);
-    return {
-      folder,
-      notebooks: folderNotebooks,
-      notes: folderNotes,
-      total: folderNotebooks.length + folderNotes.length,
-    };
-  });
-
-  type FolderEntry = {
-    folder: Folder;
-    count: number;
-    items: (
-      | { kind: "notebook"; id: string; createdAt: Date | string; item: Notebook }
-      | { kind: "note"; id: string; createdAt: Date | string; item: Note }
-    )[];
-  };
-  const folderEntries: FolderEntry[] = folderItems.map(({ folder, notebooks: nb, notes: nn }) => {
-    const items: FolderEntry["items"] = [
-      ...nb.map((n) => ({ kind: "notebook" as const, id: n.id, createdAt: n.createdAt, item: n })),
-      ...nn.map((n) => ({ kind: "note" as const, id: n.id, createdAt: n.createdAt, item: n })),
-    ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    return { folder, count: items.length, items };
-  });
+  const folderItems = folders ?? [];
 
   const unfiledNotebooks = (notebooks ?? []).filter((nb) => !nb.folderId);
   const unfiledNotes = (notes ?? []).filter((n) => !n.folderId);
@@ -260,55 +222,20 @@ export default function HomePage() {
             </h3>
 
             {hasFolders ? (
-              <div className="flex flex-col gap-2">
-                {folderEntries.map(({ folder, count, items }) => (
-                  <FolderGroup
+              <div
+                className={
+                  viewMode === "grid"
+                    ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
+                    : "flex flex-col gap-3"
+                }
+              >
+                {folderItems.map((folder) => (
+                  <FolderCard
                     key={folder.id}
                     folder={folder}
-                    itemCount={count}
-                    isCollapsed={collapsedFolders.has(folder.id)}
-                    onToggleCollapse={() => toggleFolderCollapse(folder.id)}
                     onEditFolder={() => handleEditFolder(folder)}
                     onDeleteFolder={() => setFolderToDelete(folder)}
-                  >
-                    {count > 0 ? (
-                      <div
-                        className={
-                          viewMode === "grid"
-                            ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
-                            : "flex flex-col gap-3"
-                        }
-                      >
-                        {items.map(({ kind, id, item }) =>
-                          kind === "notebook" ? (
-                            <NotebookCard
-                              key={id}
-                              notebook={item}
-                              viewMode={viewMode}
-                              folders={folders ?? undefined}
-                              folderTitle={folder.title}
-                              onChange={() => refetchNotebooks(true, false)}
-                            />
-                          ) : (
-                            <NoteCard
-                              key={id}
-                              note={item}
-                              viewMode={viewMode}
-                              notebookTitle={
-                                notebooks?.find((nb) => nb.id === item.notebookId)?.title
-                              }
-                              folders={folders ?? undefined}
-                              onChange={() => refetchNotes(true, false)}
-                            />
-                          ),
-                        )}
-                      </div>
-                    ) : (
-                      <p className="px-4 py-2 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                        This folder is empty — drop a notebook or note in here to get started.
-                      </p>
-                    )}
-                  </FolderGroup>
+                  />
                 ))}
               </div>
             ) : (

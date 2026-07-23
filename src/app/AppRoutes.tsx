@@ -6,6 +6,7 @@ const HomePage = lazy(() => import("./pages/HomePage"));
 const NotebooksPage = lazy(() => import("./pages/NotebooksPage"));
 const NotesPage = lazy(() => import("./pages/NotesPage"));
 const NotePage = lazy(() => import("./pages/NotePage"));
+const FolderPage = lazy(() => import("./pages/FolderPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const NotebookPage = lazy(() => import("./pages/NotebookPage"));
 
@@ -39,6 +40,17 @@ export const AppRoutes: RouteObject[] = [
       {
         path: "settings",
         Component: SettingsPage,
+      },
+      {
+        path: "folder/:folderId",
+        loader: async ({ params }) => {
+          const folderId = params.folderId;
+          if (!folderId) {
+            throw new Error("Folder ID is required");
+          }
+          return folderId;
+        },
+        Component: FolderPage,
       },
       {
         path: "notebook/:notebookId",
