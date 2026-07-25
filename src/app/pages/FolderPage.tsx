@@ -9,7 +9,12 @@ import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
 import { motion } from "motion/react";
 import { useCookie, useFetch, useMediaQuery } from "@/hooks";
 import { BREAKPOINTS } from "@/hooks/useBreakpoint";
-import { getSortedItems, type SortOption } from "@/components/settings";
+import {
+  getSortedItems,
+  type SortOption,
+  type ViewMode,
+  VIEW_MODE_COOKIE_KEYS,
+} from "@/components/settings";
 
 export default function FolderPage() {
   const folderId: string = useLoaderData();
@@ -36,9 +41,11 @@ export default function FolderPage() {
 
   const folder = useMemo(() => folders?.find((f) => f.id === folderId), [folders, folderId]);
 
-  const [globalViewMode] = useCookie<"grid" | "list">("globalViewMode", "grid");
+  const [globalNotebookViewMode] = useCookie<ViewMode>(VIEW_MODE_COOKIE_KEYS.notebook, "grid");
+  const [globalNoteViewMode] = useCookie<ViewMode>(VIEW_MODE_COOKIE_KEYS.note, "grid");
   const [globalSort] = useCookie<SortOption>("globalSortPreference", "Newest");
-  const viewMode = globalViewMode || "grid";
+  const notebookViewMode = globalNotebookViewMode || "grid";
+  const noteViewMode = globalNoteViewMode || "grid";
   const sortBy = globalSort || "Newest";
 
   const [editingTitle, setEditingTitle] = useState<string>("");
@@ -52,7 +59,8 @@ export default function FolderPage() {
   const isBelowSm = useMediaQuery(BREAKPOINTS.mobile - 1);
   const isBelowMd = useMediaQuery(BREAKPOINTS.tablet - 1);
   const gridColumns = isBelowSm ? 2 : isBelowMd ? 3 : 4;
-  const MAX_ITEMS = viewMode === "grid" ? gridColumns * 2 : 5;
+  const MAX_NOTEBOOK_ITEMS = notebookViewMode === "grid" ? gridColumns * 2 : 5;
+  const MAX_NOTE_ITEMS = noteViewMode === "grid" ? gridColumns * 2 : 5;
 
   const folderNotebooks = useMemo(
     () => (notebooks ?? []).filter((nb) => nb.folderId === folderId),
@@ -65,10 +73,10 @@ export default function FolderPage() {
 
   const sortedNotebooks = getSortedItems(folderNotebooks, sortBy);
   const sortedNotes = getSortedItems(folderNotes, sortBy);
-  const displayNotebooks = sortedNotebooks.slice(0, MAX_ITEMS);
-  const hasMoreNotebooks = sortedNotebooks.length > MAX_ITEMS;
-  const displayNotes = sortedNotes.slice(0, MAX_ITEMS);
-  const hasMoreNotes = sortedNotes.length > MAX_ITEMS;
+  const displayNotebooks = sortedNotebooks.slice(0, MAX_NOTEBOOK_ITEMS);
+  const hasMoreNotebooks = sortedNotebooks.length > MAX_NOTEBOOK_ITEMS;
+  const displayNotes = sortedNotes.slice(0, MAX_NOTE_ITEMS);
+  const hasMoreNotes = sortedNotes.length > MAX_NOTE_ITEMS;
 
   const { loading: updatingFolder, refetch: updateFolder } = useFetch<Folder>(
     `/folders/${folderId}`,
@@ -229,13 +237,13 @@ export default function FolderPage() {
                   {notebooksLoading && !notebooks ? (
                     <div
                       className={
-                        viewMode === "grid"
+                        notebookViewMode === "grid"
                           ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
                           : "flex flex-col gap-3"
                       }
                     >
                       {Array.from({ length: 4 }).map((_, i) => (
-                        <CardSkeleton key={i} viewMode={viewMode} />
+                        <CardSkeleton key={i} viewMode={notebookViewMode} />
                       ))}
                     </div>
                   ) : notebooksError ? (
@@ -244,7 +252,7 @@ export default function FolderPage() {
                     <>
                       <div
                         className={
-                          viewMode === "grid"
+                          notebookViewMode === "grid"
                             ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
                             : "flex flex-col gap-3"
                         }
@@ -253,7 +261,7 @@ export default function FolderPage() {
                           <NotebookCard
                             key={notebook.id}
                             notebook={notebook}
-                            viewMode={viewMode}
+                            viewMode={notebookViewMode}
                             folders={folders ?? undefined}
                             onChange={() => refetchNotebooks(true, false)}
                           />
@@ -287,13 +295,13 @@ export default function FolderPage() {
                   {notesLoading && !notes ? (
                     <div
                       className={
-                        viewMode === "grid"
+                        noteViewMode === "grid"
                           ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
                           : "flex flex-col gap-3"
                       }
                     >
                       {Array.from({ length: 4 }).map((_, i) => (
-                        <CardSkeleton key={i} viewMode={viewMode} />
+                        <CardSkeleton key={i} viewMode={noteViewMode} />
                       ))}
                     </div>
                   ) : notesError ? (
@@ -302,7 +310,7 @@ export default function FolderPage() {
                     <>
                       <div
                         className={
-                          viewMode === "grid"
+                          noteViewMode === "grid"
                             ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
                             : "flex flex-col gap-3"
                         }
@@ -311,7 +319,7 @@ export default function FolderPage() {
                           <NoteCard
                             key={note.id}
                             note={note}
-                            viewMode={viewMode}
+                            viewMode={noteViewMode}
                             folders={folders ?? undefined}
                             onChange={() => refetchNotes(true, false)}
                           />

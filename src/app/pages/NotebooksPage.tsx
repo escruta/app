@@ -7,12 +7,12 @@ import { NotebookIcon, SearchIcon } from "@/components/icons";
 import { motion } from "motion/react";
 import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
 import { TextField, CardSkeleton } from "@/components/ui";
-import type { SortOption } from "@/components/settings";
+import { type SortOption, type ViewMode, VIEW_MODE_COOKIE_KEYS } from "@/components/settings";
 
 const PAGE_SIZE: number = 20;
 
 export default function NotebooksPage() {
-  const [globalViewMode] = useCookie<"grid" | "list">("globalViewMode", "grid");
+  const [globalViewMode] = useCookie<ViewMode>(VIEW_MODE_COOKIE_KEYS.notebook, "grid");
   const [globalSort] = useCookie<SortOption>("globalSortPreference", "Newest");
   const viewMode = globalViewMode || "grid";
 

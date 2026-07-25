@@ -16,7 +16,12 @@ import {
 } from "@/components/icons";
 import { motion } from "motion/react";
 import type { Folder, Note, Notebook } from "@/interfaces";
-import { getSortedItems, type SortOption } from "@/components/settings";
+import {
+  getSortedItems,
+  type SortOption,
+  type ViewMode,
+  VIEW_MODE_COOKIE_KEYS,
+} from "@/components/settings";
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -37,9 +42,10 @@ export default function HomePage() {
   const { data: folders, refetch: refetchFolders } = useFetch<Folder[]>("/folders");
   const { greeting, subtitle } = useGreeting();
 
-  type ViewMode = "grid" | "list";
   const [globalSort] = useCookie<SortOption>("globalSortPreference", "Newest");
-  const [globalViewMode] = useCookie<ViewMode>("globalViewMode", "grid");
+  const [globalFolderViewMode] = useCookie<ViewMode>(VIEW_MODE_COOKIE_KEYS.folder, "grid");
+  const [globalNotebookViewMode] = useCookie<ViewMode>(VIEW_MODE_COOKIE_KEYS.notebook, "grid");
+  const [globalNoteViewMode] = useCookie<ViewMode>(VIEW_MODE_COOKIE_KEYS.note, "grid");
 
   const [isCreateNotebookOpen, setIsCreateNotebookOpen] = useState(false);
   const [newNotebookTitle, setNewNotebookTitle] = useState("");
@@ -128,12 +134,15 @@ export default function HomePage() {
     false,
   );
 
-  const viewMode = globalViewMode || "grid";
+  const folderViewMode = globalFolderViewMode || "grid";
+  const notebookViewMode = globalNotebookViewMode || "grid";
+  const noteViewMode = globalNoteViewMode || "grid";
 
   const isBelowSm = useMediaQuery(BREAKPOINTS.mobile - 1);
   const isBelowMd = useMediaQuery(BREAKPOINTS.tablet - 1);
   const gridColumns = isBelowSm ? 2 : isBelowMd ? 3 : 4;
-  const MAX_HOME_ITEMS = viewMode === "grid" ? gridColumns * 2 : 5;
+  const MAX_NOTEBOOK_ITEMS = notebookViewMode === "grid" ? gridColumns * 2 : 5;
+  const MAX_NOTE_ITEMS = noteViewMode === "grid" ? gridColumns * 2 : 5;
 
   const folderItems = folders ?? [];
 
@@ -144,10 +153,10 @@ export default function HomePage() {
   const sortedUnfiledNotebooks = getSortedItems(unfiledNotebooks, sortBy);
   const sortedUnfiledNotes = getSortedItems(unfiledNotes, sortBy);
 
-  const displayNotebooks = sortedUnfiledNotebooks.slice(0, MAX_HOME_ITEMS);
-  const hasMoreNotebooks = sortedUnfiledNotebooks.length > MAX_HOME_ITEMS;
-  const displayNotes = sortedUnfiledNotes.slice(0, MAX_HOME_ITEMS);
-  const hasMoreNotes = sortedUnfiledNotes.length > MAX_HOME_ITEMS;
+  const displayNotebooks = sortedUnfiledNotebooks.slice(0, MAX_NOTEBOOK_ITEMS);
+  const hasMoreNotebooks = sortedUnfiledNotebooks.length > MAX_NOTEBOOK_ITEMS;
+  const displayNotes = sortedUnfiledNotes.slice(0, MAX_NOTE_ITEMS);
+  const hasMoreNotes = sortedUnfiledNotes.length > MAX_NOTE_ITEMS;
 
   const handleSaveFolder = () => {
     if (editingFolderId) {
@@ -224,7 +233,7 @@ export default function HomePage() {
             {hasFolders ? (
               <div
                 className={
-                  viewMode === "grid"
+                  folderViewMode === "grid"
                     ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
                     : "flex flex-col gap-3"
                 }
@@ -315,7 +324,7 @@ export default function HomePage() {
                     <>
                       <div
                         className={
-                          viewMode === "grid"
+                          notebookViewMode === "grid"
                             ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
                             : "flex flex-col gap-3"
                         }
@@ -324,7 +333,7 @@ export default function HomePage() {
                           <NotebookCard
                             key={notebook.id}
                             notebook={notebook}
-                            viewMode={viewMode}
+                            viewMode={notebookViewMode}
                             folders={folders ?? undefined}
                             onChange={() => refetchNotebooks(true, false)}
                           />
@@ -434,7 +443,7 @@ export default function HomePage() {
                     <>
                       <div
                         className={
-                          viewMode === "grid"
+                          noteViewMode === "grid"
                             ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
                             : "flex flex-col gap-3"
                         }
@@ -443,7 +452,7 @@ export default function HomePage() {
                           <NoteCard
                             key={note.id}
                             note={note}
-                            viewMode={viewMode}
+                            viewMode={noteViewMode}
                             notebookTitle={
                               notebooks?.find((nb) => nb.id === note.notebookId)?.title
                             }
