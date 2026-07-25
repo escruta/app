@@ -118,7 +118,7 @@ export function Modal({
     <AnimatePresence>
       <motion.div
         key="modal-backdrop"
-        className="fixed inset-0 bg-black/30 opacity-60 backdrop-blur-[1px] dark:bg-black/60"
+        className="fixed inset-0 bg-gray-950/30 opacity-60 backdrop-blur-[1px] dark:bg-gray-950/60"
         style={{ zIndex: zIndexBackdrop }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

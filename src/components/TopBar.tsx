@@ -34,7 +34,7 @@ export function TopBar({ title, actions, extraMenuItems }: TopBarProps = {}) {
   };
 
   return (
-    <div className="z-50 flex w-full shrink-0 flex-row items-center justify-between border-b border-gray-200 bg-white px-4 py-2 md:px-6 dark:border-gray-800 dark:bg-black">
+    <div className="z-50 flex w-full shrink-0 flex-row items-center justify-between border-b border-gray-200 bg-white px-4 py-2 md:px-6 dark:border-gray-800 dark:bg-gray-950">
       <div className="flex items-center gap-4">
         {location.pathname !== "/" ? (
           <Tooltip

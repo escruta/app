@@ -66,7 +66,7 @@ export function Card({
       {isExpanded && (
         <button
           type="button"
-          className="animate-in fade-in fixed inset-0 z-60 cursor-default bg-black/30 backdrop-blur-[1px] duration-200 dark:bg-black/60"
+          className="animate-in fade-in fixed inset-0 z-60 cursor-default bg-gray-950/30 backdrop-blur-[1px] duration-200 dark:bg-gray-950/60"
           onClick={() => setIsExpanded?.(false)}
           aria-label="Close expanded view"
         />

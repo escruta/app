@@ -18,7 +18,7 @@ export function AppLayout() {
   }, [fetchUserData]);
 
   return (
-    <div className="flex h-screen flex-col bg-white text-black select-none dark:bg-black dark:text-white">
+    <div className="flex h-screen flex-col bg-white text-black select-none dark:bg-gray-950 dark:text-white">
       <div className="grow overflow-hidden">
         <Outlet />
       </div>
