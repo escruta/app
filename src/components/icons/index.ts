@@ -2,7 +2,7 @@ export * from "./AddIcon";
 export * from "./BoldIcon";
 export * from "./CardIcon";
 export * from "./ChatHistoryIcon";
-export * from "./ChatIcon";
+
 export * from "./ChatNewIcon";
 export * from "./CheckIcon";
 export * from "./ChevronIcon";
@@ -26,7 +26,7 @@ export * from "./Heading1Icon";
 export * from "./Heading2Icon";
 export * from "./Heading3Icon";
 export * from "./HighlightIcon";
-export * from "./HomeIcon";
+
 export * from "./InfoIcon";
 export * from "./ItalicIcon";
 export * from "./LinkIcon";
@@ -43,7 +43,7 @@ export * from "./RestartIcon";
 export * from "./SearchIcon";
 export * from "./SendIcon";
 export * from "./SettingsIcon";
-export * from "./ShareIcon";
+
 export * from "./SignOutIcon";
 export * from "./StarsIcon";
 export * from "./StudyIcon";

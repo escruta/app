@@ -1,30 +1,6 @@
 import { motion } from "motion/react";
 import { NotebookIcon, FireIcon } from "@/components/icons";
 
-export function NotebookLoadingState() {
-  return (
-    <div className="flex h-screen w-full flex-col justify-center">
-      <div className="border-y border-gray-200 bg-gray-50 px-6 py-5 dark:border-gray-700 dark:bg-gray-950">
-        <div className="flex items-center justify-center py-12">
-          <motion.div
-            className="text-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <motion.div
-              className="mb-4 inline-block h-8 w-8 rounded-full border-2 border-blue-500 border-t-transparent"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
-            />
-            <p className="font-medium text-gray-600 dark:text-gray-400">Loading your notebook...</p>
-          </motion.div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 interface ErrorProps {
   error: any;
 }
