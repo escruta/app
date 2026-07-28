@@ -614,7 +614,7 @@ export default function HomePage() {
         >
           <p className="text-gray-600 dark:text-gray-300">
             You're about to delete <span className="font-semibold">{folderToDelete?.title}</span>.
-            This can't be undone—any notebooks and notes inside will stay in your library, just
+            This can't be undone, any notebooks and notes inside will stay in your library, just
             moved out of the folder.
           </p>
         </Modal>

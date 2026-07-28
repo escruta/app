@@ -236,7 +236,7 @@ export function ChatHistory({
         ) : conversations.length === 0 ? (
           <div className="py-8 text-center text-gray-500 dark:text-gray-400">
             {debouncedSearch
-              ? "No conversations match that — try another search"
+              ? "No conversations match that, try another search"
               : "No conversations yet"}
           </div>
         ) : (

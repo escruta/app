@@ -26,7 +26,7 @@ export function NotebookErrorState({ error }: ErrorProps) {
                 Notebook not found
               </h1>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                We couldn't find this notebook — it may have been deleted.
+                We couldn't find this notebook, it may have been deleted.
               </p>
             </div>
           </motion.div>

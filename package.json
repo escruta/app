@@ -2,7 +2,7 @@
   "name": "escruta-app",
   "version": "0.0.1",
   "private": true,
-  "description": "Organize, analyze, and learn from your own knowledge. Ask questions, take notes, and get insights—all in an open-source platform.",
+  "description": "Organize, analyze, and learn from your own knowledge. Ask questions, take notes, and get insights, all in an open-source platform.",
   "license": "UNLICENSED",
   "type": "module",
   "main": ".vite/build/main.js",

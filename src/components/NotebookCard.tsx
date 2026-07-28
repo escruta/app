@@ -461,7 +461,7 @@ export function NotebookCard({
             }))}
             selectedId={selectedFolderId}
             onSelect={setSelectedFolderId}
-            emptyText="You don't have any folders yet — create one to organize your notebooks."
+            emptyText="You don't have any folders yet, create one to organize your notebooks."
           />
           {selectedFolderId === null && (notebook.folderId ?? null) !== null && (
             <p className="text-sm text-gray-500 dark:text-gray-400">

@@ -62,7 +62,7 @@ export function Card({
 
   return (
     <>
-      {/* Backdrop — inline, position:fixed covers viewport regardless of DOM position */}
+      {/* Backdrop: inline, position:fixed covers viewport regardless of DOM position */}
       {isExpanded && (
         <button
           type="button"
@@ -72,7 +72,7 @@ export function Card({
         />
       )}
 
-      {/* Card — always inline; position:fixed on expanded handles overlay */}
+      {/* Card: always inline; position:fixed on expanded handles overlay */}
       {content}
     </>
   );

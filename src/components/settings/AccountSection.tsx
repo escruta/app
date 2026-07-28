@@ -132,7 +132,7 @@ export function AccountSection() {
     }
 
     if (newPassword !== confirmPassword) {
-      setErrorPasswordMessage("Passwords don't match — please try again.");
+      setErrorPasswordMessage("Passwords don't match, please try again.");
       return;
     }
     changePassword();

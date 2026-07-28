@@ -93,7 +93,7 @@ export function ToolResultViewer({
           <div className="text-center">
             <p className="mb-2 text-red-500 dark:text-red-400">{parsedContent.error}</p>
             <p className="text-sm text-gray-400 dark:text-gray-500">
-              We couldn't display this content properly — try regenerating it.
+              We couldn't display this content properly, try regenerating it.
             </p>
           </div>
         </div>
@@ -120,7 +120,7 @@ export function ToolResultViewer({
         return (
           <div className="flex flex-1 items-center justify-center p-6">
             <p className="text-gray-500 dark:text-gray-400">
-              We don't recognize this content type — try regenerating.
+              We don't recognize this content type, try regenerating.
             </p>
           </div>
         );
