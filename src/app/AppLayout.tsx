@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Outlet } from "react-router";
 import { useAuth, useCookie } from "@/hooks";
+import { GlobalContextMenu } from "@/components/ui";
 import type { User } from "@/interfaces";
 
 export function AppLayout() {
@@ -22,6 +23,7 @@ export function AppLayout() {
       <div className="grow overflow-hidden">
         <Outlet />
       </div>
+      <GlobalContextMenu />
     </div>
   );
 }

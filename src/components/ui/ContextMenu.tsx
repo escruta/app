@@ -14,6 +14,7 @@ import {
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
+import { CopyIcon } from "@/components/icons";
 
 interface ContextMenuState {
   isOpen: boolean;
@@ -82,17 +83,19 @@ export function ContextMenuTrigger({
   if (!context) return null;
 
   return cloneElement(children, {
+    "data-context-menu-trigger": true,
     onContextMenu: (e: React.MouseEvent<HTMLElement>) => {
       if (disabled) return;
       children.props.onContextMenu?.(e);
       e.preventDefault();
+      e.stopPropagation();
       context.setState({
         isOpen: true,
         position: { x: e.clientX, y: e.clientY },
       });
     },
     className: cn(children.props.className, className),
-  });
+  } as HTMLAttributes<HTMLElement>);
 }
 
 export function ContextMenuContent({
@@ -317,5 +320,92 @@ export function ContextMenuItem({
       )}
       <span className="flex-1 text-left font-medium">{label}</span>
     </button>
+  );
+}
+
+export function ContextMenuCopy({
+  label = "Copy",
+  icon,
+  className,
+  onCopied,
+}: {
+  label?: string;
+  icon?: ReactNode;
+  className?: string;
+  onCopied?: (text: string) => void;
+}) {
+  const [hasSelection, setHasSelection] = useState(false);
+
+  useEffect(() => {
+    const update = () => {
+      const sel = window.getSelection();
+      setHasSelection(!!sel && sel.toString().trim().length > 0);
+    };
+    update();
+    document.addEventListener("selectionchange", update);
+    return () => document.removeEventListener("selectionchange", update);
+  }, []);
+
+  const handleCopy = () => {
+    const sel = window.getSelection();
+    const text = sel?.toString() ?? "";
+    if (!text) return;
+    navigator.clipboard?.writeText(text);
+    onCopied?.(text);
+  };
+
+  return (
+    <ContextMenuItem
+      label={label}
+      icon={icon ?? <CopyIcon className="size-full" />}
+      onClick={handleCopy}
+      disabled={!hasSelection}
+      className={className}
+    />
+  );
+}
+
+function SyntheticTrigger() {
+  const context = useContext(ContextMenuContext);
+
+  useEffect(() => {
+    if (!context) return;
+    const handleContextMenu = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+
+      if (
+        target?.closest(
+          "[data-context-menu-trigger], .ProseMirror, input, textarea, [contenteditable='true']",
+        )
+      ) {
+        context.setState({ isOpen: false, position: { x: 0, y: 0 } });
+        return;
+      }
+
+      const sel = window.getSelection();
+      const selText = sel?.toString().trim() ?? "";
+
+      if (!selText) return;
+
+      e.preventDefault();
+      context.setState({
+        isOpen: true,
+        position: { x: e.clientX, y: e.clientY },
+      });
+    };
+
+    document.addEventListener("contextmenu", handleContextMenu);
+    return () => document.removeEventListener("contextmenu", handleContextMenu);
+  }, [context]);
+
+  return null;
+}
+
+export function GlobalContextMenu({ children }: { children?: ReactNode }) {
+  return (
+    <ContextMenu>
+      <SyntheticTrigger />
+      <ContextMenuContent compact>{children ?? <ContextMenuCopy />}</ContextMenuContent>
+    </ContextMenu>
   );
 }
