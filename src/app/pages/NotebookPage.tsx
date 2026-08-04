@@ -52,13 +52,8 @@ export default function NotebookPage() {
   const [isNoteExpanded, setIsNoteExpanded] = useState<boolean>(false);
   const [isToolExpanded, setIsToolExpanded] = useState<boolean>(false);
   const [leftPanelWidth, setLeftPanelWidth] = useCookie<number>("notebookLeftPanelWidth", 30);
-  const [rightPanelWidth, setRightPanelWidth] = useCookie<number>("notebookRightPanelWidth", 30);
   const [isLeftCollapsed, setIsLeftCollapsed] = useCookie<boolean>("notebookLeftCollapsed", false);
-  const [isRightCollapsed, setIsRightCollapsed] = useCookie<boolean>(
-    "notebookRightCollapsed",
-    false,
-  );
-  const [activeResizer, setActiveResizer] = useState<"left" | "right" | null>(null);
+  const [activeResizer, setActiveResizer] = useState<"left" | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
 
   const mode = useBreakpoint();
@@ -153,34 +148,11 @@ export default function NotebookPage() {
       const { minSidePercent, minCenterPercent } = getPixelConstraints(rect.width);
 
       if (activeResizer === "left") {
-        const currentRight = isRightCollapsed ? 0 : Math.max(minSidePercent, rightPanelWidth ?? 25);
-        const maxAvailable = 100 - minCenterPercent - currentRight;
+        const maxAvailable = 100 - minCenterPercent;
         const maxLimit = Math.min(50, maxAvailable);
         const newWidth = Math.min(Math.max((x / rect.width) * 100, minSidePercent), maxLimit);
         setLeftPanelWidth(newWidth);
         setIsLeftCollapsed(false);
-        if (
-          !isRightCollapsed &&
-          mode !== "extensive" &&
-          currentRight + newWidth > 100 - minCenterPercent
-        ) {
-          setIsRightCollapsed(true);
-        }
-      } else if (activeResizer === "right") {
-        const rightX = rect.width - x;
-        const currentLeft = isLeftCollapsed ? 0 : Math.max(minSidePercent, leftPanelWidth ?? 25);
-        const maxAvailable = 100 - minCenterPercent - currentLeft;
-        const maxLimit = Math.min(50, maxAvailable);
-        const newWidth = Math.min(Math.max((rightX / rect.width) * 100, minSidePercent), maxLimit);
-        setRightPanelWidth(newWidth);
-        setIsRightCollapsed(false);
-        if (
-          !isLeftCollapsed &&
-          mode !== "extensive" &&
-          currentLeft + newWidth > 100 - minCenterPercent
-        ) {
-          setIsLeftCollapsed(true);
-        }
       }
     };
 
@@ -200,82 +172,17 @@ export default function NotebookPage() {
       document.removeEventListener("mouseup", handleMouseUp);
       document.body.classList.remove("resizing");
     };
-  }, [
-    activeResizer,
-    setLeftPanelWidth,
-    setRightPanelWidth,
-    setIsLeftCollapsed,
-    setIsRightCollapsed,
-  ]);
+  }, [activeResizer, setLeftPanelWidth, setIsLeftCollapsed]);
 
   const expandLeft = () => {
     const containerWidth = sectionRef.current?.getBoundingClientRect().width ?? window.innerWidth;
     const { minSidePercent, minCenterPercent } = getPixelConstraints(containerWidth);
 
-    let desiredLeft = Math.max(minSidePercent, leftPanelWidth ?? 30);
-    const currentRight = isRightCollapsed ? 0 : Math.max(minSidePercent, rightPanelWidth ?? 30);
-
-    if (mode === "extensive") {
-      if (isRightCollapsed) {
-        const maxAvailable = 100 - minCenterPercent;
-        setLeftPanelWidth(Math.min(desiredLeft, maxAvailable));
-        setIsLeftCollapsed(false);
-        return;
-      }
-      let openLeft = desiredLeft;
-      let openRight = currentRight;
-      const free = 100 - minCenterPercent;
-      if (openLeft + openRight > free) {
-        const ratio = free / (openLeft + openRight);
-        openLeft = Math.max(minSidePercent, openLeft * ratio);
-        openRight = Math.max(minSidePercent, openRight * ratio);
-      }
-      setLeftPanelWidth(openLeft);
-      setRightPanelWidth(openRight);
-      setIsLeftCollapsed(false);
-      return;
-    }
-
-    if (desiredLeft + currentRight + minCenterPercent > 100 && !isRightCollapsed) {
-      setIsRightCollapsed(true);
-    }
-    setLeftPanelWidth(desiredLeft);
+    const desiredLeft = Math.max(minSidePercent, leftPanelWidth ?? 30);
+    const maxAvailable = 100 - minCenterPercent;
+    const maxLimit = Math.min(50, maxAvailable);
+    setLeftPanelWidth(Math.max(minSidePercent, Math.min(desiredLeft, maxLimit)));
     setIsLeftCollapsed(false);
-  };
-
-  const expandRight = () => {
-    const containerWidth = sectionRef.current?.getBoundingClientRect().width ?? window.innerWidth;
-    const { minSidePercent, minCenterPercent } = getPixelConstraints(containerWidth);
-
-    let desiredRight = Math.max(minSidePercent, rightPanelWidth ?? 30);
-    const currentLeft = isLeftCollapsed ? 0 : Math.max(minSidePercent, leftPanelWidth ?? 30);
-
-    if (mode === "extensive") {
-      if (isLeftCollapsed) {
-        const maxAvailable = 100 - minCenterPercent;
-        setRightPanelWidth(Math.min(desiredRight, maxAvailable));
-        setIsRightCollapsed(false);
-        return;
-      }
-      let openRight = desiredRight;
-      let openLeft = currentLeft;
-      const free = 100 - minCenterPercent;
-      if (openRight + openLeft > free) {
-        const ratio = free / (openRight + openLeft);
-        openRight = Math.max(minSidePercent, openRight * ratio);
-        openLeft = Math.max(minSidePercent, openLeft * ratio);
-      }
-      setRightPanelWidth(openRight);
-      setLeftPanelWidth(openLeft);
-      setIsRightCollapsed(false);
-      return;
-    }
-
-    if (desiredRight + currentLeft + minCenterPercent > 100 && !isLeftCollapsed) {
-      setIsLeftCollapsed(true);
-    }
-    setRightPanelWidth(desiredRight);
-    setIsRightCollapsed(false);
   };
 
   const handleMouseDownLeft = (e: React.MouseEvent) => {
@@ -284,48 +191,25 @@ export default function NotebookPage() {
   };
 
   useEffect(() => {
-    if (mode === "standard" && !isLeftCollapsed && !isRightCollapsed) {
-      setIsRightCollapsed(true);
-    }
-  }, [mode, isLeftCollapsed, isRightCollapsed, setIsRightCollapsed]);
-
-  useEffect(() => {
-    if (mode === "compact" || !sectionRef.current) return;
+    if (mode !== "compact" && !sectionRef.current) return;
 
     const clampPanelWidths = (containerWidth: number) => {
       const { minSidePercent, minCenterPercent } = getPixelConstraints(containerWidth);
 
       const left = isLeftCollapsed ? 0 : (leftPanelWidth ?? 30);
-      const right = isRightCollapsed ? 0 : (rightPanelWidth ?? 30);
 
       let clampedLeft = left;
-      let clampedRight = right;
 
       if (left > 0 && left < minSidePercent) {
         clampedLeft = minSidePercent;
       }
-      if (right > 0 && right < minSidePercent) {
-        clampedRight = minSidePercent;
-      }
 
-      const total = clampedLeft + clampedRight + minCenterPercent;
+      const total = clampedLeft + minCenterPercent;
       if (total > 100) {
-        if (mode === "extensive") {
-          const free = 100 - minCenterPercent;
-          if (clampedLeft + clampedRight > free) {
-            const ratio = free / (clampedLeft + clampedRight);
-            clampedLeft = Math.max(minSidePercent, clampedLeft * ratio);
-            clampedRight = Math.max(minSidePercent, clampedRight * ratio);
-          }
-        } else {
-          if (!isRightCollapsed && clampedLeft > 0) {
-            setIsRightCollapsed(true);
-          }
-        }
+        clampedLeft = Math.min(clampedLeft, 100 - minCenterPercent);
       }
 
       if (clampedLeft !== left) setLeftPanelWidth(clampedLeft);
-      if (clampedRight !== right) setRightPanelWidth(clampedRight);
     };
 
     const observer = new ResizeObserver((entries) => {
@@ -334,52 +218,24 @@ export default function NotebookPage() {
       }
     });
 
-    observer.observe(sectionRef.current);
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
     return () => observer.disconnect();
-  }, [
-    mode,
-    isLeftCollapsed,
-    isRightCollapsed,
-    leftPanelWidth,
-    rightPanelWidth,
-    setLeftPanelWidth,
-    setRightPanelWidth,
-    setIsRightCollapsed,
-  ]);
+  }, [mode, isLeftCollapsed, leftPanelWidth, setLeftPanelWidth]);
 
   const handleDoubleClickLeft = () => {
     const containerWidth = sectionRef.current?.getBoundingClientRect().width ?? window.innerWidth;
     const { minSidePercent, minCenterPercent } = getPixelConstraints(containerWidth);
 
-    if (!isRightCollapsed) {
+    if (!isLeftCollapsed) {
       setLeftPanelWidth(minSidePercent);
     } else {
-      const currentRight = isRightCollapsed ? 0 : Math.max(minSidePercent, rightPanelWidth ?? 30);
-      const maxAvailable = 100 - minCenterPercent - currentRight;
+      const maxAvailable = 100 - minCenterPercent;
       const maxLimit = Math.min(50, maxAvailable);
       setLeftPanelWidth(maxLimit);
     }
     setIsLeftCollapsed(false);
-  };
-
-  const handleMouseDownRight = (e: React.MouseEvent) => {
-    e.preventDefault();
-    setActiveResizer("right");
-  };
-
-  const handleDoubleClickRight = () => {
-    const containerWidth = sectionRef.current?.getBoundingClientRect().width ?? window.innerWidth;
-    const { minSidePercent, minCenterPercent } = getPixelConstraints(containerWidth);
-
-    if (!isLeftCollapsed) {
-      setRightPanelWidth(minSidePercent);
-    } else {
-      const currentLeft = isLeftCollapsed ? 0 : Math.max(minSidePercent, leftPanelWidth ?? 30);
-      const maxAvailable = 100 - minCenterPercent - currentLeft;
-      const maxLimit = Math.min(50, maxAvailable);
-      setRightPanelWidth(maxLimit);
-    }
-    setIsRightCollapsed(false);
   };
 
   const {
@@ -501,7 +357,6 @@ export default function NotebookPage() {
     </div>
   );
 
-  const sourcesTabContent = renderSourcesTabContent(() => setIsLeftCollapsed(true));
   const sourcesTabContentWithCollapse = (onToggleCollapse: () => void) =>
     renderSourcesTabContent(onToggleCollapse);
 
@@ -652,33 +507,61 @@ export default function NotebookPage() {
               className={cn(
                 "min-h-0 flex flex-col overflow-hidden border-r border-gray-200 bg-gray-50/60 transition-[width,background-color,border-color] duration-200 ease-out shrink-0 dark:border-gray-800 dark:bg-gray-900/50",
                 {
-                  "z-60": isSourceExpanded,
+                  "z-60": isSourceExpanded || isNoteExpanded || isToolExpanded,
                 },
               )}
               style={{ width: isLeftCollapsed ? "48px" : `${leftPanelWidth ?? 25}%` }}
             >
               {isLeftCollapsed && (
                 <div className="flex h-full w-full flex-col items-center py-3">
-                  <Tooltip text="Expand sources" position="right">
+                  <Tooltip text="Expand Sources, Notes & Tools" position="right">
                     <IconButton
                       icon={<ExpandIcon />}
                       onClick={expandLeft}
                       variant="secondary"
                       size="sm"
-                      aria-label="Expand sources"
+                      aria-label="Expand Sources, Notes & Tools"
                     />
                   </Tooltip>
                   <div
                     className="mt-4 flex-1 text-xs font-medium tracking-widest text-gray-400 uppercase select-none [writing-mode:vertical-rl]"
                     style={{ transform: "rotate(180deg)" }}
                   >
-                    Sources
+                    Sources · Notes · Tools
                   </div>
                 </div>
               )}
 
               <div className={cn("h-full w-full", { hidden: isLeftCollapsed })}>
-                {sourcesTabContent}
+                <Tabs
+                  className="h-full"
+                  onToggleCollapse={() => setIsLeftCollapsed(true)}
+                  items={[
+                    {
+                      id: "sources",
+                      label: "Sources",
+                      content: sourcesTabContentWithCollapse(() => setIsLeftCollapsed(true)),
+                    },
+                    {
+                      id: "notes",
+                      label: "Notes",
+                      content: notesTabContent,
+                    },
+                    {
+                      id: "tools",
+                      label: "Tools",
+                      content: (
+                        <ToolsCard
+                          notebookId={notebookId}
+                          onNodeSelect={handleNodeSelect}
+                          hasSources={(notebook?.sources?.length ?? 0) > 0}
+                          onExpandedChange={setIsToolExpanded}
+                        />
+                      ),
+                    },
+                  ]}
+                  defaultActiveTab="sources"
+                />
               </div>
             </div>
 
@@ -709,78 +592,6 @@ export default function NotebookPage() {
                 externalQuestion={chatQuestion}
                 onExternalQuestionHandled={() => setChatQuestion(null)}
               />
-            </div>
-
-            {/* Right Resizer */}
-            {!isRightCollapsed && (
-              <div
-                className="group z-5 flex cursor-col-resize items-stretch justify-center"
-                onMouseDown={handleMouseDownRight}
-                onDoubleClick={handleDoubleClickRight}
-                title="Double click to toggle"
-              >
-                <div
-                  className={cn("w-px rounded-xs transition-all duration-150", {
-                    "bg-blue-500 dark:bg-blue-400": activeResizer === "right",
-                    "bg-transparent group-hover:bg-blue-400/70 dark:group-hover:bg-blue-500/70":
-                      activeResizer !== "right",
-                  })}
-                />
-              </div>
-            )}
-
-            <div
-              className={cn(
-                "min-h-0 flex flex-col overflow-hidden border-l border-gray-200 bg-gray-50/60 transition-[width,background-color,border-color] duration-200 ease-out shrink-0 dark:border-gray-800 dark:bg-gray-900/50",
-                {
-                  "z-60": isNoteExpanded || isToolExpanded,
-                },
-              )}
-              style={{ width: isRightCollapsed ? "48px" : `${rightPanelWidth ?? 25}%` }}
-            >
-              {isRightCollapsed && (
-                <div className="flex h-full w-full flex-col items-center py-3">
-                  <Tooltip text="Expand Notes & Tools" position="left">
-                    <IconButton
-                      icon={<ExpandIcon />}
-                      onClick={expandRight}
-                      variant="secondary"
-                      size="sm"
-                      aria-label="Expand Notes & Tools"
-                    />
-                  </Tooltip>
-                  <div className="mt-4 flex-1 text-xs font-medium tracking-widest text-gray-400 uppercase select-none [writing-mode:vertical-rl]">
-                    Notes & Tools
-                  </div>
-                </div>
-              )}
-
-              <div className={cn("h-full w-full", { hidden: isRightCollapsed })}>
-                <Tabs
-                  className="h-full"
-                  onToggleCollapse={() => setIsRightCollapsed(true)}
-                  items={[
-                    {
-                      id: "notes",
-                      label: "Notes",
-                      content: notesTabContent,
-                    },
-                    {
-                      id: "tools",
-                      label: "Tools",
-                      content: (
-                        <ToolsCard
-                          notebookId={notebookId}
-                          onNodeSelect={handleNodeSelect}
-                          hasSources={(notebook?.sources?.length ?? 0) > 0}
-                          onExpandedChange={setIsToolExpanded}
-                        />
-                      ),
-                    },
-                  ]}
-                  defaultActiveTab="notes"
-                />
-              </div>
             </div>
           </section>
         )}
