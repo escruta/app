@@ -10,10 +10,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     expiresIn: 0,
   });
   const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useCookie<User | null>("user", null) as [
-    User | null,
-    (value: User | null) => void,
-  ];
+  const [currentUser, setCurrentUser] = useCookie<User | null>("user", null);
 
   const signIn = async (email: string, password: string) => {
     const response = await fetch(new URL("/login", BACKEND_BASE_URL), {

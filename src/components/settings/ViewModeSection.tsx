@@ -120,7 +120,7 @@ function CategoryRow({ category }: { category: ViewCategory }) {
       <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
         {CATEGORY_LABELS[category]}
       </p>
-      <SegmentedControl value={viewMode!} onChange={setViewMode} />
+      <SegmentedControl value={viewMode} onChange={setViewMode} />
     </div>
   );
 }

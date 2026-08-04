@@ -8,9 +8,19 @@ const defaultOptions: Cookies.CookieAttributes = {
 
 export function useCookie<T>(
   keyName: string,
+  defaultValue: T,
+  options?: Cookies.CookieAttributes,
+): readonly [T, (newValue: T) => void];
+export function useCookie<T>(
+  keyName: string,
+  defaultValue?: T,
+  options?: Cookies.CookieAttributes,
+): readonly [T | undefined, (newValue: T) => void];
+export function useCookie<T>(
+  keyName: string,
   defaultValue?: T,
   options: Cookies.CookieAttributes = defaultOptions,
-) {
+): readonly [T | undefined, (newValue: T) => void] {
   const [storedValue, setStoredValue] = useState<T | undefined>(() => {
     try {
       const item = Cookies.get(keyName);
