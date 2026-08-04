@@ -461,7 +461,7 @@ export default function NotebookPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2, ease: "easeInOut" }}
-            className="absolute inset-0 z-10 h-[96%] self-end"
+            className="absolute inset-0 z-10 h-[96%] self-end px-[4%]"
           >
             <SourceViewer
               notebookId={notebookId}
@@ -580,11 +580,11 @@ export default function NotebookPage() {
         }
       />
 
-      <div className="flex-1 overflow-hidden p-3 md:p-4">
+      <div className="relative flex-1 overflow-hidden">
         <SimpleBackground />
         {mode === "compact" ? (
           <section className="flex h-full flex-col gap-2 overflow-hidden">
-            <div className="no-scrollbar flex w-full shrink-0 overflow-x-auto rounded-xs border border-gray-200 bg-white p-1 dark:border-gray-600 dark:bg-gray-900">
+            <div className="no-scrollbar flex w-full shrink-0 overflow-x-auto border-b border-gray-200 dark:border-gray-700">
               {(
                 [
                   { id: "sources", label: "Sources" },
@@ -593,29 +593,29 @@ export default function NotebookPage() {
                   { id: "tools", label: "Tools" },
                 ] as const
               ).map((tab) => (
-                <div key={tab.id} className="group relative min-w-max flex-1">
-                  {compactTab === tab.id && (
-                    <div className="absolute inset-0 rounded-xs border border-gray-200/50 bg-white transition-all duration-150 ease-out dark:border-gray-600/50 dark:bg-gray-800" />
+                <button
+                  key={tab.id}
+                  onClick={() => setCompactTab(tab.id)}
+                  type="button"
+                  className={cn(
+                    "relative flex-1 cursor-pointer px-6 py-2 text-sm whitespace-nowrap text-center transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-200 dark:focus-visible:ring-gray-600",
+                    {
+                      "font-semibold text-gray-800 dark:text-gray-100": compactTab === tab.id,
+                      "font-medium text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200":
+                        compactTab !== tab.id,
+                    },
                   )}
-                  {compactTab !== tab.id && (
-                    <div className="absolute inset-0 rounded-xs bg-gray-100/40 opacity-0 transition-opacity duration-150 group-hover:opacity-100 dark:bg-gray-700/40" />
-                  )}
-                  <button
-                    onClick={() => setCompactTab(tab.id)}
-                    type="button"
-                    className="relative w-full cursor-pointer rounded-xs px-6 py-1.5 text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-200 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-gray-600 dark:focus-visible:ring-offset-gray-900"
-                  >
-                    <span
-                      className={cn("text-sm transition-all duration-150", {
-                        "font-semibold text-gray-800 dark:text-gray-100": compactTab === tab.id,
-                        "font-medium text-gray-600 group-hover:text-gray-800 dark:text-gray-400 dark:group-hover:text-gray-200":
-                          compactTab !== tab.id,
-                      })}
-                    >
-                      {tab.label}
-                    </span>
-                  </button>
-                </div>
+                >
+                  {tab.label}
+                  <span
+                    className={cn(
+                      "absolute inset-x-0 bottom-0 h-0.5 transition-opacity duration-150",
+                      compactTab === tab.id
+                        ? "bg-blue-500 opacity-100 dark:bg-blue-400"
+                        : "opacity-0",
+                    )}
+                  />
+                </button>
               ))}
             </div>
 
@@ -647,10 +647,10 @@ export default function NotebookPage() {
             </div>
           </section>
         ) : (
-          <section ref={sectionRef} className="flex h-full gap-1 overflow-hidden">
+          <section ref={sectionRef} className="flex h-full overflow-hidden">
             <div
               className={cn(
-                "min-h-0 flex flex-col overflow-hidden transition-[width,background-color,border-color] duration-200 ease-out shrink-0",
+                "min-h-0 flex flex-col overflow-hidden border-r border-gray-200 bg-gray-50/60 transition-[width,background-color,border-color] duration-200 ease-out shrink-0 dark:border-gray-800 dark:bg-gray-900/50",
                 {
                   "z-60": isSourceExpanded,
                 },
@@ -685,15 +685,15 @@ export default function NotebookPage() {
             {/* Left Resizer */}
             {!isLeftCollapsed && (
               <div
-                className="group z-5 flex w-2 cursor-col-resize items-center justify-center"
+                className="group z-5 flex cursor-col-resize items-stretch justify-center"
                 onMouseDown={handleMouseDownLeft}
                 onDoubleClick={handleDoubleClickLeft}
                 title="Double click to toggle"
               >
                 <div
-                  className={cn("w-px h-1/12 rounded-xs transition-all duration-150", {
+                  className={cn("w-px rounded-xs transition-all duration-150", {
                     "bg-blue-500 dark:bg-blue-400": activeResizer === "left",
-                    "bg-gray-300/60 dark:bg-gray-600 group-hover:bg-blue-400 dark:group-hover:bg-blue-500":
+                    "bg-transparent group-hover:bg-blue-400/70 dark:group-hover:bg-blue-500/70":
                       activeResizer !== "left",
                   })}
                 />
@@ -714,15 +714,15 @@ export default function NotebookPage() {
             {/* Right Resizer */}
             {!isRightCollapsed && (
               <div
-                className="group z-5 flex w-2 cursor-col-resize items-center justify-center"
+                className="group z-5 flex cursor-col-resize items-stretch justify-center"
                 onMouseDown={handleMouseDownRight}
                 onDoubleClick={handleDoubleClickRight}
                 title="Double click to toggle"
               >
                 <div
-                  className={cn("w-px h-1/12 rounded-xs transition-all duration-150", {
+                  className={cn("w-px rounded-xs transition-all duration-150", {
                     "bg-blue-500 dark:bg-blue-400": activeResizer === "right",
-                    "bg-gray-300/60 dark:bg-gray-600 group-hover:bg-blue-400 dark:group-hover:bg-blue-500":
+                    "bg-transparent group-hover:bg-blue-400/70 dark:group-hover:bg-blue-500/70":
                       activeResizer !== "right",
                   })}
                 />
@@ -731,7 +731,7 @@ export default function NotebookPage() {
 
             <div
               className={cn(
-                "min-h-0 flex flex-col overflow-hidden transition-[width,background-color,border-color] duration-200 ease-out shrink-0",
+                "min-h-0 flex flex-col overflow-hidden border-l border-gray-200 bg-gray-50/60 transition-[width,background-color,border-color] duration-200 ease-out shrink-0 dark:border-gray-800 dark:bg-gray-900/50",
                 {
                   "z-60": isNoteExpanded || isToolExpanded,
                 },

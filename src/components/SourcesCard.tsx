@@ -11,7 +11,6 @@ import {
 import { SourceChip } from "./SourceChip";
 import { SearchSourcesModal } from "./SearchSourcesModal";
 import {
-  Card,
   Button,
   Divider,
   Modal,
@@ -181,11 +180,11 @@ export function SourcesCard({
 
   return (
     <>
-      <Card className="flex h-full flex-col overflow-hidden p-0">
-        <div className="z-10 shrink-0 rounded-t-xs bg-white dark:bg-gray-900">
-          <div className="flex flex-row items-center justify-between p-4">
+      <div className="flex h-full flex-col overflow-hidden">
+        <div className="z-10 shrink-0">
+          <div className="flex h-15 items-center px-4 pt-4 pb-3">
             <h2 className="font-sans text-lg font-semibold">Sources</h2>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-1 items-center justify-end gap-2">
               <Menu>
                 <MenuTrigger>
                   <Button icon={<AddIcon />} variant="primary" size="sm">
@@ -277,7 +276,7 @@ export function SourcesCard({
             );
           })()}
         </div>
-      </Card>
+      </div>
 
       {/* Search Web Modal */}
       <SearchSourcesModal

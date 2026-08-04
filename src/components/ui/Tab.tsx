@@ -50,53 +50,46 @@ export const Tabs = forwardRef<TabsRef, TabsProps>(
     const activeTab = items.find((tab) => tab.id === activeTabId);
 
     return (
-      <div className={cn("w-full relative", className)}>
-        <div className="flex w-full items-center justify-start gap-2">
+      <div className={cn("flex w-full flex-col", className)}>
+        <div className="flex w-full shrink-0 items-center border-b border-gray-200 pl-1.5 dark:border-gray-700">
           {onToggleCollapse && (
-            <Tooltip text="Collapse panel" position="bottom" className="pl-1.5">
+            <Tooltip text="Collapse panel" position="bottom">
               <IconButton
                 icon={<CompressIcon />}
                 onClick={onToggleCollapse}
-                variant="secondary"
+                variant="ghost"
                 size="sm"
                 aria-label="Collapse panel"
               />
             </Tooltip>
           )}
-          <div className="no-scrollbar flex flex-1 overflow-x-auto rounded-xs border border-gray-200 bg-white p-1 dark:border-gray-600 dark:bg-gray-900">
+          <div className="no-scrollbar flex min-w-0 flex-1 overflow-x-auto">
             {items.map((tab, index) => (
-              <div key={index} className="group relative min-w-max flex-1">
-                {activeTabId === tab.id && (
-                  <div className="absolute inset-0 rounded-xs border border-gray-200/50 bg-white transition-all duration-150 ease-out dark:border-gray-600/50 dark:bg-gray-800" />
+              <button
+                key={index}
+                onClick={() => handleTabClick(tab.id)}
+                type="button"
+                className={cn(
+                  "relative min-w-0 flex-1 cursor-pointer px-6 py-2.5 text-sm whitespace-nowrap text-center transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-200 dark:focus-visible:ring-gray-600",
+                  activeTabId === tab.id
+                    ? "font-semibold text-gray-800 dark:text-gray-100"
+                    : "font-medium text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200",
                 )}
-                {activeTabId !== tab.id && (
-                  <div className="absolute inset-0 rounded-xs bg-gray-100/40 opacity-0 transition-opacity duration-150 group-hover:opacity-100 dark:bg-gray-700/40" />
-                )}
-                <button
-                  onClick={() => handleTabClick(tab.id)}
+              >
+                {tab.label}
+                <span
                   className={cn(
-                    "w-full px-6 py-1.5 text-sm font-medium rounded-xs transition-all duration-200 relative whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-200 dark:focus-visible:ring-gray-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900 cursor-pointer",
-                    {
-                      "": activeTabId === tab.id,
-                    },
+                    "absolute inset-x-0 bottom-0 h-0.5 rounded-full transition-opacity duration-150",
+                    activeTabId === tab.id
+                      ? "bg-blue-500 opacity-100 dark:bg-blue-400"
+                      : "opacity-0",
                   )}
-                  type="button"
-                >
-                  <span
-                    className={cn("text-sm transition-all duration-150", {
-                      "text-gray-800 dark:text-gray-100 font-semibold": activeTabId === tab.id,
-                      "text-gray-600 dark:text-gray-400 font-medium group-hover:text-gray-800 dark:group-hover:text-gray-200":
-                        activeTabId !== tab.id,
-                    })}
-                  >
-                    {tab.label}
-                  </span>
-                </button>
-              </div>
+                />
+              </button>
             ))}
           </div>
         </div>
-        <div className="absolute inset-x-0 bottom-0 mt-2 h-[calc(100%-3.5rem)] max-h-full grow overflow-hidden">
+        <div className="min-h-0 flex-1 overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTabId}

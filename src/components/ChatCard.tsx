@@ -7,7 +7,6 @@ import {
   ChatNewIcon,
 } from "@/components/icons";
 import {
-  Card,
   Divider,
   TextField,
   IconButton,
@@ -374,9 +373,9 @@ export function ChatCard({
   }, []);
 
   return (
-    <Card className="flex h-full flex-col overflow-hidden px-0 pb-0">
-      <div className="mb-2 flex shrink-0 flex-row items-center justify-between px-4">
-        <h2 className="flex min-w-0 flex-1 items-baseline gap-1.5">
+    <div className="relative flex h-full flex-col overflow-hidden">
+      <div className="flex h-15 items-center px-4 pt-4 pb-3">
+        <h2 className="flex min-w-0 items-baseline justify-center gap-1.5">
           <span className="shrink-0 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
             Chat /{" "}
           </span>
@@ -385,7 +384,7 @@ export function ChatCard({
           </span>
         </h2>
         {sourcesCount > 0 ? (
-          <div className="flex items-center gap-1">
+          <div className="flex flex-1 items-center justify-end gap-1">
             <Tooltip text="New conversation" position="top">
               <IconButton
                 icon={<ChatNewIcon />}
@@ -417,7 +416,9 @@ export function ChatCard({
               </MenuContent>
             </Menu>
           </div>
-        ) : null}
+        ) : (
+          <div className="flex flex-1" />
+        )}
       </div>
       <ChatHistory
         notebookId={notebookId}
@@ -433,7 +434,7 @@ export function ChatCard({
         }}
         currentConversationId={conversationId}
       />
-      <Divider className="mb-0" />
+      <Divider className="my-0" />
       <AnimatePresence mode="wait">
         {messages.length > 0 ? (
           <motion.div
@@ -443,7 +444,7 @@ export function ChatCard({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             ref={scrollContainerRef}
-            className="min-h-0 flex-1 scroll-pt-4 space-y-4 overflow-y-auto scroll-smooth px-4 py-4 *:mx-auto *:max-w-4xl md:px-6"
+            className="min-h-0 flex-1 scroll-pt-4 space-y-4 overflow-y-auto scroll-smooth px-4 py-4 *:mx-auto *:max-w-3xl md:px-6"
           >
             <AnimatePresence initial={false}>
               {messages.map((message, index) => (
@@ -476,7 +477,7 @@ export function ChatCard({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="flex max-h-full min-h-0 grow flex-col overflow-y-auto px-4 *:mx-auto *:max-w-4xl"
+            className="flex max-h-full min-h-0 grow flex-col overflow-y-auto px-4 *:mx-auto *:max-w-3xl"
           >
             {sourcesCount > 0 ? (
               <div className="w-full">
@@ -523,10 +524,10 @@ export function ChatCard({
         )}
       </AnimatePresence>
       <div className="pointer-events-none absolute inset-x-0 bottom-0 shrink-0">
-        <div className="absolute inset-0 mx-4 bg-linear-to-t from-white from-50% to-transparent dark:from-gray-900/90 dark:from-50% dark:to-transparent" />
+        <div className="absolute inset-0 mx-4 bg-linear-to-t from-white from-50% to-transparent dark:from-gray-950/90 dark:from-50% dark:to-transparent" />
         <div
           ref={inputContainerRef}
-          className="pointer-events-auto relative mx-auto my-6 flex w-[calc(100%-2rem)] max-w-4xl flex-col rounded-xs border border-gray-300 bg-white shadow-sm transition-all focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400"
+          className="pointer-events-auto relative mx-auto my-6 flex w-[calc(100%-2rem)] max-w-3xl flex-col rounded-xs border border-gray-300 bg-white shadow-sm transition-all focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400"
         >
           <TextField
             id="chat-input"
@@ -565,6 +566,6 @@ export function ChatCard({
           </div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

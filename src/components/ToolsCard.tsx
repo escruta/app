@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { MindMapIcon, StudyIcon, CardIcon, QuestionnaireIcon } from "@/components/icons";
-import { Card, Divider } from "@/components/ui";
+import { Divider } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import { ToolCard } from "./ToolCard";
 import { ToolResultViewer } from "./ToolResultViewer";
@@ -113,9 +113,9 @@ export function ToolsCard({
           "opacity-100 scale-100": !selectedTool,
         })}
       >
-        <Card className="flex h-full flex-col overflow-hidden p-0">
-          <div className="z-10 shrink-0 rounded-t-xs bg-white dark:bg-gray-900">
-            <div className="flex flex-row items-center justify-between p-4">
+        <div className="flex h-full flex-col overflow-hidden">
+          <div className="z-10 shrink-0">
+            <div className="flex h-15 items-center px-4 pt-4 pb-3">
               <h2 className="font-sans text-lg font-semibold">Tools</h2>
             </div>
             <Divider className="my-0" />
@@ -133,7 +133,7 @@ export function ToolsCard({
               ))}
             </div>
           </div>
-        </Card>
+        </div>
       </div>
     </div>
   );

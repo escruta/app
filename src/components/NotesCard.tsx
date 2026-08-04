@@ -1,7 +1,7 @@
 import type { Note } from "@/interfaces";
 import { AddIcon, EditIcon } from "@/components/icons";
 import { NoteChip } from "./NoteChip";
-import { Card, Button, Divider, Spinner } from "@/components/ui";
+import { Button, Divider, Spinner } from "@/components/ui";
 import { useFetch } from "@/hooks";
 import { useEffect } from "react";
 
@@ -47,20 +47,22 @@ export function NotesCard({ notebookId, onNoteSelect, refreshTrigger }: NotesCar
 
   return (
     <>
-      <Card className="flex h-full flex-col overflow-hidden p-0">
-        <div className="z-10 shrink-0 rounded-t-xs bg-white dark:bg-gray-900">
-          <div className="flex flex-row items-center justify-between p-4">
+      <div className="flex h-full flex-col overflow-hidden">
+        <div className="z-10 shrink-0">
+          <div className="flex h-15 items-center px-4 pt-4 pb-3">
             <h2 className="font-sans text-lg font-semibold">Notes</h2>
-            <Button
-              icon={addingNote ? <Spinner /> : <AddIcon />}
-              variant="primary"
-              size="sm"
-              className="shrink-0"
-              onClick={() => createNote()}
-              disabled={addingNote}
-            >
-              {addingNote ? "Adding..." : "Add note"}
-            </Button>
+            <div className="flex flex-1 items-center justify-end gap-2">
+              <Button
+                icon={addingNote ? <Spinner /> : <AddIcon />}
+                variant="primary"
+                size="sm"
+                className="shrink-0"
+                onClick={() => createNote()}
+                disabled={addingNote}
+              >
+                {addingNote ? "Adding..." : "Add note"}
+              </Button>
+            </div>
           </div>
           <Divider className="my-0" />
         </div>
@@ -106,7 +108,7 @@ export function NotesCard({ notebookId, onNoteSelect, refreshTrigger }: NotesCar
             );
           })()}
         </div>
-      </Card>
+      </div>
     </>
   );
 }
