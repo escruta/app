@@ -21,8 +21,10 @@ import {
   StudyIcon,
   CardIcon,
   QuestionnaireIcon,
+  FolderIcon,
+  GridIcon,
 } from "@/components/icons";
-import { Tabs, Tooltip, IconButton, Spinner, ChromeTabs } from "@/components/ui";
+import { Tooltip, IconButton, Spinner, ChromeTabs, SideNav } from "@/components/ui";
 import { ToolResultTab } from "@/components/tools";
 import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
 import { NotebookErrorState } from "./notebook/NotebookStates";
@@ -790,23 +792,26 @@ export default function NotebookPage() {
               )}
 
               <div className={cn("h-full w-full", { hidden: isLeftCollapsed })}>
-                <Tabs
+                <SideNav
                   className="h-full"
                   onToggleCollapse={() => setIsLeftCollapsed(true)}
                   items={[
                     {
                       id: "sources",
                       label: "Sources",
+                      icon: <FolderIcon />,
                       content: sourcesListContent(() => setIsLeftCollapsed(true)),
                     },
                     {
                       id: "notes",
                       label: "Notes",
+                      icon: <NoteIcon />,
                       content: notesListContent,
                     },
                     {
                       id: "tools",
                       label: "Tools",
+                      icon: <GridIcon />,
                       content: toolsListContent,
                     },
                   ]}
