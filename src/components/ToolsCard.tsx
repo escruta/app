@@ -20,6 +20,7 @@ interface ToolsCardProps {
   onNodeSelect?: (question: string) => void;
   hasSources?: boolean;
   onExpandedChange?: (expanded: boolean) => void;
+  onOpenTool?: (toolType: JobType, title: string) => void;
 }
 
 interface SelectedTool {
@@ -35,6 +36,7 @@ export function ToolsCard({
   onNodeSelect,
   hasSources = true,
   onExpandedChange,
+  onOpenTool,
 }: ToolsCardProps) {
   const [selectedTool, setSelectedTool] = useState<SelectedTool | null>(null);
 
@@ -83,7 +85,7 @@ export function ToolsCard({
   return (
     <div className="relative h-full w-full">
       <AnimatePresence>
-        {selectedTool ? (
+        {!onOpenTool && selectedTool ? (
           <motion.div
             key={selectedTool.tool.type}
             initial={{ opacity: 0 }}
@@ -109,8 +111,8 @@ export function ToolsCard({
 
       <div
         className={cn("h-full transition-all duration-200", {
-          "opacity-50 scale-[0.98]": selectedTool,
-          "opacity-100 scale-100": !selectedTool,
+          "opacity-50 scale-[0.98]": !onOpenTool && selectedTool,
+          "opacity-100 scale-100": onOpenTool || !selectedTool,
         })}
       >
         <div className="flex h-full flex-col overflow-hidden">
@@ -128,6 +130,7 @@ export function ToolsCard({
                   tool={tool}
                   notebookId={notebookId}
                   onSelect={handleSelectTool}
+                  onOpenTool={onOpenTool}
                   disabled={!hasSources}
                 />
               ))}
@@ -149,10 +152,11 @@ interface ToolItemProps {
     isLoading: boolean,
     startGeneration: () => void,
   ) => void;
+  onOpenTool?: (toolType: JobType, title: string) => void;
   disabled?: boolean;
 }
 
-function ToolItem({ tool, notebookId, onSelect, disabled }: ToolItemProps) {
+function ToolItem({ tool, notebookId, onSelect, onOpenTool, disabled }: ToolItemProps) {
   const { job, isLoading, isCompleted, isFailed, result, startGeneration } = useGenerationJob(
     notebookId,
     tool.type,
@@ -167,7 +171,11 @@ function ToolItem({ tool, notebookId, onSelect, disabled }: ToolItemProps) {
   }
 
   function handleViewResult() {
-    onSelect(tool, job, result, isLoading, startGeneration);
+    if (onOpenTool) {
+      onOpenTool(tool.type, tool.title);
+    } else {
+      onSelect(tool, job, result, isLoading, startGeneration);
+    }
   }
 
   return (

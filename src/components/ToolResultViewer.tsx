@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { CloseIcon, RestartIcon, ExpandIcon, CompressIcon } from "@/components/icons";
-import { Card, IconButton, Tooltip, Divider, Spinner } from "@/components/ui";
+import { Divider, IconButton, Spinner, Tooltip, ViewerFrame } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import type {
   JobType,
@@ -26,6 +26,7 @@ interface ToolResultViewerProps {
   className?: string;
   onNodeSelect?: (question: string) => void;
   onExpandedChange?: (expanded: boolean) => void;
+  regenerateCloses?: boolean;
 }
 
 type ParsedContent =
@@ -57,6 +58,7 @@ export function ToolResultViewer({
   className,
   onNodeSelect,
   onExpandedChange,
+  regenerateCloses = true,
 }: ToolResultViewerProps) {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
@@ -128,52 +130,46 @@ export function ToolResultViewer({
   }
 
   return (
-    <Card
+    <ViewerFrame
       isExpanded={isExpanded}
       setIsExpanded={setIsExpanded}
-      className={cn(
-        "flex flex-col overflow-y-auto p-0",
-        {
-          "lg:max-w-4/5 xl:max-w-3/4": isExpanded && type !== "MIND_MAP",
-        },
-        className,
-      )}
+      className={cn(className, {
+        "lg:max-w-4/5 xl:max-w-3/4": isExpanded && type !== "MIND_MAP",
+      })}
     >
-      <div className="sticky top-0 z-10 py-2">
-        <div className="flex h-12 shrink-0 items-center justify-between gap-3 px-6">
-          <h2 className="flex min-w-0 flex-1 items-baseline gap-1.5">
-            <span className="shrink-0 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
-              Tool /{" "}
-            </span>
-            <span className="truncate font-semibold">{title}</span>
-          </h2>
-          <div className="flex gap-2">
-            {onRegenerate && (
-              <Tooltip text="Regenerate" position="bottom">
-                <IconButton
-                  icon={isLoading ? <Spinner size={16} /> : <RestartIcon />}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    onRegenerate();
-                    onClose();
-                  }}
-                  disabled={isLoading}
-                />
-              </Tooltip>
-            )}
-            <Tooltip text={isExpanded ? "Restore size" : "Expand"} position="bottom">
+      <div className="flex h-15 shrink-0 items-center px-4 pt-4 pb-3">
+        <h2 className="flex min-w-0 flex-1 items-baseline gap-1.5">
+          <span className="shrink-0 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
+            Tool /{" "}
+          </span>
+          <span className="truncate text-lg font-semibold select-text">{title}</span>
+        </h2>
+        <div className="flex items-center gap-1">
+          {onRegenerate && (
+            <Tooltip text="Regenerate" position="top">
               <IconButton
-                icon={isExpanded ? <CompressIcon /> : <ExpandIcon />}
+                icon={isLoading ? <Spinner size={16} /> : <RestartIcon />}
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsExpanded((s) => !s)}
+                onClick={() => {
+                  onRegenerate();
+                  if (regenerateCloses) onClose();
+                }}
+                disabled={isLoading}
               />
             </Tooltip>
-            <Tooltip text="Close" position="bottom">
-              <IconButton icon={<CloseIcon />} variant="ghost" size="sm" onClick={onClose} />
-            </Tooltip>
-          </div>
+          )}
+          <Tooltip text={isExpanded ? "Restore size" : "Expand"} position="top">
+            <IconButton
+              icon={isExpanded ? <CompressIcon /> : <ExpandIcon />}
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsExpanded((s) => !s)}
+            />
+          </Tooltip>
+          <Tooltip text="Close" position="top">
+            <IconButton icon={<CloseIcon />} variant="ghost" size="sm" onClick={onClose} />
+          </Tooltip>
         </div>
       </div>
 
@@ -191,6 +187,6 @@ export function ToolResultViewer({
       >
         {renderContent()}
       </div>
-    </Card>
+    </ViewerFrame>
   );
 }

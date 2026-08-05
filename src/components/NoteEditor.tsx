@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { useFetch } from "@/hooks";
 import type { Note } from "@/interfaces";
 import { CloseIcon, CompressIcon, DeleteIcon, ExpandIcon } from "@/components/icons";
-import { Button, Card, Divider, IconButton, Modal, Spinner, Tooltip } from "@/components/ui";
+import { Button, Divider, IconButton, Modal, Spinner, Tooltip, ViewerFrame } from "@/components/ui";
 const Editor = lazy(() => import("./Editor").then((module) => ({ default: module.Editor })));
 
 interface NoteEditorProps {
@@ -140,20 +140,15 @@ export function NoteEditor({
 
   return (
     <>
-      <Card
-        isExpanded={isExpanded}
-        setIsExpanded={setIsExpanded}
-        className={cn("flex flex-col overflow-hidden p-0", className)}
-      >
-        <div className="mb-2 flex shrink-0 flex-row items-center justify-between px-4 pt-4">
+      <ViewerFrame isExpanded={isExpanded} setIsExpanded={setIsExpanded} className={className}>
+        <div className="flex h-15 shrink-0 items-center px-4 pt-4 pb-3">
           <div className="flex min-w-0 flex-1 items-baseline gap-1.5">
             <span className="hidden shrink-0 text-xs font-medium tracking-wide text-gray-500 uppercase md:block dark:text-gray-400">
               Note /{" "}
             </span>
             <input
               className={cn(
-                "bg-transparent border-none focus:outline-none text-lg font-semibold w-full",
-                "focus:ring-0 p-0 transition-colors duration-200 truncate",
+                "w-full truncate bg-transparent p-0 text-lg font-semibold transition-colors duration-200 focus:outline-none focus:ring-0 border-none",
                 {
                   "text-blue-600 dark:text-blue-400": updatingNote,
                 },
@@ -174,17 +169,17 @@ export function NoteEditor({
               placeholder="Give your note a title..."
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-1">
             {(isSaving || content !== originalContent) && (
               <Tooltip
                 text="Saving..."
-                position="bottom"
+                position="top"
                 className="flex items-center justify-center text-gray-600 dark:text-gray-400"
               >
                 <Spinner />
               </Tooltip>
             )}
-            <Tooltip text="Delete note" position="bottom">
+            <Tooltip text="Delete note" position="top">
               <IconButton
                 icon={<DeleteIcon />}
                 variant="ghost"
@@ -192,7 +187,7 @@ export function NoteEditor({
                 onClick={() => setIsDeleteModalOpen(true)}
               />
             </Tooltip>
-            <Tooltip text={isExpanded ? "Restore size" : "Expand"} position="bottom">
+            <Tooltip text={isExpanded ? "Restore size" : "Expand"} position="top">
               <IconButton
                 icon={isExpanded ? <CompressIcon /> : <ExpandIcon />}
                 variant="ghost"
@@ -200,7 +195,7 @@ export function NoteEditor({
                 onClick={() => setIsExpanded((s) => !s)}
               />
             </Tooltip>
-            <Tooltip text="Close note" position="bottom">
+            <Tooltip text="Close note" position="top">
               <IconButton
                 icon={<CloseIcon />}
                 variant="ghost"
@@ -211,7 +206,7 @@ export function NoteEditor({
           </div>
         </div>
 
-        <Divider className="mb-0" />
+        <Divider className="my-0" />
 
         {loading && (
           <div className="flex size-full items-center justify-center">
@@ -231,7 +226,7 @@ export function NoteEditor({
             />
           </div>
         )}
-      </Card>
+      </ViewerFrame>
 
       {/* Delete Note Modal */}
       <Modal

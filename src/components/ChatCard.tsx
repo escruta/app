@@ -37,6 +37,13 @@ interface ChatCardProps {
   externalQuestion?: string | null;
   onExternalQuestionHandled?: () => void;
   hideSummaryAndQuestions?: boolean;
+  autoFocus?: boolean;
+  initialConversationId?: string | null;
+  initialConversationTitle?: string | null;
+  onConversationCreated?: (conversationId: string) => void;
+  onTitleChange?: (title: string) => void;
+  onOpenConversation?: (conversationId: string, title: string) => void;
+  onNewChat?: () => void;
 }
 
 export function ChatCard({
@@ -47,6 +54,13 @@ export function ChatCard({
   externalQuestion,
   onExternalQuestionHandled,
   hideSummaryAndQuestions = false,
+  autoFocus = true,
+  initialConversationId,
+  initialConversationTitle,
+  onConversationCreated,
+  onTitleChange,
+  onOpenConversation,
+  onNewChat,
 }: ChatCardProps) {
   const sourcesCount = sources.length;
   const readySourcesCount = sources.filter((s) => s.status === "READY").length;
@@ -242,6 +256,16 @@ export function ChatCard({
     setPendingConversationTitle(title);
   }, []);
 
+  const mountedRef = useRef(false);
+  useEffect(() => {
+    if (mountedRef.current) return;
+    mountedRef.current = true;
+    if (initialConversationId) {
+      loadConversation(initialConversationId, initialConversationTitle ?? "");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     if (externalQuestion) {
       setInput(externalQuestion);
@@ -267,6 +291,7 @@ export function ChatCard({
         if (!conversationId) {
           setConversationId(id);
         }
+        onConversationCreated?.(id);
       },
       onToken: (chunk) => {
         const id = streamingMessageIdRef.current;
@@ -283,6 +308,7 @@ export function ChatCard({
         if (!conversationTitle) {
           setConversationTitle(title);
         }
+        onTitleChange?.(title);
       },
       onDone: () => {
         pendingMessageRef.current = null;
@@ -389,8 +415,10 @@ export function ChatCard({
               <IconButton
                 icon={<ChatNewIcon />}
                 ariaLabel="New conversation"
-                onClick={handleNewConversation}
-                disabled={messages.length === 0 || isChatLoading || isAutoRegenerating}
+                onClick={() => (onNewChat ? onNewChat() : handleNewConversation())}
+                disabled={
+                  (messages.length === 0 && !onNewChat) || isChatLoading || isAutoRegenerating
+                }
                 variant="ghost"
                 size="sm"
               />
@@ -425,12 +453,20 @@ export function ChatCard({
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
         onSelectConversation={(id, title) => {
-          loadConversation(id, title);
           setIsHistoryOpen(false);
+          if (onOpenConversation) {
+            onOpenConversation(id, title);
+          } else {
+            loadConversation(id, title);
+          }
         }}
         onNewConversation={() => {
-          handleNewConversation();
           setIsHistoryOpen(false);
+          if (onNewChat) {
+            onNewChat();
+          } else {
+            handleNewConversation();
+          }
         }}
         currentConversationId={conversationId}
       />
@@ -548,7 +584,7 @@ export function ChatCard({
             }
             className="w-full rounded-t-xs border-0 bg-transparent py-3 pr-12 pl-4 shadow-none hover:border-transparent hover:ring-0 hover:ring-offset-0 focus:border-transparent focus:ring-0 focus:ring-offset-0 dark:hover:ring-offset-0 dark:focus:ring-0 dark:focus:ring-offset-0"
             disabled={isChatLoading || selectedSourceIds.length === 0}
-            autoFocus
+            autoFocus={autoFocus}
             maxRows={5}
             multiline
           />

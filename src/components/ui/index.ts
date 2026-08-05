@@ -1,6 +1,7 @@
 export * from "./Alert";
 export * from "./Button";
 export * from "./Card";
+export * from "./ChromeTabs";
 export * from "./Checkbox";
 export * from "./ContextMenu";
 export * from "./Chip";
@@ -17,3 +18,4 @@ export * from "./Spinner";
 export * from "./Tab";
 export * from "./TextField";
 export * from "./Tooltip";
+export * from "./ViewerFrame";

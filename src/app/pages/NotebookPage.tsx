@@ -1,8 +1,7 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useLoaderData } from "react-router";
 import { useFetch, useCookie, useBreakpoint } from "@/hooks";
-import type { Note, Source, Notebook, NotebookContent } from "@/interfaces";
-import { motion, AnimatePresence } from "motion/react";
+import type { Note, Source, Notebook, NotebookContent, JobType } from "@/interfaces";
 import {
   SourcesCard,
   NotesCard,
@@ -12,15 +11,62 @@ import {
   ToolsCard,
   TopBar,
 } from "@/components";
+import { getSourceIcon } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import { ExpandIcon } from "@/components/icons";
-import { Tabs, Tooltip, IconButton, Spinner } from "@/components/ui";
+import {
+  ExpandIcon,
+  ChatNewIcon,
+  NoteIcon,
+  MindMapIcon,
+  StudyIcon,
+  CardIcon,
+  QuestionnaireIcon,
+} from "@/components/icons";
+import { Tabs, Tooltip, IconButton, Spinner, ChromeTabs } from "@/components/ui";
+import { ToolResultTab } from "@/components/tools";
 import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
 import { NotebookErrorState } from "./notebook/NotebookStates";
 import { RenameNotebookModal } from "./notebook/RenameNotebookModal";
 
 const MIN_SIDE_PANEL_PX = 280;
 const MIN_CENTER_PANEL_PX = 400;
+
+type TabKind = "chat" | "source" | "note" | "tool";
+const NEW_CHAT_ID = "__new_chat__";
+
+type TabDescriptor = {
+  kind: TabKind;
+  /** For chat: either NEW_CHAT_ID or a real conversation id. */
+  refId: string;
+  /** For tabs whose ref id may change (new chat), an incremental counter. */
+  seq: number;
+  title: string;
+  source?: Source | undefined;
+  note?: Note | undefined;
+  toolType?: JobType | undefined;
+};
+
+const TOOL_META: Record<JobType, { title: string; icon: React.ReactNode }> = {
+  MIND_MAP: { title: "Mind Map", icon: <MindMapIcon /> },
+  STUDY_GUIDE: { title: "Study Guide", icon: <StudyIcon /> },
+  FLASHCARDS: { title: "Flashcards", icon: <CardIcon /> },
+  QUESTIONNAIRE: { title: "Questionnaire", icon: <QuestionnaireIcon /> },
+};
+
+const tabKey = (t: TabDescriptor) => `${t.kind}:${t.refId}:${t.seq}`;
+
+function getTabIcon(tab: TabDescriptor) {
+  switch (tab.kind) {
+    case "chat":
+      return <ChatNewIcon />;
+    case "source":
+      return tab.source ? getSourceIcon(tab.source.type) : null;
+    case "note":
+      return <NoteIcon />;
+    case "tool":
+      return tab.toolType ? TOOL_META[tab.toolType].icon : null;
+  }
+}
 
 function getPixelConstraints(containerWidth: number) {
   const minSidePercent = (MIN_SIDE_PANEL_PX / containerWidth) * 100;
@@ -44,8 +90,6 @@ export default function NotebookPage() {
   const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
   const [newTitle, setNewTitle] = useState<string>("");
   const [chatQuestion, setChatQuestion] = useState<string | null>(null);
-  const [selectedNote, setSelectedNote] = useState<Note | null>(null);
-  const [selectedSource, setSelectedSource] = useState<Source | null>(null);
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
   const [notesRefreshKey, setNotesRefreshKey] = useState<number>(0);
   const [isSourceExpanded, setIsSourceExpanded] = useState<boolean>(false);
@@ -55,6 +99,33 @@ export default function NotebookPage() {
   const [isLeftCollapsed, setIsLeftCollapsed] = useCookie<boolean>("notebookLeftCollapsed", false);
   const [activeResizer, setActiveResizer] = useState<"left" | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
+
+  const [persistedTabs, setPersistedTabs] = useCookie<TabDescriptor[]>(
+    `notebookTabs-${notebookId}`,
+    [],
+  );
+  const [persistedActiveKey, setPersistedActiveKey] = useCookie<string | null>(
+    `notebookActiveTab-${notebookId}`,
+    null,
+  );
+  const [tabs, setTabs] = useState<TabDescriptor[]>(() => {
+    if (persistedTabs && persistedTabs.length > 0) return persistedTabs;
+    return [{ kind: "chat", refId: NEW_CHAT_ID, seq: 0, title: "New conversation" }];
+  });
+  const [activeTabKey, setActiveTabKey] = useState<string>(() => {
+    if (persistedActiveKey && persistedTabs?.some((t) => tabKey(t) === persistedActiveKey))
+      return persistedActiveKey;
+    if (persistedTabs && persistedTabs.length > 0) return tabKey(persistedTabs[0]);
+    return tabKey({
+      kind: "chat",
+      refId: NEW_CHAT_ID,
+      seq: 0,
+      title: "",
+    });
+  });
+  const tabSeqRef = useRef<number>(
+    Math.max(0, ...(persistedTabs ?? []).map((t) => t.seq ?? 0)) + 1,
+  );
 
   const mode = useBreakpoint();
   const [compactTab, setCompactTab] = useState<"sources" | "chat" | "notes" | "tools">("chat");
@@ -101,7 +172,8 @@ export default function NotebookPage() {
   }, [notebook]);
 
   const handleSourceSelectFromChat = (sourceId: string) => {
-    const tempSource: Source = {
+    const found = notebook?.sources?.find((s) => s.id === sourceId);
+    const source: Source = found ?? {
       id: sourceId,
       notebookId: notebookId,
       title: "",
@@ -111,8 +183,13 @@ export default function NotebookPage() {
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    setSelectedSource(tempSource);
-    setIsLeftCollapsed(false);
+    openTab({
+      kind: "source",
+      refId: source.id,
+      seq: tabSeqRef.current++,
+      title: source.title,
+      source,
+    });
   };
 
   const handleToggleSource = (sourceId: string) => {
@@ -129,7 +206,155 @@ export default function NotebookPage() {
     setSelectedSourceIds([]);
   };
 
+  const openTab = useCallback(
+    (descriptor: Omit<TabDescriptor, "seq"> & { seq?: number }) => {
+      const seq = descriptor.seq ?? tabSeqRef.current++;
+      const candidate: TabDescriptor = { ...(descriptor as TabDescriptor), seq } as TabDescriptor;
+      const candidateKey = tabKey(candidate);
+
+      setTabs((prev) => {
+        // Focus existing equivalent tab when possible.
+        const findExisting = () => {
+          if (descriptor.kind === "chat" && descriptor.refId === NEW_CHAT_ID) return -1;
+          return prev.findIndex((t) => {
+            if (t.kind !== descriptor.kind) return false;
+            if (
+              descriptor.kind === "source" ||
+              descriptor.kind === "note" ||
+              descriptor.kind === "chat"
+            )
+              return t.refId === descriptor.refId;
+            if (descriptor.kind === "tool") return t.toolType === descriptor.toolType;
+            return false;
+          });
+        };
+        const existingIndex = findExisting();
+        if (existingIndex >= 0) {
+          const existingKey = tabKey(prev[existingIndex]);
+          setActiveTabKey(existingKey);
+          setPersistedActiveKey(existingKey);
+          const updated = [...prev];
+          updated[existingIndex] = {
+            ...prev[existingIndex],
+            title: candidate.title || prev[existingIndex].title,
+            source: candidate.source ?? prev[existingIndex].source,
+            note: candidate.note ?? prev[existingIndex].note,
+          };
+          return updated;
+        }
+        setActiveTabKey(candidateKey);
+        setPersistedActiveKey(candidateKey);
+        return [...prev, candidate];
+      });
+    },
+    [setPersistedActiveKey],
+  );
+
+  const closeTab = useCallback(
+    (key: string) => {
+      setTabs((prev) => {
+        const idx = prev.findIndex((t) => tabKey(t) === key);
+        if (idx < 0) return prev;
+        const next = prev.filter((t) => tabKey(t) !== key);
+        if (next.length === 0) {
+          const fresh: TabDescriptor = {
+            kind: "chat",
+            refId: NEW_CHAT_ID,
+            seq: tabSeqRef.current++,
+            title: "New conversation",
+          };
+          const freshKey = tabKey(fresh);
+          setActiveTabKey(freshKey);
+          setPersistedActiveKey(freshKey);
+          return [fresh];
+        }
+        if (tabKey(prev[idx]) === activeTabKey) {
+          const neighbour = next[Math.min(idx, next.length - 1)];
+          const neighbourKey = tabKey(neighbour);
+          setActiveTabKey(neighbourKey);
+          setPersistedActiveKey(neighbourKey);
+        }
+        return next;
+      });
+      if (persistedActiveKey === key) setPersistedActiveKey(null);
+    },
+    [activeTabKey, persistedActiveKey, setPersistedActiveKey],
+  );
+
+  const selectTab = useCallback(
+    (key: string) => {
+      setActiveTabKey(key);
+      setPersistedActiveKey(key);
+    },
+    [setPersistedActiveKey],
+  );
+
+  const openNewChatTab = useCallback(() => {
+    openTab({ kind: "chat", refId: NEW_CHAT_ID, title: "New conversation" });
+  }, [openTab]);
+
+  // Persist open tabs so they survive reloads (like the panel width cookie).
+  useEffect(() => {
+    setPersistedTabs(tabs);
+  }, [tabs, setPersistedTabs]);
+
+  // Refresh title/icon on source tabs when notebook data reloads, and drop
+  // source tabs whose underlying source has been deleted.
+  useEffect(() => {
+    if (!notebook?.sources) return;
+    setTabs((prev) => {
+      let changed = false;
+      const next = prev
+        .map((t) => {
+          if (t.kind !== "source" || !t.source) return t;
+          const fresh = notebook.sources?.find((s) => s.id === t.source!.id);
+          if (!fresh) {
+            changed = true;
+            return null;
+          }
+          if (fresh.title !== t.title) {
+            changed = true;
+            return { ...t, title: fresh.title, source: fresh };
+          }
+          return t;
+        })
+        .filter((t): t is TabDescriptor => t !== null);
+      return changed ? next : prev;
+    });
+  }, [notebook?.sources]);
+
+  const activeTab = useMemo(
+    () => tabs.find((t) => tabKey(t) === activeTabKey) ?? tabs[0],
+    [tabs, activeTabKey],
+  );
+
+  // When a chat tab creates a real conversation, anchor its refId so it persists
+  // and won't be reused as a new-chat tab.
+  const handleConversationCreated = useCallback((tabKeyStr: string, conversationId: string) => {
+    setTabs((prev) =>
+      prev.map((t) => {
+        if (tabKey(t) !== tabKeyStr) return t;
+        if (t.refId === conversationId) return t;
+        return { ...t, refId: conversationId };
+      }),
+    );
+  }, []);
+
+  const handleTabTitleChange = useCallback((tabKeyStr: string, title: string) => {
+    if (!title) return;
+    setTabs((prev) =>
+      prev.map((t) => (tabKey(t) === tabKeyStr && t.title !== title ? { ...t, title } : t)),
+    );
+  }, []);
+
   const handleNodeSelect = (question: string) => {
+    const firstChat = tabs.find((t) => t.kind === "chat");
+    if (firstChat && activeTab?.kind !== "chat") {
+      selectTab(tabKey(firstChat));
+    } else if (mode === "compact") {
+      setCompactTab("chat");
+      if (firstChat) selectTab(tabKey(firstChat));
+    }
     setChatQuestion(question);
   };
 
@@ -307,95 +532,139 @@ export default function NotebookPage() {
     );
   }
 
-  const renderSourcesTabContent = (onToggleCollapse: () => void) => (
-    <div className="relative h-full w-full">
-      <AnimatePresence>
-        {selectedSource ? (
-          <motion.div
-            key={selectedSource.id}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-            className="absolute inset-0 z-10 h-[96%] self-end px-[4%]"
-          >
-            <SourceViewer
-              notebookId={notebookId}
-              source={selectedSource}
-              handleCloseSource={() => setSelectedSource(null)}
-              onSourceDelete={() => {
-                setSelectedSource(null);
-                refetchNotebook(true, false);
-              }}
-              onExpandedChange={setIsSourceExpanded}
-              className="h-full"
-            />
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
-      <div
-        className={cn("h-full transition-[opacity,transform] duration-200", {
-          "opacity-50 scale-[0.98]": selectedSource,
-          "opacity-100 scale-100": !selectedSource,
-        })}
-      >
-        <SourcesCard
-          notebookId={notebookId}
-          sources={notebook?.sources || []}
-          isLoading={loading}
-          onSourceSelect={(source: Source) => setSelectedSource(source)}
-          selectedSourceIds={selectedSourceIds}
-          onToggleSource={handleToggleSource}
-          onSelectAll={handleSelectAllSources}
-          onClearSelection={handleClearSourceSelection}
-          onSourcesChange={() => {
-            refetchNotebook(true, false);
-          }}
-          onToggleCollapse={onToggleCollapse}
-        />
-      </div>
-    </div>
+  const sourcesListContent = (onToggleCollapse?: () => void) => (
+    <SourcesCard
+      notebookId={notebookId}
+      sources={notebook?.sources || []}
+      isLoading={loading}
+      onSourceSelect={(source: Source) =>
+        openTab({ kind: "source", refId: source.id, title: source.title, source })
+      }
+      selectedSourceIds={selectedSourceIds}
+      onToggleSource={handleToggleSource}
+      onSelectAll={handleSelectAllSources}
+      onClearSelection={handleClearSourceSelection}
+      onSourcesChange={() => refetchNotebook(true, false)}
+      onToggleCollapse={onToggleCollapse}
+    />
   );
 
-  const sourcesTabContentWithCollapse = (onToggleCollapse: () => void) =>
-    renderSourcesTabContent(onToggleCollapse);
+  const notesListContent = (
+    <NotesCard
+      notebookId={notebookId}
+      onNoteSelect={(note: Note) =>
+        openTab({ kind: "note", refId: note.id, title: note.title, note })
+      }
+      refreshTrigger={notesRefreshKey}
+    />
+  );
 
-  const notesTabContent = (
-    <div className="relative h-full w-full">
-      <AnimatePresence>
-        {selectedNote ? (
-          <motion.div
-            key={selectedNote.id}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-            className="absolute inset-0 z-10 h-[96%] self-end"
-          >
-            <NoteEditor
-              note={selectedNote}
-              className="h-full"
-              handleCloseNote={() => setSelectedNote(null)}
-              onNoteDeleted={() => {
-                setSelectedNote(null);
-                setNotesRefreshKey((prev) => prev + 1);
-              }}
-              onExpandedChange={setIsNoteExpanded}
-            />
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
-      <div
-        className={cn("h-full transition-[opacity,transform] duration-200", {
-          "opacity-50 scale-[0.98]": selectedNote,
-          "opacity-100 scale-100": !selectedNote,
+  const toolsListContent = (
+    <ToolsCard
+      notebookId={notebookId}
+      onNodeSelect={handleNodeSelect}
+      hasSources={(notebook?.sources?.length ?? 0) > 0}
+      onOpenTool={(type: JobType, title: string) =>
+        openTab({ kind: "tool", refId: type, title, toolType: type })
+      }
+    />
+  );
+
+  const renderTabContent = (tab: TabDescriptor, isActive: boolean) => {
+    const k = tabKey(tab);
+    switch (tab.kind) {
+      case "chat":
+        return (
+          <ChatCard
+            notebookId={notebookId}
+            sources={notebook?.sources || []}
+            selectedSourceIds={selectedSourceIds}
+            onSourceSelect={handleSourceSelectFromChat}
+            externalQuestion={isActive ? chatQuestion : null}
+            onExternalQuestionHandled={() => setChatQuestion(null)}
+            hideSummaryAndQuestions={false}
+            autoFocus={isActive}
+            initialConversationId={tab.refId === NEW_CHAT_ID ? null : tab.refId}
+            initialConversationTitle={tab.refId === NEW_CHAT_ID ? null : tab.title}
+            onConversationCreated={(id) => handleConversationCreated(k, id)}
+            onTitleChange={(title) => handleTabTitleChange(k, title)}
+            onOpenConversation={(id, title) => openTab({ kind: "chat", refId: id, title })}
+            onNewChat={openNewChatTab}
+          />
+        );
+      case "source":
+        if (!tab.source) return null;
+        return (
+          <SourceViewer
+            notebookId={notebookId}
+            source={tab.source}
+            handleCloseSource={() => closeTab(k)}
+            onSourceDelete={() => {
+              closeTab(k);
+              refetchNotebook(true, false);
+            }}
+            onExpandedChange={setIsSourceExpanded}
+            className="h-full"
+          />
+        );
+      case "note":
+        if (!tab.note) return null;
+        return (
+          <NoteEditor
+            note={tab.note}
+            className="h-full"
+            handleCloseNote={() => closeTab(k)}
+            onNoteDeleted={() => {
+              closeTab(k);
+              setNotesRefreshKey((prev) => prev + 1);
+            }}
+            onExpandedChange={setIsNoteExpanded}
+          />
+        );
+      case "tool":
+        if (!tab.toolType) return null;
+        return (
+          <ToolResultTab
+            notebookId={notebookId}
+            toolType={tab.toolType}
+            title={tab.title}
+            onClose={() => closeTab(k)}
+            onNodeSelect={handleNodeSelect}
+            onExpandedChange={setIsToolExpanded}
+          />
+        );
+    }
+  };
+
+  const chromeTabsItems = tabs.map((t) => ({
+    id: tabKey(t),
+    label: t.title || (t.kind === "chat" ? "New conversation" : t.title),
+    icon: getTabIcon(t),
+    closable: true,
+  }));
+
+  const activeExists = tabs.some((t) => tabKey(t) === activeTabKey);
+  const effectiveActiveKey = activeExists ? activeTabKey : tabKey(tabs[0]);
+
+  const centerColumn = (
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+      <ChromeTabs
+        tabs={chromeTabsItems}
+        activeTabId={effectiveActiveKey}
+        onSelect={selectTab}
+        onClose={closeTab}
+        onNewChat={openNewChatTab}
+      />
+      <div className="relative min-h-0 flex-1 overflow-hidden bg-white dark:bg-gray-950">
+        {tabs.map((t) => {
+          const k = tabKey(t);
+          const isActive = k === effectiveActiveKey;
+          return (
+            <div key={k} className={cn("absolute inset-0 h-full", { hidden: !isActive })}>
+              {renderTabContent(t, isActive)}
+            </div>
+          );
         })}
-      >
-        <NotesCard
-          notebookId={notebookId}
-          onNoteSelect={(note: Note) => setSelectedNote(note)}
-          refreshTrigger={notesRefreshKey}
-        />
       </div>
     </div>
   );
@@ -476,28 +745,16 @@ export default function NotebookPage() {
 
             <div className="relative min-h-0 flex-1 overflow-hidden">
               <div className={cn("absolute inset-0 h-full", { hidden: compactTab !== "sources" })}>
-                {sourcesTabContentWithCollapse(handleCompactCollapse)}
+                {sourcesListContent(handleCompactCollapse)}
               </div>
               <div className={cn("absolute inset-0 h-full", { hidden: compactTab !== "chat" })}>
-                <ChatCard
-                  notebookId={notebookId}
-                  sources={notebook?.sources || []}
-                  selectedSourceIds={selectedSourceIds}
-                  onSourceSelect={handleSourceSelectFromChat}
-                  externalQuestion={chatQuestion}
-                  onExternalQuestionHandled={() => setChatQuestion(null)}
-                />
+                {centerColumn}
               </div>
               <div className={cn("absolute inset-0 h-full", { hidden: compactTab !== "notes" })}>
-                {notesTabContent}
+                {notesListContent}
               </div>
               <div className={cn("absolute inset-0 h-full", { hidden: compactTab !== "tools" })}>
-                <ToolsCard
-                  notebookId={notebookId}
-                  onNodeSelect={handleNodeSelect}
-                  hasSources={(notebook?.sources?.length ?? 0) > 0}
-                  onExpandedChange={setIsToolExpanded}
-                />
+                {toolsListContent}
               </div>
             </div>
           </section>
@@ -540,24 +797,17 @@ export default function NotebookPage() {
                     {
                       id: "sources",
                       label: "Sources",
-                      content: sourcesTabContentWithCollapse(() => setIsLeftCollapsed(true)),
+                      content: sourcesListContent(() => setIsLeftCollapsed(true)),
                     },
                     {
                       id: "notes",
                       label: "Notes",
-                      content: notesTabContent,
+                      content: notesListContent,
                     },
                     {
                       id: "tools",
                       label: "Tools",
-                      content: (
-                        <ToolsCard
-                          notebookId={notebookId}
-                          onNodeSelect={handleNodeSelect}
-                          hasSources={(notebook?.sources?.length ?? 0) > 0}
-                          onExpandedChange={setIsToolExpanded}
-                        />
-                      ),
+                      content: toolsListContent,
                     },
                   ]}
                   defaultActiveTab="sources"
@@ -583,16 +833,7 @@ export default function NotebookPage() {
               </div>
             )}
 
-            <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-              <ChatCard
-                notebookId={notebookId}
-                sources={notebook?.sources || []}
-                selectedSourceIds={selectedSourceIds}
-                onSourceSelect={handleSourceSelectFromChat}
-                externalQuestion={chatQuestion}
-                onExternalQuestionHandled={() => setChatQuestion(null)}
-              />
-            </div>
+            {centerColumn}
           </section>
         )}
       </div>
