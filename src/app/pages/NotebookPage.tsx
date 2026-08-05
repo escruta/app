@@ -14,7 +14,6 @@ import {
 import { getSourceIcon } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import {
-  ExpandIcon,
   ChatNewIcon,
   NoteIcon,
   MindMapIcon,
@@ -24,7 +23,7 @@ import {
   FolderIcon,
   GridIcon,
 } from "@/components/icons";
-import { Tooltip, IconButton, Spinner, ChromeTabs, SideNav } from "@/components/ui";
+import { Spinner, ChromeTabs, SideNav } from "@/components/ui";
 import { ToolResultTab } from "@/components/tools";
 import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
 import { NotebookErrorState } from "./notebook/NotebookStates";
@@ -32,6 +31,7 @@ import { RenameNotebookModal } from "./notebook/RenameNotebookModal";
 
 const MIN_SIDE_PANEL_PX = 280;
 const MIN_CENTER_PANEL_PX = 400;
+const MAX_LEFT_PANEL_PERCENT = 40;
 
 type TabKind = "chat" | "source" | "note" | "tool";
 const NEW_CHAT_ID = "__new_chat__";
@@ -376,10 +376,14 @@ export default function NotebookPage() {
 
       if (activeResizer === "left") {
         const maxAvailable = 100 - minCenterPercent;
-        const maxLimit = Math.min(50, maxAvailable);
-        const newWidth = Math.min(Math.max((x / rect.width) * 100, minSidePercent), maxLimit);
-        setLeftPanelWidth(newWidth);
-        setIsLeftCollapsed(false);
+        const maxLimit = Math.min(MAX_LEFT_PANEL_PERCENT, maxAvailable);
+        const pct = (x / rect.width) * 100;
+        if (pct < minSidePercent) {
+          setIsLeftCollapsed(true);
+        } else {
+          setLeftPanelWidth(Math.min(Math.max(pct, minSidePercent), maxLimit));
+          setIsLeftCollapsed(false);
+        }
       }
     };
 
@@ -401,17 +405,6 @@ export default function NotebookPage() {
     };
   }, [activeResizer, setLeftPanelWidth, setIsLeftCollapsed]);
 
-  const expandLeft = () => {
-    const containerWidth = sectionRef.current?.getBoundingClientRect().width ?? window.innerWidth;
-    const { minSidePercent, minCenterPercent } = getPixelConstraints(containerWidth);
-
-    const desiredLeft = Math.max(minSidePercent, leftPanelWidth ?? 30);
-    const maxAvailable = 100 - minCenterPercent;
-    const maxLimit = Math.min(50, maxAvailable);
-    setLeftPanelWidth(Math.max(minSidePercent, Math.min(desiredLeft, maxLimit)));
-    setIsLeftCollapsed(false);
-  };
-
   const handleMouseDownLeft = (e: React.MouseEvent) => {
     e.preventDefault();
     setActiveResizer("left");
@@ -431,10 +424,8 @@ export default function NotebookPage() {
         clampedLeft = minSidePercent;
       }
 
-      const total = clampedLeft + minCenterPercent;
-      if (total > 100) {
-        clampedLeft = Math.min(clampedLeft, 100 - minCenterPercent);
-      }
+      const maxLimit = Math.min(MAX_LEFT_PANEL_PERCENT, 100 - minCenterPercent);
+      clampedLeft = Math.min(clampedLeft, maxLimit);
 
       if (clampedLeft !== left) setLeftPanelWidth(clampedLeft);
     };
@@ -452,16 +443,15 @@ export default function NotebookPage() {
   }, [mode, isLeftCollapsed, leftPanelWidth, setLeftPanelWidth]);
 
   const handleDoubleClickLeft = () => {
+    if (!isLeftCollapsed) {
+      setIsLeftCollapsed(true);
+      return;
+    }
     const containerWidth = sectionRef.current?.getBoundingClientRect().width ?? window.innerWidth;
     const { minSidePercent, minCenterPercent } = getPixelConstraints(containerWidth);
-
-    if (!isLeftCollapsed) {
-      setLeftPanelWidth(minSidePercent);
-    } else {
-      const maxAvailable = 100 - minCenterPercent;
-      const maxLimit = Math.min(50, maxAvailable);
-      setLeftPanelWidth(maxLimit);
-    }
+    const maxLimit = Math.min(MAX_LEFT_PANEL_PERCENT, 100 - minCenterPercent);
+    const desired = Math.max(minSidePercent, leftPanelWidth ?? minSidePercent);
+    setLeftPanelWidth(Math.min(desired, maxLimit));
     setIsLeftCollapsed(false);
   };
 
@@ -764,7 +754,7 @@ export default function NotebookPage() {
           <section ref={sectionRef} className="flex h-full overflow-hidden">
             <div
               className={cn(
-                "min-h-0 flex flex-col overflow-hidden border-r border-gray-200 bg-gray-50/60 transition-[width,background-color,border-color] duration-200 ease-out shrink-0 dark:border-gray-800 dark:bg-gray-900/50",
+                "min-h-0 flex max-w-md flex-col overflow-hidden border-r border-gray-200 bg-gray-50/60 transition-[width,background-color,border-color] duration-200 ease-out shrink-0 dark:border-gray-800 dark:bg-gray-900/50",
                 {
                   "z-60": isSourceExpanded || isNoteExpanded || isToolExpanded,
                 },
@@ -772,18 +762,9 @@ export default function NotebookPage() {
               style={{ width: isLeftCollapsed ? "48px" : `${leftPanelWidth ?? 25}%` }}
             >
               {isLeftCollapsed && (
-                <div className="flex h-full w-full flex-col items-center py-3">
-                  <Tooltip text="Expand Sources, Notes & Tools" position="right">
-                    <IconButton
-                      icon={<ExpandIcon />}
-                      onClick={expandLeft}
-                      variant="secondary"
-                      size="sm"
-                      aria-label="Expand Sources, Notes & Tools"
-                    />
-                  </Tooltip>
+                <div className="flex h-full w-full items-center justify-center">
                   <div
-                    className="mt-4 flex-1 text-xs font-medium tracking-widest text-gray-400 uppercase select-none [writing-mode:vertical-rl]"
+                    className="text-xs font-medium tracking-widest text-gray-400 uppercase select-none [writing-mode:vertical-rl]"
                     style={{ transform: "rotate(180deg)" }}
                   >
                     Sources · Notes · Tools
@@ -794,13 +775,12 @@ export default function NotebookPage() {
               <div className={cn("h-full w-full", { hidden: isLeftCollapsed })}>
                 <SideNav
                   className="h-full"
-                  onToggleCollapse={() => setIsLeftCollapsed(true)}
                   items={[
                     {
                       id: "sources",
                       label: "Sources",
                       icon: <FolderIcon />,
-                      content: sourcesListContent(() => setIsLeftCollapsed(true)),
+                      content: sourcesListContent(),
                     },
                     {
                       id: "notes",
@@ -821,22 +801,20 @@ export default function NotebookPage() {
             </div>
 
             {/* Left Resizer */}
-            {!isLeftCollapsed && (
+            <div
+              className="group relative z-5 flex shrink-0 cursor-col-resize items-stretch justify-center after:absolute after:-inset-3"
+              onMouseDown={handleMouseDownLeft}
+              onDoubleClick={handleDoubleClickLeft}
+              title="Double click to collapse or expand"
+            >
               <div
-                className="group z-5 flex cursor-col-resize items-stretch justify-center"
-                onMouseDown={handleMouseDownLeft}
-                onDoubleClick={handleDoubleClickLeft}
-                title="Double click to toggle"
-              >
-                <div
-                  className={cn("w-px rounded-xs transition-all duration-150", {
-                    "bg-blue-500 dark:bg-blue-400": activeResizer === "left",
-                    "bg-transparent group-hover:bg-blue-400/70 dark:group-hover:bg-blue-500/70":
-                      activeResizer !== "left",
-                  })}
-                />
-              </div>
-            )}
+                className={cn("w-px rounded-xs transition-all duration-150", {
+                  "bg-blue-500 dark:bg-blue-400": activeResizer === "left",
+                  "bg-transparent group-hover:bg-blue-400/70 dark:group-hover:bg-blue-500/70":
+                    activeResizer !== "left",
+                })}
+              />
+            </div>
 
             {centerColumn}
           </section>
