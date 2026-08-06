@@ -55,7 +55,7 @@ const TOOL_META: Record<JobType, { title: string; icon: React.ReactNode }> = {
   QUESTIONNAIRE: { title: "Questionnaire", icon: <QuestionnaireIcon /> },
 };
 
-const tabKey = (t: TabDescriptor) => `${t.kind}:${t.refId}:${t.seq}`;
+const tabKey = (t: TabDescriptor) => `${t.kind}:${t.seq}`;
 
 function getTabIcon(tab: TabDescriptor) {
   switch (tab.kind) {

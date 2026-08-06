@@ -381,11 +381,7 @@ export function ChatCard({
       const timer = setTimeout(() => {
         const container = scrollContainerRef.current;
         if (!container) return;
-        const messageElements = container.getElementsByClassName("message-item");
-        if (messageElements.length > 0) {
-          const lastMessage = messageElements[messageElements.length - 1] as HTMLElement;
-          lastMessage.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
+        container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
       }, 100);
       return () => clearTimeout(timer);
     }
