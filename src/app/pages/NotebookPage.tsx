@@ -599,6 +599,14 @@ export default function NotebookPage() {
             note={tab.note}
             className="h-full"
             handleCloseNote={() => closeTab(k)}
+            onNoteUpdated={(updatedNote) => {
+              setTabs((prev) =>
+                prev.map((t) =>
+                  tabKey(t) === k ? { ...t, title: updatedNote.title, note: updatedNote } : t,
+                ),
+              );
+              setNotesRefreshKey((prev) => prev + 1);
+            }}
             onNoteDeleted={() => {
               closeTab(k);
               setNotesRefreshKey((prev) => prev + 1);
