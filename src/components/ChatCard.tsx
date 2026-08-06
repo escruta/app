@@ -19,7 +19,7 @@ import {
 } from "@/components/ui";
 import { ChatHistory } from "@/components/ChatHistory";
 import type { ConversationMessages, Source } from "@/interfaces";
-import { useEffect, useState, useRef, useMemo, useCallback } from "react";
+import { useEffect, useState, useRef, useMemo, useCallback, useLayoutEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { getHttpErrorMessage } from "@/lib/utils";
 
@@ -201,6 +201,14 @@ export function ChatCard({
   const pendingMessageRef = useRef<string | null>(null);
   const inputContainerRef = useRef<HTMLDivElement>(null);
   const [inputHeight, setInputHeight] = useState(0);
+  const [extraBottomSpacer, setExtraBottomSpacer] = useState(0);
+  const [pendingAlign, setPendingAlign] = useState(false);
+  const scrollTargetRef = useRef<number | null>(null);
+  const extraBottomSpacerRef = useRef(0);
+
+  useEffect(() => {
+    extraBottomSpacerRef.current = extraBottomSpacer;
+  }, [extraBottomSpacer]);
 
   useEffect(() => {
     if (!inputContainerRef.current) return;
@@ -229,6 +237,10 @@ export function ChatCard({
             citedSources: m.citedSources?.length ? m.citedSources : undefined,
             selectedSourcesCount: m.selectedSourcesCount ?? undefined,
           }));
+
+        setExtraBottomSpacer(0);
+        setPendingAlign(false);
+        scrollTargetRef.current = null;
 
         setMessages(loadedMessages);
         setConversationId(conversationToLoadId);
@@ -362,6 +374,7 @@ export function ChatCard({
     setMessages((prevMessages) => [...prevMessages, userMessage]);
     setInput("");
     pendingMessageRef.current = userText;
+    setPendingAlign(true);
 
     await handleStreamChat();
   };
@@ -371,27 +384,79 @@ export function ChatCard({
       if (!pendingMessageRef.current) return;
 
       setMessages((prevMessages) => prevMessages.slice(0, messageIndex));
+      setPendingAlign(true);
       handleStreamChat();
     },
     [handleStreamChat],
   );
 
-  useEffect(() => {
-    if (scrollContainerRef.current && messages.length > 0) {
-      const timer = setTimeout(() => {
-        const container = scrollContainerRef.current;
-        if (!container) return;
-        container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
-      }, 100);
-      return () => clearTimeout(timer);
+  const computeAlignMetrics = useCallback((currentSpacer: number) => {
+    const container = scrollContainerRef.current;
+    if (!container) return null;
+
+    const userMessageElements = container.querySelectorAll<HTMLElement>('[data-sender="user"]');
+    const lastUserMessageElement = userMessageElements[userMessageElements.length - 1];
+    if (!lastUserMessageElement) return null;
+
+    const paddingTop = parseFloat(getComputedStyle(container).scrollPaddingTop) || 0;
+    const target = Math.max(0, lastUserMessageElement.offsetTop - container.offsetTop - paddingTop);
+
+    const contentHeight = container.scrollHeight - currentSpacer;
+    const needed = Math.max(0, target - (contentHeight - container.clientHeight));
+
+    return { target, needed };
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!pendingAlign) return;
+
+    const metrics = computeAlignMetrics(extraBottomSpacer);
+    if (!metrics) {
+      setPendingAlign(false);
+      return;
     }
-  }, [messages.length, isChatLoading]);
+
+    scrollTargetRef.current = metrics.target;
+
+    if (metrics.needed !== extraBottomSpacer) {
+      setExtraBottomSpacer(metrics.needed);
+      return;
+    }
+
+    const container = scrollContainerRef.current;
+    if (container && scrollTargetRef.current !== null) {
+      container.scrollTo({ top: scrollTargetRef.current, behavior: "smooth" });
+    }
+    setPendingAlign(false);
+  }, [pendingAlign, extraBottomSpacer, computeAlignMetrics]);
+
+  const settleSpacer = useCallback(() => {
+    const metrics = computeAlignMetrics(extraBottomSpacerRef.current);
+    if (!metrics) return;
+    if (metrics.needed !== extraBottomSpacerRef.current) {
+      setExtraBottomSpacer(metrics.needed);
+    }
+  }, [computeAlignMetrics]);
+
+  const streamStartedRef = useRef(false);
+  useEffect(() => {
+    if (isChatLoading) {
+      streamStartedRef.current = true;
+      return;
+    }
+    if (!streamStartedRef.current) return;
+    streamStartedRef.current = false;
+    settleSpacer();
+  }, [isChatLoading, settleSpacer]);
 
   const handleNewConversation = useCallback(() => {
     setMessages([]);
     setInput("");
     setConversationId(null);
     setConversationTitle(null);
+    setExtraBottomSpacer(0);
+    setPendingAlign(false);
+    scrollTargetRef.current = null;
   }, []);
 
   return (
@@ -500,7 +565,7 @@ export function ChatCard({
                 <Spinner />
               </motion.div>
             )}
-            <div style={{ height: inputHeight }} className="shrink-0" />
+            <div style={{ height: inputHeight + extraBottomSpacer }} className="shrink-0" />
           </motion.div>
         ) : (
           <motion.div

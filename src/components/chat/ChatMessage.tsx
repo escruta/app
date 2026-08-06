@@ -118,6 +118,7 @@ export function ChatMessage({ message, index, onRetryFromError, onSourceClick }:
 
   return (
     <motion.div
+      data-sender={message.sender}
       initial={
         isAI
           ? { opacity: 0, y: -5, clipPath: "inset(0 0 100% 0)" }
