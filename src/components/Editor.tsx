@@ -387,7 +387,7 @@ export function Editor({
     <div className={cn("relative flex w-full flex-col", { "h-full": scrollable })}>
       <div
         className={cn(
-          "mx-auto flex w-full max-w-5xl items-center gap-1 overflow-x-auto overflow-y-hidden bg-white py-1 dark:bg-gray-950",
+          "mx-auto flex w-full max-w-3xl items-center gap-1 overflow-x-auto overflow-y-hidden bg-white py-1 dark:bg-gray-950",
           {
             "top-0 z-10 px-2": scrollable,
             "border border-gray-200 dark:border-gray-700": !scrollable,

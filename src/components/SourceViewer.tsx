@@ -324,7 +324,7 @@ export function SourceViewer({
         )}
         {fullSource && !loading && !error && (
           <div className="w-full flex-1 overflow-y-auto">
-            <div className="mx-auto flex w-full max-w-5xl flex-col">
+            <div className="mx-auto flex w-full max-w-3xl flex-col">
               <div className="px-6 pt-4">
                 <Card className="border-gray-200 bg-gray-50 shadow-sm ring-0 dark:border-gray-700 dark:bg-gray-800/60">
                   <div className="mb-4 flex items-center justify-between">
