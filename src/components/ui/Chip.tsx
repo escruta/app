@@ -45,7 +45,7 @@ export function Chip({
     md: "px-3 py-1 text-sm",
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLSpanElement>) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       onClick?.();
@@ -53,7 +53,7 @@ export function Chip({
   };
 
   return (
-    <div
+    <span
       role={onClick ? "button" : undefined}
       tabIndex={onClick ? 0 : undefined}
       onClick={onClick}
@@ -73,6 +73,6 @@ export function Chip({
     >
       {icon && <span className="flex items-center">{icon}</span>}
       {children && <span className={multiline ? "text-clip" : "truncate"}>{children}</span>}
-    </div>
+    </span>
   );
 }

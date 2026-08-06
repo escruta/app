@@ -11,6 +11,7 @@ interface TooltipProps {
   className?: string;
   showArrow?: boolean;
   delay?: number;
+  as?: "div" | "span";
 }
 
 export function Tooltip({
@@ -21,6 +22,7 @@ export function Tooltip({
   className = "",
   showArrow = true,
   delay = 300,
+  as = "div",
 }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [coords, setCoords] = useState({ x: 0, y: 0 });
@@ -192,9 +194,11 @@ export function Tooltip({
 
   const animationProps = getAnimationProps();
 
+  const Tag = as as "div";
+
   return (
     <>
-      <div
+      <Tag
         ref={triggerRef}
         className={cn("relative inline-block", className)}
         onMouseEnter={showTooltip}
@@ -202,7 +206,7 @@ export function Tooltip({
         onClick={hideTooltip}
       >
         {children}
-      </div>
+      </Tag>
 
       {createPortal(
         <AnimatePresence>

@@ -116,6 +116,7 @@ export const Markdown = memo(function Markdown({
 
             return (
               <Tooltip
+                as="span"
                 text={
                   <div className="flex max-h-40 w-full flex-col">
                     <div
