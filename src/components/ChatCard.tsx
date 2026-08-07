@@ -565,7 +565,7 @@ export function ChatCard({
                 <Spinner />
               </motion.div>
             )}
-            <div style={{ height: inputHeight + extraBottomSpacer }} className="shrink-0" />
+            <div style={{ height: inputHeight + extraBottomSpacer + 20 }} className="shrink-0" />
           </motion.div>
         ) : (
           <motion.div
@@ -616,7 +616,7 @@ export function ChatCard({
                 </p>
               </div>
             )}
-            <div style={{ height: inputHeight }} className="shrink-0" />
+            <div style={{ height: inputHeight + 20 }} className="shrink-0" />
           </motion.div>
         )}
       </AnimatePresence>
