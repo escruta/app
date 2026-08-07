@@ -42,7 +42,7 @@ export function SortSection() {
       <div className="flex flex-col gap-3 *:w-fit">
         <h2 className="text-xl font-medium">Sort</h2>
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Choose how notebooks and notes are sorted across the application.
+          Choose how notebooks are sorted across the application.
         </p>
         <Dropdown<SortOption>
           options={["Newest", "Oldest", "Alphabetical", "Reverse Alphabetical"]}

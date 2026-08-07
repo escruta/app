@@ -8,7 +8,6 @@ export type ViewMode = "grid" | "list";
 export const VIEW_MODE_COOKIE_KEYS = {
   folder: "globalFolderViewMode",
   notebook: "globalNotebookViewMode",
-  note: "globalNoteViewMode",
 } as const;
 
 const VIEW_MODE_LABELS: Record<ViewMode, string> = {
@@ -18,18 +17,16 @@ const VIEW_MODE_LABELS: Record<ViewMode, string> = {
 
 const VIEW_MODES: ViewMode[] = ["grid", "list"];
 
-type ViewCategory = "folder" | "notebook" | "note";
+type ViewCategory = "folder" | "notebook";
 
 const CATEGORY_LABELS: Record<ViewCategory, string> = {
   folder: "Folders",
   notebook: "Notebooks",
-  note: "Notes",
 };
 
 const CATEGORY_COOKIE_KEYS: Record<ViewCategory, string> = {
   folder: VIEW_MODE_COOKIE_KEYS.folder,
   notebook: VIEW_MODE_COOKIE_KEYS.notebook,
-  note: VIEW_MODE_COOKIE_KEYS.note,
 };
 
 function ViewModePreview({ mode }: { mode: ViewMode }) {
@@ -132,7 +129,7 @@ export function ViewModeSection() {
         <div className="flex flex-col gap-2">
           <h2 className="text-xl font-medium">Display</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Choose how folders, notebooks, and notes are displayed across the application.
+            Choose how folders and notebooks are displayed across the application.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -142,7 +139,6 @@ export function ViewModeSection() {
         <div className="flex flex-col gap-3">
           <CategoryRow category="folder" />
           <CategoryRow category="notebook" />
-          <CategoryRow category="note" />
         </div>
       </div>
     </CommonBar>

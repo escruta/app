@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLoaderData, useNavigate } from "react-router";
-import type { Folder, Notebook, Note } from "@/interfaces";
+import type { Folder, Notebook } from "@/interfaces";
 import { Button, CardSkeleton, Modal, Spinner, TextField } from "@/components/ui";
 import { TopBar } from "@/components";
-import { NotebookCard, NoteCard } from "@/components";
-import { FireIcon, NotebookIcon, NoteIcon } from "@/components/icons";
+import { NotebookCard } from "@/components";
+import { FireIcon, NotebookIcon } from "@/components/icons";
 import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
 import { motion } from "motion/react";
 import { useCookie, useFetch, useMediaQuery } from "@/hooks";
@@ -32,20 +32,12 @@ export default function FolderPage() {
     error: notebooksError,
     refetch: refetchNotebooks,
   } = useFetch<Notebook[]>("/notebooks");
-  const {
-    data: notes,
-    loading: notesLoading,
-    error: notesError,
-    refetch: refetchNotes,
-  } = useFetch<Note[]>("/notes");
 
   const folder = useMemo(() => folders?.find((f) => f.id === folderId), [folders, folderId]);
 
   const [globalNotebookViewMode] = useCookie<ViewMode>(VIEW_MODE_COOKIE_KEYS.notebook, "grid");
-  const [globalNoteViewMode] = useCookie<ViewMode>(VIEW_MODE_COOKIE_KEYS.note, "grid");
   const [globalSort] = useCookie<SortOption>("globalSortPreference", "Newest");
   const notebookViewMode = globalNotebookViewMode || "grid";
-  const noteViewMode = globalNoteViewMode || "grid";
   const sortBy = globalSort || "Newest";
 
   const [editingTitle, setEditingTitle] = useState<string>("");
@@ -60,23 +52,15 @@ export default function FolderPage() {
   const isBelowMd = useMediaQuery(BREAKPOINTS.tablet - 1);
   const gridColumns = isBelowSm ? 2 : isBelowMd ? 3 : 4;
   const MAX_NOTEBOOK_ITEMS = notebookViewMode === "grid" ? gridColumns * 2 : 5;
-  const MAX_NOTE_ITEMS = noteViewMode === "grid" ? gridColumns * 2 : 5;
 
   const folderNotebooks = useMemo(
     () => (notebooks ?? []).filter((nb) => nb.folderId === folderId),
     [notebooks, folderId],
   );
-  const folderNotes = useMemo(
-    () => (notes ?? []).filter((n) => n.folderId === folderId),
-    [notes, folderId],
-  );
 
   const sortedNotebooks = getSortedItems(folderNotebooks, sortBy);
-  const sortedNotes = getSortedItems(folderNotes, sortBy);
   const displayNotebooks = sortedNotebooks.slice(0, MAX_NOTEBOOK_ITEMS);
   const hasMoreNotebooks = sortedNotebooks.length > MAX_NOTEBOOK_ITEMS;
-  const displayNotes = sortedNotes.slice(0, MAX_NOTE_ITEMS);
-  const hasMoreNotes = sortedNotes.length > MAX_NOTE_ITEMS;
 
   const { loading: updatingFolder, refetch: updateFolder } = useFetch<Folder>(
     `/folders/${folderId}`,
@@ -179,7 +163,7 @@ export default function FolderPage() {
     );
   }
 
-  const isEmpty = folderNotebooks.length === 0 && folderNotes.length === 0;
+  const isEmpty = folderNotebooks.length === 0;
 
   const titleInput = (
     <input
@@ -214,7 +198,7 @@ export default function FolderPage() {
             >
               <h3 className="text-foreground text-lg font-semibold">This folder is empty</h3>
               <p className="max-w-md text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                Drop a notebook or note into this folder from the Home page to start organizing your
+                Drop a notebook into this folder from the Home page to start organizing your
                 library.
               </p>
             </motion.div>
@@ -271,64 +255,6 @@ export default function FolderPage() {
                         <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
                           Showing {displayNotebooks.length} of {sortedNotebooks.length} notebooks in
                           this folder.
-                        </p>
-                      )}
-                    </>
-                  )}
-                </motion.section>
-              )}
-
-              {/* Notes */}
-              {displayNotes.length > 0 && (
-                <motion.section
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.2 }}
-                >
-                  <h3 className="mb-3 flex items-center justify-between gap-2 text-base font-semibold tracking-tight text-gray-900 dark:text-gray-100">
-                    <span className="flex items-center gap-1.5">
-                      <NoteIcon className="size-3.5 text-blue-500 dark:text-blue-400" />
-                      Notes
-                    </span>
-                  </h3>
-
-                  {notesLoading && !notes ? (
-                    <div
-                      className={
-                        noteViewMode === "grid"
-                          ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
-                          : "flex flex-col gap-3"
-                      }
-                    >
-                      {Array.from({ length: 4 }).map((_, i) => (
-                        <CardSkeleton key={i} viewMode={noteViewMode} />
-                      ))}
-                    </div>
-                  ) : notesError ? (
-                    <p className="text-sm text-red-500">{notesError.message}</p>
-                  ) : (
-                    <>
-                      <div
-                        className={
-                          noteViewMode === "grid"
-                            ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
-                            : "flex flex-col gap-3"
-                        }
-                      >
-                        {displayNotes.map((note) => (
-                          <NoteCard
-                            key={note.id}
-                            note={note}
-                            viewMode={noteViewMode}
-                            folders={folders ?? undefined}
-                            onChange={() => refetchNotes(true, false)}
-                          />
-                        ))}
-                      </div>
-                      {hasMoreNotes && (
-                        <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
-                          Showing {displayNotes.length} of {sortedNotes.length} notes in this
-                          folder.
                         </p>
                       )}
                     </>
@@ -409,8 +335,7 @@ export default function FolderPage() {
       >
         <p className="text-gray-600 dark:text-gray-300">
           You're about to delete <span className="font-semibold">{folder.title}</span>. This can't
-          be undone, any notebooks and notes inside will stay in your library, just moved out of the
-          folder.
+          be undone, any notebooks inside will stay in your library, just moved out of the folder.
         </p>
       </Modal>
     </div>

@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth, useCookie, useFetch, useGreeting, useMediaQuery } from "@/hooks";
 import { BREAKPOINTS } from "@/hooks/useBreakpoint";
-import { Button, Modal, Spinner, TextField, Tooltip } from "@/components/ui";
-import { FolderCard, NotebookCard, NoteCard, TopBar } from "@/components";
+import { Button, Modal, Spinner, TextField } from "@/components/ui";
+import { FolderCard, NotebookCard, TopBar } from "@/components";
 import { GaussianBlurGradientBackground } from "@/components/backgrounds/GaussianBlurGradientBackground";
 import {
   AddIcon,
@@ -11,11 +11,10 @@ import {
   FolderAddIcon,
   FolderIcon,
   NotebookIcon,
-  NoteIcon,
   SearchIcon,
 } from "@/components/icons";
 import { motion } from "motion/react";
-import type { Folder, Note, Notebook } from "@/interfaces";
+import type { Folder, Notebook } from "@/interfaces";
 import {
   getSortedItems,
   type SortOption,
@@ -33,19 +32,12 @@ export default function HomePage() {
     error: notebooksError,
     refetch: refetchNotebooks,
   } = useFetch<Notebook[]>("/notebooks");
-  const {
-    data: notes,
-    loading: notesLoading,
-    error: notesError,
-    refetch: refetchNotes,
-  } = useFetch<Note[]>("/notes");
   const { data: folders, refetch: refetchFolders } = useFetch<Folder[]>("/folders");
   const { greeting, subtitle } = useGreeting();
 
   const [globalSort] = useCookie<SortOption>("globalSortPreference", "Newest");
   const [globalFolderViewMode] = useCookie<ViewMode>(VIEW_MODE_COOKIE_KEYS.folder, "grid");
   const [globalNotebookViewMode] = useCookie<ViewMode>(VIEW_MODE_COOKIE_KEYS.notebook, "grid");
-  const [globalNoteViewMode] = useCookie<ViewMode>(VIEW_MODE_COOKIE_KEYS.note, "grid");
 
   const [isCreateNotebookOpen, setIsCreateNotebookOpen] = useState(false);
   const [newNotebookTitle, setNewNotebookTitle] = useState("");
@@ -70,19 +62,6 @@ export default function HomePage() {
       },
       onError: (error) => {
         console.error("Error creating notebook:", error.message);
-      },
-    },
-    false,
-  );
-
-  const { loading: addingNote, refetch: createNote } = useFetch<Note>(
-    "/notes",
-    {
-      method: "POST",
-      data: { title: "Untitled note" },
-      onSuccess: (newNote) => {
-        useFetch.clearCache();
-        navigate(`/note/${newNote.id}`);
       },
     },
     false,
@@ -126,7 +105,6 @@ export default function HomePage() {
       onSuccess: () => {
         useFetch.clearCache();
         refetchFolders(true, false);
-        refetchNotes(true, false);
         refetchNotebooks(true, false);
         setFolderToDelete(null);
       },
@@ -136,27 +114,21 @@ export default function HomePage() {
 
   const folderViewMode = globalFolderViewMode || "grid";
   const notebookViewMode = globalNotebookViewMode || "grid";
-  const noteViewMode = globalNoteViewMode || "grid";
 
   const isBelowSm = useMediaQuery(BREAKPOINTS.mobile - 1);
   const isBelowMd = useMediaQuery(BREAKPOINTS.tablet - 1);
   const gridColumns = isBelowSm ? 2 : isBelowMd ? 3 : 4;
   const MAX_NOTEBOOK_ITEMS = notebookViewMode === "grid" ? gridColumns * 2 : 5;
-  const MAX_NOTE_ITEMS = noteViewMode === "grid" ? gridColumns * 2 : 5;
 
   const folderItems = folders ?? [];
 
   const unfiledNotebooks = (notebooks ?? []).filter((nb) => !nb.folderId);
-  const unfiledNotes = (notes ?? []).filter((n) => !n.folderId);
 
   const sortBy = globalSort || "Newest";
   const sortedUnfiledNotebooks = getSortedItems(unfiledNotebooks, sortBy);
-  const sortedUnfiledNotes = getSortedItems(unfiledNotes, sortBy);
 
   const displayNotebooks = sortedUnfiledNotebooks.slice(0, MAX_NOTEBOOK_ITEMS);
   const hasMoreNotebooks = sortedUnfiledNotebooks.length > MAX_NOTEBOOK_ITEMS;
-  const displayNotes = sortedUnfiledNotes.slice(0, MAX_NOTE_ITEMS);
-  const hasMoreNotes = sortedUnfiledNotes.length > MAX_NOTE_ITEMS;
 
   const handleSaveFolder = () => {
     if (editingFolderId) {
@@ -184,7 +156,6 @@ export default function HomePage() {
     setFolderTitle("");
   };
 
-  const hasNoteContent = !!unfiledNotes.length;
   const hasNotebookContent = !!unfiledNotebooks.length;
   const hasFolders = !!folders?.length;
 
@@ -251,8 +222,8 @@ export default function HomePage() {
               <div className="flex w-full flex-col items-center justify-center gap-1 rounded-xs border-2 border-dashed border-blue-400/60 bg-gray-50/60 px-6 py-8 text-center dark:border-blue-600/60 dark:bg-gray-900/30">
                 <h3 className="text-foreground text-lg font-semibold">No folders yet</h3>
                 <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                  Folders are a handy way to keep related notebooks and notes together. Create your
-                  first one to start organizing.
+                  Folders are a handy way to keep related notebooks together. Create your first one
+                  to start organizing.
                 </p>
               </div>
             )}
@@ -364,129 +335,6 @@ export default function HomePage() {
                     <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
                       Notebooks bring your sources and AI-powered insights together in one place.
                       Create your first one to get started.
-                    </p>
-                  </div>
-                )}
-              </>
-            )}
-          </motion.section>
-
-          {/* Notes section */}
-          <motion.section
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.2 }}
-          >
-            <h3 className="mb-3 flex items-center justify-between gap-2 text-base font-semibold tracking-tight text-gray-900 dark:text-gray-100">
-              <span className="flex items-center gap-1.5">
-                <NoteIcon className="size-3.5 text-blue-500 dark:text-blue-400" />
-                Notes
-              </span>
-              <div className="flex items-center gap-1">
-                {(hasNoteContent || hasMoreNotes) && (
-                  <Button
-                    icon={<SearchIcon className="size-4" />}
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => navigate("/notes")}
-                  >
-                    View all notes
-                  </Button>
-                )}
-                <Tooltip text="New note" position="top">
-                  <Button
-                    icon={
-                      addingNote ? <Spinner className="size-4" /> : <AddIcon className="size-4" />
-                    }
-                    variant="primary"
-                    size="sm"
-                    onClick={() => createNote()}
-                    disabled={addingNote}
-                  >
-                    New note
-                  </Button>
-                </Tooltip>
-              </div>
-            </h3>
-
-            {notesLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <Spinner />
-              </div>
-            ) : notesError ? (
-              <div className="border-y border-gray-200 bg-gray-50 px-6 py-5 dark:border-gray-700 dark:bg-gray-950">
-                <motion.div
-                  className="flex items-center justify-center py-12"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <div className="max-w-md text-center">
-                    <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-xs bg-red-50 dark:bg-red-950">
-                      <div className="h-8 w-8 text-red-500">
-                        <FireIcon />
-                      </div>
-                    </div>
-                    <h4 className="mb-2 text-lg font-medium text-red-600 dark:text-red-400">
-                      We couldn't load your notes
-                    </h4>
-                    <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                      {notesError.message}
-                    </p>
-                  </div>
-                </motion.div>
-              </div>
-            ) : (
-              <>
-                {notes && notes.length > 0 ? (
-                  sortedUnfiledNotes.length > 0 ? (
-                    <>
-                      <div
-                        className={
-                          noteViewMode === "grid"
-                            ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
-                            : "flex flex-col gap-3"
-                        }
-                      >
-                        {displayNotes.map((note) => (
-                          <NoteCard
-                            key={note.id}
-                            note={note}
-                            viewMode={noteViewMode}
-                            notebookTitle={
-                              notebooks?.find((nb) => nb.id === note.notebookId)?.title
-                            }
-                            folders={folders ?? undefined}
-                            onChange={() => refetchNotes(true, false)}
-                          />
-                        ))}
-                      </div>
-                      {hasMoreNotes && (
-                        <button
-                          className="mt-3 w-full rounded-xs border border-dashed border-gray-200 bg-gray-50/50 px-4 py-2.5 text-sm font-medium text-blue-600 transition-colors hover:border-blue-300 hover:bg-blue-50/70 dark:border-gray-700 dark:bg-gray-800/30 dark:text-blue-400 dark:hover:border-blue-800 dark:hover:bg-blue-900/30"
-                          onClick={() => navigate("/notes")}
-                        >
-                          View all {sortedUnfiledNotes.length} notes
-                        </button>
-                      )}
-                    </>
-                  ) : (
-                    <div className="flex w-full flex-col items-center justify-center gap-1 rounded-xs border-2 border-dashed border-gray-400/30 bg-gray-50/60 px-6 py-8 text-center dark:border-gray-600/30 dark:bg-gray-900/30">
-                      <h3 className="text-foreground text-md font-semibold">
-                        All your notes are tucked into folders.
-                      </h3>
-                      <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                        Open a folder above to find them, or create a new note to jot something
-                        down.
-                      </p>
-                    </div>
-                  )
-                ) : (
-                  <div className="flex w-full flex-col items-center justify-center gap-1 rounded-xs border-2 border-dashed border-blue-400/60 bg-gray-50/60 px-6 py-8 text-center dark:border-blue-600/60 dark:bg-gray-900/30">
-                    <h3 className="text-foreground text-lg font-semibold">No notes yet</h3>
-                    <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                      Notes are perfect for quick thoughts, ideas, and insights. Create your first
-                      one to start capturing them.
                     </p>
                   </div>
                 )}
@@ -614,8 +462,8 @@ export default function HomePage() {
         >
           <p className="text-gray-600 dark:text-gray-300">
             You're about to delete <span className="font-semibold">{folderToDelete?.title}</span>.
-            This can't be undone, any notebooks and notes inside will stay in your library, just
-            moved out of the folder.
+            This can't be undone, any notebooks inside will stay in your library, just moved out of
+            the folder.
           </p>
         </Modal>
       </div>

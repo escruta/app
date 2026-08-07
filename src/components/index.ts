@@ -5,7 +5,6 @@ export * from "./FolderCard.tsx";
 
 export * from "./Logotype.tsx";
 export * from "./NotebookCard.tsx";
-export * from "./NoteCard.tsx";
 export * from "./NoteChip.tsx";
 export * from "./NoteEditor.tsx";
 export * from "./NotesCard.tsx";
