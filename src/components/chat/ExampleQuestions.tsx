@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "motion/react";
-import { Alert, Button, IconButton, Tooltip, Skeleton, Spinner, Chip } from "@/components/ui";
+import { Alert, Button, Skeleton } from "@/components/ui";
 import { RestartIcon } from "@/components/icons";
 import { getHttpErrorMessage } from "@/lib/utils";
 
@@ -40,74 +40,63 @@ export function ExampleQuestions({
           </Button>
         </div>
       ) : (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h4 className="text-foreground text-sm font-semibold">Example questions</h4>
-            {isAutoRegenerating || skipExampleQuestionsFetch || readySourcesCount === 0 ? (
-              <Tooltip
-                text={readySourcesCount === 0 ? "Waiting for sources..." : "Waiting for summary..."}
-                position="left"
-              >
-                <div className="flex size-8 items-center justify-center">
-                  <Spinner />
-                </div>
-              </Tooltip>
-            ) : (
-              <Tooltip
-                text={isExampleQuestionsLoading ? "Refreshing questions" : "Refresh questions"}
-                position="left"
-              >
-                <IconButton
-                  icon={isExampleQuestionsLoading ? <Spinner /> : <RestartIcon />}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => refetchExampleQuestions(true)}
-                  disabled={isExampleQuestionsLoading}
-                />
-              </Tooltip>
-            )}
-          </div>
-          <div className="flex flex-col gap-2">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={
-                  isExampleQuestionsLoading ||
-                  isAutoRegenerating ||
-                  skipExampleQuestionsFetch ||
-                  readySourcesCount === 0
-                    ? "loading"
-                    : "questions"
-                }
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15, ease: "easeInOut" }}
-                className="flex flex-col gap-2"
-              >
-                {isExampleQuestionsLoading ||
+        <div className="flex flex-col gap-2">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={
+                isExampleQuestionsLoading ||
                 isAutoRegenerating ||
                 skipExampleQuestionsFetch ||
-                readySourcesCount === 0 ? (
-                  <>
-                    <Skeleton variant="rectangle" height={34} />
-                    <Skeleton variant="rectangle" height={34} />
-                    <Skeleton variant="rectangle" height={34} />
-                  </>
-                ) : exampleQuestions?.questions && exampleQuestions.questions.length > 0 ? (
-                  exampleQuestions.questions.map((question, index) => (
-                    <Chip
+                readySourcesCount === 0
+                  ? "loading"
+                  : "questions"
+              }
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15, ease: "easeInOut" }}
+              className="flex flex-col gap-2"
+            >
+              {isExampleQuestionsLoading ||
+              isAutoRegenerating ||
+              skipExampleQuestionsFetch ||
+              readySourcesCount === 0 ? (
+                <>
+                  <Skeleton variant="rectangle" height={34} />
+                  <Skeleton variant="rectangle" height={34} />
+                  <Skeleton variant="rectangle" height={34} />
+                </>
+              ) : exampleQuestions?.questions && exampleQuestions.questions.length > 0 ? (
+                <>
+                  {exampleQuestions.questions.map((question, index) => (
+                    <button
                       key={index}
+                      type="button"
                       onClick={() => onQuestionSelect(question)}
-                      multiline
-                      className="w-full justify-start text-left"
+                      className="group flex w-full items-start gap-2 text-left"
                     >
-                      {question}
-                    </Chip>
-                  ))
-                ) : null}
-              </motion.div>
-            </AnimatePresence>
-          </div>
+                      <span className="mt-0.5 shrink-0 font-medium text-gray-400 transition-colors group-hover:text-blue-500 dark:text-gray-500 dark:group-hover:text-blue-400">
+                        +
+                      </span>
+                      <span className="text-sm leading-relaxed text-gray-600 transition-colors group-hover:text-blue-600 dark:text-gray-300 dark:group-hover:text-blue-400">
+                        {question}
+                      </span>
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => refetchExampleQuestions(true)}
+                    className="group flex w-full items-center gap-2 text-left"
+                  >
+                    <RestartIcon className="size-4 shrink-0 text-gray-400 transition-colors group-hover:text-blue-500 dark:text-gray-500 dark:group-hover:text-blue-400" />
+                    <span className="text-sm font-medium text-gray-500 transition-colors group-hover:text-blue-600 dark:text-gray-400 dark:group-hover:text-blue-400">
+                      Refresh questions
+                    </span>
+                  </button>
+                </>
+              ) : null}
+            </motion.div>
+          </AnimatePresence>
         </div>
       )}
     </div>
