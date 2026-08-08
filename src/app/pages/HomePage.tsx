@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth, useCookie, useFetch, useGreeting, useMediaQuery } from "@/hooks";
 import { BREAKPOINTS } from "@/hooks/useBreakpoint";
-import { Button, Modal, Spinner, TextField } from "@/components/ui";
+import { Button, IconButton, Modal, Spinner, TextField, Tooltip } from "@/components/ui";
 import { FolderCard, NotebookCard, TopBar } from "@/components";
 import { GaussianBlurGradientBackground } from "@/components/backgrounds/GaussianBlurGradientBackground";
 import {
@@ -12,6 +12,7 @@ import {
   FolderIcon,
   NotebookIcon,
   SearchIcon,
+  SettingsIcon,
 } from "@/components/icons";
 import { motion } from "motion/react";
 import type { Folder, Notebook } from "@/interfaces";
@@ -171,11 +172,23 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
+            className="flex items-start justify-between gap-4"
           >
-            <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
-              {greeting}, {currentUser?.name?.split(" ")[0] || "User"}
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400">{subtitle}</p>
+            <div>
+              <h2 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">
+                {greeting}, {currentUser?.name?.split(" ")[0] || "User"}
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400">{subtitle}</p>
+            </div>
+            <Tooltip text="Settings" position="bottom">
+              <IconButton
+                icon={<SettingsIcon className="size-5" />}
+                onClick={() => navigate("/settings")}
+                variant="ghost"
+                size="sm"
+                ariaLabel="Settings"
+              />
+            </Tooltip>
           </motion.div>
 
           {/* Folders section */}

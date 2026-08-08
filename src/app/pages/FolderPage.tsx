@@ -167,7 +167,7 @@ export default function FolderPage() {
 
   const titleInput = (
     <input
-      className="w-full truncate border-none bg-transparent p-0 text-lg font-semibold transition-colors duration-200 focus:ring-0 focus:outline-none"
+      className="app-region-no-drag w-full truncate border-none bg-transparent p-0 text-lg font-semibold transition-colors duration-200 focus:ring-0 focus:outline-none"
       value={editingTitle}
       onChange={(e) => setEditingTitle(e.target.value)}
       onBlur={handleTitleBlur}

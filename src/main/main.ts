@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell } from "electron";
+import { app, BrowserWindow, ipcMain, shell } from "electron";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -20,7 +20,19 @@ function resolveIconPath(): string | undefined {
   return path.join(app.getAppPath(), "src", "assets", iconFile);
 }
 
+function windowFromEvent(event: { sender: Electron.WebContents }): BrowserWindow | null {
+  return BrowserWindow.fromWebContents(event.sender);
+}
+
+function registerWindowControls() {
+  ipcMain.on("window:set-overlay-colors", (event, { color, symbolColor }) => {
+    windowFromEvent(event)?.setTitleBarOverlay({ color, symbolColor });
+  });
+}
+
 function createWindow() {
+  const isMac = process.platform === "darwin";
+
   mainWindow = new BrowserWindow({
     width: 900,
     height: 600,
@@ -29,6 +41,14 @@ function createWindow() {
     show: false,
     autoHideMenuBar: true,
     title: "Escruta",
+    titleBarStyle: isMac ? "hiddenInset" : "hidden",
+    titleBarOverlay: isMac
+      ? false
+      : {
+          color: "#ffffff",
+          symbolColor: "#1a1a1a",
+          height: 48,
+        },
     icon: resolveIconPath(),
     backgroundColor: "#0A0A0A",
     webPreferences: {
@@ -40,7 +60,6 @@ function createWindow() {
   });
 
   mainWindow.once("ready-to-show", () => mainWindow?.show());
-
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: "deny" };
@@ -55,6 +74,7 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  registerWindowControls();
   createWindow();
 
   app.on("activate", () => {

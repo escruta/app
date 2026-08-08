@@ -667,7 +667,7 @@ export default function NotebookPage() {
             </span>
             <input
               className={cn(
-                "w-full truncate bg-transparent p-0 text-lg font-semibold transition-colors duration-200 focus:outline-none focus:ring-0 border-none",
+                "app-region-no-drag w-full truncate bg-transparent p-0 text-lg font-semibold transition-colors duration-200 focus:outline-none focus:ring-0 border-none",
                 {
                   "text-blue-600 dark:text-blue-400": renamingNotebook,
                 },

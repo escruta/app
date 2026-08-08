@@ -322,6 +322,14 @@ body.resizing * {
   user-select: none !important;
 }
 
+@utility app-region-drag {
+  -webkit-app-region: drag;
+}
+
+@utility app-region-no-drag {
+  -webkit-app-region: no-drag;
+}
+
 @keyframes shimmer {
   0% {
     transform: translateX(-100%);

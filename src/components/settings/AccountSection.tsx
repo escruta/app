@@ -190,6 +190,9 @@ export function AccountSection() {
           <Button variant="secondary" onClick={() => setIsPasswordModalOpen(true)}>
             Change password
           </Button>
+          <Button variant="secondary" onClick={() => signOut()}>
+            Sign out
+          </Button>
         </div>
         <div className="mt-6 border-t border-gray-200 pt-6 dark:border-gray-700">
           <h3 className="mb-2 text-lg font-medium text-red-600 dark:text-red-400">Danger Zone</h3>

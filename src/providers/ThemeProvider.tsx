@@ -25,6 +25,12 @@ const applyTheme = (theme: "light" | "dark") => {
   }
 };
 
+const applyOverlayColors = (theme: "light" | "dark") => {
+  const setColors = window.electronAPI?.windowControls?.setOverlayColors;
+  if (!setColors) return;
+  setColors(theme === "dark" ? "#0a0a0a" : "#ffffff", theme === "dark" ? "#ffffff" : "#1a1a1a");
+};
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [themePreference, setThemePreference] = useCookie<ThemeOptions>(
     THEME_COOKIE_KEY,
@@ -40,6 +46,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const currentPreference = themePreference || ThemeOptions.System;
     const theme = determineEffectiveTheme(currentPreference);
     applyTheme(theme);
+    applyOverlayColors(theme);
     setEffectiveTheme(theme);
   }, [themePreference]);
 
@@ -51,6 +58,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       if (currentPreference === ThemeOptions.System) {
         const newTheme = e.matches ? "dark" : "light";
         applyTheme(newTheme);
+        applyOverlayColors(newTheme);
         setEffectiveTheme(newTheme);
       }
     };
@@ -66,6 +74,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setThemePreference(newTheme);
     const effectiveTheme = determineEffectiveTheme(newTheme);
     applyTheme(effectiveTheme);
+    applyOverlayColors(effectiveTheme);
     setEffectiveTheme(effectiveTheme);
   };
 

@@ -15,6 +15,9 @@ declare const MAIN_WINDOW_VITE_NAME: string;
 declare interface ElectronAPI {
   isElectron: boolean;
   platform: string;
+  windowControls?: {
+    setOverlayColors: (backgroundColor: string, symbolColor: string) => void;
+  };
 }
 
 declare interface Window {
@@ -24,6 +27,9 @@ declare interface Window {
 declare interface ElectronAPI {
   isElectron: boolean;
   platform: string;
+  windowControls?: {
+    setOverlayColors: (backgroundColor: string, symbolColor: string) => void;
+  };
 }
 
 declare interface Window {
