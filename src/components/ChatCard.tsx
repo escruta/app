@@ -1,4 +1,4 @@
-import { useFetch, useCookie, useChatStream, useRealtimeEvent } from "@/hooks";
+import { useFetch, useCookie, useChatStream, useChatGreeting, useRealtimeEvent } from "@/hooks";
 import { FileIcon, SendIcon, ChatNewIcon } from "@/components/icons";
 import { Divider, TextField, IconButton, Tooltip, Spinner } from "@/components/ui";
 import type { ConversationMessages, Source } from "@/interfaces";
@@ -44,6 +44,8 @@ export function ChatCard({
 }: ChatCardProps) {
   const sourcesCount = sources.length;
   const readySourcesCount = sources.filter((s) => s.status === "READY").length;
+
+  const { greeting, subtitle } = useChatGreeting();
 
   const [cachedExampleQuestions, setCachedExampleQuestions] = useCookie<{
     questions: string[];
@@ -483,6 +485,14 @@ export function ChatCard({
             transition={{ duration: 0.2 }}
             className="flex min-h-0 grow flex-col justify-center overflow-y-auto px-4"
           >
+            {sourcesCount > 0 && (
+              <div className="mx-auto w-[calc(100%-2rem)] max-w-3xl px-4 text-center">
+                <h3 className="text-foreground mb-1 text-xl font-semibold">{greeting}</h3>
+                <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                  {subtitle}
+                </p>
+              </div>
+            )}
             {sourcesCount === 0 && (
               <div className="flex flex-col items-center px-4 pb-2 text-center">
                 <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">

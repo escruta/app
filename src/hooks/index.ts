@@ -1,6 +1,7 @@
 export * from "./useAuth";
 export * from "./useBreakpoint";
 export * from "./useCookie";
+export * from "./useChatGreeting";
 export * from "./useChatStream";
 export * from "./useFetch";
 export * from "./useGenerationJob";
