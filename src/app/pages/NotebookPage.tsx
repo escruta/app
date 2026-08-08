@@ -640,7 +640,6 @@ export default function NotebookPage() {
         activeTabId={effectiveActiveKey}
         onSelect={selectTab}
         onClose={closeTab}
-        onNewChat={openNewChatTab}
       />
       <div className="relative min-h-0 flex-1 overflow-hidden bg-white dark:bg-gray-950">
         {tabs.map((t) => {
@@ -692,7 +691,6 @@ export default function NotebookPage() {
       />
 
       <div className="relative flex-1 overflow-hidden">
-        <SimpleBackground />
         <section ref={sectionRef} className="flex h-full overflow-hidden">
           <div
             className={cn(
@@ -714,6 +712,7 @@ export default function NotebookPage() {
             <div className={cn("h-full w-full", { hidden: isLeftCollapsed })}>
               <SideNav
                 className="h-full"
+                onNewChat={openNewChatTab}
                 items={[
                   {
                     id: "sources",

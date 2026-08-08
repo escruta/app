@@ -1,7 +1,6 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import { AddIcon, CloseIcon } from "@/components/icons";
-import { Tooltip } from "./Tooltip";
+import { CloseIcon } from "@/components/icons";
 import { IconButton } from "./IconButton";
 
 export interface ChromeTabItem {
@@ -16,18 +15,10 @@ interface ChromeTabsProps {
   activeTabId: string | null;
   onSelect: (id: string) => void;
   onClose: (id: string) => void;
-  onNewChat?: () => void;
   className?: string;
 }
 
-export function ChromeTabs({
-  tabs,
-  activeTabId,
-  onSelect,
-  onClose,
-  onNewChat,
-  className,
-}: ChromeTabsProps) {
+export function ChromeTabs({ tabs, activeTabId, onSelect, onClose, className }: ChromeTabsProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -37,18 +28,18 @@ export function ChromeTabs({
     el?.scrollIntoView({ block: "nearest", inline: "nearest" });
   }, [activeTabId, tabs.length]);
 
-  if (tabs.length === 0 && !onNewChat) return null;
+  if (tabs.length === 0) return null;
 
   return (
     <div
       className={cn(
-        "flex justify-between py-2 shrink-0 items-center border-b border-gray-200 bg-gray-50/60 dark:border-gray-800 dark:bg-gray-900/40 px-3",
+        "flex justify-between py-2 shrink-0 items-center border-b border-gray-200 bg-gray-50/60 dark:border-gray-800 dark:bg-gray-900/40",
         className,
       )}
     >
       <div
         ref={scrollRef}
-        className="no-scrollbar flex min-w-0 flex-1 items-stretch gap-1.75 overflow-x-auto"
+        className="flex min-w-0 flex-1 items-stretch gap-1.75 overflow-x-auto pr-3 pl-3"
       >
         {tabs.map((tab) => {
           const active = tab.id === activeTabId;
@@ -96,17 +87,6 @@ export function ChromeTabs({
           );
         })}
       </div>
-      {onNewChat && (
-        <Tooltip text="New chat" position="bottom">
-          <IconButton
-            icon={<AddIcon className="size-5" />}
-            variant="ghost"
-            size="sm"
-            onClick={onNewChat}
-            aria-label="New chat"
-          />
-        </Tooltip>
-      )}
     </div>
   );
 }
