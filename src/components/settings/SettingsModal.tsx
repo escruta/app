@@ -27,7 +27,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       title="Settings"
       width="3xl"
       noPadding
-      contentClassname="md:h-[75vh] md:max-h-[720px]"
+      contentClassname="md:h-[65vh] md:max-h-[650px]"
     >
       <div className="flex flex-col md:h-full md:flex-row">
         <nav className="flex shrink-0 gap-1 overflow-x-auto border-b border-gray-200 p-2 md:w-56 md:flex-col md:overflow-y-auto md:border-r md:border-b-0 md:p-3 dark:border-gray-800">

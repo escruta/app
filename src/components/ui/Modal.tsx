@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence, useAnimate } from "motion/react";
 import { IconButton } from "./IconButton";
@@ -9,6 +9,27 @@ import { Tooltip } from "./Tooltip";
 
 const modalListeners = new Set<() => void>();
 const openModals: string[] = [];
+
+const MODAL_BACKDROP = {
+  light: { color: "#b6b6b6", symbol: "#1a1a1a" },
+  dark: { color: "#0a0a0a", symbol: "#ffffff" },
+} as const;
+
+const THEME_TITLEBAR = {
+  light: { color: "#ffffff", symbol: "#1a1a1a" },
+  dark: { color: "#0a0a0a", symbol: "#ffffff" },
+} as const;
+
+let openModalCount = 0;
+
+function syncTitleBarOverlay() {
+  const setColors = window.electronAPI?.windowControls?.setOverlayColors;
+  if (!setColors) return;
+
+  const theme = document.documentElement.classList.contains("dark") ? "dark" : "light";
+  const { color, symbol } = openModalCount > 0 ? MODAL_BACKDROP[theme] : THEME_TITLEBAR[theme];
+  setColors(color, symbol);
+}
 
 function useModalStack(isOpen: boolean) {
   const id = useId();
@@ -78,6 +99,23 @@ export function Modal({
   const [scope, animate] = useAnimate();
   const { index } = useModalStack(isOpen);
 
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+
+    openModalCount += 1;
+
+    return () => {
+      openModalCount -= 1;
+      syncTitleBarOverlay();
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    syncTitleBarOverlay();
+  }, [isOpen]);
+
   const zIndexBackdrop = 60 + index * 10;
   const zIndexContent = 70 + index * 10;
 
@@ -118,14 +156,10 @@ export function Modal({
 
   return createPortal(
     <AnimatePresence>
-      <motion.div
+      <div
         key="modal-backdrop"
-        className="fixed inset-0 bg-gray-950/30 opacity-60 backdrop-blur-[1px] dark:bg-gray-950/60"
+        className="fixed inset-0 bg-gray-950/30 backdrop-blur-[1px] dark:bg-gray-950/60"
         style={{ zIndex: zIndexBackdrop }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.15 }}
         onClick={closeOnOutsideClick ? handleClose : undefined}
       />
 
@@ -208,7 +242,7 @@ export function Modal({
         </div>
       ) : (
         <div
-          className="pointer-events-none fixed inset-0 flex items-center justify-center px-20 py-16"
+          className="pointer-events-none fixed inset-0 flex items-center justify-center p-20"
           style={{ zIndex: zIndexContent }}
         >
           <motion.div
