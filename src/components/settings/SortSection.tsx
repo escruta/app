@@ -1,6 +1,6 @@
 import { useCookie } from "@/hooks";
-import { CommonBar } from "@/components";
 import { Dropdown } from "@/components/ui";
+import { SettingsGroup } from "./SettingsSection";
 
 export type SortOption = "Newest" | "Oldest" | "Alphabetical" | "Reverse Alphabetical";
 
@@ -34,24 +34,24 @@ export function getSortedItems<T extends { createdAt: Date | string; title: stri
   }
 }
 
-export function SortSection() {
+export function SortSettings() {
   const [sortBy, setSortBy] = useCookie<SortOption>("globalSortPreference", "Newest");
 
   return (
-    <CommonBar className="z-10 flex-col items-start justify-center">
-      <div className="flex flex-col gap-3 *:w-fit">
-        <h2 className="text-xl font-medium">Sort</h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Choose how notebooks are sorted across the application.
-        </p>
+    <SettingsGroup
+      title="Sort"
+      description="Choose how notebooks are sorted across the application."
+    >
+      <div className="flex flex-col gap-2">
+        <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Sort by</p>
         <Dropdown<SortOption>
           options={["Newest", "Oldest", "Alphabetical", "Reverse Alphabetical"]}
           selectedOption={sortBy}
           onSelect={(option) => setSortBy(option)}
-          label="Sort by: "
+          className="w-full max-w-xs"
           renderOption={(option) => SORT_LABELS[option]}
         />
       </div>
-    </CommonBar>
+    </SettingsGroup>
   );
 }

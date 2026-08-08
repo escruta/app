@@ -1,7 +1,7 @@
 import { useCookie } from "@/hooks";
-import { CommonBar } from "@/components";
 import { GridIcon, ListIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
+import { SettingsGroup } from "./SettingsSection";
 
 export type ViewMode = "grid" | "list";
 
@@ -122,25 +122,20 @@ function CategoryRow({ category }: { category: ViewCategory }) {
   );
 }
 
-export function ViewModeSection() {
+export function DisplaySettings() {
   return (
-    <CommonBar className="z-10 flex-col items-start justify-center">
-      <div className="flex w-full flex-col gap-6">
-        <div className="flex flex-col gap-2">
-          <h2 className="text-xl font-medium">Display</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Choose how folders and notebooks are displayed across the application.
-          </p>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <ViewModeLegendTile mode="grid" />
-          <ViewModeLegendTile mode="list" />
-        </div>
-        <div className="flex flex-col gap-3">
-          <CategoryRow category="folder" />
-          <CategoryRow category="notebook" />
-        </div>
+    <SettingsGroup
+      title="Display"
+      description="Choose how folders and notebooks are displayed across the application."
+    >
+      <div className="grid max-w-md grid-cols-2 gap-3">
+        <ViewModeLegendTile mode="grid" />
+        <ViewModeLegendTile mode="list" />
       </div>
-    </CommonBar>
+      <div className="flex flex-col gap-3">
+        <CategoryRow category="folder" />
+        <CategoryRow category="notebook" />
+      </div>
+    </SettingsGroup>
   );
 }

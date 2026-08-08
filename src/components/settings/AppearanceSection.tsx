@@ -1,23 +1,31 @@
 import { useTheme } from "@/hooks";
-import { CommonBar } from "@/components";
-import { Dropdown } from "@/components/ui";
+import { Divider, Dropdown } from "@/components/ui";
+import { SettingsGroup, SettingsSection } from "./SettingsSection";
+import { DisplaySettings } from "./ViewModeSection";
+import { SortSettings } from "./SortSection";
 
 export function AppearanceSection() {
   const { themePreference, setTheme, ThemeOptions } = useTheme();
 
   return (
-    <CommonBar className="z-10 flex-col items-start justify-center">
-      <h2 className="mb-4 text-xl font-medium">Appearance</h2>
-      <div className="flex items-center gap-4">
+    <SettingsSection
+      title="Appearance"
+      description="Customize how Escruta looks and organizes your content across the application."
+    >
+      <SettingsGroup title="Theme">
         <Dropdown<(typeof ThemeOptions)[keyof typeof ThemeOptions]>
           options={Object.values(ThemeOptions)}
           selectedOption={themePreference}
           onSelect={(option) =>
             setTheme(option as (typeof ThemeOptions)[keyof typeof ThemeOptions])
           }
-          label="Theme: "
+          className="w-full max-w-xs"
         />
-      </div>
-    </CommonBar>
+      </SettingsGroup>
+      <Divider />
+      <DisplaySettings />
+      <Divider />
+      <SortSettings />
+    </SettingsSection>
   );
 }

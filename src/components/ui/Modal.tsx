@@ -51,10 +51,11 @@ interface ModalProps {
   subtitle?: string;
   children: React.ReactNode;
   actions?: React.ReactNode;
-  width?: "sm" | "md" | "lg" | "xl";
+  width?: "sm" | "md" | "lg" | "xl" | "2xl" | "3xl";
   closeOnOutsideClick?: boolean;
   closeOnEscape?: boolean;
   contentClassname?: string;
+  noPadding?: boolean;
   onSubmit?: () => void;
 }
 
@@ -69,6 +70,7 @@ export function Modal({
   closeOnOutsideClick = true,
   closeOnEscape = true,
   contentClassname,
+  noPadding = false,
   onSubmit,
 }: ModalProps) {
   const isMobile = useIsMobile();
@@ -180,7 +182,7 @@ export function Modal({
             {onSubmit ? (
               <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
                 <div className={cn("overflow-y-auto flex-1 min-h-0", contentClassname)}>
-                  <div className="p-4">{children}</div>
+                  <div className={noPadding ? "h-full" : "p-4"}>{children}</div>
                 </div>
 
                 {actions && (
@@ -192,7 +194,7 @@ export function Modal({
             ) : (
               <>
                 <div className={cn("overflow-y-auto", contentClassname)}>
-                  <div className="p-4">{children}</div>
+                  <div className={noPadding ? "h-full" : "p-4"}>{children}</div>
                 </div>
 
                 {actions && (
@@ -206,7 +208,7 @@ export function Modal({
         </div>
       ) : (
         <div
-          className="pointer-events-none fixed inset-0 flex items-center justify-center p-4"
+          className="pointer-events-none fixed inset-0 flex items-center justify-center px-20 py-16"
           style={{ zIndex: zIndexContent }}
         >
           <motion.div
@@ -218,6 +220,8 @@ export function Modal({
                 "max-w-lg": width === "md",
                 "max-w-xl": width === "lg",
                 "max-w-2xl": width === "xl",
+                "max-w-3xl": width === "2xl",
+                "max-w-4xl": width === "3xl",
               },
             )}
             role="dialog"
@@ -254,7 +258,7 @@ export function Modal({
             {onSubmit ? (
               <form onSubmit={handleSubmit}>
                 <div className={cn("max-h-96 overflow-y-auto", contentClassname)}>
-                  <div className="p-4">{children}</div>
+                  <div className={noPadding ? "h-full" : "p-4"}>{children}</div>
                 </div>
 
                 {actions && (
@@ -266,7 +270,7 @@ export function Modal({
             ) : (
               <>
                 <div className={cn("max-h-96 overflow-y-auto", contentClassname)}>
-                  <div className="p-4">{children}</div>
+                  <div className={noPadding ? "h-full" : "p-4"}>{children}</div>
                 </div>
 
                 {actions && (

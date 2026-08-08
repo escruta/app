@@ -5,7 +5,6 @@ import { AppLayout } from "./AppLayout";
 const HomePage = lazy(() => import("./pages/HomePage"));
 const NotebooksPage = lazy(() => import("./pages/NotebooksPage"));
 const FolderPage = lazy(() => import("./pages/FolderPage"));
-const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const NotebookPage = lazy(() => import("./pages/NotebookPage"));
 
 export const AppRoutes: RouteObject[] = [
@@ -19,10 +18,6 @@ export const AppRoutes: RouteObject[] = [
       {
         path: "notebooks",
         Component: NotebooksPage,
-      },
-      {
-        path: "settings",
-        Component: SettingsPage,
       },
       {
         path: "folder/:folderId",

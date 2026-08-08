@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Alert, Button, Modal, Spinner, TextField } from "@/components/ui";
-import { CommonBar } from "@/components";
 import { useAuth, useFetch } from "@/hooks";
 import { CheckIcon } from "@/components/icons";
+import { SettingsSection } from "./SettingsSection";
 
 export function AccountSection() {
   const { signOut, currentUser: user, fetchUserData } = useAuth();
@@ -162,47 +162,48 @@ export function AccountSection() {
   };
 
   return (
-    <CommonBar className="flex-col items-start justify-center">
-      <h2 className="mb-4 text-xl font-medium">Account</h2>
-      <div className="w-full space-y-4">
-        {user && (
-          <div className="mb-4">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Name</p>
-                <p className="font-medium">{user.name}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
-                <p className="font-medium">{user.email}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Member since</p>
-                <p className="font-medium">{new Date(user.createdAt).toLocaleString()}</p>
-              </div>
+    <SettingsSection
+      title="Account"
+      description="Manage your profile, security, and account information."
+      className="gap-6"
+    >
+      {user && (
+        <div className="rounded-xs border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-900/50">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Name</p>
+              <p className="font-medium">{user.name}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
+              <p className="font-medium">{user.email}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Member since</p>
+              <p className="font-medium">{new Date(user.createdAt).toLocaleString()}</p>
             </div>
           </div>
-        )}
-        <div className="flex gap-4">
-          <Button variant="secondary" onClick={() => setIsNameModalOpen(true)}>
-            Change name
-          </Button>
-          <Button variant="secondary" onClick={() => setIsPasswordModalOpen(true)}>
-            Change password
-          </Button>
-          <Button variant="secondary" onClick={() => signOut()}>
-            Sign out
-          </Button>
         </div>
-        <div className="mt-6 border-t border-gray-200 pt-6 dark:border-gray-700">
-          <h3 className="mb-2 text-lg font-medium text-red-600 dark:text-red-400">Danger Zone</h3>
-          <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
-            Once you delete your account, there is no going back. Please be certain.
-          </p>
-          <Button variant="danger" onClick={() => setIsDeleteModalOpen(true)}>
-            Delete account
-          </Button>
-        </div>
+      )}
+      <div className="flex flex-wrap gap-3">
+        <Button variant="secondary" onClick={() => setIsNameModalOpen(true)}>
+          Change name
+        </Button>
+        <Button variant="secondary" onClick={() => setIsPasswordModalOpen(true)}>
+          Change password
+        </Button>
+        <Button variant="secondary" onClick={() => signOut()}>
+          Sign out
+        </Button>
+      </div>
+      <div className="mt-2 rounded-xs border border-red-200 bg-red-50/60 p-4 dark:border-red-900/60 dark:bg-red-950/30">
+        <h3 className="mb-1 text-sm font-semibold text-red-600 dark:text-red-400">Danger Zone</h3>
+        <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+          Once you delete your account, there is no going back. Please be certain.
+        </p>
+        <Button variant="danger" onClick={() => setIsDeleteModalOpen(true)}>
+          Delete account
+        </Button>
       </div>
 
       {/* Name Change Modal */}
@@ -380,6 +381,6 @@ export function AccountSection() {
           {errorDeleteMessage && <Alert variant="danger" message={errorDeleteMessage} />}
         </div>
       </Modal>
-    </CommonBar>
+    </SettingsSection>
   );
 }

@@ -9,3 +9,4 @@ export * from "./useIsDevice";
 export * from "./useTheme";
 export * from "./useVisualViewportHeight";
 export * from "./useRealtimeEvent";
+export * from "./useSettings";

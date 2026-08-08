@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { useAuth, useCookie, useFetch, useGreeting, useMediaQuery } from "@/hooks";
+import { useAuth, useCookie, useFetch, useGreeting, useMediaQuery, useSettings } from "@/hooks";
 import { BREAKPOINTS } from "@/hooks/useBreakpoint";
 import { Button, IconButton, Modal, Spinner, TextField, Tooltip } from "@/components/ui";
 import { FolderCard, NotebookCard, TopBar } from "@/components";
@@ -42,6 +42,8 @@ export default function HomePage() {
 
   const [isCreateNotebookOpen, setIsCreateNotebookOpen] = useState(false);
   const [newNotebookTitle, setNewNotebookTitle] = useState("");
+
+  const { openSettings } = useSettings();
 
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
   const [folderTitle, setFolderTitle] = useState("");
@@ -183,7 +185,7 @@ export default function HomePage() {
             <Tooltip text="Settings" position="bottom">
               <IconButton
                 icon={<SettingsIcon className="size-5" />}
-                onClick={() => navigate("/settings")}
+                onClick={openSettings}
                 variant="ghost"
                 size="sm"
                 ariaLabel="Settings"
