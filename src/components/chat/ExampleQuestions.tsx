@@ -25,7 +25,7 @@ export function ExampleQuestions({
   onQuestionSelect,
 }: ExampleQuestionsProps) {
   return (
-    <div className="mt-6 px-4 pb-8">
+    <div className="mt-6 px-4">
       {exampleQuestionsError && !skipExampleQuestionsFetch ? (
         <div className="flex flex-col gap-3">
           <Alert message={getHttpErrorMessage(exampleQuestionsError?.status)} variant="danger" />
@@ -34,7 +34,7 @@ export function ExampleQuestions({
             disabled={isExampleQuestionsLoading}
             variant="ghost"
             size="sm"
-            icon={<RestartIcon className="h-4 w-4" />}
+            icon={<RestartIcon className="size-4" />}
           >
             Try generating questions again
           </Button>
@@ -48,7 +48,7 @@ export function ExampleQuestions({
                 text={readySourcesCount === 0 ? "Waiting for sources..." : "Waiting for summary..."}
                 position="left"
               >
-                <div className="flex h-8 w-8 items-center justify-center">
+                <div className="flex size-8 items-center justify-center">
                   <Spinner />
                 </div>
               </Tooltip>

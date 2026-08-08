@@ -1,30 +1,12 @@
 import { useFetch, useCookie, useChatStream, useRealtimeEvent } from "@/hooks";
-import {
-  FileIcon,
-  SendIcon,
-  ChatHistoryIcon,
-  DotsVerticalIcon,
-  ChatNewIcon,
-} from "@/components/icons";
-import {
-  Divider,
-  TextField,
-  IconButton,
-  Tooltip,
-  Spinner,
-  Menu,
-  MenuTrigger,
-  MenuContent,
-  MenuItem,
-} from "@/components/ui";
-import { ChatHistory } from "@/components/ChatHistory";
+import { FileIcon, SendIcon, ChatNewIcon } from "@/components/icons";
+import { Divider, TextField, IconButton, Tooltip, Spinner } from "@/components/ui";
 import type { ConversationMessages, Source } from "@/interfaces";
 import { useEffect, useState, useRef, useMemo, useCallback, useLayoutEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { getHttpErrorMessage } from "@/lib/utils";
 
 import { ChatMessage, type Message } from "./chat/ChatMessage";
-import { NotebookSummary } from "./chat/NotebookSummary";
 import { ExampleQuestions } from "./chat/ExampleQuestions";
 
 type Sender = "user" | "ai";
@@ -36,13 +18,12 @@ interface ChatCardProps {
   onSourceSelect?: (sourceId: string) => void;
   externalQuestion?: string | null;
   onExternalQuestionHandled?: () => void;
-  hideSummaryAndQuestions?: boolean;
   autoFocus?: boolean;
   initialConversationId?: string | null;
   initialConversationTitle?: string | null;
   onConversationCreated?: (conversationId: string) => void;
   onTitleChange?: (title: string) => void;
-  onOpenConversation?: (conversationId: string, title: string) => void;
+  onConversationCompleted?: () => void;
   onNewChat?: () => void;
 }
 
@@ -53,86 +34,16 @@ export function ChatCard({
   onSourceSelect,
   externalQuestion,
   onExternalQuestionHandled,
-  hideSummaryAndQuestions = false,
   autoFocus = true,
   initialConversationId,
   initialConversationTitle,
   onConversationCreated,
   onTitleChange,
-  onOpenConversation,
+  onConversationCompleted,
   onNewChat,
 }: ChatCardProps) {
   const sourcesCount = sources.length;
   const readySourcesCount = sources.filter((s) => s.status === "READY").length;
-
-  const [summaryGenerateError, setSummaryGenerateError] = useState<FetchError | null>(null);
-  const [isSummaryGenerating, setIsSummaryGenerating] = useState(false);
-
-  const summaryOptions = useMemo(
-    () => ({
-      method: "GET" as const,
-      onError: (error: FetchError) => {
-        console.error("Error fetching summary:", error.message);
-      },
-    }),
-    [],
-  );
-
-  const {
-    data: notebookSummaryData,
-    loading: isSummaryLoading,
-    refetch: refetchSummary,
-  } = useFetch<{ summary: string }>(
-    `notebooks/${notebookId}/summary`,
-    summaryOptions,
-    !hideSummaryAndQuestions,
-  );
-
-  const notebookSummary = notebookSummaryData?.summary;
-
-  const handleSummaryUpdated = useCallback(
-    (event: { notebookId?: string; summary?: string }) => {
-      if (event?.notebookId !== notebookId) return;
-      setIsSummaryGenerating(false);
-      setSummaryGenerateError(null);
-      useFetch.clearCache(`notebooks/${notebookId}/summary`);
-      useFetch.clearCache(`notebooks/${notebookId}/example-questions`);
-      refetchSummary(true);
-      setSkipExampleQuestionsFetch(false);
-    },
-    [notebookId, refetchSummary],
-  );
-
-  useRealtimeEvent("summary.updated", handleSummaryUpdated);
-
-  const regenerateSummaryOptions = useMemo(
-    () => ({
-      method: "POST" as const,
-      onSuccess: () => {
-        setSummaryGenerateError(null);
-        setIsSummaryGenerating(true);
-        useFetch.clearCache(`notebooks/${notebookId}/summary`);
-        useFetch.clearCache(`notebooks/${notebookId}/example-questions`);
-        setSkipExampleQuestionsFetch(false);
-      },
-      onError: (error: FetchError) => {
-        console.error("Error generating summary:", error.message);
-        setIsSummaryGenerating(false);
-        useFetch.clearCache(`notebooks/${notebookId}/summary`);
-        refetchSummary(true);
-        setSummaryGenerateError(error);
-        setSkipExampleQuestionsFetch(false);
-      },
-    }),
-    [refetchSummary, notebookId],
-  );
-
-  const { loading: isSummaryRegenerating, refetch: regenerateSummary } = useFetch<{
-    summary: string;
-  }>(`notebooks/${notebookId}/summary`, regenerateSummaryOptions, false);
-
-  const [isAutoRegenerating, setIsAutoRegenerating] = useState(false);
-  const [skipExampleQuestionsFetch, setSkipExampleQuestionsFetch] = useState(false);
 
   const [cachedExampleQuestions, setCachedExampleQuestions] = useCookie<{
     questions: string[];
@@ -162,9 +73,7 @@ export function ChatCard({
   }>(
     `notebooks/${notebookId}/example-questions`,
     exampleQuestionsOptions,
-    !hideSummaryAndQuestions &&
-      readySourcesCount > 0 &&
-      !skipExampleQuestionsFetch &&
+    readySourcesCount > 0 &&
       (!cachedExampleQuestions || cachedExampleQuestions.count !== readySourcesCount),
   );
 
@@ -173,46 +82,22 @@ export function ChatCard({
       ? cachedExampleQuestions
       : fetchedExampleQuestions;
 
-  const prevReadySourcesCountRef = useRef<number>(readySourcesCount);
+  const handleSummaryUpdated = useCallback(
+    (event: { notebookId?: string }) => {
+      if (event?.notebookId !== notebookId) return;
+      setCachedExampleQuestions(undefined);
+      useFetch.clearCache(`notebooks/${notebookId}/example-questions`);
+      refetchExampleQuestions(true);
+    },
+    [notebookId, refetchExampleQuestions, setCachedExampleQuestions],
+  );
 
-  useEffect(() => {
-    if (hideSummaryAndQuestions) {
-      prevReadySourcesCountRef.current = readySourcesCount;
-      return;
-    }
-
-    const prevCount = prevReadySourcesCountRef.current;
-    const currentCount = readySourcesCount;
-
-    if (currentCount > 0 && prevCount !== currentCount) {
-      setIsAutoRegenerating(true);
-      setSkipExampleQuestionsFetch(true);
-      setSummaryGenerateError(null);
-
-      const timer = setTimeout(async () => {
-        try {
-          await regenerateSummary(true);
-        } catch (error) {
-          console.error("Error during auto-regeneration:", error);
-        } finally {
-          setIsAutoRegenerating(false);
-        }
-      }, 1000);
-
-      return () => {
-        clearTimeout(timer);
-        setIsAutoRegenerating(false);
-      };
-    }
-
-    prevReadySourcesCountRef.current = currentCount;
-  }, [readySourcesCount, notebookId, regenerateSummary, refetchExampleQuestions]);
+  useRealtimeEvent("summary.updated", handleSummaryUpdated);
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [conversationTitle, setConversationTitle] = useState<string | null>(null);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [conversationToLoadId, setConversationToLoadId] = useState<string | null>(null);
   const [pendingConversationTitle, setPendingConversationTitle] = useState<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -344,6 +229,7 @@ export function ChatCard({
         pendingMessageRef.current = null;
         streamingMessageIdRef.current = null;
         setIsWaitingForResponse(false);
+        onConversationCompleted?.();
       },
       onError: (status, message) => {
         console.error("Error streaming chat:", status, message);
@@ -495,60 +381,16 @@ export function ChatCard({
                 icon={<ChatNewIcon />}
                 ariaLabel="New conversation"
                 onClick={() => (onNewChat ? onNewChat() : handleNewConversation())}
-                disabled={
-                  (messages.length === 0 && !onNewChat) || isChatLoading || isAutoRegenerating
-                }
+                disabled={(messages.length === 0 && !onNewChat) || isChatLoading}
                 variant="ghost"
                 size="sm"
               />
             </Tooltip>
-            <Menu>
-              <Tooltip text="More options" position="top">
-                <MenuTrigger>
-                  <IconButton
-                    icon={<DotsVerticalIcon />}
-                    ariaLabel="More options"
-                    variant="ghost"
-                    size="sm"
-                  />
-                </MenuTrigger>
-              </Tooltip>
-              <MenuContent align="right">
-                <MenuItem
-                  label="Chat history"
-                  icon={<ChatHistoryIcon />}
-                  onClick={() => setIsHistoryOpen(true)}
-                  disabled={isChatLoading || isAutoRegenerating}
-                />
-              </MenuContent>
-            </Menu>
           </div>
         ) : (
           <div className="flex flex-1" />
         )}
       </div>
-      <ChatHistory
-        notebookId={notebookId}
-        isOpen={isHistoryOpen}
-        onClose={() => setIsHistoryOpen(false)}
-        onSelectConversation={(id, title) => {
-          setIsHistoryOpen(false);
-          if (onOpenConversation) {
-            onOpenConversation(id, title);
-          } else {
-            loadConversation(id, title);
-          }
-        }}
-        onNewConversation={() => {
-          setIsHistoryOpen(false);
-          if (onNewChat) {
-            onNewChat();
-          } else {
-            handleNewConversation();
-          }
-        }}
-        currentConversationId={conversationId}
-      />
       <Divider className="my-0" />
       <AnimatePresence mode="wait">
         {messages.length > 0 ? (
@@ -594,33 +436,7 @@ export function ChatCard({
             transition={{ duration: 0.2 }}
             className="flex max-h-full min-h-0 grow flex-col overflow-y-auto px-4 *:mx-auto *:max-w-3xl"
           >
-            {sourcesCount > 0 ? (
-              <div className="w-full">
-                {!hideSummaryAndQuestions && (
-                  <NotebookSummary
-                    notebookSummary={notebookSummary}
-                    isSummaryLoading={isSummaryLoading}
-                    isAutoRegenerating={isAutoRegenerating}
-                    isSummaryRegenerating={isSummaryRegenerating || isSummaryGenerating}
-                    summaryGenerateError={summaryGenerateError}
-                    readySourcesCount={readySourcesCount}
-                    regenerateSummary={() => regenerateSummary()}
-                  />
-                )}
-                {!hideSummaryAndQuestions && messages.length === 0 && !isChatLoading && (
-                  <ExampleQuestions
-                    exampleQuestionsError={exampleQuestionsError}
-                    skipExampleQuestionsFetch={skipExampleQuestionsFetch}
-                    isExampleQuestionsLoading={isExampleQuestionsLoading}
-                    isAutoRegenerating={isAutoRegenerating}
-                    readySourcesCount={readySourcesCount}
-                    exampleQuestions={exampleQuestions}
-                    refetchExampleQuestions={refetchExampleQuestions}
-                    onQuestionSelect={(q) => setInput(q)}
-                  />
-                )}
-              </div>
-            ) : (
+            {sourcesCount === 0 && (
               <div className="flex size-full flex-col items-center justify-start pt-24 text-center">
                 <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
                   <div className="size-10 text-blue-500 dark:text-blue-400">
@@ -640,6 +456,20 @@ export function ChatCard({
       </AnimatePresence>
       <div className="pointer-events-none absolute inset-x-0 bottom-0 shrink-0">
         <div className="absolute inset-0 mx-4 bg-linear-to-t from-white from-50% to-transparent dark:from-gray-950/90 dark:from-50% dark:to-transparent" />
+        {messages.length === 0 && !isChatLoading && sourcesCount > 0 && (
+          <div className="pointer-events-auto relative z-10 mx-auto w-[calc(100%-2rem)] max-w-3xl">
+            <ExampleQuestions
+              exampleQuestionsError={exampleQuestionsError}
+              skipExampleQuestionsFetch={false}
+              isExampleQuestionsLoading={isExampleQuestionsLoading}
+              isAutoRegenerating={false}
+              readySourcesCount={readySourcesCount}
+              exampleQuestions={exampleQuestions}
+              refetchExampleQuestions={refetchExampleQuestions}
+              onQuestionSelect={(q) => setInput(q)}
+            />
+          </div>
+        )}
         <div
           ref={inputContainerRef}
           className="pointer-events-auto relative mx-auto my-6 flex w-[calc(100%-2rem)] max-w-3xl flex-col rounded-xs border border-gray-300 bg-white shadow-sm transition-all focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400"
@@ -658,7 +488,7 @@ export function ChatCard({
               sourcesCount === 0
                 ? "Add sources to start chatting..."
                 : selectedSourceIds.length > 0
-                  ? `Ask a question ${hideSummaryAndQuestions ? "" : `(${selectedSourceIds.length} source${selectedSourceIds.length !== 1 ? "s" : ""} selected)...`}`
+                  ? `Ask a question (${selectedSourceIds.length} source${selectedSourceIds.length !== 1 ? "s" : ""} selected)...`
                   : "Select sources to start chatting..."
             }
             className="w-full rounded-t-xs border-0 bg-transparent py-3 pr-12 pl-4 shadow-none hover:border-transparent hover:ring-0 hover:ring-offset-0 focus:border-transparent focus:ring-0 focus:ring-offset-0 dark:hover:ring-offset-0 dark:focus:ring-0 dark:focus:ring-offset-0"
