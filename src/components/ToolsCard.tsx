@@ -19,7 +19,6 @@ interface ToolsCardProps {
   notebookId: string;
   onNodeSelect?: (question: string) => void;
   hasSources?: boolean;
-  onExpandedChange?: (expanded: boolean) => void;
   onOpenTool?: (toolType: JobType, title: string) => void;
 }
 
@@ -35,7 +34,6 @@ export function ToolsCard({
   notebookId,
   onNodeSelect,
   hasSources = true,
-  onExpandedChange,
   onOpenTool,
 }: ToolsCardProps) {
   const [selectedTool, setSelectedTool] = useState<SelectedTool | null>(null);
@@ -79,7 +77,6 @@ export function ToolsCard({
 
   const handleCloseTool = () => {
     setSelectedTool(null);
-    onExpandedChange?.(false);
   };
 
   return (
@@ -103,7 +100,6 @@ export function ToolsCard({
               onRegenerate={selectedTool.startGeneration}
               className="h-full"
               onNodeSelect={onNodeSelect}
-              onExpandedChange={onExpandedChange}
             />
           </motion.div>
         ) : null}

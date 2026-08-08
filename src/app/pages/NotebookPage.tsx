@@ -94,9 +94,6 @@ export default function NotebookPage() {
   const [chatQuestion, setChatQuestion] = useState<string | null>(null);
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
   const [notesRefreshKey, setNotesRefreshKey] = useState<number>(0);
-  const [isSourceExpanded, setIsSourceExpanded] = useState<boolean>(false);
-  const [isNoteExpanded, setIsNoteExpanded] = useState<boolean>(false);
-  const [isToolExpanded, setIsToolExpanded] = useState<boolean>(false);
   const [leftPanelWidth, setLeftPanelWidth] = useCookie<number>("notebookLeftPanelWidth", 30);
   const [isLeftCollapsed, setIsLeftCollapsed] = useCookie<boolean>("notebookLeftCollapsed", false);
   const [activeResizer, setActiveResizer] = useState<"left" | null>(null);
@@ -588,7 +585,6 @@ export default function NotebookPage() {
               closeTab(k);
               refetchNotebook(true, false);
             }}
-            onExpandedChange={setIsSourceExpanded}
             className="h-full"
           />
         );
@@ -611,7 +607,6 @@ export default function NotebookPage() {
               closeTab(k);
               setNotesRefreshKey((prev) => prev + 1);
             }}
-            onExpandedChange={setIsNoteExpanded}
           />
         );
       case "tool":
@@ -623,7 +618,6 @@ export default function NotebookPage() {
             title={tab.title}
             onClose={() => closeTab(k)}
             onNodeSelect={handleNodeSelect}
-            onExpandedChange={setIsToolExpanded}
           />
         );
     }
@@ -703,9 +697,6 @@ export default function NotebookPage() {
           <div
             className={cn(
               "min-h-0 flex max-w-md flex-col overflow-hidden border-r border-gray-200 bg-gray-50/60 transition-[width,background-color,border-color] duration-200 ease-out shrink-0 dark:border-gray-800 dark:bg-gray-900/50",
-              {
-                "z-60": isSourceExpanded || isNoteExpanded || isToolExpanded,
-              },
             )}
             style={{ width: isLeftCollapsed ? "48px" : `${leftPanelWidth ?? 25}%` }}
           >

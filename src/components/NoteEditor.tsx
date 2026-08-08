@@ -3,8 +3,20 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useFetch } from "@/hooks";
 import type { Note } from "@/interfaces";
-import { CloseIcon, CompressIcon, DeleteIcon, ExpandIcon } from "@/components/icons";
-import { Button, Divider, IconButton, Modal, Spinner, Tooltip, ViewerFrame } from "@/components/ui";
+import { DeleteIcon, DotsVerticalIcon } from "@/components/icons";
+import {
+  Button,
+  Divider,
+  IconButton,
+  Modal,
+  Spinner,
+  Tooltip,
+  Menu,
+  MenuTrigger,
+  MenuContent,
+  MenuItem,
+  ViewerFrame,
+} from "@/components/ui";
 const Editor = lazy(() => import("./Editor").then((module) => ({ default: module.Editor })));
 
 interface NoteEditorProps {
@@ -12,7 +24,6 @@ interface NoteEditorProps {
   handleCloseNote: () => void;
   onNoteDeleted: () => void;
   onNoteUpdated?: (note: Note) => void;
-  onExpandedChange?: (isExpanded: boolean) => void;
   className?: string;
 }
 
@@ -22,16 +33,7 @@ export function NoteEditor({
   className,
   onNoteDeleted,
   onNoteUpdated,
-  onExpandedChange,
 }: NoteEditorProps) {
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (onExpandedChange) {
-      onExpandedChange(isExpanded);
-    }
-  }, [isExpanded, onExpandedChange]);
-
   const {
     data: fullNote,
     loading,
@@ -140,7 +142,7 @@ export function NoteEditor({
 
   return (
     <>
-      <ViewerFrame isExpanded={isExpanded} setIsExpanded={setIsExpanded} className={className}>
+      <ViewerFrame className={className}>
         <div className="flex h-15 shrink-0 items-center px-4 pt-4 pb-3">
           <div className="flex min-w-0 flex-1 items-baseline gap-1.5">
             <span className="hidden shrink-0 text-xs font-medium tracking-wide text-gray-500 uppercase md:block dark:text-gray-400">
@@ -179,30 +181,24 @@ export function NoteEditor({
                 <Spinner />
               </Tooltip>
             )}
-            <Tooltip text="Delete note" position="top">
-              <IconButton
-                icon={<DeleteIcon />}
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsDeleteModalOpen(true)}
-              />
-            </Tooltip>
-            <Tooltip text={isExpanded ? "Restore size" : "Expand"} position="top">
-              <IconButton
-                icon={isExpanded ? <CompressIcon /> : <ExpandIcon />}
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsExpanded((s) => !s)}
-              />
-            </Tooltip>
-            <Tooltip text="Close note" position="top">
-              <IconButton
-                icon={<CloseIcon />}
-                variant="ghost"
-                size="sm"
-                onClick={handleCloseNote}
-              />
-            </Tooltip>
+            <Menu>
+              <MenuTrigger>
+                <IconButton
+                  icon={<DotsVerticalIcon />}
+                  variant="ghost"
+                  size="sm"
+                  ariaLabel="More options"
+                />
+              </MenuTrigger>
+              <MenuContent>
+                <MenuItem
+                  icon={<DeleteIcon />}
+                  label="Delete note"
+                  variant="danger"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                />
+              </MenuContent>
+            </Menu>
           </div>
         </div>
 

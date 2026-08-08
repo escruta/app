@@ -3,13 +3,10 @@ import { motion, AnimatePresence } from "motion/react";
 import { useFetch, useRealtimeEvent } from "@/hooks";
 import type { Source } from "@/interfaces";
 import {
-  CloseIcon,
   DeleteIcon,
   LinkIcon,
   CopyIcon,
   RestartIcon,
-  ExpandIcon,
-  CompressIcon,
   StarsIcon,
   DotsVerticalIcon,
 } from "@/components/icons";
@@ -19,7 +16,6 @@ import {
   Card,
   IconButton,
   Modal,
-  Tooltip,
   Divider,
   Spinner,
   Skeleton,
@@ -27,7 +23,6 @@ import {
   MenuTrigger,
   MenuContent,
   MenuItem,
-  CopyButton,
   ViewerFrame,
 } from "@/components/ui";
 import { getYouTubeVideoId, getHttpErrorMessage } from "@/lib/utils";
@@ -39,7 +34,6 @@ interface SourceViewerProps {
   source: Source;
   handleCloseSource: () => void;
   onSourceDelete: () => void;
-  onExpandedChange?: (isExpanded: boolean) => void;
   className?: string;
 }
 
@@ -48,18 +42,11 @@ export function SourceViewer({
   source,
   handleCloseSource,
   onSourceDelete,
-  onExpandedChange,
   className,
 }: SourceViewerProps) {
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [summaryGenerateError, setSummaryGenerateError] = useState<FetchError | null>(null);
   const [isSummaryGenerating, setIsSummaryGenerating] = useState(false);
 
-  useEffect(() => {
-    if (onExpandedChange) {
-      onExpandedChange(isExpanded);
-    }
-  }, [isExpanded, onExpandedChange]);
   const {
     data: fullSource,
     loading,
@@ -220,7 +207,7 @@ export function SourceViewer({
 
   return (
     <>
-      <ViewerFrame isExpanded={isExpanded} setIsExpanded={setIsExpanded} className={className}>
+      <ViewerFrame className={className}>
         <div className="flex h-15 shrink-0 items-center px-4 pt-4 pb-3">
           <h2 className="flex min-w-0 flex-1 items-baseline gap-1.5 select-text">
             <span className="shrink-0 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
@@ -231,102 +218,44 @@ export function SourceViewer({
             </span>
           </h2>
           <div className="flex items-center gap-1">
-            {!isExpanded ? (
-              <Menu>
-                <MenuTrigger>
-                  <IconButton
-                    icon={<DotsVerticalIcon />}
-                    variant="ghost"
-                    size="sm"
-                    ariaLabel="More options"
-                  />
-                </MenuTrigger>
-                <MenuContent>
+            <Menu>
+              <MenuTrigger>
+                <IconButton
+                  icon={<DotsVerticalIcon />}
+                  variant="ghost"
+                  size="sm"
+                  ariaLabel="More options"
+                />
+              </MenuTrigger>
+              <MenuContent>
+                <MenuItem
+                  icon={<CopyIcon />}
+                  label={source.type === "YouTube Video" ? "Copy video URL" : "Copy source content"}
+                  onClick={() => {
+                    const textToCopy =
+                      source.type === "YouTube Video"
+                        ? fullSource?.link || source.link
+                        : fullSource?.content || "";
+                    navigator.clipboard.writeText(textToCopy);
+                  }}
+                />
+                {source.type === "Website" && (
                   <MenuItem
-                    icon={<CopyIcon />}
-                    label={
-                      source.type === "YouTube Video" ? "Copy video URL" : "Copy source content"
-                    }
+                    icon={<LinkIcon />}
+                    label="Open source"
                     onClick={() => {
-                      const textToCopy =
-                        source.type === "YouTube Video"
-                          ? fullSource?.link || source.link
-                          : fullSource?.content || "";
-                      navigator.clipboard.writeText(textToCopy);
+                      window.open(fullSource?.link, "_blank", "noopener noreferrer");
                     }}
                   />
-                  {source.type === "Website" && (
-                    <MenuItem
-                      icon={<LinkIcon />}
-                      label="Open source"
-                      onClick={() => {
-                        window.open(fullSource?.link, "_blank", "noopener noreferrer");
-                      }}
-                    />
-                  )}
-                  <MenuItem
-                    icon={<DeleteIcon />}
-                    label="Delete source"
-                    variant="danger"
-                    onClick={() => setIsDeleteModalOpen(true)}
-                  />
-                </MenuContent>
-              </Menu>
-            ) : (
-              <>
-                <Tooltip
-                  text={source.type === "YouTube Video" ? "Copy video URL" : "Copy source content"}
-                  position="top"
-                >
-                  <CopyButton
-                    textToCopy={
-                      source.type === "YouTube Video"
-                        ? fullSource?.link || source.link || ""
-                        : fullSource?.content || ""
-                    }
-                    tooltipText={
-                      source.type === "YouTube Video" ? "Copy video URL" : "Copy source content"
-                    }
-                  />
-                </Tooltip>
-                {source.type === "Website" && (
-                  <Tooltip text="Open source" position="top">
-                    <IconButton
-                      icon={<LinkIcon />}
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        window.open(fullSource?.link, "_blank", "noopener noreferrer");
-                      }}
-                    />
-                  </Tooltip>
                 )}
-                <Tooltip text="Delete source" position="top">
-                  <IconButton
-                    icon={<DeleteIcon />}
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsDeleteModalOpen(true)}
-                  />
-                </Tooltip>
-              </>
-            )}
-            <Tooltip text={isExpanded ? "Restore size" : "Expand"} position="top">
-              <IconButton
-                icon={isExpanded ? <CompressIcon /> : <ExpandIcon />}
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsExpanded((s) => !s)}
-              />
-            </Tooltip>
-            <Tooltip text="Close source" position="top">
-              <IconButton
-                icon={<CloseIcon />}
-                variant="ghost"
-                size="sm"
-                onClick={handleCloseSource}
-              />
-            </Tooltip>
+                <MenuItem
+                  icon={<DeleteIcon />}
+                  label="Delete source"
+                  variant="danger"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                />
+              </MenuContent>
+            </Menu>
           </div>
         </div>
         <Divider className="my-0" />
@@ -350,7 +279,7 @@ export function SourceViewer({
                       Summary of this source
                     </h3>
                     <div className="flex gap-2">
-                      {!isExpanded && sourceSummary ? (
+                      {sourceSummary && (
                         <Menu>
                           <MenuTrigger>
                             <IconButton
@@ -390,50 +319,8 @@ export function SourceViewer({
                                 isDeletingSummary || isSummaryLoading || isRegeneratingSummary
                               }
                             />
-                          </MenuContent>{" "}
+                          </MenuContent>
                         </Menu>
-                      ) : (
-                        <>
-                          {sourceSummary && (
-                            <Tooltip text="Copy summary" position="bottom">
-                              <CopyButton
-                                textToCopy={sourceSummary}
-                                disabled={isSummaryLoading || isRegeneratingSummary}
-                                tooltipText="Copy summary"
-                              />
-                            </Tooltip>
-                          )}
-                          {sourceSummary && (
-                            <Tooltip text="Delete summary" position="bottom">
-                              <IconButton
-                                icon={<DeleteIcon />}
-                                variant="ghost"
-                                size="sm"
-                                onClick={deleteSummary}
-                                disabled={
-                                  isDeletingSummary || isSummaryLoading || isRegeneratingSummary
-                                }
-                              />
-                            </Tooltip>
-                          )}
-                          {sourceSummary && (
-                            <Tooltip text="Regenerate summary" position="bottom">
-                              <IconButton
-                                icon={
-                                  isRegeneratingSummary || isSummaryGenerating ? (
-                                    <Spinner />
-                                  ) : (
-                                    <RestartIcon />
-                                  )
-                                }
-                                variant="ghost"
-                                size="sm"
-                                onClick={regenerateSummary}
-                                disabled={isRegeneratingSummary || isSummaryGenerating}
-                              />
-                            </Tooltip>
-                          )}
-                        </>
                       )}
                     </div>
                   </div>

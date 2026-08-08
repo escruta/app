@@ -10,7 +10,6 @@ interface ToolResultTabProps {
   title: string;
   onClose: () => void;
   onNodeSelect?: (question: string) => void;
-  onExpandedChange?: (expanded: boolean) => void;
 }
 
 export function ToolResultTab({
@@ -19,7 +18,6 @@ export function ToolResultTab({
   title,
   onClose,
   onNodeSelect,
-  onExpandedChange,
 }: ToolResultTabProps) {
   const { job, isLoading, result, startGeneration } = useGenerationJob(notebookId, toolType);
 
@@ -57,7 +55,6 @@ export function ToolResultTab({
       onRegenerate={startGeneration}
       regenerateCloses={false}
       onNodeSelect={onNodeSelect}
-      onExpandedChange={onExpandedChange}
       className="h-full"
     />
   );

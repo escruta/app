@@ -8,8 +8,6 @@ interface MindMapViewerProps {
   data: MindMapResponse;
   className?: string;
   onNodeSelect?: (question: string) => void;
-  isExpanded?: boolean;
-  setIsExpanded?: (isExpanded: boolean) => void;
 }
 
 interface BranchNodeProps {
@@ -370,13 +368,7 @@ function MainBranch({
   );
 }
 
-export function MindMapViewer({
-  data,
-  className,
-  onNodeSelect,
-  isExpanded,
-  setIsExpanded,
-}: MindMapViewerProps) {
+export function MindMapViewer({ data, className, onNodeSelect }: MindMapViewerProps) {
   const { central, branches } = data;
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -394,9 +386,8 @@ export function MindMapViewer({
   const handleNodeSelect = useCallback(
     (question: string) => {
       if (onNodeSelect) onNodeSelect(question);
-      if (isExpanded && setIsExpanded) setIsExpanded(false);
     },
-    [onNodeSelect, isExpanded, setIsExpanded],
+    [onNodeSelect],
   );
 
   useEffect(() => {
