@@ -1,6 +1,6 @@
-import { useEffect, useState, useTransition, lazy, Suspense } from "react";
+import { useEffect, useState, useTransition, useCallback, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { useFetch } from "@/hooks";
+import { useFetch, useRealtimeEvent } from "@/hooks";
 import type { Source } from "@/interfaces";
 import {
   CloseIcon,
@@ -53,6 +53,7 @@ export function SourceViewer({
 }: SourceViewerProps) {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [summaryGenerateError, setSummaryGenerateError] = useState<FetchError | null>(null);
+  const [isSummaryGenerating, setIsSummaryGenerating] = useState(false);
 
   useEffect(() => {
     if (onExpandedChange) {
@@ -63,6 +64,7 @@ export function SourceViewer({
     data: fullSource,
     loading,
     error,
+    refetch: refetchSource,
   } = useFetch<Source>(`notebooks/${notebookId}/sources/${source.id}`);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
@@ -162,6 +164,20 @@ export function SourceViewer({
 
   const sourceSummary = sourceSummaryData?.summary;
 
+  const handleSourceUpdated = useCallback(
+    (event: { notebookId?: string; sourceId?: string; status?: string }) => {
+      if (event?.sourceId !== source.id) return;
+      setIsSummaryGenerating(false);
+      setSummaryGenerateError(null);
+      useFetch.clearCache(`notebooks/${notebookId}/sources/${source.id}/summary`);
+      refetchSummary(true);
+      refetchSource(true);
+    },
+    [source.id, notebookId, refetchSummary, refetchSource],
+  );
+
+  useRealtimeEvent("source.updated", handleSourceUpdated);
+
   const { loading: isRegeneratingSummary, refetch: regenerateSummary } = useFetch<{
     summary: string;
   }>(
@@ -170,10 +186,12 @@ export function SourceViewer({
       method: "POST",
       onSuccess: () => {
         setSummaryGenerateError(null);
-        refetchSummary(true);
+        setIsSummaryGenerating(true);
+        useFetch.clearCache(`notebooks/${notebookId}/sources/${source.id}/summary`);
       },
       onError: (error) => {
         console.error("Error regenerating source summary:", error.message);
+        setIsSummaryGenerating(false);
         useFetch.clearCache(`notebooks/${notebookId}/sources/${source.id}/summary`);
         refetchSummary(true);
         setSummaryGenerateError(error);
@@ -347,13 +365,21 @@ export function SourceViewer({
                               icon={<CopyIcon />}
                               label="Copy summary"
                               onClick={() => navigator.clipboard.writeText(sourceSummary)}
-                              disabled={isSummaryLoading || isRegeneratingSummary}
+                              disabled={
+                                isSummaryLoading || isRegeneratingSummary || isSummaryGenerating
+                              }
                             />
                             <MenuItem
-                              icon={isRegeneratingSummary ? <Spinner size={16} /> : <RestartIcon />}
+                              icon={
+                                isRegeneratingSummary || isSummaryGenerating ? (
+                                  <Spinner size={16} />
+                                ) : (
+                                  <RestartIcon />
+                                )
+                              }
                               label="Regenerate summary"
                               onClick={regenerateSummary}
-                              disabled={isRegeneratingSummary}
+                              disabled={isRegeneratingSummary || isSummaryGenerating}
                             />
                             <MenuItem
                               icon={<DeleteIcon />}
@@ -364,7 +390,7 @@ export function SourceViewer({
                                 isDeletingSummary || isSummaryLoading || isRegeneratingSummary
                               }
                             />
-                          </MenuContent>
+                          </MenuContent>{" "}
                         </Menu>
                       ) : (
                         <>
@@ -393,11 +419,17 @@ export function SourceViewer({
                           {sourceSummary && (
                             <Tooltip text="Regenerate summary" position="bottom">
                               <IconButton
-                                icon={isRegeneratingSummary ? <Spinner /> : <RestartIcon />}
+                                icon={
+                                  isRegeneratingSummary || isSummaryGenerating ? (
+                                    <Spinner />
+                                  ) : (
+                                    <RestartIcon />
+                                  )
+                                }
                                 variant="ghost"
                                 size="sm"
                                 onClick={regenerateSummary}
-                                disabled={isRegeneratingSummary}
+                                disabled={isRegeneratingSummary || isSummaryGenerating}
                               />
                             </Tooltip>
                           )}
@@ -408,7 +440,7 @@ export function SourceViewer({
                   <AnimatePresence mode="wait" initial={false}>
                     <motion.div
                       key={
-                        isSummaryLoading || isRegeneratingSummary
+                        isSummaryLoading || isRegeneratingSummary || isSummaryGenerating
                           ? "loading"
                           : summaryGenerateError
                             ? "generateError"
@@ -421,7 +453,7 @@ export function SourceViewer({
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.15, ease: "easeInOut" }}
                     >
-                      {isSummaryLoading || isRegeneratingSummary ? (
+                      {isSummaryLoading || isRegeneratingSummary || isSummaryGenerating ? (
                         <Skeleton lines={6} />
                       ) : summaryGenerateError ? (
                         <div className="flex flex-col gap-3">
@@ -431,7 +463,7 @@ export function SourceViewer({
                           />
                           <Button
                             onClick={regenerateSummary}
-                            disabled={isRegeneratingSummary}
+                            disabled={isRegeneratingSummary || isSummaryGenerating}
                             variant="ghost"
                             size="sm"
                             icon={<RestartIcon className="h-4 w-4" />}

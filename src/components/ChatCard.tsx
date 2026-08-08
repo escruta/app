@@ -1,4 +1,4 @@
-import { useFetch, useCookie, useChatStream } from "@/hooks";
+import { useFetch, useCookie, useChatStream, useRealtimeEvent } from "@/hooks";
 import {
   FileIcon,
   SendIcon,
@@ -66,6 +66,7 @@ export function ChatCard({
   const readySourcesCount = sources.filter((s) => s.status === "READY").length;
 
   const [summaryGenerateError, setSummaryGenerateError] = useState<FetchError | null>(null);
+  const [isSummaryGenerating, setIsSummaryGenerating] = useState(false);
 
   const summaryOptions = useMemo(
     () => ({
@@ -89,17 +90,34 @@ export function ChatCard({
 
   const notebookSummary = notebookSummaryData?.summary;
 
+  const handleSummaryUpdated = useCallback(
+    (event: { notebookId?: string; summary?: string }) => {
+      if (event?.notebookId !== notebookId) return;
+      setIsSummaryGenerating(false);
+      setSummaryGenerateError(null);
+      useFetch.clearCache(`notebooks/${notebookId}/summary`);
+      useFetch.clearCache(`notebooks/${notebookId}/example-questions`);
+      refetchSummary(true);
+      setSkipExampleQuestionsFetch(false);
+    },
+    [notebookId, refetchSummary],
+  );
+
+  useRealtimeEvent("summary.updated", handleSummaryUpdated);
+
   const regenerateSummaryOptions = useMemo(
     () => ({
       method: "POST" as const,
       onSuccess: () => {
         setSummaryGenerateError(null);
-        refetchSummary(true);
+        setIsSummaryGenerating(true);
+        useFetch.clearCache(`notebooks/${notebookId}/summary`);
         useFetch.clearCache(`notebooks/${notebookId}/example-questions`);
         setSkipExampleQuestionsFetch(false);
       },
       onError: (error: FetchError) => {
         console.error("Error generating summary:", error.message);
+        setIsSummaryGenerating(false);
         useFetch.clearCache(`notebooks/${notebookId}/summary`);
         refetchSummary(true);
         setSummaryGenerateError(error);
@@ -583,7 +601,7 @@ export function ChatCard({
                     notebookSummary={notebookSummary}
                     isSummaryLoading={isSummaryLoading}
                     isAutoRegenerating={isAutoRegenerating}
-                    isSummaryRegenerating={isSummaryRegenerating}
+                    isSummaryRegenerating={isSummaryRegenerating || isSummaryGenerating}
                     summaryGenerateError={summaryGenerateError}
                     readySourcesCount={readySourcesCount}
                     regenerateSummary={() => regenerateSummary()}

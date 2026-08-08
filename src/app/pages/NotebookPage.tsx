@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useLoaderData } from "react-router";
-import { useFetch, useCookie } from "@/hooks";
+import { useFetch, useCookie, useRealtimeEvent } from "@/hooks";
 import type { Note, Source, Notebook, NotebookContent, JobType } from "@/interfaces";
 import {
   SourcesCard,
@@ -131,16 +131,16 @@ export default function NotebookPage() {
 
   const initialLoadRef = useRef(true);
 
-  useEffect(() => {
-    if (!notebook?.sources) return;
-    const hasPending = notebook.sources.some((s) => s.status === "PENDING");
-    if (hasPending) {
-      const timer = setTimeout(() => {
+  const handleSourceUpdated = useCallback(
+    (event: { notebookId?: string; sourceId?: string; status?: string }) => {
+      if (event?.notebookId === notebookId) {
         refetchNotebook(true, false);
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [notebook?.sources, refetchNotebook]);
+      }
+    },
+    [notebookId, refetchNotebook],
+  );
+
+  useRealtimeEvent("source.updated", handleSourceUpdated);
 
   const prevSourcesRef = useRef<string[]>([]);
 
