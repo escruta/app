@@ -14,7 +14,6 @@ import {
 import { getSourceIcon } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import {
-  ChatNewIcon,
   NoteIcon,
   MindMapIcon,
   StudyIcon,
@@ -22,6 +21,7 @@ import {
   QuestionnaireIcon,
   FolderIcon,
   GridIcon,
+  ChatIcon,
 } from "@/components/icons";
 import { Spinner, ChromeTabs, SideNav } from "@/components/ui";
 import { ToolResultTab } from "@/components/tools";
@@ -60,7 +60,7 @@ const tabKey = (t: TabDescriptor) => `${t.kind}:${t.seq}`;
 function getTabIcon(tab: TabDescriptor) {
   switch (tab.kind) {
     case "chat":
-      return <ChatNewIcon />;
+      return <ChatIcon />;
     case "source":
       return tab.source ? getSourceIcon(tab.source.type) : null;
     case "note":
