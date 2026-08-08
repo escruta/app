@@ -10,17 +10,17 @@ export function useCookie<T>(
   keyName: string,
   defaultValue: T,
   options?: Cookies.CookieAttributes,
-): readonly [T, (newValue: T) => void];
+): readonly [T, (newValue: T | undefined) => void];
 export function useCookie<T>(
   keyName: string,
   defaultValue?: T,
   options?: Cookies.CookieAttributes,
-): readonly [T | undefined, (newValue: T) => void];
+): readonly [T | undefined, (newValue: T | undefined) => void];
 export function useCookie<T>(
   keyName: string,
   defaultValue?: T,
   options: Cookies.CookieAttributes = defaultOptions,
-): readonly [T | undefined, (newValue: T) => void] {
+): readonly [T | undefined, (newValue: T | undefined) => void] {
   const [storedValue, setStoredValue] = useState<T | undefined>(() => {
     try {
       const item = Cookies.get(keyName);
@@ -39,7 +39,7 @@ export function useCookie<T>(
   });
 
   const setValue = useCallback(
-    (newValue: T) => {
+    (newValue: T | undefined) => {
       try {
         if (newValue === undefined) {
           Cookies.remove(keyName);

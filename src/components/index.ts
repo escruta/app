@@ -1,5 +1,6 @@
 export * from "./AppIcon.tsx";
 export * from "./ChatCard.tsx";
+export * from "./ConversationHistory.tsx";
 export * from "./CommonBar.tsx";
 export * from "./FolderCard.tsx";
 

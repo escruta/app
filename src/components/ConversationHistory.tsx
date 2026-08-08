@@ -2,39 +2,28 @@ import { useFetch } from "@/hooks";
 import type { Conversation, ConversationsPage } from "@/interfaces";
 import { useMemo, useCallback, useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import {
-  Modal,
-  Skeleton,
-  Button,
-  IconButton,
-  Tooltip,
-  TextField,
-  Spinner,
-  Divider,
-} from "@/components/ui";
-import { DeleteIcon, AddIcon } from "@/components/icons";
+import { Skeleton, IconButton, TextField, Spinner, Divider, Button } from "@/components/ui";
+import { DeleteIcon, ChatNewIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import type { UseFetchOptions } from "@/hooks/useFetch";
 
-interface ChatHistoryProps {
+interface ConversationHistoryProps {
   notebookId: string;
-  isOpen: boolean;
-  onClose: () => void;
+  currentConversationId?: string | null;
+  refreshTrigger?: number;
   onSelectConversation: (conversationId: string, title: string) => void;
   onNewConversation: () => void;
-  currentConversationId: string | null;
 }
 
 const CONVERSATIONS_PER_PAGE = 10;
 
-export function ChatHistory({
+export function ConversationHistory({
   notebookId,
-  isOpen,
-  onClose,
+  currentConversationId,
+  refreshTrigger,
   onSelectConversation,
   onNewConversation,
-  currentConversationId,
-}: ChatHistoryProps) {
+}: ConversationHistoryProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -47,20 +36,23 @@ export function ChatHistory({
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
-      setOffset(0);
-      setConversations([]);
     }, 300);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
   useEffect(() => {
-    if (!isOpen) {
-      setSearchQuery("");
-      setDebouncedSearch("");
-      setOffset(0);
-      setConversations([]);
-    }
-  }, [isOpen]);
+    setOffset(0);
+    setConversations([]);
+  }, [debouncedSearch]);
+
+  useEffect(() => {
+    if (refreshTrigger === undefined) return;
+    setSearchQuery("");
+    setDebouncedSearch("");
+    setOffset(0);
+    setConversations([]);
+    refetchRef.current();
+  }, [refreshTrigger]);
 
   const fetchOptions = useMemo<UseFetchOptions<ConversationsPage>>(
     () => ({
@@ -84,11 +76,13 @@ export function ChatHistory({
     [debouncedSearch, offset],
   );
 
-  const { loading } = useFetch<ConversationsPage>(
+  const { loading, refetch } = useFetch<ConversationsPage>(
     `notebooks/${notebookId}/conversations`,
     fetchOptions,
-    isOpen,
   );
+
+  const refetchRef = useRef<() => void>(() => {});
+  refetchRef.current = () => refetch(true);
 
   const loadMore = useCallback(() => {
     if (!loading && hasMore) {
@@ -162,19 +156,6 @@ export function ChatHistory({
     setConversationToDeleteId(conversationId);
   }, []);
 
-  const handleSelect = useCallback(
-    (conversationId: string, title: string) => {
-      onSelectConversation(conversationId, title);
-      onClose();
-    },
-    [onSelectConversation, onClose],
-  );
-
-  const handleNewConversation = useCallback(() => {
-    onNewConversation();
-    onClose();
-  }, [onNewConversation, onClose]);
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -199,75 +180,81 @@ export function ChatHistory({
   const isLoadingMore = loading && conversations.length > 0;
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Chat history"
-      subtitle={`${total} conversation${total !== 1 ? "s" : ""} ${debouncedSearch ? "matching your search" : ""}`}
-      width="xl"
-      contentClassname="flex flex-col h-112"
-      actions={
-        <Button onClick={handleNewConversation} icon={<AddIcon />}>
-          New conversation
-        </Button>
-      }
-    >
-      <div className="relative shrink-0">
-        <TextField
-          id="search-conversations"
-          search
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder={total > 0 ? `Search your conversations...` : "No conversations yet"}
-          onClear={() => setSearchQuery("")}
-          autoFocus
-        />
-      </div>
-
-      <Divider className="my-4" />
-
-      <div className="flex min-h-0 flex-1 flex-col space-y-2">
-        {isInitialLoading ? (
-          <>
-            <Skeleton variant="rectangle" height={56} />
-            <Skeleton variant="rectangle" height={56} />
-            <Skeleton variant="rectangle" height={56} />
-          </>
-        ) : conversations.length === 0 ? (
-          <div className="py-8 text-center text-gray-500 dark:text-gray-400">
-            {debouncedSearch
-              ? "No conversations match that, try another search"
-              : "No conversations yet"}
+    <div className="flex h-full flex-col overflow-hidden">
+      <div className="z-10 shrink-0">
+        <div className="flex h-15 items-center px-4 pt-4 pb-3">
+          <h2 className="font-sans text-lg font-semibold">Conversations</h2>
+          <div className="flex flex-1 items-center justify-end gap-2">
+            <Button
+              icon={<ChatNewIcon className="size-3.5" />}
+              variant="primary"
+              size="sm"
+              onClick={onNewConversation}
+            >
+              New conversation
+            </Button>
           </div>
-        ) : (
-          <>
-            <AnimatePresence>
-              {conversations.map((conversation) => (
-                <motion.div
-                  key={conversation.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className={cn(
-                    "flex items-center justify-between p-3 rounded-xs border cursor-pointer transition-colors",
-                    {
-                      "bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700 hover:bg-blue-100/65 dark:hover:bg-blue-900/65":
-                        conversation.id === currentConversationId,
-                      "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 hover:bg-gray-100/65 dark:hover:bg-gray-800":
-                        conversation.id !== currentConversationId,
-                    },
-                  )}
-                  onClick={() => handleSelect(conversation.id, conversation.title)}
-                >
-                  <div className="mr-3 min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
-                      {conversation.title}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {formatDate(conversation.updatedAt)}
-                    </p>
-                  </div>
-                  <Tooltip text="Delete conversation" position="left">
+        </div>
+        <Divider className="my-0" />
+      </div>
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="shrink-0 px-4 pt-3">
+          <TextField
+            id="search-conversations"
+            search
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={total > 0 ? "Search your conversations..." : "No conversations yet"}
+            onClear={() => setSearchQuery("")}
+          />
+        </div>
+        <div className="flex min-h-0 flex-1 flex-col space-y-2 overflow-y-auto px-4 py-3">
+          {isInitialLoading ? (
+            <>
+              <Skeleton variant="rectangle" height={48} />
+              <Skeleton variant="rectangle" height={48} />
+              <Skeleton variant="rectangle" height={48} />
+            </>
+          ) : conversations.length === 0 ? (
+            <div className="flex size-full flex-col items-center justify-start pt-12 text-center">
+              {debouncedSearch ? (
+                <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                  No conversations match that, try another search
+                </p>
+              ) : (
+                <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                  No conversations yet. Start a new conversation to chat with your documents.
+                </p>
+              )}
+            </div>
+          ) : (
+            <>
+              <AnimatePresence>
+                {conversations.map((conversation) => (
+                  <motion.div
+                    key={conversation.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className={cn(
+                      "group flex items-center justify-between rounded-xs border p-2.5 transition-colors cursor-pointer",
+                      {
+                        "bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700":
+                          conversation.id === currentConversationId,
+                        "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 hover:bg-gray-100/65 dark:hover:bg-gray-800":
+                          conversation.id !== currentConversationId,
+                      },
+                    )}
+                    onClick={() => onSelectConversation(conversation.id, conversation.title)}
+                  >
+                    <div className="mr-2 min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
+                        {conversation.title}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {formatDate(conversation.updatedAt)}
+                      </p>
+                    </div>
                     <div
                       onClick={(e) => {
                         e.stopPropagation();
@@ -281,6 +268,7 @@ export function ChatHistory({
                       }}
                       role="button"
                       tabIndex={0}
+                      className="opacity-0 transition-opacity group-hover:opacity-100"
                     >
                       <IconButton
                         icon={<DeleteIcon />}
@@ -290,19 +278,19 @@ export function ChatHistory({
                         ariaLabel="Delete conversation"
                       />
                     </div>
-                  </Tooltip>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-            <div ref={setLoadMoreRef} className={cn("h-4", !hasMore && "hidden")} />
-            {isLoadingMore && (
-              <div className="flex justify-center py-2">
-                <Spinner />
-              </div>
-            )}
-          </>
-        )}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+              <div ref={setLoadMoreRef} className={cn("h-4", !hasMore && "hidden")} />
+              {isLoadingMore && (
+                <div className="flex justify-center py-2">
+                  <Spinner />
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
-    </Modal>
+    </div>
   );
 }

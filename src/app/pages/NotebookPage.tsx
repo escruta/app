@@ -10,7 +10,9 @@ import {
   SourceViewer,
   ToolsCard,
   TopBar,
+  ConversationHistory,
 } from "@/components";
+import { OverviewPanel } from "@/components/chat/OverviewPanel";
 import { getSourceIcon } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import {
@@ -22,6 +24,8 @@ import {
   FolderIcon,
   GridIcon,
   ChatIcon,
+  ChatHistoryIcon,
+  StarsIcon,
 } from "@/components/icons";
 import { Spinner, ChromeTabs, SideNav } from "@/components/ui";
 import { ToolResultTab } from "@/components/tools";
@@ -94,6 +98,7 @@ export default function NotebookPage() {
   const [chatQuestion, setChatQuestion] = useState<string | null>(null);
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
   const [notesRefreshKey, setNotesRefreshKey] = useState<number>(0);
+  const [conversationsRefreshKey, setConversationsRefreshKey] = useState<number>(0);
   const [leftPanelWidth, setLeftPanelWidth] = useCookie<number>("notebookLeftPanelWidth", 30);
   const [isLeftCollapsed, setIsLeftCollapsed] = useCookie<boolean>("notebookLeftCollapsed", false);
   const [activeResizer, setActiveResizer] = useState<"left" | null>(null);
@@ -323,6 +328,11 @@ export default function NotebookPage() {
     [tabs, activeTabKey],
   );
 
+  const currentConversationId = useMemo(() => {
+    if (activeTab?.kind === "chat" && activeTab.refId !== NEW_CHAT_ID) return activeTab.refId;
+    return null;
+  }, [activeTab]);
+
   // When a chat tab creates a real conversation, anchor its refId so it persists
   // and won't be reused as a new-chat tab.
   const handleConversationCreated = useCallback((tabKeyStr: string, conversationId: string) => {
@@ -333,6 +343,10 @@ export default function NotebookPage() {
         return { ...t, refId: conversationId };
       }),
     );
+  }, []);
+
+  const handleConversationCompleted = useCallback(() => {
+    setConversationsRefreshKey((prev) => prev + 1);
   }, []);
 
   const handleTabTitleChange = useCallback((tabKeyStr: string, title: string) => {
@@ -564,13 +578,12 @@ export default function NotebookPage() {
             onSourceSelect={handleSourceSelectFromChat}
             externalQuestion={isActive ? chatQuestion : null}
             onExternalQuestionHandled={() => setChatQuestion(null)}
-            hideSummaryAndQuestions={false}
             autoFocus={isActive}
             initialConversationId={tab.refId === NEW_CHAT_ID ? null : tab.refId}
             initialConversationTitle={tab.refId === NEW_CHAT_ID ? null : tab.title}
             onConversationCreated={(id) => handleConversationCreated(k, id)}
             onTitleChange={(title) => handleTabTitleChange(k, title)}
-            onOpenConversation={(id, title) => openTab({ kind: "chat", refId: id, title })}
+            onConversationCompleted={handleConversationCompleted}
             onNewChat={openNewChatTab}
           />
         );
@@ -704,7 +717,7 @@ export default function NotebookPage() {
                   className="text-xs font-medium tracking-widest text-gray-400 uppercase select-none [writing-mode:vertical-rl]"
                   style={{ transform: "rotate(180deg)" }}
                 >
-                  Sources · Notes · Tools
+                  Overview · Conversations · Sources · Notes · Tools
                 </div>
               </div>
             )}
@@ -714,6 +727,35 @@ export default function NotebookPage() {
                 className="h-full"
                 onNewChat={openNewChatTab}
                 items={[
+                  {
+                    id: "overview",
+                    label: "Overview",
+                    icon: <StarsIcon />,
+                    content: (
+                      <OverviewPanel
+                        notebookId={notebookId}
+                        readySourcesCount={
+                          (notebook?.sources ?? []).filter((s) => s.status === "READY").length
+                        }
+                      />
+                    ),
+                  },
+                  {
+                    id: "conversations",
+                    label: "Conversations",
+                    icon: <ChatHistoryIcon />,
+                    content: (
+                      <ConversationHistory
+                        notebookId={notebookId}
+                        currentConversationId={currentConversationId}
+                        refreshTrigger={conversationsRefreshKey}
+                        onSelectConversation={(id, title) =>
+                          openTab({ kind: "chat", refId: id, title })
+                        }
+                        onNewConversation={openNewChatTab}
+                      />
+                    ),
+                  },
                   {
                     id: "sources",
                     label: "Sources",
@@ -733,7 +775,7 @@ export default function NotebookPage() {
                     content: toolsListContent,
                   },
                 ]}
-                defaultActiveTab="sources"
+                defaultActiveTab="overview"
               />
             </div>
           </div>
