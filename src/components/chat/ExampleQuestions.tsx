@@ -83,16 +83,14 @@ export function ExampleQuestions({
                       </span>
                     </button>
                   ))}
-                  <button
-                    type="button"
+                  <Button
+                    icon={<RestartIcon className="size-3.5" />}
+                    variant="ghost"
                     onClick={() => refetchExampleQuestions(true)}
-                    className="group flex w-full items-center gap-2 text-left"
+                    size="sm"
                   >
-                    <RestartIcon className="size-4 shrink-0 text-gray-400 transition-colors group-hover:text-blue-500 dark:text-gray-500 dark:group-hover:text-blue-400" />
-                    <span className="text-sm font-medium text-gray-500 transition-colors group-hover:text-blue-600 dark:text-gray-400 dark:group-hover:text-blue-400">
-                      Refresh questions
-                    </span>
-                  </button>
+                    Refresh questions
+                  </Button>
                 </>
               ) : null}
             </motion.div>
