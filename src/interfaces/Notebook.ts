@@ -5,6 +5,7 @@ export interface Notebook {
   folderId?: string;
   createdAt: Date;
   updatedAt: Date;
+  lastActivityAt?: Date | null;
 }
 
 export interface NotebooksPageResponse {

@@ -81,16 +81,21 @@ function getPixelConstraints(containerWidth: number) {
 
 export default function NotebookPage() {
   const notebookId: string = useLoaderData();
+  const validNotebookId = notebookId !== "null" && notebookId !== "undefined" ? notebookId : null;
   const {
     data: notebook,
     loading,
     error,
     refetch: refetchNotebook,
-  } = useFetch<NotebookContent>(`/notebooks/${notebookId}`, {
-    onError: (error) => {
-      console.error("Error fetching notebook:", error.message);
+  } = useFetch<NotebookContent>(
+    validNotebookId ? `/notebooks/${validNotebookId}` : "",
+    {
+      onError: (error) => {
+        console.error("Error fetching notebook:", error.message);
+      },
     },
-  });
+    Boolean(validNotebookId),
+  );
 
   const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
   const [newTitle, setNewTitle] = useState<string>("");
@@ -483,6 +488,27 @@ export default function NotebookPage() {
     } catch (error) {
       console.error("Error renaming notebook:", error);
     }
+  }
+
+  if (!validNotebookId) {
+    return (
+      <div className="flex h-screen max-h-full w-full flex-col">
+        <TopBar
+          title={
+            <div className="flex min-w-0 flex-1 items-baseline gap-1.5">
+              <span className="hidden shrink-0 text-xs font-medium tracking-wide text-gray-500 uppercase md:block dark:text-gray-400">
+                Notebook /{" "}
+              </span>
+              <span className="text-gray-400">We couldn't load your notebook</span>
+            </div>
+          }
+        />
+        <div className="relative flex-1 overflow-hidden">
+          <SimpleBackground />
+          <NotebookErrorState error={{ status: 404, message: "Invalid notebook link" }} />
+        </div>
+      </div>
+    );
   }
 
   if (error) {
