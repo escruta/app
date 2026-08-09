@@ -24,7 +24,6 @@ import {
   FolderIcon,
   GridIcon,
   ChatIcon,
-  ChatHistoryIcon,
   StarsIcon,
 } from "@/components/icons";
 import { Spinner, ChromeTabs, SideNav } from "@/components/ui";
@@ -743,7 +742,7 @@ export default function NotebookPage() {
                   {
                     id: "conversations",
                     label: "Conversations",
-                    icon: <ChatHistoryIcon />,
+                    icon: <ChatIcon />,
                     content: (
                       <ConversationHistory
                         notebookId={notebookId}
