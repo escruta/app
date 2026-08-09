@@ -40,7 +40,7 @@ export function SearchSourcesModal({
     "/search",
     {
       method: "POST",
-      data: { query: searchTerm, maxResults: 10 },
+      data: { query: searchTerm, maxResults: 10, notebookId },
       onSuccess: (data) => {
         setResults(data.results);
       },
