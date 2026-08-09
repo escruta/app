@@ -1,9 +1,8 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useFetch, useAuth } from "@/hooks";
-import type { GenerationJob, JobType } from "@/interfaces";
+import { useState, useEffect, useCallback } from "react";
+import { useFetch, useAuth, useRealtimeEvent } from "@/hooks";
+import type { GenerationJob, JobStatus, JobType } from "@/interfaces";
 
 interface UseGenerationJobOptions {
-  pollingInterval?: number;
   onCompleted?: (job: GenerationJob) => void;
   onFailed?: (job: GenerationJob) => void;
 }
@@ -18,14 +17,11 @@ export function useGenerationJob(
   toolType: JobType,
   options: UseGenerationJobOptions = {},
 ) {
-  const { pollingInterval = 2000, onCompleted, onFailed } = options;
+  const { onCompleted, onFailed } = options;
 
   const { token } = useAuth();
   const [job, setJob] = useState<GenerationJob | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  const pollingRef = useRef<NodeJS.Timeout | null>(null);
-  const mountedRef = useRef(true);
 
   const { data: existingJob, refetch: checkExistingJob } = useFetch<GenerationJob>(
     `/notebooks/${notebookId}/tools/jobs/latest/${toolType}`,
@@ -47,39 +43,65 @@ export function useGenerationJob(
         setJob(updatedJob);
 
         if (updatedJob.status === "COMPLETED") {
-          stopPolling();
           onCompleted?.(updatedJob);
         } else if (updatedJob.status === "FAILED") {
-          stopPolling();
           setError(updatedJob.errorMessage || "Generation failed");
           onFailed?.(updatedJob);
         }
       },
       onError: (err) => {
-        console.error("Error polling job status:", err);
+        console.error("Error fetching job status:", err);
       },
     },
     false,
   );
 
-  const pollJobStatus = useCallback(() => {
-    if (!mountedRef.current || !job?.id) return;
-    fetchJobStatus();
-  }, [fetchJobStatus, job?.id]);
+  const handleToolUpdated = useCallback(
+    (event: {
+      notebookId?: string;
+      jobId?: string;
+      type?: string;
+      status?: string;
+      result?: string | null;
+      errorMessage?: string | null;
+      createdAt?: string | null;
+      completedAt?: string | null;
+    }) => {
+      if (event?.notebookId !== notebookId) return;
+      if (event?.type && event.type !== toolType) return;
+      if (event?.jobId && job?.id && event.jobId !== job.id) return;
 
-  const stopPolling = useCallback(() => {
-    if (pollingRef.current) {
-      clearInterval(pollingRef.current);
-      pollingRef.current = null;
-    }
-  }, []);
+      if (job?.id) {
+        fetchJobStatus();
+        return;
+      }
 
-  const startPolling = useCallback(() => {
-    stopPolling();
-    pollingRef.current = setInterval(() => {
-      pollJobStatus();
-    }, pollingInterval);
-  }, [pollJobStatus, pollingInterval, stopPolling]);
+      if (!event.jobId) return;
+
+      const updatedJob: GenerationJob = {
+        id: event.jobId,
+        notebookId,
+        type: toolType,
+        status: (event.status as JobStatus) ?? "PENDING",
+        result: event.result ?? null,
+        errorMessage: event.errorMessage ?? null,
+        createdAt: event.createdAt ?? new Date().toISOString(),
+        completedAt: event.completedAt ?? null,
+      };
+
+      setJob(updatedJob);
+
+      if (updatedJob.status === "COMPLETED") {
+        onCompleted?.(updatedJob);
+      } else if (updatedJob.status === "FAILED") {
+        setError(updatedJob.errorMessage || "Generation failed");
+        onFailed?.(updatedJob);
+      }
+    },
+    [notebookId, toolType, job?.id, fetchJobStatus, onCompleted, onFailed],
+  );
+
+  useRealtimeEvent("tool.updated", handleToolUpdated);
 
   const { loading: isStarting, refetch: callStartGeneration } = useFetch<JobStartedResponse>(
     `/notebooks/${notebookId}/tools/generate`,
@@ -117,24 +139,6 @@ export function useGenerationJob(
     callStartGeneration();
   }, [token, callStartGeneration]);
 
-  useEffect(() => {
-    if (job && (job.status === "PENDING" || job.status === "PROCESSING") && !pollingRef.current) {
-      startPolling();
-    }
-
-    return () => {
-      stopPolling();
-    };
-  }, [job?.id, job?.status, startPolling, stopPolling]);
-
-  useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-      stopPolling();
-    };
-  }, [stopPolling]);
-
   const isLoading =
     isStarting || (job !== null && (job.status === "PENDING" || job.status === "PROCESSING"));
 
@@ -142,10 +146,9 @@ export function useGenerationJob(
   const isFailed = job?.status === "FAILED";
 
   const reset = useCallback(() => {
-    stopPolling();
     setJob(null);
     setError(null);
-  }, [stopPolling]);
+  }, []);
 
   return {
     job,

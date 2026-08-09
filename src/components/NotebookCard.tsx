@@ -133,6 +133,9 @@ export function NotebookCard({
       onChange?.();
     } catch (error) {
       console.error("Error renaming notebook:", error);
+      useFetch.clearCache(`/notebooks`);
+      useFetch.clearCache(`/notebooks/${notebook.id}`);
+      onChange?.();
     }
   }
 
@@ -336,7 +339,7 @@ export function NotebookCard({
                   </span>
                   {sameLine ? " - " : " "}
                   <span ref={secondDateRef} className="whitespace-nowrap">
-                    Modified {formatDate(notebook.updatedAt)}
+                    Modified {formatDate(notebook.lastActivityAt ?? notebook.updatedAt)}
                   </span>
                 </p>
               </div>
@@ -355,7 +358,7 @@ export function NotebookCard({
                   </h2>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     Created {formatDate(notebook.createdAt)} - Modified{" "}
-                    {formatDate(notebook.updatedAt)}
+                    {formatDate(notebook.lastActivityAt ?? notebook.updatedAt)}
                   </p>
                 </div>
               </div>
