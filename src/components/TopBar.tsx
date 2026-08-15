@@ -18,25 +18,19 @@ export function TopBar({ title }: TopBarProps = {}) {
   return (
     <div
       className={cn(
-        "app-region-drag z-50 flex w-full shrink-0 flex-row items-center justify-between border-b border-gray-200 bg-white py-2 pr-4 pl-4 md:pr-6 md:pl-6 dark:border-gray-800 dark:bg-gray-950",
+        "app-region-drag z-50 flex h-14 w-full shrink-0 flex-row items-center justify-between border-b border-gray-200 bg-white pr-4 pl-4 md:pr-6 md:pl-6 dark:border-gray-800 dark:bg-gray-950",
         isMac && "pl-20",
         isElectron && !isMac && "pr-36",
       )}
     >
       <div className="flex items-center gap-4">
         {location.pathname !== "/" ? (
-          <Tooltip
-            text="Previous page"
-            position="right"
-            className="app-region-no-drag group relative grid size-10 shrink-0 place-items-center"
-          >
-            <AppIcon className="col-start-1 row-start-1 size-8 fill-gray-800 transition-opacity duration-200 group-hover:opacity-0 dark:fill-gray-50" />
+          <Tooltip text="Previous page" position="bottom" className="app-region-no-drag shrink-0">
             <IconButton
               icon={<ChevronIcon direction="left" className="size-5" />}
               onClick={() => navigate(-1)}
               variant="ghost"
               size="sm"
-              className="col-start-1 row-start-1 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
               ariaLabel="Previous page"
             />
           </Tooltip>
