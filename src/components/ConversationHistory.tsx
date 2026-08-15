@@ -3,7 +3,7 @@ import type { Conversation, ConversationsPage } from "@/interfaces";
 import { useMemo, useCallback, useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Skeleton, IconButton, TextField, Spinner, Divider, Button } from "@/components/ui";
-import { DeleteIcon, ChatNewIcon } from "@/components/icons";
+import { DeleteIcon, ChatNewIcon, ChatIcon, SearchIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import type { UseFetchOptions } from "@/hooks/useFetch";
 
@@ -216,17 +216,31 @@ export function ConversationHistory({
               <Skeleton variant="rectangle" height={48} />
             </>
           ) : conversations.length === 0 ? (
-            <div className="flex size-full flex-col items-center justify-start pt-12 text-center">
-              {debouncedSearch ? (
-                <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                  No conversations match that, try another search
-                </p>
-              ) : (
+            debouncedSearch ? (
+              <div className="flex size-full flex-col items-center justify-start pt-12 text-center">
+                <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
+                  <div className="size-10 text-blue-500 dark:text-blue-400">
+                    <SearchIcon />
+                  </div>
+                </div>
+                <h3 className="text-foreground mb-2 text-lg font-semibold">No results</h3>
                 <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                  No conversations yet. Start a new conversation to chat with your documents.
+                  No conversations match that, try another search.
                 </p>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="flex size-full flex-col items-center justify-start pt-12 text-center">
+                <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
+                  <div className="size-10 text-blue-500 dark:text-blue-400">
+                    <ChatIcon />
+                  </div>
+                </div>
+                <h3 className="text-foreground mb-2 text-lg font-semibold">No conversations yet</h3>
+                <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                  Start a new conversation to chat with your documents.
+                </p>
+              </div>
+            )
           ) : (
             <>
               <AnimatePresence>
