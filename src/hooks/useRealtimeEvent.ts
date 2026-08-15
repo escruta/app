@@ -1,1 +1,1 @@
-export { useRealtime, useRealtimeEvent } from "@/providers/RealtimeProvider";
+export { useRealtimeEvent } from "@/providers/RealtimeProvider";

@@ -1,4 +1,4 @@
-export interface Flashcard {
+interface Flashcard {
   front: string;
   back: string;
 }
