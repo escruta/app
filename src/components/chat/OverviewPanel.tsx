@@ -12,7 +12,7 @@ import {
   CopyButton,
   Divider,
 } from "@/components/ui";
-import { RestartIcon } from "@/components/icons";
+import { RestartIcon, StarsIcon } from "@/components/icons";
 import { getHttpErrorMessage } from "@/lib/utils";
 
 interface OverviewPanelProps {
@@ -191,16 +191,25 @@ export function OverviewPanel({ notebookId, readySourcesCount }: OverviewPanelPr
                 <Markdown text={notebookSummary} />
               </div>
             ) : (
-              <div className="flex flex-col gap-3">
-                <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+              <div className="flex size-full flex-col items-center justify-start pt-24 text-center">
+                <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
+                  <div className="size-10 text-blue-500 dark:text-blue-400">
+                    <StarsIcon />
+                  </div>
+                </div>
+                <h3 className="text-foreground mb-2 text-lg font-semibold">No overview yet</h3>
+                <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
                   Summarize all the information gathered from your sources into one clear overview.
                 </p>
-                <Button
-                  onClick={() => regenerateSummary()}
-                  disabled={isSummaryRegenerating || readySourcesCount === 0}
-                >
-                  {readySourcesCount === 0 ? "Waiting for sources..." : "Generate summary"}
-                </Button>
+                {readySourcesCount > 0 && (
+                  <Button
+                    className="mt-5"
+                    onClick={() => regenerateSummary()}
+                    disabled={isSummaryRegenerating}
+                  >
+                    Generate summary
+                  </Button>
+                )}
               </div>
             )}
           </motion.div>
