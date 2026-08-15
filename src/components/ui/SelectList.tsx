@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { CheckIcon } from "@/components/icons";
 
-export interface SelectListOption {
+interface SelectListOption {
   id: string;
   label: string;
   icon?: React.ReactNode;

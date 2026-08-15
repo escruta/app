@@ -21,5 +21,3 @@ export function useMediaQuery(width: number) {
 }
 
 export const useIsMobile = () => useMediaQuery(BREAKPOINTS.mobile);
-export const useIsTablet = () => useMediaQuery(BREAKPOINTS.tablet);
-export const useIsLaptop = () => useMediaQuery(BREAKPOINTS.laptop);

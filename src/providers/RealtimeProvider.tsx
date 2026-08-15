@@ -132,7 +132,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function useRealtime() {
+function useRealtime() {
   return useContext(RealtimeContext);
 }
 

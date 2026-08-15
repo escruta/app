@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { CloseIcon } from "@/components/icons";
 import { IconButton } from "./IconButton";
 
-export interface ChromeTabItem {
+interface ChromeTabItem {
   id: string;
   label: string;
   icon?: ReactNode;

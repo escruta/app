@@ -209,10 +209,6 @@ export function MenuLabel({ children, className }: { children: ReactNode; classN
   );
 }
 
-export function MenuSeparator({ className }: { className?: string }) {
-  return <div className={cn("-mx-1.5 my-1 h-px bg-gray-200 dark:bg-gray-700", className)} />;
-}
-
 export function MenuItem({
   label,
   onClick,

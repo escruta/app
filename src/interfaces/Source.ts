@@ -13,4 +13,4 @@ export interface Source {
 }
 
 export type SourceType = "Website" | "YouTube Video" | "File" | "Text";
-export type SourceStatus = "PENDING" | "READY" | "FAILED";
+type SourceStatus = "PENDING" | "READY" | "FAILED";

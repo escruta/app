@@ -1,9 +1,7 @@
 export * from "./AppIcon.tsx";
 export * from "./ChatCard.tsx";
 export * from "./ConversationHistory.tsx";
-export * from "./CommonBar.tsx";
 export * from "./FolderCard.tsx";
-
 export * from "./Logotype.tsx";
 export * from "./NotebookCard.tsx";
 export * from "./NoteChip.tsx";

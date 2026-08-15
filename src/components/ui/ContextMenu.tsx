@@ -217,46 +217,6 @@ export function ContextMenuContent({
   return createPortal(menu, document.body);
 }
 
-export function ContextMenuLabel({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  const compact = useContext(CompactContext);
-  return (
-    <div
-      className={cn(
-        "font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400",
-        {
-          "px-2 py-1 text-[10px]": compact,
-          "px-3 py-1.5 text-xs": !compact,
-        },
-        className,
-      )}
-    >
-      {children}
-    </div>
-  );
-}
-
-export function ContextMenuSeparator({ className }: { className?: string }) {
-  const compact = useContext(CompactContext);
-  return (
-    <div
-      className={cn(
-        "h-px my-1 bg-gray-200 dark:bg-gray-700",
-        {
-          "-mx-1": compact,
-          "mx-1.5": !compact,
-        },
-        className,
-      )}
-    />
-  );
-}
-
 export function ContextMenuItem({
   label,
   onClick,
@@ -323,7 +283,7 @@ export function ContextMenuItem({
   );
 }
 
-export function ContextMenuCopy({
+function ContextMenuCopy({
   label = "Copy",
   icon,
   className,

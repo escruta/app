@@ -1,4 +1,4 @@
-export interface KeyConcept {
+interface KeyConcept {
   term: string;
   definition: string;
 }
