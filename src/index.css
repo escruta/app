@@ -322,6 +322,12 @@ body.resizing * {
   user-select: none !important;
 }
 
+body.tab-dragging,
+body.tab-dragging * {
+  cursor: grabbing !important;
+  user-select: none !important;
+}
+
 @utility app-region-drag {
   -webkit-app-region: drag;
 }
