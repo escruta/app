@@ -41,6 +41,7 @@ export * from "./RestartIcon";
 export * from "./SearchIcon";
 export * from "./SendIcon";
 export * from "./SettingsIcon";
+export * from "./SplitIcon";
 export * from "./StarsIcon";
 export * from "./StudyIcon";
 export * from "./UnderlineIcon";

@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, type PointerEvent, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { CloseIcon } from "@/components/icons";
 import { IconButton } from "./IconButton";
@@ -16,9 +16,19 @@ interface ChromeTabsProps {
   onSelect: (id: string) => void;
   onClose: (id: string) => void;
   className?: string;
+  onTabPointerDown?: (e: PointerEvent<HTMLDivElement>, id: string) => void;
+  actions?: ReactNode;
 }
 
-export function ChromeTabs({ tabs, activeTabId, onSelect, onClose, className }: ChromeTabsProps) {
+export function ChromeTabs({
+  tabs,
+  activeTabId,
+  onSelect,
+  onClose,
+  className,
+  onTabPointerDown,
+  actions,
+}: ChromeTabsProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -33,7 +43,7 @@ export function ChromeTabs({ tabs, activeTabId, onSelect, onClose, className }: 
   return (
     <div
       className={cn(
-        "flex justify-between py-2 shrink-0 items-center border-b border-gray-200 bg-gray-50/60 dark:border-gray-800 dark:bg-gray-900/40",
+        "flex justify-between h-11 shrink-0 items-center border-b border-gray-200 bg-gray-50/60 dark:border-gray-800 dark:bg-gray-900/40",
         className,
       )}
     >
@@ -51,6 +61,7 @@ export function ChromeTabs({ tabs, activeTabId, onSelect, onClose, className }: 
               role="tab"
               tabIndex={0}
               aria-selected={active}
+              onPointerDown={(e) => onTabPointerDown?.(e, tab.id)}
               onClick={() => onSelect(tab.id)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
@@ -59,7 +70,7 @@ export function ChromeTabs({ tabs, activeTabId, onSelect, onClose, className }: 
                 }
               }}
               className={cn(
-                "group relative flex min-w-0 max-w-56 shrink-0 cursor-pointer items-center gap-2 pl-3 pr-1 py-1 text-sm transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 dark:focus-visible:ring-blue-500",
+                "group relative flex h-full min-w-0 max-w-56 shrink-0 cursor-pointer touch-none items-center gap-2 pl-3 pr-1 text-sm transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 dark:focus-visible:ring-blue-500 select-none",
                 {
                   "bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 border border-blue-500":
                     active,
@@ -87,6 +98,8 @@ export function ChromeTabs({ tabs, activeTabId, onSelect, onClose, className }: 
           );
         })}
       </div>
+
+      {actions && <div className="flex shrink-0 items-center gap-1 pr-2">{actions}</div>}
     </div>
   );
 }
