@@ -1,10 +1,19 @@
 import { app, BrowserWindow, ipcMain, shell } from "electron";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { randomUUID } from "node:crypto";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 let mainWindow: BrowserWindow | null = null;
+
+const isDev = !app.isPackaged;
+const AUTH_URL =
+  process.env.ESCRUTA_AUTH_URL || (isDev ? "http://localhost:3000" : "https://account.escruta.com");
+const BACKEND_URL =
+  process.env.ESCRUTA_CORE_URL || (isDev ? "http://localhost:8080" : "https://api.escruta.com");
+
+const DEVICE_LOGIN_TIMEOUT_MS = 10 * 60 * 1000;
 
 function resolveIconPath(): string | undefined {
   if (process.platform === "darwin") {
@@ -27,6 +36,68 @@ function windowFromEvent(event: { sender: Electron.WebContents }): BrowserWindow
 function registerWindowControls() {
   ipcMain.on("window:set-overlay-colors", (event, { color, symbolColor }) => {
     windowFromEvent(event)?.setTitleBarOverlay({ color, symbolColor });
+  });
+}
+
+function registerAuthIpc() {
+  ipcMain.handle("auth:start-device-login", async (_event, mode: "signin" | "signup") => {
+    const deviceCode = randomUUID();
+    const url = `${AUTH_URL}/${mode}?device_code=${encodeURIComponent(deviceCode)}`;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), DEVICE_LOGIN_TIMEOUT_MS);
+
+    console.log(`[device-login] AUTH_URL=${AUTH_URL} BACKEND_URL=${BACKEND_URL}`);
+    console.log(`[device-login] opening browser: ${url}`);
+
+    try {
+      await fetch(`${BACKEND_URL}/device/start`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deviceCode }),
+      });
+
+      shell.openExternal(url);
+
+      const deadline = Date.now() + DEVICE_LOGIN_TIMEOUT_MS;
+      while (Date.now() < deadline) {
+        let res: Response;
+        try {
+          res = await fetch(
+            `${BACKEND_URL}/device/token?device_code=${encodeURIComponent(deviceCode)}`,
+            {
+              signal: controller.signal,
+            },
+          );
+        } catch (err) {
+          console.error("[device-login] poll request failed", err);
+          return null;
+        }
+
+        if (res.ok) {
+          const data = (await res.json()) as { token: string; expiresIn?: number };
+          console.log("[device-login] succeeded");
+          return { token: data.token, expiresIn: data.expiresIn };
+        }
+
+        if (res.status === 400) {
+          const error = (await res.json().catch(() => ({}))) as { error?: string };
+          if (error.error === "expired_token") return null;
+          // otherwise: still pending, keep polling
+        } else {
+          console.error(`[device-login] unexpected status ${res.status} from /device/token`);
+          return null;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+      }
+
+      return null;
+    } catch (err) {
+      console.error("[device-login] error", err);
+      return null;
+    } finally {
+      clearTimeout(timeout);
+    }
   });
 }
 
@@ -78,6 +149,7 @@ function createWindow() {
 
 app.whenReady().then(() => {
   registerWindowControls();
+  registerAuthIpc();
   createWindow();
 
   app.on("activate", () => {

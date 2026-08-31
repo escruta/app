@@ -11,7 +11,7 @@ export function ProtectedRoute() {
   const handleSignOut = () => {
     setIsModalOpen(false);
     signOut();
-    navigate("/", { replace: true });
+    navigate("/welcome", { replace: true });
   };
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export function ProtectedRoute() {
   }, [isAuthenticated, checkTokenValidity]);
 
   if (!isAuthenticated()) {
-    return <Navigate to="/signin" />;
+    return <Navigate to="/welcome" />;
   }
 
   return (

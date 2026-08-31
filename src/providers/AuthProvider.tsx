@@ -4,6 +4,8 @@ import { AUTH_TOKEN_KEY, BACKEND_BASE_URL } from "@/config";
 import { AuthContext } from "@/contexts";
 import type { Token, User } from "@/interfaces";
 
+const DEFAULT_SESSION_EXPIRY = 7 * 24 * 60 * 60 * 1000;
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [tokenCookie, setTokenCookie] = useCookie<Token>(AUTH_TOKEN_KEY, {
     token: null,
@@ -11,70 +13,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useCookie<User | null>("user", null);
-
-  const signIn = async (email: string, password: string) => {
-    const response = await fetch(new URL("/login", BACKEND_BASE_URL), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw {
-        status: response.status,
-        message: data.message || response.statusText,
-      };
-    }
-
-    if (data.token) {
-      setTokenCookie({
-        token: data.token,
-        expiresIn: data.expiresIn,
-        createdAt: Date.now(),
-      });
-      await fetchUserData();
-    }
-    return { status: response.status, data };
-  };
-
-  const signUp = async (email: string, password: string, name: string) => {
-    const response = await fetch(new URL("/register", BACKEND_BASE_URL), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password, name }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw {
-        status: response.status,
-        message: data.message || response.statusText,
-      };
-    }
-
-    if (response.status === 201 && data.token) {
-      setTokenCookie({
-        token: data.token,
-        expiresIn: data.expiresIn,
-        createdAt: Date.now(),
-      });
-      await fetchUserData();
-    }
-    return { status: response.status, data };
-  };
-
-  const signOut = () => {
-    setTokenCookie({ token: null, expiresIn: 0, createdAt: undefined });
-    setCurrentUser(null);
-    useFetch.clearCache();
-  };
 
   const fetchUserData = useCallback(async () => {
     if (tokenCookie?.token) {
@@ -101,9 +39,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [tokenCookie?.token, setCurrentUser]);
 
-  const isAuthenticated = useCallback(() => {
-    return !!tokenCookie?.token;
-  }, [tokenCookie]);
+  const setSessionToken = useCallback(
+    async (token: string, expiresIn?: number) => {
+      setTokenCookie({
+        token,
+        expiresIn: expiresIn ?? DEFAULT_SESSION_EXPIRY,
+        createdAt: Date.now(),
+      });
+      await fetchUserData();
+    },
+    [setTokenCookie, fetchUserData],
+  );
+
+  const signOut = useCallback(() => {
+    setTokenCookie({ token: null, expiresIn: 0, createdAt: undefined });
+    setCurrentUser(null);
+    useFetch.clearCache();
+  }, [setTokenCookie, setCurrentUser]);
+
+  const isAuthenticated = useCallback(() => !!tokenCookie?.token, [tokenCookie]);
 
   const checkTokenValidity = useCallback(() => {
     if (tokenCookie?.expiresIn && tokenCookie?.token && tokenCookie?.createdAt) {
@@ -113,18 +67,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [tokenCookie]);
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const bootstrap = async () => {
       try {
-        if (isAuthenticated()) {
+        if (tokenCookie?.token) {
           await fetchUserData();
         }
+      } catch (err) {
+        console.error("Auth bootstrap failed:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    checkAuth();
-  }, [isAuthenticated, fetchUserData]);
+    bootstrap();
+  }, [tokenCookie?.token, fetchUserData]);
 
   return (
     <AuthContext.Provider
@@ -132,8 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         token: tokenCookie?.token || null,
         isAuthenticated,
         checkTokenValidity,
-        signIn,
-        signUp,
+        setSessionToken,
         signOut,
         loading,
         currentUser,

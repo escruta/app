@@ -2,9 +2,7 @@ import { createRoot } from "react-dom/client";
 import { createHashRouter, RouterProvider } from "react-router";
 import { AuthProvider, ThemeProvider, RealtimeProvider, SettingsProvider } from "./providers";
 
-import { AuthLayout } from "./auth/AuthLayout";
-import { SignInPage } from "./auth/pages/SignInPage";
-import { SignUpPage } from "./auth/pages/SignUpPage";
+import { WelcomePage } from "./auth/WelcomePage";
 import { AppRoutes } from "./app/AppRoutes";
 import { ProtectedRoute } from "./auth/ProtectedRoute";
 
@@ -14,14 +12,8 @@ import "./index.css";
 
 const router = createHashRouter([
   {
-    path: "signin",
-    Component: AuthLayout,
-    children: [{ index: true, Component: SignInPage }],
-  },
-  {
-    path: "signup",
-    Component: AuthLayout,
-    children: [{ index: true, Component: SignUpPage }],
+    path: "welcome",
+    Component: WelcomePage,
   },
   {
     Component: ProtectedRoute,
