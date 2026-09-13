@@ -156,7 +156,7 @@ export function WelcomePage() {
   };
 
   return (
-    <div className="flex h-screen flex-col items-center justify-center gap-10 bg-white px-6 text-center select-none dark:bg-gray-950">
+    <div className="app-region-drag flex h-screen flex-col items-center justify-center gap-10 bg-white px-6 text-center select-none dark:bg-gray-950">
       <title>Welcome - Escruta</title>
       <div className="flex flex-col items-center gap-4">
         <Logotype className="h-8 w-auto fill-black dark:fill-white" />
@@ -165,7 +165,7 @@ export function WelcomePage() {
         </p>
       </div>
 
-      <div className="w-full max-w-xs text-left">
+      <div className="app-region-no-drag w-full max-w-xs text-left">
         {step === "email" && (
           <div className="flex flex-col gap-3">
             <TextField
