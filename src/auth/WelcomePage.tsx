@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/hooks";
 import { Button, Spinner, TextField } from "@/components/ui";
-import { Logotype } from "@/components";
 import { BACKEND_BASE_URL } from "@/config";
 
 type Step = "email" | "code" | "name";
@@ -156,18 +155,15 @@ export function WelcomePage() {
   };
 
   return (
-    <div className="app-region-drag flex h-screen flex-col items-center justify-center gap-10 bg-white px-6 text-center select-none dark:bg-gray-950">
+    <div className="app-region-drag flex h-screen flex-col items-center justify-center gap-10 bg-white px-6 select-none dark:bg-gray-950">
       <title>Welcome - Escruta</title>
-      <div className="flex flex-col items-center gap-4">
-        <Logotype className="h-8 w-auto fill-black dark:fill-white" />
-        <p className="max-w-sm text-balance text-gray-600 dark:text-gray-400">
-          Your notebooks, sources, and AI-powered insights — all in one place.
-        </p>
-      </div>
 
       <div className="app-region-no-drag w-full max-w-xs text-left">
         {step === "email" && (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
+            <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+              We&apos;ll send a verification code to your email.
+            </p>
             <TextField
               id="email"
               label="Email"
@@ -188,14 +184,14 @@ export function WelcomePage() {
             >
               {pending ? "Sending code…" : "Continue with email"}
             </Button>
-            <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-              We&apos;ll send a verification code to your email.
-            </p>
           </div>
         )}
 
         {step === "code" && (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
+            <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+              Sent to <span className="font-semibold select-text">{email}</span>
+            </p>
             <TextField
               id="code"
               label="Verification code"
@@ -210,39 +206,34 @@ export function WelcomePage() {
             />
             <Button
               onClick={handleCodeSubmit}
-              disabled={pending || !code.trim()}
-              className="w-full"
+              disabled={
+                pending || !code.trim() || code.trim().length < 6 || !/^\d+$/.test(code.trim())
+              }
               icon={pending ? <Spinner size={16} className="text-white" /> : null}
             >
               {pending ? "Verifying…" : "Verify code"}
             </Button>
-            <div className="flex items-center justify-between text-sm">
-              <button
-                type="button"
-                onClick={() => {
-                  setStep("email");
-                  setError("");
-                }}
-                disabled={pending}
-                className="font-medium text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              >
-                Use a different email
-              </button>
-              <button
-                type="button"
-                onClick={handleResend}
-                disabled={pending}
-                className="font-medium text-blue-500 transition-colors hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
-              >
-                Resend code
-              </button>
-            </div>
-            <p className="text-center text-sm text-gray-500 dark:text-gray-400">Sent to {email}</p>
+            <Button onClick={handleResend} disabled={pending} variant="secondary">
+              Resend code
+            </Button>
+            <Button
+              onClick={() => {
+                setStep("email");
+                setError("");
+              }}
+              disabled={pending}
+              variant="secondary"
+            >
+              Use a different email
+            </Button>
           </div>
         )}
 
         {step === "name" && (
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
+            <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+              Your email <span className="font-semibold select-text">{email}</span> is verified.
+            </p>
             <TextField
               id="name"
               label="Your name"
@@ -258,19 +249,24 @@ export function WelcomePage() {
             <Button
               onClick={handleNameSubmit}
               disabled={pending || !name.trim()}
-              className="w-full"
               icon={pending ? <Spinner size={16} className="text-white" /> : null}
             >
               {pending ? "Creating account…" : "Create account"}
             </Button>
-            <p className="text-center text-sm text-gray-500 dark:text-gray-400">
-              Your email {email} is verified.
-            </p>
+            <Button
+              onClick={() => {
+                setStep("email");
+                setError("");
+              }}
+              variant="secondary"
+            >
+              Use a different email
+            </Button>
           </div>
         )}
 
         {error && (
-          <p className="mt-3 text-center text-sm text-red-500" role="alert">
+          <p className="mt-3 text-sm text-red-500" role="alert">
             {error}
           </p>
         )}
