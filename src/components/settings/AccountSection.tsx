@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Alert, Button, Modal, Spinner, TextField } from "@/components/ui";
 import { useAuth, useFetch } from "@/hooks";
 import { CheckIcon } from "@/components/icons";
@@ -10,12 +10,6 @@ export function AccountSection() {
   const [isNameModalOpen, setIsNameModalOpen] = useState(false);
   const [newName, setNewName] = useState(user?.name || "");
   const [errorNameMessage, setErrorNameMessage] = useState("");
-  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [errorPasswordMessage, setErrorPasswordMessage] = useState("");
-  const [passwordTouched, setPasswordTouched] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [errorDeleteMessage, setErrorDeleteMessage] = useState("");
@@ -32,27 +26,6 @@ export function AccountSection() {
       onError: (error) => {
         setErrorNameMessage(error.message || "Something went wrong. Please try again.");
         console.error("Error updating name:", error.message);
-      },
-    },
-    false,
-  );
-
-  const { loading: isChangingPassword, refetch: changePassword } = useFetch<void>(
-    "/users/change-password",
-    {
-      method: "POST",
-      data: {
-        currentPassword,
-        newPassword,
-      },
-      onSuccess: () => {
-        setIsPasswordModalOpen(false);
-        resetPasswordFields();
-        signOut();
-      },
-      onError: (error) => {
-        setErrorPasswordMessage(error.message || "Something went wrong. Please try again.");
-        console.error("Error changing password:", error.message);
       },
     },
     false,
@@ -75,77 +48,6 @@ export function AccountSection() {
     false,
   );
 
-  const checkPasswordStrength = (password: string) => {
-    const criteria = [
-      {
-        valid: password.length >= 8,
-        message: "Password must be at least 8 characters.",
-      },
-      {
-        valid: /[A-Z]/.test(password),
-        message: "Password must contain at least one uppercase letter.",
-      },
-      {
-        valid: /[a-z]/.test(password),
-        message: "Password must contain at least one lowercase letter.",
-      },
-      {
-        valid: /[0-9]/.test(password),
-        message: "Password must contain at least one number.",
-      },
-    ];
-
-    const failedCriterion = criteria.find((criterion) => !criterion.valid);
-
-    return {
-      isValid: !failedCriterion,
-      errorMessage: failedCriterion ? failedCriterion.message : "",
-      lengthCriteria: criteria[0].valid,
-      uppercaseCriteria: criteria[1].valid,
-      lowercaseCriteria: criteria[2].valid,
-      numberCriteria: criteria[3].valid,
-    };
-  };
-
-  useEffect(() => {
-    if (passwordTouched) {
-      const validationResult = checkPasswordStrength(newPassword);
-      setErrorPasswordMessage(validationResult.errorMessage);
-    }
-  }, [newPassword, passwordTouched]);
-
-  const handlePasswordChange = () => {
-    if (!currentPassword.trim()) {
-      setErrorPasswordMessage("Please enter your current password.");
-      return;
-    }
-
-    if (!newPassword.trim()) {
-      setErrorPasswordMessage("Please enter a new password.");
-      return;
-    }
-
-    const passwordValidation = checkPasswordStrength(newPassword);
-    if (!passwordValidation.isValid) {
-      setErrorPasswordMessage(passwordValidation.errorMessage);
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setErrorPasswordMessage("Passwords don't match, please try again.");
-      return;
-    }
-    changePassword();
-  };
-
-  const resetPasswordFields = () => {
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-    setErrorPasswordMessage("");
-    setPasswordTouched(false);
-  };
-
   const handleDeleteAccount = () => {
     if (deleteConfirmation.toLowerCase() !== "delete my account") {
       setErrorDeleteMessage("Please type 'delete my account' to confirm");
@@ -154,17 +56,10 @@ export function AccountSection() {
     executeDeleteAccount();
   };
 
-  const handleNewPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewPassword(e.target.value);
-    if (!passwordTouched) {
-      setPasswordTouched(true);
-    }
-  };
-
   return (
     <SettingsSection
       title="Account"
-      description="Manage your profile, security, and account information."
+      description="Manage your profile and account information."
       className="gap-6"
     >
       {user && (
@@ -188,9 +83,6 @@ export function AccountSection() {
       <div className="flex flex-wrap gap-3">
         <Button variant="secondary" onClick={() => setIsNameModalOpen(true)}>
           Change name
-        </Button>
-        <Button variant="secondary" onClick={() => setIsPasswordModalOpen(true)}>
-          Change password
         </Button>
         <Button variant="secondary" onClick={() => signOut()}>
           Sign out
@@ -253,78 +145,6 @@ export function AccountSection() {
         </div>
       </Modal>
 
-      {/* Password Change Modal */}
-      <Modal
-        isOpen={isPasswordModalOpen}
-        onClose={() => {
-          setIsPasswordModalOpen(false);
-          resetPasswordFields();
-        }}
-        title="Change password"
-        onSubmit={() => {
-          if (currentPassword && newPassword && confirmPassword && !isChangingPassword) {
-            handlePasswordChange();
-          }
-        }}
-        actions={
-          <>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setIsPasswordModalOpen(false);
-                resetPasswordFields();
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              onClick={handlePasswordChange}
-              disabled={!currentPassword || !newPassword || !confirmPassword || isChangingPassword}
-              icon={isChangingPassword ? <Spinner /> : <CheckIcon />}
-            >
-              {isChangingPassword ? "Changing" : "Change password"}
-            </Button>
-          </>
-        }
-      >
-        <div className="space-y-4">
-          <TextField
-            id="current-password"
-            label="Current password"
-            type="password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            autoFocus
-            autoComplete="current-password"
-          />
-          <TextField
-            id="new-password"
-            label="New password"
-            type="password"
-            value={newPassword}
-            onChange={handleNewPasswordChange}
-            autoComplete="new-password"
-          />
-          <TextField
-            id="confirm-password"
-            label="Confirm new password"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            autoComplete="new-password"
-          />
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Password must be at least 8 characters long, contain uppercase and lowercase letters,
-            and include at least one number. Your session will be closed after changing your
-            password.
-          </p>
-          {errorPasswordMessage && (
-            <div className="text-sm text-red-500">{errorPasswordMessage}</div>
-          )}
-        </div>
-      </Modal>
-
       {/* Delete Account Modal */}
       <Modal
         isOpen={isDeleteModalOpen}
@@ -367,7 +187,7 @@ export function AccountSection() {
         <div className="space-y-4">
           <p className="text-sm text-gray-600 dark:text-gray-400">
             <span className="font-semibold">This is permanent.</span> Deleting your account will
-            erase all your notebooks, notes, and sources, and it can't be undone.
+            erase all your notebooks, notes, and sources, and it can&apos;t be undone.
           </p>
 
           <TextField
