@@ -52,10 +52,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const signOut = useCallback(() => {
+    if (tokenCookie?.token) {
+      fetch(new URL("/logout", BACKEND_BASE_URL), {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${tokenCookie.token}`,
+        },
+      }).catch(() => {});
+    }
     setTokenCookie({ token: null, expiresIn: 0, createdAt: undefined });
     setCurrentUser(null);
     useFetch.clearCache();
-  }, [setTokenCookie, setCurrentUser]);
+  }, [tokenCookie?.token, setTokenCookie, setCurrentUser]);
 
   const isAuthenticated = useCallback(() => !!tokenCookie?.token, [tokenCookie]);
 
