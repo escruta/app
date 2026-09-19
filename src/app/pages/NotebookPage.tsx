@@ -21,11 +21,11 @@ import {
   StudyIcon,
   CardIcon,
   QuestionnaireIcon,
-  FolderIcon,
   GridIcon,
   ChatIcon,
   StarsIcon,
   SplitIcon,
+  ArticleIcon,
 } from "@/components/icons";
 import { Spinner, ChromeTabs, SideNav, IconButton, Tooltip } from "@/components/ui";
 import { ToolResultTab } from "@/components/tools";
@@ -33,7 +33,7 @@ import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
 import { NotebookErrorState } from "./notebook/NotebookStates";
 import { RenameNotebookModal } from "./notebook/RenameNotebookModal";
 
-const MIN_SIDE_PANEL_PX = 280;
+const MIN_SIDE_PANEL_PX = 360;
 const MIN_CENTER_PANEL_PX = 400;
 const MAX_LEFT_PANEL_PERCENT = 40;
 const MIN_SPLIT_PERCENT = 30;
@@ -1163,23 +1163,15 @@ export default function NotebookPage() {
             className={cn(
               "min-h-0 flex max-w-md flex-col overflow-hidden border-r border-gray-200 bg-gray-50/60 transition-[width,background-color,border-color] duration-200 ease-out shrink-0 dark:border-gray-800 dark:bg-gray-900/50",
             )}
-            style={{ width: isLeftCollapsed ? "48px" : `${leftPanelWidth ?? 25}%` }}
+            style={{ width: isLeftCollapsed ? "57px" : `${leftPanelWidth ?? 25}%` }}
           >
-            {isLeftCollapsed && (
-              <div className="flex h-full w-full items-center justify-center">
-                <div
-                  className="text-xs font-medium tracking-widest text-gray-400 uppercase select-none [writing-mode:vertical-rl]"
-                  style={{ transform: "rotate(180deg)" }}
-                >
-                  Overview · Conversations · Sources · Notes · Tools
-                </div>
-              </div>
-            )}
-
-            <div className={cn("h-full w-full", { hidden: isLeftCollapsed })}>
+            <div className="h-full w-full">
               <SideNav
                 className="h-full"
                 onNewChat={openNewChatTab}
+                collapsed={isLeftCollapsed}
+                onCollapsedChange={setIsLeftCollapsed}
+                onToggleCollapse={() => setIsLeftCollapsed(!isLeftCollapsed)}
                 items={[
                   {
                     id: "overview",
@@ -1213,7 +1205,7 @@ export default function NotebookPage() {
                   {
                     id: "sources",
                     label: "Sources",
-                    icon: <FolderIcon />,
+                    icon: <ArticleIcon />,
                     content: sourcesListContent(),
                   },
                   {
