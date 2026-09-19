@@ -18,6 +18,9 @@ declare interface ElectronAPI {
   windowControls?: {
     setOverlayColors: (backgroundColor: string, symbolColor: string) => void;
   };
+  shortcuts?: {
+    onCloseTabRequest: (callback: () => void) => () => void;
+  };
 }
 
 declare interface Window {

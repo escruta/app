@@ -30,6 +30,21 @@ function registerWindowControls() {
   });
 }
 
+// Ctrl+W / Cmd+W cierra la ventana por defecto en Chromium. Lo interceptamos
+// antes de que llegue al renderer para que no cierre la app: en su lugar
+// avisamos al renderer para que cierre el tab interno activo.
+function interceptCloseTabShortcut(window: BrowserWindow) {
+  window.webContents.on("before-input-event", (event, input) => {
+    if (input.type !== "keyDown") return;
+    if (typeof input.key !== "string" || input.key.toLowerCase() !== "w") return;
+    if (!input.control && !input.meta) return;
+    // Dejamos pasar Ctrl+Shift+W / Cmd+Shift+W (cerrar ventana) y combos con Alt.
+    if (input.shift || input.alt) return;
+    event.preventDefault();
+    window.webContents.send("shortcut:close-tab");
+  });
+}
+
 function createWindow() {
   const isMac = process.platform === "darwin";
 
@@ -63,6 +78,7 @@ function createWindow() {
     mainWindow?.maximize();
     mainWindow?.show();
   });
+  interceptCloseTabShortcut(mainWindow);
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: "deny" };
