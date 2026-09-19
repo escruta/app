@@ -1,4 +1,4 @@
-import { useEffect, useRef, type PointerEvent, type ReactNode } from "react";
+import type { PointerEvent, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { CloseIcon } from "@/components/icons";
 import { IconButton } from "./IconButton";
@@ -29,15 +29,6 @@ export function ChromeTabs({
   onTabPointerDown,
   actions,
 }: ChromeTabsProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const container = scrollRef.current;
-    if (!container || !activeTabId) return;
-    const el = container.querySelector<HTMLElement>(`[data-tab-id="${activeTabId}"]`);
-    el?.scrollIntoView({ block: "nearest", inline: "nearest" });
-  }, [activeTabId, tabs.length]);
-
   if (tabs.length === 0) return null;
 
   return (
@@ -47,10 +38,8 @@ export function ChromeTabs({
         className,
       )}
     >
-      <div
-        ref={scrollRef}
-        className="flex min-w-0 flex-1 items-stretch gap-1.75 overflow-x-auto pr-3 pl-3"
-      >
+      {/* Chrome/Safari style strip: no scroll, tabs shrink equally as more are added */}
+      <div className="flex min-w-0 flex-1 items-stretch gap-1.75 overflow-hidden pr-3 pl-3">
         {tabs.map((tab) => {
           const active = tab.id === activeTabId;
           const closable = tab.closable !== false;
@@ -61,6 +50,7 @@ export function ChromeTabs({
               role="tab"
               tabIndex={0}
               aria-selected={active}
+              title={tab.label || "Untitled"}
               onPointerDown={(e) => onTabPointerDown?.(e, tab.id)}
               onClick={() => onSelect(tab.id)}
               onKeyDown={(e) => {
@@ -70,7 +60,7 @@ export function ChromeTabs({
                 }
               }}
               className={cn(
-                "group relative flex h-full min-w-0 max-w-56 shrink-0 cursor-pointer touch-none items-center gap-2 pl-3 pr-1 text-sm transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 dark:focus-visible:ring-blue-500 select-none",
+                "group relative flex h-full min-w-0 max-w-56 flex-1 cursor-pointer touch-none items-center gap-2 pl-3 pr-1 text-sm transition-[background-color,border-color,color] duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 dark:focus-visible:ring-blue-500 select-none",
                 {
                   "bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 border border-blue-500":
                     active,
@@ -86,13 +76,19 @@ export function ChromeTabs({
                 {tab.label || "Untitled"}
               </span>
               {closable && (
-                <IconButton
-                  icon={<CloseIcon className="size-3" />}
-                  variant="ghost"
-                  size="xs"
-                  onClick={() => onClose(tab.id)}
-                  aria-label="Close tab"
-                />
+                <span
+                  className="shrink-0"
+                  onClick={(e) => e.stopPropagation()}
+                  onPointerDown={(e) => e.stopPropagation()}
+                >
+                  <IconButton
+                    icon={<CloseIcon className="size-3" />}
+                    variant="ghost"
+                    size="xs"
+                    onClick={() => onClose(tab.id)}
+                    aria-label="Close tab"
+                  />
+                </span>
               )}
             </div>
           );
