@@ -180,7 +180,7 @@ export function SourcesCard({
 
   return (
     <>
-      <div className="flex h-full flex-col overflow-hidden">
+      <div className="flex h-full w-full flex-col overflow-hidden">
         <div className="z-10 shrink-0">
           <div className="flex h-15 items-center px-4 pt-4 pb-3">
             <h2 className="font-sans text-lg font-semibold">Sources</h2>
