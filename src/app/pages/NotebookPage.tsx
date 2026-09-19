@@ -340,6 +340,35 @@ export default function NotebookPage() {
     [activeTabKey, persistedActiveKey, setPersistedActiveKey],
   );
 
+  // Ctrl+W / Cmd+W cierra el tab interno activo en vez de cerrar la app.
+  // El proceso main ya intercepta el atajo para que Electron no cierre la
+  // ventana y reenvía "shortcut:close-tab"; aquí también escuchamos el
+  // keydown directo para cubrir el modo web/dev.
+  const closeTabRef = useRef(closeTab);
+  closeTabRef.current = closeTab;
+  const effectiveActiveKeyRef = useRef(effectiveActiveKey);
+  effectiveActiveKeyRef.current = effectiveActiveKey;
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === "w" || e.key === "W")) {
+        if (e.shiftKey || e.altKey) return;
+        e.preventDefault();
+        e.stopPropagation();
+        closeTabRef.current(effectiveActiveKeyRef.current);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    const cleanup = window.electronAPI?.shortcuts?.onCloseTabRequest(() => {
+      closeTabRef.current(effectiveActiveKeyRef.current);
+    });
+    return cleanup;
+  }, []);
+
   const openNewChatTab = useCallback(() => {
     openTab({ kind: "chat", refId: NEW_CHAT_ID, title: "New conversation" });
   }, [openTab]);
