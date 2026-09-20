@@ -1,4 +1,4 @@
-import type { PointerEvent, ReactNode } from "react";
+import type { MouseEvent, PointerEvent, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { CloseIcon } from "@/components/icons";
 import { IconButton } from "./IconButton";
@@ -53,6 +53,18 @@ export function ChromeTabs({
               title={tab.label || "Untitled"}
               onPointerDown={(e) => onTabPointerDown?.(e, tab.id)}
               onClick={() => onSelect(tab.id)}
+              onMouseDown={(e: MouseEvent<HTMLDivElement>) => {
+                // Prevent autoscroll on middle-click.
+                if (e.button === 1) e.preventDefault();
+              }}
+              onAuxClick={(e: MouseEvent<HTMLDivElement>) => {
+                // Close tab on middle-click (scroll wheel click), like Chrome.
+                if (e.button === 1) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (closable) onClose(tab.id);
+                }
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
