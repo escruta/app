@@ -274,10 +274,19 @@ export default function NotebookPage() {
       const candidate: TabDescriptor = { ...(descriptor as TabDescriptor), seq } as TabDescriptor;
       const candidateKey = tabKey(candidate);
 
+      // "New conversation" is a singleton: focus the existing empty chat tab
+      // instead of stacking more of them.
+      if (descriptor.kind === "chat" && descriptor.refId === NEW_CHAT_ID) {
+        const existingNewChat = tabs.find((t) => t.kind === "chat" && t.refId === NEW_CHAT_ID);
+        if (existingNewChat) {
+          selectTab(tabKey(existingNewChat));
+          return;
+        }
+      }
+
       // Focus existing equivalent tab when possible.
       const existingIndex = tabs.findIndex((t) => {
         if (t.kind !== descriptor.kind) return false;
-        if (descriptor.kind === "chat" && descriptor.refId === NEW_CHAT_ID) return false;
         if (
           descriptor.kind === "source" ||
           descriptor.kind === "note" ||
