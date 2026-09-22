@@ -1,6 +1,7 @@
 export interface Source {
   id: string;
   notebookId: string;
+  groupId?: string;
   icon?: string;
   title: string;
   content?: string;

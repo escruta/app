@@ -1,19 +1,24 @@
-import type { Source } from "@/interfaces";
+import type { Source, SourceGroup } from "@/interfaces";
 import {
   AddIcon,
   UploadIcon,
   FileIcon,
+  FolderAddIcon,
+  FolderIcon,
   LinkIcon,
   NoteIcon,
   CompressIcon,
   SearchIcon,
 } from "@/components/icons";
 import { SourceChip } from "./SourceChip";
+import { SourceGroupSection } from "./SourceGroupSection";
 import { SearchSourcesModal } from "./SearchSourcesModal";
 import {
   Button,
   Divider,
+  MenuLabel,
   Modal,
+  SelectList,
   TextField,
   FilePicker,
   Spinner,
@@ -55,6 +60,8 @@ export function SourcesCard({
 }: SourcesCardProps) {
   const [isAddSourceModalOpen, setIsAddSourceModalOpen] = useState<boolean>(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState<boolean>(false);
+  const [isNewGroupModalOpen, setIsNewGroupModalOpen] = useState<boolean>(false);
+  const [newGroupTitle, setNewGroupTitle] = useState<string>("");
 
   const [sourceType, setSourceType] = useState<SourceType>("File");
   const [newSourceLink, setNewSourceLink] = useState<string>("");
@@ -62,6 +69,38 @@ export function SourcesCard({
   const [newSourceTextTitle, setNewSourceTextTitle] = useState<string>("");
   const [newSourceTextContent, setNewSourceTextContent] = useState<string>("");
   const [newSourceLinkError, setNewSourceLinkError] = useState<string>("");
+  const [newSourceGroupId, setNewSourceGroupId] = useState<string | null>(null);
+
+  const { data: groups, refetch: refetchGroups } = useFetch<SourceGroup[]>(
+    `notebooks/${notebookId}/source-groups`,
+  );
+
+  const { loading: creatingGroup, refetch: createGroup } = useFetch<SourceGroup>(
+    `notebooks/${notebookId}/source-groups`,
+    {
+      method: "POST",
+      data: { title: newGroupTitle },
+      onSuccess: () => {
+        setNewGroupTitle("");
+        setIsNewGroupModalOpen(false);
+        refetchGroups(true);
+      },
+      onError: (error) => {
+        console.error("Error creating source group:", error.message);
+      },
+    },
+    false,
+  );
+
+  function handleGroupsChanged() {
+    refetchGroups(true);
+    onSourcesChange?.();
+  }
+
+  async function handleCreateGroup() {
+    if (!newGroupTitle.trim()) return;
+    await createGroup();
+  }
 
   const handleOpenModal = (type: SourceType) => {
     setSourceType(type);
@@ -83,6 +122,9 @@ export function SourcesCard({
               if (newSourceFile) {
                 formData.append("file", newSourceFile);
                 formData.append("title", newSourceFile.name);
+                if (newSourceGroupId) {
+                  formData.append("groupId", newSourceGroupId);
+                }
               }
               return formData;
             })()
@@ -90,9 +132,11 @@ export function SourcesCard({
             ? {
                 title: newSourceTextTitle,
                 content: newSourceTextContent,
+                groupId: newSourceGroupId,
               }
             : {
                 link: newSourceLink,
+                groupId: newSourceGroupId,
               },
       headers: sourceType === "File" ? {} : { "Content-Type": "application/json" },
       onSuccess: () => {
@@ -100,6 +144,7 @@ export function SourcesCard({
         setNewSourceFile(null);
         setNewSourceTextTitle("");
         setNewSourceTextContent("");
+        setNewSourceGroupId(null);
         setSourceType("File");
         setIsAddSourceModalOpen(false);
         onSourcesChange?.();
@@ -162,6 +207,7 @@ export function SourcesCard({
       setNewSourceFile(null);
       setNewSourceTextTitle("");
       setNewSourceTextContent("");
+      setNewSourceGroupId(null);
       setSourceType("File");
       setNewSourceLinkError("");
     }
@@ -177,6 +223,31 @@ export function SourcesCard({
       onSelectAll?.(sources.map((s) => s.id));
     }
   };
+
+  const renderSourceChip = (source: Source) => (
+    <SourceChip
+      key={source.id}
+      source={source}
+      notebookId={notebookId}
+      groups={groups ?? undefined}
+      onSourceSelect={onSourceSelect}
+      selected={selectedSourceIds.includes(source.id)}
+      onToggle={() => onToggleSource?.(source.id)}
+      onDelete={() => {
+        onSourcesChange?.();
+      }}
+      onMove={() => {
+        onSourcesChange?.();
+      }}
+    />
+  );
+
+  const groupedSources = (groups ?? []).map((group) => ({
+    group,
+    sources: (sources ?? []).filter((s) => s.groupId === group.id),
+  }));
+  const ungroupedSources = (sources ?? []).filter((s) => !s.groupId);
+  const hasGroups = (groups ?? []).length > 0;
 
   return (
     <>
@@ -214,6 +285,15 @@ export function SourcesCard({
                   />
                 </MenuContent>
               </Menu>
+              <Tooltip text="New group" position="bottom">
+                <IconButton
+                  icon={<FolderAddIcon />}
+                  onClick={() => setIsNewGroupModalOpen(true)}
+                  variant="secondary"
+                  size="sm"
+                  ariaLabel="New group"
+                />
+              </Tooltip>
               {onToggleCollapse && (
                 <Tooltip text="Collapse panel" position="bottom">
                   <IconButton
@@ -244,19 +324,36 @@ export function SourcesCard({
                   <Button variant="secondary" size="sm" onClick={handleSelectAllToggle}>
                     {isAllSelected ? "Deselect all sources" : "Select all sources"}
                   </Button>
-                  {sources.map((source) => (
-                    <SourceChip
-                      key={source.id}
-                      source={source}
-                      notebookId={notebookId}
-                      onSourceSelect={onSourceSelect}
-                      selected={selectedSourceIds.includes(source.id)}
-                      onToggle={() => onToggleSource?.(source.id)}
-                      onDelete={() => {
-                        onSourcesChange?.();
-                      }}
-                    />
-                  ))}
+                  {hasGroups ? (
+                    <>
+                      {groupedSources.map(({ group, sources: groupSources }) => (
+                        <SourceGroupSection
+                          key={group.id}
+                          notebookId={notebookId}
+                          group={group}
+                          onChanged={handleGroupsChanged}
+                        >
+                          {groupSources.length > 0 ? (
+                            groupSources.map(renderSourceChip)
+                          ) : (
+                            <p className="px-1 py-1 text-xs text-gray-400 select-none dark:text-gray-500">
+                              No sources in this group yet
+                            </p>
+                          )}
+                        </SourceGroupSection>
+                      ))}
+                      {ungroupedSources.length > 0 && (
+                        <div className="flex flex-col gap-2 pt-1">
+                          <span className="px-1 text-xs font-medium tracking-wide text-gray-400 uppercase select-none dark:text-gray-500">
+                            Ungrouped
+                          </span>
+                          {ungroupedSources.map(renderSourceChip)}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    sources.map(renderSourceChip)
+                  )}
                 </div>
               );
             }
@@ -384,11 +481,75 @@ export function SourcesCard({
                 />
               </div>
             )}
+
+            {(groups ?? []).length > 0 && (
+              <div className="mt-4 flex flex-col gap-2">
+                <MenuLabel>Add to group</MenuLabel>
+                <SelectList
+                  options={(groups ?? []).map((group) => ({
+                    id: group.id,
+                    label: group.title,
+                    icon: <FolderIcon />,
+                  }))}
+                  selectedId={newSourceGroupId}
+                  onSelect={setNewSourceGroupId}
+                  emptyText="No groups available"
+                />
+              </div>
+            )}
           </div>
 
           {newSourceLinkError && (
             <div className="mt-4 text-sm font-medium text-red-500">{newSourceLinkError}</div>
           )}
+        </Modal>
+      )}
+
+      {/* New Group Modal */}
+      {isNewGroupModalOpen && (
+        <Modal
+          isOpen={isNewGroupModalOpen}
+          onClose={() => {
+            setIsNewGroupModalOpen(false);
+            setNewGroupTitle("");
+          }}
+          title="New group"
+          onSubmit={() => {
+            if (newGroupTitle.trim() && !creatingGroup) handleCreateGroup();
+          }}
+          actions={
+            <div className="flex w-full justify-end gap-3">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setIsNewGroupModalOpen(false);
+                  setNewGroupTitle("");
+                }}
+                disabled={creatingGroup}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleCreateGroup}
+                disabled={!newGroupTitle.trim() || creatingGroup}
+                icon={creatingGroup ? <Spinner /> : <AddIcon />}
+              >
+                {creatingGroup ? "Creating" : "Create"}
+              </Button>
+            </div>
+          }
+        >
+          <TextField
+            id="source-group-title"
+            label="Name your group"
+            type="text"
+            value={newGroupTitle}
+            onChange={(e) => setNewGroupTitle(e.target.value)}
+            placeholder="e.g., Background, Methods, Results…"
+            autoFocus
+            className="mb-0"
+          />
         </Modal>
       )}
     </>
