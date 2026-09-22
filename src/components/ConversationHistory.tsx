@@ -2,7 +2,7 @@ import { useFetch } from "@/hooks";
 import type { Conversation, ConversationsPage } from "@/interfaces";
 import { useMemo, useCallback, useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Skeleton, IconButton, TextField, Spinner, Divider, Button } from "@/components/ui";
+import { Skeleton, IconButton, TextField, Spinner, Divider, Tooltip } from "@/components/ui";
 import { DeleteIcon, ChatNewIcon, ChatIcon, SearchIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import type { UseFetchOptions } from "@/hooks/useFetch";
@@ -185,14 +185,14 @@ export function ConversationHistory({
         <div className="flex h-15 items-center px-4 pt-4 pb-3">
           <h2 className="font-sans text-lg font-semibold">Conversations</h2>
           <div className="flex flex-1 items-center justify-end gap-2">
-            <Button
-              icon={<ChatNewIcon className="size-3.5" />}
-              variant="primary"
-              size="sm"
-              onClick={onNewConversation}
-            >
-              New conversation
-            </Button>
+            <Tooltip text="New conversation" position="bottom">
+              <IconButton
+                icon={<ChatNewIcon className="size-3.5" />}
+                variant="primary"
+                size="sm"
+                onClick={onNewConversation}
+              />
+            </Tooltip>
           </div>
         </div>
         <Divider className="my-0" />

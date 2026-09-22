@@ -257,11 +257,11 @@ export function SourcesCard({
             <h2 className="font-sans text-lg font-semibold">Sources</h2>
             <div className="flex flex-1 items-center justify-end gap-2">
               <Menu>
-                <MenuTrigger>
-                  <Button icon={<AddIcon />} variant="primary" size="sm">
-                    Add source
-                  </Button>
-                </MenuTrigger>
+                <Tooltip text="Add source" position="bottom">
+                  <MenuTrigger>
+                    <IconButton icon={<AddIcon />} variant="primary" size="sm" />
+                  </MenuTrigger>
+                </Tooltip>
                 <MenuContent>
                   <MenuItem
                     icon={<FileIcon />}
