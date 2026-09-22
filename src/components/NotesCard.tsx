@@ -1,7 +1,7 @@
 import type { Note } from "@/interfaces";
 import { AddIcon, EditIcon } from "@/components/icons";
 import { NoteChip } from "./NoteChip";
-import { Button, Divider, Spinner } from "@/components/ui";
+import { Divider, IconButton, Spinner, Tooltip } from "@/components/ui";
 import { useFetch } from "@/hooks";
 import { useEffect } from "react";
 
@@ -52,16 +52,15 @@ export function NotesCard({ notebookId, onNoteSelect, refreshTrigger }: NotesCar
           <div className="flex h-15 items-center px-4 pt-4 pb-3">
             <h2 className="font-sans text-lg font-semibold">Notes</h2>
             <div className="flex flex-1 items-center justify-end gap-2">
-              <Button
-                icon={addingNote ? <Spinner /> : <AddIcon />}
-                variant="primary"
-                size="sm"
-                className="shrink-0"
-                onClick={() => createNote()}
-                disabled={addingNote}
-              >
-                {addingNote ? "Adding..." : "Add note"}
-              </Button>
+              <Tooltip text={addingNote ? "Adding note..." : "Add note"} position="bottom">
+                <IconButton
+                  icon={addingNote ? <Spinner /> : <AddIcon />}
+                  variant="primary"
+                  size="sm"
+                  onClick={() => createNote()}
+                  disabled={addingNote}
+                />
+              </Tooltip>
             </div>
           </div>
           <Divider className="my-0" />
