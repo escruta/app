@@ -10,6 +10,7 @@ export * from "./NotesCard.tsx";
 export * from "./SearchSourcesModal.tsx";
 export * from "./TopBar.tsx";
 export * from "./SourceChip.tsx";
+export * from "./SourceGroupSection.tsx";
 export * from "./SourcesCard.tsx";
 export * from "./SourceViewer.tsx";
 export * from "./ToolCard.tsx";
