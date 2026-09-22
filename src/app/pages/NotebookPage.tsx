@@ -25,7 +25,7 @@ import {
   ChatIcon,
   StarsIcon,
   SplitIcon,
-  ArticleIcon,
+  StackIcon,
 } from "@/components/icons";
 import { Spinner, ChromeTabs, SideNav, IconButton, Tooltip } from "@/components/ui";
 import { ToolResultTab } from "@/components/tools";
@@ -1243,7 +1243,7 @@ export default function NotebookPage() {
                   {
                     id: "sources",
                     label: "Sources",
-                    icon: <ArticleIcon />,
+                    icon: <StackIcon />,
                     content: sourcesListContent(),
                   },
                   {
