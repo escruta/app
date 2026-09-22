@@ -72,7 +72,7 @@ export function ChromeTabs({
                 }
               }}
               className={cn(
-                "group relative flex h-full min-w-0 max-w-56 flex-1 cursor-pointer touch-none items-center gap-2 pl-3 pr-1 text-sm transition-[background-color,border-color,color] duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 dark:focus-visible:ring-blue-500 select-none",
+                "group relative flex h-full min-w-0 max-w-56 flex-1 cursor-pointer touch-none items-center gap-2 py-1 pl-3 pr-1 text-sm transition-[background-color,border-color,color] duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 dark:focus-visible:ring-blue-500 select-none",
                 {
                   "bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 border border-blue-500":
                     active,
@@ -99,6 +99,7 @@ export function ChromeTabs({
                     size="xs"
                     onClick={() => onClose(tab.id)}
                     aria-label="Close tab"
+                    className="hover:ring-0 hover:ring-offset-0 focus-visible:ring-offset-0 focus-visible:ring-inset"
                   />
                 </span>
               )}
