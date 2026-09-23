@@ -423,9 +423,9 @@ export function ChatCard({
             {conversationTitle || "New conversation"}
           </span>
         </h2>
-        {sourcesCount > 0 ? (
+        {sourcesCount > 0 && messages.length > 0 ? (
           <div className="flex flex-1 items-center justify-end gap-1">
-            <Tooltip text="New conversation" position="top">
+            <Tooltip text="New conversation" position="left">
               <IconButton
                 icon={<ChatNewIcon />}
                 ariaLabel="New conversation"
