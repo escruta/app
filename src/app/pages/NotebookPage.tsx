@@ -349,6 +349,35 @@ export default function NotebookPage() {
     [activeTabKey, persistedActiveKey, setPersistedActiveKey],
   );
 
+  // Ctrl+Tab / Ctrl+Shift+Tab navega entre pestañas (como en Chrome).
+  // En split view cicla dentro de la tira activa; sin split, por orden global.
+  // Hace wrap-around al llegar a los extremos.
+  const cycleTab = useCallback(
+    (direction: 1 | -1) => {
+      if (tabs.length <= 1) return;
+      let list: string[];
+      if (splitState) {
+        const rightGroup = splitState.rightGroup.filter((k) => tabs.some((t) => tabKey(t) === k));
+        const leftGroup = tabs.map(tabKey).filter((k) => !rightGroup.includes(k));
+        if (rightGroup.includes(effectiveActiveKey)) {
+          list = rightGroup.length > 1 ? rightGroup : tabs.map(tabKey);
+        } else if (leftGroup.includes(effectiveActiveKey)) {
+          list = leftGroup.length > 1 ? leftGroup : tabs.map(tabKey);
+        } else {
+          list = tabs.map(tabKey);
+        }
+      } else {
+        list = tabs.map(tabKey);
+      }
+      if (list.length <= 1) return;
+      const idx = list.indexOf(effectiveActiveKey);
+      const current = idx >= 0 ? idx : 0;
+      const next = (current + direction + list.length) % list.length;
+      selectTab(list[next]);
+    },
+    [tabs, effectiveActiveKey, splitState, selectTab],
+  );
+
   // Ctrl+W / Cmd+W cierra el tab interno activo en vez de cerrar la app.
   // El proceso main ya intercepta el atajo para que Electron no cierre la
   // ventana y reenvía "shortcut:close-tab"; aquí también escuchamos el
@@ -357,6 +386,8 @@ export default function NotebookPage() {
   closeTabRef.current = closeTab;
   const effectiveActiveKeyRef = useRef(effectiveActiveKey);
   effectiveActiveKeyRef.current = effectiveActiveKey;
+  const cycleTabRef = useRef(cycleTab);
+  cycleTabRef.current = cycleTab;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -365,6 +396,12 @@ export default function NotebookPage() {
         e.preventDefault();
         e.stopPropagation();
         closeTabRef.current(effectiveActiveKeyRef.current);
+        return;
+      }
+      if (e.ctrlKey && !e.metaKey && !e.altKey && e.key === "Tab") {
+        e.preventDefault();
+        e.stopPropagation();
+        cycleTabRef.current(e.shiftKey ? -1 : 1);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
