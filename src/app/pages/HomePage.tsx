@@ -4,7 +4,6 @@ import { useAuth, useCookie, useFetch, useGreeting, useMediaQuery, useSettings }
 import { BREAKPOINTS } from "@/hooks/useBreakpoint";
 import { Button, IconButton, Modal, Spinner, TextField, Tooltip } from "@/components/ui";
 import { FolderCard, NotebookCard, TopBar } from "@/components";
-import { GaussianBlurGradientBackground } from "@/components/backgrounds/GaussianBlurGradientBackground";
 import {
   AddIcon,
   FireIcon,
@@ -167,8 +166,6 @@ export default function HomePage() {
       <title>Home - Escruta</title>
       <TopBar />
       <div className="relative overflow-auto">
-        <GaussianBlurGradientBackground />
-
         <div className="relative z-10 mx-auto flex max-w-5xl flex-col gap-6 px-6 py-8 md:py-12">
           <motion.div
             initial={{ opacity: 0, y: 10 }}

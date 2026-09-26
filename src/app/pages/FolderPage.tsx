@@ -5,7 +5,6 @@ import { Button, CardSkeleton, Modal, Spinner, TextField } from "@/components/ui
 import { TopBar } from "@/components";
 import { NotebookCard } from "@/components";
 import { FireIcon, NotebookIcon } from "@/components/icons";
-import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
 import { motion } from "motion/react";
 import { useCookie, useFetch, useMediaQuery } from "@/hooks";
 import { BREAKPOINTS } from "@/hooks/useBreakpoint";
@@ -124,7 +123,6 @@ export default function FolderPage() {
       <div className="flex h-screen max-h-full w-full flex-col">
         <TopBar title={renderTopBarTitle(<span className="opacity-0">Loading</span>)} />
         <div className="relative flex flex-1 items-center justify-center overflow-hidden">
-          <SimpleBackground />
           <Spinner />
         </div>
       </div>
@@ -140,7 +138,6 @@ export default function FolderPage() {
           )}
         />
         <div className="relative flex flex-1 items-center justify-center overflow-hidden">
-          <SimpleBackground />
           <div className="max-w-md text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-xs bg-red-50 dark:bg-red-950">
               <div className="h-8 w-8 text-red-500">
@@ -186,8 +183,6 @@ export default function FolderPage() {
       <TopBar title={renderTopBarTitle(titleInput)} />
 
       <div className="relative flex-1 overflow-y-scroll">
-        <SimpleBackground />
-
         <div className="relative z-10 mx-auto flex size-full max-w-5xl flex-col space-y-8 p-6">
           {isEmpty ? (
             <motion.div

@@ -1,7 +1,6 @@
 import { Link } from "react-router";
 import { Button } from "@/components/ui";
 import { motion } from "motion/react";
-import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
 
 export function NotFound() {
   const fadeInSlight = {
@@ -13,7 +12,6 @@ export function NotFound() {
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-white px-6 text-center dark:bg-gray-950">
       <title>404 - Page Not Found - Escruta</title>
-      <SimpleBackground />
 
       <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center space-y-6">
         <motion.div
