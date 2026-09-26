@@ -29,6 +29,9 @@ interface SourceChipProps {
   onToggle?: (selected: boolean) => void;
   onDelete?: () => void;
   onMove?: () => void;
+  onDragStart?: (source: Source) => void;
+  onDragEnd?: () => void;
+  isDragging?: boolean;
 }
 
 export function SourceChip({
@@ -41,6 +44,9 @@ export function SourceChip({
   onToggle,
   onDelete,
   onMove,
+  onDragStart,
+  onDragEnd,
+  isDragging = false,
 }: SourceChipProps) {
   const isPending = source.status === "PENDING";
   const isFailed = source.status === "FAILED";
@@ -119,9 +125,18 @@ export function SourceChip({
             "opacity-70 cursor-not-allowed": isPending,
             "border-red-300 dark:border-red-800 bg-red-50/30 dark:bg-red-900/10 cursor-not-allowed":
               isFailed,
+            "opacity-40": isDragging,
           },
           className,
         )}
+        draggable={!isPending && !isFailed}
+        onDragStart={(e) => {
+          if (isPending || isFailed) return;
+          e.dataTransfer.effectAllowed = "move";
+          e.dataTransfer.setData("text/plain", source.id);
+          onDragStart?.(source);
+        }}
+        onDragEnd={() => onDragEnd?.()}
         onClick={handleChipClick}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {

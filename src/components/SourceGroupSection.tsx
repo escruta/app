@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { SourceGroup } from "@/interfaces";
+import { cn } from "@/lib/utils";
 import { useCookie, useFetch } from "@/hooks";
 import {
   Button,
@@ -26,6 +27,10 @@ interface SourceGroupSectionProps {
   group: SourceGroup;
   children: React.ReactNode;
   onChanged?: () => void;
+  isDropTarget?: boolean;
+  onDragOver?: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDragLeave?: (e: React.DragEvent<HTMLDivElement>) => void;
+  onDrop?: (e: React.DragEvent<HTMLDivElement>) => void;
 }
 
 export function SourceGroupSection({
@@ -33,6 +38,10 @@ export function SourceGroupSection({
   group,
   children,
   onChanged,
+  isDropTarget = false,
+  onDragOver,
+  onDragLeave,
+  onDrop,
 }: SourceGroupSectionProps) {
   const [collapsed, setCollapsed] = useCookie<boolean>(
     `sourceGroupCollapsed-${notebookId}-${group.id}`,
@@ -87,7 +96,15 @@ export function SourceGroupSection({
   }
 
   return (
-    <div className="flex flex-col">
+    <div
+      className={cn(
+        "flex flex-col rounded-xs transition-colors duration-150",
+        isDropTarget && "bg-blue-50/60 ring-1 ring-blue-300 dark:bg-blue-900/10 dark:ring-blue-700",
+      )}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+    >
       <div className="group flex items-center gap-1 rounded-xs">
         <button
           type="button"

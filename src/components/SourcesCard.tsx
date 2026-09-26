@@ -29,8 +29,9 @@ import {
   IconButton,
   Tooltip,
 } from "@/components/ui";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useFetch } from "@/hooks";
+import { cn } from "@/lib/utils";
 import type { SourceType } from "@/interfaces";
 
 interface SourcesCardProps {
@@ -70,6 +71,13 @@ export function SourcesCard({
   const [newSourceTextContent, setNewSourceTextContent] = useState<string>("");
   const [newSourceLinkError, setNewSourceLinkError] = useState<string>("");
   const [newSourceGroupId, setNewSourceGroupId] = useState<string | null>(null);
+
+  const [draggingSourceId, setDraggingSourceId] = useState<string | null>(null);
+  const [dragOverTarget, setDragOverTarget] = useState<string | null | undefined>(undefined);
+  const [moveTarget, setMoveTarget] = useState<{ sourceId: string; groupId: string | null } | null>(
+    null,
+  );
+  const [pendingMoves, setPendingMoves] = useState<Record<string, string | null>>({});
 
   const { data: groups, refetch: refetchGroups } = useFetch<SourceGroup[]>(
     `notebooks/${notebookId}/source-groups`,
@@ -157,6 +165,59 @@ export function SourcesCard({
     false,
   );
 
+  const { refetch: moveSource } = useFetch<Source>(
+    `notebooks/${notebookId}/sources`,
+    {
+      method: "PUT",
+      data: moveTarget
+        ? {
+            id: moveTarget.sourceId,
+            groupId: moveTarget.groupId,
+            removeGroup: moveTarget.groupId === null,
+          }
+        : undefined,
+      onSuccess: () => {
+        useFetch.clearCache();
+        setMoveTarget(null);
+        handleGroupsChanged();
+      },
+      onError: (error) => {
+        console.error("Error moving source:", error.message);
+        const sourceId = moveTarget?.sourceId;
+        if (sourceId) {
+          setPendingMoves((prev) => {
+            const next = { ...prev };
+            delete next[sourceId];
+            return next;
+          });
+        }
+        setMoveTarget(null);
+      },
+    },
+    false,
+  );
+
+  useEffect(() => {
+    if (moveTarget) moveSource();
+  }, [moveTarget, moveSource]);
+
+  useEffect(() => {
+    setPendingMoves((prev) => {
+      const entries = Object.entries(prev);
+      if (entries.length === 0) return prev;
+      const next = { ...prev };
+      let changed = false;
+      for (const [id, groupId] of entries) {
+        const source = sources.find((s) => s.id === id);
+        if (!source || (source.groupId ?? null) === groupId) {
+          delete next[id];
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [sources]);
+
   async function handleAddSource() {
     setNewSourceLinkError("");
 
@@ -239,14 +300,55 @@ export function SourcesCard({
       onMove={() => {
         onSourcesChange?.();
       }}
+      onDragStart={(dragged) => setDraggingSourceId(dragged.id)}
+      onDragEnd={handleSourceDragEnd}
+      isDragging={draggingSourceId === source.id}
     />
   );
 
+  function handleSourceDragEnd() {
+    setDraggingSourceId(null);
+    setDragOverTarget(undefined);
+  }
+
+  function getGroupId(source: Source): string | null {
+    return Object.prototype.hasOwnProperty.call(pendingMoves, source.id)
+      ? pendingMoves[source.id]
+      : (source.groupId ?? null);
+  }
+
+  function handleGroupDragOver(e: React.DragEvent<HTMLDivElement>, target: string | null) {
+    if (!draggingSourceId) return;
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverTarget(target);
+  }
+
+  function handleGroupDragLeave(e: React.DragEvent<HTMLDivElement>) {
+    const next = e.relatedTarget as Node | null;
+    if (next && e.currentTarget.contains(next)) return;
+    setDragOverTarget(undefined);
+  }
+
+  function handleGroupDrop(e: React.DragEvent<HTMLDivElement>, target: string | null) {
+    e.preventDefault();
+    e.stopPropagation();
+    const sourceId = draggingSourceId ?? e.dataTransfer.getData("text/plain");
+    setDragOverTarget(undefined);
+    setDraggingSourceId(null);
+    if (!sourceId) return;
+    const source = sources.find((s) => s.id === sourceId);
+    if (!source || getGroupId(source) === target) return;
+    setPendingMoves((prev) => ({ ...prev, [sourceId]: target }));
+    setMoveTarget({ sourceId, groupId: target });
+  }
+
   const groupedSources = (groups ?? []).map((group) => ({
     group,
-    sources: (sources ?? []).filter((s) => s.groupId === group.id),
+    sources: (sources ?? []).filter((s) => getGroupId(s) === group.id),
   }));
-  const ungroupedSources = (sources ?? []).filter((s) => !s.groupId);
+  const ungroupedSources = (sources ?? []).filter((s) => !getGroupId(s));
   const hasGroups = (groups ?? []).length > 0;
 
   return (
@@ -320,7 +422,12 @@ export function SourcesCard({
             }
             if (sources && sources.length > 0) {
               return (
-                <div className="flex flex-col gap-2 py-4">
+                <div
+                  className="flex flex-col gap-2 py-4"
+                  onDragOver={hasGroups ? (e) => handleGroupDragOver(e, null) : undefined}
+                  onDragLeave={hasGroups ? handleGroupDragLeave : undefined}
+                  onDrop={hasGroups ? (e) => handleGroupDrop(e, null) : undefined}
+                >
                   <Button variant="secondary" size="sm" onClick={handleSelectAllToggle}>
                     {isAllSelected ? "Deselect all sources" : "Select all sources"}
                   </Button>
@@ -332,6 +439,10 @@ export function SourcesCard({
                           notebookId={notebookId}
                           group={group}
                           onChanged={handleGroupsChanged}
+                          isDropTarget={dragOverTarget === group.id}
+                          onDragOver={(e) => handleGroupDragOver(e, group.id)}
+                          onDragLeave={handleGroupDragLeave}
+                          onDrop={(e) => handleGroupDrop(e, group.id)}
                         >
                           {groupSources.length > 0 ? (
                             groupSources.map(renderSourceChip)
@@ -343,7 +454,13 @@ export function SourcesCard({
                         </SourceGroupSection>
                       ))}
                       {ungroupedSources.length > 0 && (
-                        <div className="flex flex-col gap-2 pt-1">
+                        <div
+                          className={cn(
+                            "flex flex-col gap-2 rounded-xs pt-1 transition-colors duration-150",
+                            dragOverTarget === null &&
+                              "bg-blue-50/60 ring-1 ring-blue-300 dark:bg-blue-900/10 dark:ring-blue-700",
+                          )}
+                        >
                           <span className="px-1 text-xs font-medium tracking-wide text-gray-400 uppercase select-none dark:text-gray-500">
                             Ungrouped
                           </span>
