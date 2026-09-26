@@ -5,7 +5,6 @@ import { TopBar } from "@/components";
 import { NotebookCard } from "@/components";
 import { NotebookIcon, SearchIcon } from "@/components/icons";
 import { motion } from "motion/react";
-import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
 import { TextField, CardSkeleton } from "@/components/ui";
 import { type SortOption, type ViewMode, VIEW_MODE_COOKIE_KEYS } from "@/components/settings";
 
@@ -113,8 +112,6 @@ export default function NotebooksPage() {
       <TopBar title="Notebooks" />
 
       <div className="flex-1 overflow-y-scroll py-4">
-        <SimpleBackground />
-
         <div className="mx-auto max-w-5xl space-y-4 px-6">
           <TextField
             id="notebook-search"

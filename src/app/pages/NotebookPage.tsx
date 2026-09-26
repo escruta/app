@@ -29,7 +29,6 @@ import {
 } from "@/components/icons";
 import { Spinner, ChromeTabs, SideNav, IconButton, Tooltip } from "@/components/ui";
 import { ToolResultTab } from "@/components/tools";
-import { SimpleBackground } from "@/components/backgrounds/SimpleBackground";
 import { NotebookErrorState } from "./notebook/NotebookStates";
 import { RenameNotebookModal } from "./notebook/RenameNotebookModal";
 
@@ -906,7 +905,6 @@ export default function NotebookPage() {
           }
         />
         <div className="relative flex-1 overflow-hidden">
-          <SimpleBackground />
           <NotebookErrorState error={{ status: 404, message: "Invalid notebook link" }} />
         </div>
       </div>
@@ -927,7 +925,6 @@ export default function NotebookPage() {
           }
         />
         <div className="relative flex-1 overflow-hidden">
-          <SimpleBackground />
           <NotebookErrorState error={error} />
         </div>
       </div>
@@ -948,7 +945,6 @@ export default function NotebookPage() {
           }
         />
         <div className="relative flex flex-1 items-center justify-center overflow-hidden">
-          <SimpleBackground />
           <Spinner />
         </div>
       </div>
