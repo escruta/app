@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/hooks";
-import { Button, Spinner, TextField } from "@/components/ui";
+import { Button, Divider, Spinner, TextField } from "@/components/ui";
 import { BACKEND_BASE_URL } from "@/config";
 
 type Step = "email" | "code" | "name";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const RESEND_COOLDOWN_SECONDS = 30;
 
 async function parseError(response: Response): Promise<string> {
   try {
@@ -29,6 +30,13 @@ export function WelcomePage() {
   const [verificationToken, setVerificationToken] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setTimeout(() => setCooldown((seconds) => seconds - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [cooldown]);
 
   const finishWithSession = async (token: string, expiresIn?: number) => {
     await setSessionToken(token, expiresIn);
@@ -49,6 +57,7 @@ export function WelcomePage() {
         setError(detail || "Could not send the verification code. Please try again.");
         return false;
       }
+      setCooldown(RESEND_COOLDOWN_SECONDS);
       return true;
     } catch {
       setError("Could not reach the server. Please check your connection and try again.");
@@ -213,9 +222,10 @@ export function WelcomePage() {
             >
               {pending ? "Verifying…" : "Verify code"}
             </Button>
-            <Button onClick={handleResend} disabled={pending} variant="secondary">
-              Resend code
+            <Button onClick={handleResend} disabled={pending || cooldown > 0} variant="secondary">
+              {cooldown > 0 ? `Resend code in ${cooldown}s` : "Resend code"}
             </Button>
+            <Divider className="mx-6 opacity-60" />
             <Button
               onClick={() => {
                 setStep("email");
