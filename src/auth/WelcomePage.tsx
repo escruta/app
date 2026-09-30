@@ -14,9 +14,7 @@ async function parseError(response: Response): Promise<string> {
     const data = await response.json();
     if (typeof data?.message === "string" && data.message) return data.message;
     if (typeof data?.detail === "string" && data.detail) return data.detail;
-  } catch {
-    // ignore, fall through to generic message
-  }
+  } catch {}
   return "";
 }
 

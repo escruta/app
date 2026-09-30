@@ -109,13 +109,10 @@ function BranchNode({
 
   return (
     <div className="flex items-center py-1.5">
-      {/* Connection line from parent */}
       <div className={cn("h-px w-8 shrink-0", getLineColor(level - 1))} />
 
       <div className="flex items-center">
-        {/* Node Container */}
         <div className="z-10 flex items-center gap-1.5">
-          {/* Node */}
           <div
             className={cn(
               "relative flex items-center px-3 py-1.5 rounded-xs border text-sm whitespace-nowrap select-none transition-colors",
@@ -166,7 +163,6 @@ function BranchNode({
           )}
         </div>
 
-        {/* Connection line to children */}
         <AnimatePresence>
           {hasChildren && isExpanded && (
             <motion.div
@@ -179,7 +175,6 @@ function BranchNode({
           )}
         </AnimatePresence>
 
-        {/* Children */}
         <AnimatePresence>
           {hasChildren && isExpanded && (
             <motion.div
@@ -191,7 +186,6 @@ function BranchNode({
             >
               {branch.children.map((child, index) => (
                 <div key={index} className="relative flex items-center">
-                  {/* Vertical connector */}
                   {branch.children.length > 1 && (
                     <div
                       className={cn(
@@ -258,9 +252,7 @@ function MainBranch({
   return (
     <div className="flex items-center py-2">
       <div className="flex items-center">
-        {/* Main branch node container */}
         <div className="z-10 flex items-center gap-1.5">
-          {/* Main branch node */}
           <div
             className={cn(
               "relative flex items-center px-4 py-2 rounded-xs border select-none transition-colors whitespace-nowrap",
@@ -311,7 +303,6 @@ function MainBranch({
           )}
         </div>
 
-        {/* Connection line to children */}
         <AnimatePresence>
           {hasChildren && isExpanded && (
             <motion.div
@@ -324,7 +315,6 @@ function MainBranch({
           )}
         </AnimatePresence>
 
-        {/* Children */}
         <AnimatePresence>
           {hasChildren && isExpanded && (
             <motion.div
@@ -336,7 +326,6 @@ function MainBranch({
             >
               {branch.children.map((child, index) => (
                 <div key={index} className="relative flex items-center">
-                  {/* Vertical connector */}
                   {branch.children.length > 1 && (
                     <div
                       className={cn(
@@ -489,7 +478,6 @@ export function MindMapViewer({ data, className, onNodeSelect }: MindMapViewerPr
 
   return (
     <div className={cn("relative size-full", className)}>
-      {/* Controls */}
       <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
         <div className="flex items-center gap-1.5">
           <button
@@ -546,7 +534,6 @@ export function MindMapViewer({ data, className, onNodeSelect }: MindMapViewerPr
         </button>
       </div>
 
-      {/* Canvas */}
       <div
         ref={containerRef}
         className={cn(
@@ -558,7 +545,6 @@ export function MindMapViewer({ data, className, onNodeSelect }: MindMapViewerPr
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerUp}
       >
-        {/* Grid pattern */}
         <div
           className="pointer-events-none absolute inset-0 opacity-10 dark:opacity-3"
           style={{
@@ -571,7 +557,6 @@ export function MindMapViewer({ data, className, onNodeSelect }: MindMapViewerPr
           }}
         />
 
-        {/* Content */}
         <motion.div
           ref={contentRef}
           className="absolute"
@@ -584,19 +569,15 @@ export function MindMapViewer({ data, className, onNodeSelect }: MindMapViewerPr
           style={{ transformOrigin: "0 0" }}
         >
           <div className="flex items-center">
-            {/* Central topic */}
             <div className="rounded-xs border border-gray-300 bg-white px-5 py-3 font-semibold whitespace-nowrap text-gray-900 shadow-xs select-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100">
               {central}
             </div>
 
-            {/* Branches */}
             <div className="relative ml-12 flex flex-col justify-center">
-              {/* Horizontal line from central to the vertical line */}
               <div className="absolute top-1/2 -left-12 h-px w-12 -translate-y-1/2 bg-gray-300 dark:bg-gray-600" />
 
               {branches.map((branch, index) => (
                 <div key={index} className="relative flex items-center py-2 pl-8">
-                  {/* Vertical connector */}
                   {branches.length > 1 && (
                     <div
                       className={cn(
@@ -609,7 +590,6 @@ export function MindMapViewer({ data, className, onNodeSelect }: MindMapViewerPr
                       )}
                     />
                   )}
-                  {/* Horizontal line from the vertical line to each branch */}
                   <div className="absolute left-0 h-px w-8 bg-gray-300 dark:bg-gray-600" />
                   <MainBranch
                     branch={branch}

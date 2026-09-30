@@ -199,7 +199,6 @@ export default function FolderPage() {
             </motion.div>
           ) : (
             <>
-              {/* Notebooks */}
               {displayNotebooks.length > 0 && (
                 <motion.section
                   initial={{ opacity: 0, y: 10 }}
@@ -261,7 +260,6 @@ export default function FolderPage() {
         </div>
       </div>
 
-      {/* Rename Folder Modal */}
       <Modal
         isOpen={isRenameModalOpen}
         onClose={() => {
@@ -307,7 +305,6 @@ export default function FolderPage() {
         </div>
       </Modal>
 
-      {/* Delete Folder Modal */}
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}

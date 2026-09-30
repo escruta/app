@@ -19,7 +19,6 @@ interface ChromeTabsProps {
   className?: string;
   onTabPointerDown?: (e: PointerEvent<HTMLDivElement>, id: string) => void;
   actions?: ReactNode;
-  /** Renders the items shown in a tab's right-click context menu. */
   renderTabContextMenu?: (id: string) => ReactNode;
 }
 
@@ -44,18 +43,13 @@ export function ChromeTabs({
         className,
       )}
     >
-      {/* Hairline separating the strip from the content. The active tab paints over
-          it so its bottom edge blends seamlessly into the page below. */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gray-200 dark:bg-gray-800" />
 
-      {/* Chrome/Safari style strip: no scroll, tabs shrink equally as more are added */}
       <div className="relative z-10 flex min-w-0 flex-1 items-stretch gap-0.5 overflow-hidden px-2">
         {tabs.map((tab, index) => {
           const active = tab.id === activeTabId;
           const closable = tab.closable !== false;
           const previous = tabs[index - 1];
-          // Hairline between two adjacent inactive tabs, like Chrome. It fades out
-          // when either neighbour is hovered so the hovered tab reads as one piece.
           const hasSeparator = Boolean(!active && previous && previous.id !== activeTabId);
           const separatorHidden = hoveredId === tab.id || hoveredId === previous?.id;
           const tabNode = (
@@ -69,11 +63,9 @@ export function ChromeTabs({
               onPointerDown={(e) => onTabPointerDown?.(e, tab.id)}
               onClick={() => onSelect(tab.id)}
               onMouseDown={(e: MouseEvent<HTMLDivElement>) => {
-                // Prevent autoscroll on middle-click.
                 if (e.button === 1) e.preventDefault();
               }}
               onAuxClick={(e: MouseEvent<HTMLDivElement>) => {
-                // Close tab on middle-click (scroll wheel click), like Chrome.
                 if (e.button === 1) {
                   e.preventDefault();
                   e.stopPropagation();

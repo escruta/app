@@ -453,7 +453,6 @@ export function SourceViewer({
         )}
       </ViewerFrame>
 
-      {/* Delete Source Modal */}
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}

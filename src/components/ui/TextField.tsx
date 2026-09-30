@@ -72,8 +72,6 @@ export function TextField({
     resizeTextarea();
   }, [value, multiline, minRows, resizeTextarea]);
 
-  // Re-measure when the field becomes visible again (e.g. when switching back
-  // to its tab): while hidden its scrollHeight is 0, so the height collapses.
   useEffect(() => {
     if (!multiline) return;
     const textarea = textareaRef.current;

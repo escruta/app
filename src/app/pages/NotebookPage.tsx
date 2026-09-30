@@ -38,7 +38,6 @@ const MIN_CENTER_PANEL_PX = 400;
 const MAX_LEFT_PANEL_PERCENT = 40;
 const MIN_SPLIT_PERCENT = 30;
 const MAX_SPLIT_PERCENT = 70;
-/** Pointer movement (px) before a tab press becomes a drag. */
 const TAB_DRAG_THRESHOLD_PX = 4;
 
 type TabKind = "chat" | "source" | "note" | "tool";
@@ -46,9 +45,7 @@ const NEW_CHAT_ID = "__new_chat__";
 
 type TabDescriptor = {
   kind: TabKind;
-  /** For chat: either NEW_CHAT_ID or a real conversation id. */
   refId: string;
-  /** For tabs whose ref id may change (new chat), an incremental counter. */
   seq: number;
   title: string;
   source?: Source | undefined;
@@ -56,10 +53,6 @@ type TabDescriptor = {
   toolType?: JobType | undefined;
 };
 
-/** Split view state: each side is a tab group with its own active tab.
- * `rightGroup` lists the tabs that belong to the right strip; every other tab
- * belongs to the left strip. Each tab lives in exactly one side, so the same
- * tab can never be shown on both sides. */
 type SplitState = { leftKey: string; rightKey: string; rightGroup: string[] };
 
 const TOOL_META: Record<JobType, { title: string; icon: React.ReactNode }> = {
@@ -126,8 +119,6 @@ export default function NotebookPage() {
     null,
   );
 
-  // Pointer-based tab dragging: a small threshold separates clicks from drags,
-  // so plain clicks always work and no drag state can get stuck.
   type TabDragState = { id: string; x: number; y: number; side: "left" | "right" | null };
   const [tabDrag, setTabDrag] = useState<TabDragState | null>(null);
   const tabDragRef = useRef<TabDragState | null>(null);
@@ -189,10 +180,8 @@ export default function NotebookPage() {
         initialLoadRef.current = false;
       } else {
         setSelectedSourceIds((prev) => {
-          // Identify truly new sources that weren't in the previous fetch
           const newSources = currentIds.filter((id) => !prevSourcesRef.current.includes(id));
 
-          // Keep only selected ids that still exist
           const validPrev = prev.filter((id) => currentIds.includes(id));
 
           if (newSources.length > 0 || validPrev.length !== prev.length) {
@@ -240,9 +229,6 @@ export default function NotebookPage() {
     setSelectedSourceIds([]);
   };
 
-  // Clicking a tab only affects ITS side: the tab becomes the active one of
-  // its own strip (replacing the previously active tab of that pane). Unknown
-  // keys (newly created tabs) join the side of the current active tab.
   const selectTab = useCallback(
     (key: string) => {
       if (splitState) {
@@ -274,8 +260,6 @@ export default function NotebookPage() {
       const candidate: TabDescriptor = { ...(descriptor as TabDescriptor), seq } as TabDescriptor;
       const candidateKey = tabKey(candidate);
 
-      // "New conversation" is a singleton: focus the existing empty chat tab
-      // instead of stacking more of them.
       if (descriptor.kind === "chat" && descriptor.refId === NEW_CHAT_ID) {
         const existingNewChat = tabs.find((t) => t.kind === "chat" && t.refId === NEW_CHAT_ID);
         if (existingNewChat) {
@@ -284,7 +268,6 @@ export default function NotebookPage() {
         }
       }
 
-      // Focus existing equivalent tab when possible.
       const existingIndex = tabs.findIndex((t) => {
         if (t.kind !== descriptor.kind) return false;
         if (
@@ -349,9 +332,6 @@ export default function NotebookPage() {
     [activeTabKey, persistedActiveKey, setPersistedActiveKey],
   );
 
-  // Ctrl+Tab / Ctrl+Shift+Tab navega entre pestañas (como en Chrome).
-  // En split view cicla dentro de la tira activa; sin split, por orden global.
-  // Hace wrap-around al llegar a los extremos.
   const cycleTab = useCallback(
     (direction: 1 | -1) => {
       if (tabs.length <= 1) return;
@@ -378,10 +358,6 @@ export default function NotebookPage() {
     [tabs, effectiveActiveKey, splitState, selectTab],
   );
 
-  // Ctrl+W / Cmd+W cierra el tab interno activo en vez de cerrar la app.
-  // El proceso main ya intercepta el atajo para que Electron no cierre la
-  // ventana y reenvía "shortcut:close-tab"; aquí también escuchamos el
-  // keydown directo para cubrir el modo web/dev.
   const closeTabRef = useRef(closeTab);
   closeTabRef.current = closeTab;
   const effectiveActiveKeyRef = useRef(effectiveActiveKey);
@@ -431,8 +407,6 @@ export default function NotebookPage() {
     return tabKey(candidate);
   }, []);
 
-  // Drop a tab on one side of the split view: it becomes that side's active
-  // tab and joins its strip. Each tab lives in exactly one side.
   const placeTab = useCallback(
     (id: string, side: "left" | "right") => {
       const keys = tabs.map(tabKey);
@@ -480,13 +454,10 @@ export default function NotebookPage() {
   );
   placeTabRef.current = placeTab;
 
-  // Persist open tabs so they survive reloads (like the panel width cookie).
   useEffect(() => {
     setPersistedTabs(tabs);
   }, [tabs, setPersistedTabs]);
 
-  // Refresh title/icon on source tabs when notebook data reloads, and drop
-  // source tabs whose underlying source has been deleted.
   useEffect(() => {
     if (!notebook?.sources) return;
     setTabs((prev) => {
@@ -519,11 +490,6 @@ export default function NotebookPage() {
     if (activeTab?.kind === "chat" && activeTab.refId !== NEW_CHAT_ID) return activeTab.refId;
     return null;
   }, [activeTab]);
-  // Keep the split groups valid: drop closed tabs from the groups, replace a
-  // side's active tab when it was closed (preferring the globally active tab),
-  // migrate old cookie shapes, and exit split view when a side runs out of
-  // tabs. Each tab still belongs to exactly one side, so duplicates are
-  // impossible by construction.
   useEffect(() => {
     if (!splitState) return;
     const keys = tabs.map(tabKey);
@@ -562,8 +528,6 @@ export default function NotebookPage() {
       setSplitState({ leftKey, rightKey, rightGroup });
     }
   }, [tabs, activeTabKey, splitState, setSplitState]);
-  // When a chat tab creates a real conversation, anchor its refId so it persists
-  // and won't be reused as a new-chat tab.
   const handleConversationCreated = useCallback((tabKeyStr: string, conversationId: string) => {
     setTabs((prev) =>
       prev.map((t) => {
@@ -658,14 +622,8 @@ export default function NotebookPage() {
     setActiveResizer("split");
   };
 
-  // --- Pointer-based tab dragging -----------------------------------------
-  // A drag begins only after the pointer moves past a small threshold, so
-  // plain clicks always work. Everything runs on window-level pointer events,
-  // so the drag always ends (no stuck overlays).
-
   const handleTabPointerDown = (e: React.PointerEvent<HTMLDivElement>, id: string) => {
     if (e.button !== 0) return;
-    // Don't start a drag from the tab's buttons (e.g. close).
     if ((e.target as HTMLElement).closest("button")) return;
     tabDragStartRef.current = { id, x: e.clientX, y: e.clientY };
   };
@@ -732,8 +690,6 @@ export default function NotebookPage() {
     };
   }, [endTabDrag]);
 
-  // Clicking inside a pane just marks its tab as the globally active one (so
-  // new tabs opened from the sidebar land there). It never moves content.
   const handlePaneMouseDown = (side: "left" | "right") => (e: React.MouseEvent) => {
     if (e.button !== 0 || !splitState) return;
     const key = side === "left" ? splitState.leftKey : splitState.rightKey;
@@ -743,8 +699,6 @@ export default function NotebookPage() {
     }
   };
 
-  // Snap-style drop preview + floating ghost chip shown while dragging a tab.
-  // Dropping on a half moves the tab to that side's strip.
   const draggingTab = tabDrag ? (tabs.find((t) => tabKey(t) === tabDrag.id) ?? null) : null;
   const dropOverlay =
     tabDrag && draggingTab ? (
@@ -1055,9 +1009,6 @@ export default function NotebookPage() {
     closable: true,
   }));
 
-  // Split panes: each side is a tab group; the pane shows its group's active
-  // tab. Each tab belongs to exactly one side, so the same tab can never show
-  // on both sides.
   const itemsByKey = new Map(chromeTabsItems.map((item) => [item.id, item]));
   const rightGroupKeys = splitState ? splitState.rightGroup : [];
   const leftGroupKeys = splitState
@@ -1297,7 +1248,6 @@ export default function NotebookPage() {
             </div>
           </div>
 
-          {/* Left Resizer */}
           <div
             className="group relative z-5 flex shrink-0 cursor-col-resize items-stretch justify-center after:absolute after:-inset-3"
             onMouseDown={handleMouseDownLeft}

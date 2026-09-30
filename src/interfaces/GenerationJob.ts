@@ -1,6 +1,4 @@
-export type JobType =
-  // | "AUDIO_SUMMARY"
-  "MIND_MAP" | "STUDY_GUIDE" | "FLASHCARDS" | "QUESTIONNAIRE";
+export type JobType = "MIND_MAP" | "STUDY_GUIDE" | "FLASHCARDS" | "QUESTIONNAIRE";
 
 export type JobStatus = "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
 

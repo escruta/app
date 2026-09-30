@@ -492,7 +492,6 @@ export function SourcesCard({
         </div>
       </div>
 
-      {/* Search Web Modal */}
       <SearchSourcesModal
         isOpen={isSearchModalOpen}
         onClose={() => setIsSearchModalOpen(false)}
@@ -502,7 +501,6 @@ export function SourcesCard({
         }}
       />
 
-      {/* Add Source Modal */}
       {isAddSourceModalOpen && (
         <Modal
           isOpen={isAddSourceModalOpen}
@@ -622,7 +620,6 @@ export function SourcesCard({
         </Modal>
       )}
 
-      {/* New Group Modal */}
       {isNewGroupModalOpen && (
         <Modal
           isOpen={isNewGroupModalOpen}
