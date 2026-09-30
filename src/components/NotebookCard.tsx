@@ -383,7 +383,6 @@ export function NotebookCard({
         renameError={renameError}
       />
 
-      {/* Delete Modal */}
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => {
@@ -433,7 +432,6 @@ export function NotebookCard({
         </div>
       </Modal>
 
-      {/* Move to Folder Modal */}
       <Modal
         isOpen={isMoveModalOpen}
         onClose={() => setIsMoveModalOpen(false)}

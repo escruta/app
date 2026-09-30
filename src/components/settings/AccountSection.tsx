@@ -98,7 +98,6 @@ export function AccountSection() {
         </Button>
       </div>
 
-      {/* Name Change Modal */}
       <Modal
         isOpen={isNameModalOpen}
         onClose={() => {
@@ -145,7 +144,6 @@ export function AccountSection() {
         </div>
       </Modal>
 
-      {/* Delete Account Modal */}
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => {

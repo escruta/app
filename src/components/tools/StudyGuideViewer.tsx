@@ -67,7 +67,6 @@ export function StudyGuideViewer({ data, className }: StudyGuideViewerProps) {
 
   return (
     <div className={cn("flex flex-col gap-4 p-6 max-w-3xl mx-auto", className)}>
-      {/* Overview - always visible */}
       <div className="rounded-xs border border-blue-200 bg-blue-50 p-4 dark:border-blue-700 dark:bg-blue-900/20">
         <p className="mb-2 text-xs font-medium tracking-wider text-blue-600 uppercase dark:text-blue-400">
           Overview
@@ -77,7 +76,6 @@ export function StudyGuideViewer({ data, className }: StudyGuideViewerProps) {
         </p>
       </div>
 
-      {/* Key Concepts */}
       {keyConcepts && keyConcepts.length > 0 && (
         <CollapsibleSection title="Key concepts" badge={keyConcepts.length} defaultOpen={true}>
           <div className="flex flex-col gap-2">
@@ -98,7 +96,6 @@ export function StudyGuideViewer({ data, className }: StudyGuideViewerProps) {
         </CollapsibleSection>
       )}
 
-      {/* Important Details */}
       {importantDetails && importantDetails.length > 0 && (
         <CollapsibleSection
           title="Important details"
@@ -118,7 +115,6 @@ export function StudyGuideViewer({ data, className }: StudyGuideViewerProps) {
         </CollapsibleSection>
       )}
 
-      {/* Connections */}
       {connections && connections.length > 0 && (
         <CollapsibleSection
           title="Connections & relationships"
@@ -140,7 +136,6 @@ export function StudyGuideViewer({ data, className }: StudyGuideViewerProps) {
         </CollapsibleSection>
       )}
 
-      {/* Review Questions */}
       {reviewQuestions && reviewQuestions.length > 0 && (
         <CollapsibleSection
           title="Review questions"

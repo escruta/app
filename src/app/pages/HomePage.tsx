@@ -190,7 +190,6 @@ export default function HomePage() {
             </Tooltip>
           </motion.div>
 
-          {/* Folders section */}
           <motion.section
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -241,7 +240,6 @@ export default function HomePage() {
             )}
           </motion.section>
 
-          {/* Notebooks section */}
           <motion.section
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -355,7 +353,6 @@ export default function HomePage() {
           </motion.section>
         </div>
 
-        {/* Create Notebook Modal */}
         <Modal
           isOpen={isCreateNotebookOpen}
           onClose={() => setIsCreateNotebookOpen(false)}
@@ -401,7 +398,6 @@ export default function HomePage() {
           </div>
         </Modal>
 
-        {/* Folder Modal */}
         <Modal
           isOpen={isFolderModalOpen}
           onClose={handleCloseFolderModal}
@@ -445,7 +441,6 @@ export default function HomePage() {
           </div>
         </Modal>
 
-        {/* Delete Folder Modal */}
         <Modal
           isOpen={!!folderToDelete}
           onClose={() => setFolderToDelete(null)}

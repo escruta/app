@@ -60,7 +60,6 @@ export const SideNav = forwardRef<SideNavRef, SideNavProps>(
       if (onChange) {
         onChange(tabId);
       }
-      // Clicking the rail while collapsed expands the panel on that section.
       if (collapsed && onCollapsedChange) {
         onCollapsedChange(false);
       }
@@ -72,7 +71,6 @@ export const SideNav = forwardRef<SideNavRef, SideNavProps>(
 
     return (
       <div className={cn("flex h-full w-full flex-row overflow-hidden", className)}>
-        {/* Icon rail */}
         <div className="flex w-14 shrink-0 flex-col items-center gap-1 overflow-x-hidden overflow-y-auto border-r border-gray-200 py-2 dark:border-gray-800">
           {onNewChat && (
             <>
@@ -137,7 +135,6 @@ export const SideNav = forwardRef<SideNavRef, SideNavProps>(
           )}
         </div>
 
-        {/* Section content — shared box so every panel keeps the same width */}
         {!collapsed && (
           <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
             <AnimatePresence mode="wait">

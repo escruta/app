@@ -224,7 +224,6 @@ export function NoteEditor({
         )}
       </ViewerFrame>
 
-      {/* Delete Note Modal */}
       <Modal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}

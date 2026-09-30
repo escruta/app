@@ -125,7 +125,6 @@ export function ToolCard({
           )}
         </div>
 
-        {/* Content */}
         <div className="flex flex-1 flex-col justify-center gap-0.5">
           <h3
             className={cn("font-medium text-sm leading-tight transition-colors duration-300", {

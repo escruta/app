@@ -119,7 +119,6 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
       onKeyDown={handleKeyDown}
       tabIndex={0}
     >
-      {/* ── Top Bar (fixed) ── */}
       <div className="flex shrink-0 flex-col gap-3 border-b border-gray-200 px-6 py-4 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -156,7 +155,6 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
           )}
         </div>
 
-        {/* Progress Bar */}
         <div className="relative h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
           <motion.div
             className="absolute inset-y-0 left-0 bg-blue-500"
@@ -173,7 +171,6 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
         </div>
       </div>
 
-      {/* ── Scrollable Content (middle) ── */}
       <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden">
         <div className="mx-auto w-full max-w-2xl px-6 py-6">
           <AnimatePresence initial={false} custom={direction} mode="wait">
@@ -198,7 +195,6 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
                 style={{ transformStyle: "preserve-3d" }}
                 className="relative h-56 w-full"
               >
-                {/* Front - Question */}
                 <div
                   className={cn(
                     "absolute inset-0 backface-hidden rounded-xs border-2 p-6",
@@ -233,7 +229,6 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
                   </p>
                 </div>
 
-                {/* Back - Answer */}
                 <div
                   className={cn(
                     "absolute inset-0 backface-hidden rounded-xs rotate-y-180 border-2 p-6",
@@ -257,7 +252,6 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
         </div>
       </div>
 
-      {/* ── Bottom Bar (fixed) ── */}
       <div className="flex shrink-0 flex-col items-center gap-3 border-t border-gray-200 px-6 py-3 dark:border-gray-700">
         <div className="mx-auto grid w-full max-w-2xl grid-cols-[1fr_auto_1fr] items-center">
           <div className="flex justify-start">
@@ -299,7 +293,6 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
           </div>
         </div>
 
-        {/* Dot indicators */}
         <div className="flex items-center gap-1">
           {flashcards.map((_, idx) => (
             <button
@@ -329,7 +322,6 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
           ))}
         </div>
 
-        {/* Keyboard Shortcuts */}
         <div className="flex gap-4 text-[10px] font-medium text-gray-400 dark:text-gray-500">
           <div className="flex items-center gap-1.5">
             <kbd className="rounded-xs border border-gray-200 bg-gray-50 px-1.5 py-0.5 font-mono text-[10px] dark:border-gray-700 dark:bg-gray-800">

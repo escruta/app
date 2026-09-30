@@ -152,7 +152,6 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
 
   return (
     <div className={cn("flex flex-col h-full", className)}>
-      {/* ── Top Bar (fixed) ── */}
       <div className="flex shrink-0 flex-col gap-3 border-b border-gray-200 px-6 py-4 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -189,7 +188,6 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
           )}
         </div>
 
-        {/* Progress Bar */}
         <div className="relative h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
           <motion.div
             className="absolute inset-y-0 left-0 bg-blue-500"
@@ -206,7 +204,6 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
         </div>
       </div>
 
-      {/* ── Scrollable Content (middle) ── */}
       <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
         <div className="mx-auto max-w-3xl px-6 py-4">
           <AnimatePresence mode="wait">
@@ -297,7 +294,6 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
         </div>
       </div>
 
-      {/* ── Bottom Bar (fixed) ── */}
       {!showResults && (
         <div className="shrink-0 border-t border-gray-200 px-6 py-3 dark:border-gray-700">
           <div className="mx-auto grid max-w-3xl grid-cols-[1fr_auto_1fr] items-center">
@@ -315,7 +311,6 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
             </div>
 
             <div className="flex items-center justify-center">
-              {/* Dot indicators */}
               <div className="flex items-center gap-1">
                 {questions.map((_, idx) => (
                   <button
@@ -417,7 +412,6 @@ function QuestionContent({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Question header */}
       <div className="flex items-start gap-3">
         <span
           className={cn(
@@ -476,9 +470,7 @@ function QuestionContent({
         </AnimatePresence>
       </div>
 
-      {/* Answer options */}
       <div>
-        {/* Multiple choice */}
         {question.type === "multiple_choice" && question.options && (
           <div className="flex flex-col gap-2">
             {question.options.map((option, oIndex) => (
@@ -535,7 +527,6 @@ function QuestionContent({
           </div>
         )}
 
-        {/* True/False */}
         {question.type === "true_false" && (
           <div className="flex gap-3">
             {[true, false].map((value) => (
@@ -569,7 +560,6 @@ function QuestionContent({
           </div>
         )}
 
-        {/* Short answer */}
         {question.type === "short_answer" && (
           <div>
             <textarea
@@ -622,7 +612,6 @@ function QuestionContent({
         )}
       </div>
 
-      {/* Explanation */}
       <AnimatePresence>
         {state.showExplanation && question.explanation && (
           <motion.div

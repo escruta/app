@@ -141,7 +141,6 @@ export function Dropdown<T>({
       )}
 
       <div className="relative max-w-xs min-w-0 flex-1 sm:max-w-sm" ref={dropdownRef}>
-        {/* Trigger Button */}
         <button
           type="button"
           onClick={() => !disabled && handleOpenChange(!isOpen)}
@@ -175,7 +174,6 @@ export function Dropdown<T>({
             {selectedOption != null ? renderOption(selectedOption as T) : placeholder}
           </span>
 
-          {/* Chevron Icon */}
           <span
             className={cn(
               "absolute inset-y-0 right-0 flex items-center pointer-events-none",
@@ -192,7 +190,6 @@ export function Dropdown<T>({
           </span>
         </button>
 
-        {/* Dropdown Menu */}
         {createPortal(
           <AnimatePresence>
             {isOpen && !disabled && (

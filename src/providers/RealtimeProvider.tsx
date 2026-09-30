@@ -79,9 +79,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
           let data: unknown = payload;
           try {
             data = JSON.parse(payload);
-          } catch {
-            /* keep raw string */
-          }
+          } catch {}
           handlers.forEach((handler) => handler(data));
         };
 

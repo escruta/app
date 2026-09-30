@@ -51,9 +51,7 @@ export function useChatStream(endpoint: string, callbacks: ChatStreamCallbacks) 
             try {
               const parsed = JSON.parse(payload);
               if (parsed.conversationId) cb.onConversation?.(parsed.conversationId);
-            } catch {
-              /* ignore malformed frame */
-            }
+            } catch {}
             break;
           case "token":
             cb.onToken?.(payload);
@@ -64,9 +62,7 @@ export function useChatStream(endpoint: string, callbacks: ChatStreamCallbacks) 
           case "sources":
             try {
               cb.onSources?.(JSON.parse(payload) as CitedSource[]);
-            } catch {
-              /* ignore malformed frame */
-            }
+            } catch {}
             break;
           case "done":
             cb.onDone?.();
@@ -108,9 +104,7 @@ export function useChatStream(endpoint: string, callbacks: ChatStreamCallbacks) 
           try {
             const errorJson = JSON.parse(text);
             message = errorJson.message || errorJson.detail || text;
-          } catch {
-            /* keep raw text */
-          }
+          } catch {}
           callbacksRef.current.onError?.(response.status, message || response.statusText);
           return;
         }
