@@ -2,6 +2,7 @@ import { useState, type MouseEvent, type PointerEvent, type ReactNode } from "re
 import { cn } from "@/lib/utils";
 import { CloseIcon } from "@/components/icons";
 import { IconButton } from "./IconButton";
+import { ContextMenu, ContextMenuTrigger, ContextMenuContent } from "./ContextMenu";
 
 interface ChromeTabItem {
   id: string;
@@ -18,6 +19,8 @@ interface ChromeTabsProps {
   className?: string;
   onTabPointerDown?: (e: PointerEvent<HTMLDivElement>, id: string) => void;
   actions?: ReactNode;
+  /** Renders the items shown in a tab's right-click context menu. */
+  renderTabContextMenu?: (id: string) => ReactNode;
 }
 
 export function ChromeTabs({
@@ -28,6 +31,7 @@ export function ChromeTabs({
   className,
   onTabPointerDown,
   actions,
+  renderTabContextMenu,
 }: ChromeTabsProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
@@ -54,7 +58,7 @@ export function ChromeTabs({
           // when either neighbour is hovered so the hovered tab reads as one piece.
           const hasSeparator = Boolean(!active && previous && previous.id !== activeTabId);
           const separatorHidden = hoveredId === tab.id || hoveredId === previous?.id;
-          return (
+          const tabNode = (
             <div
               key={tab.id}
               data-tab-id={tab.id}
@@ -128,6 +132,15 @@ export function ChromeTabs({
                 </span>
               )}
             </div>
+          );
+
+          if (!renderTabContextMenu) return tabNode;
+
+          return (
+            <ContextMenu key={tab.id}>
+              <ContextMenuTrigger>{tabNode}</ContextMenuTrigger>
+              <ContextMenuContent compact>{renderTabContextMenu(tab.id)}</ContextMenuContent>
+            </ContextMenu>
           );
         })}
       </div>

@@ -26,8 +26,9 @@ import {
   StarsIcon,
   SplitIcon,
   StackIcon,
+  CloseIcon,
 } from "@/components/icons";
-import { Spinner, ChromeTabs, SideNav, IconButton, Tooltip } from "@/components/ui";
+import { Spinner, ChromeTabs, SideNav, ContextMenuItem } from "@/components/ui";
 import { ToolResultTab } from "@/components/tools";
 import { NotebookErrorState } from "./notebook/NotebookStates";
 import { RenameNotebookModal } from "./notebook/RenameNotebookModal";
@@ -429,18 +430,6 @@ export default function NotebookPage() {
     setTabs((prev) => [...prev, candidate]);
     return tabKey(candidate);
   }, []);
-
-  // Activate split view: the current tab keeps the left pane (and its strip),
-  // every other tab goes to the right strip.
-  const toggleSplit = useCallback(() => {
-    if (splitState) {
-      setSplitState(null);
-      return;
-    }
-    const otherKeys = tabs.map(tabKey).filter((k) => k !== effectiveActiveKey);
-    const rightGroup = otherKeys.length > 0 ? otherKeys : [createChatTabSilent()];
-    setSplitState({ leftKey: effectiveActiveKey, rightKey: rightGroup[0], rightGroup });
-  }, [splitState, setSplitState, tabs, effectiveActiveKey, createChatTabSilent]);
 
   // Drop a tab on one side of the split view: it becomes that side's active
   // tab and joins its strip. Each tab lives in exactly one side.
@@ -1104,16 +1093,26 @@ export default function NotebookPage() {
     </div>
   );
 
-  const splitToggleButton = (
-    <Tooltip text={splitActive ? "Close split view" : "Split view"}>
-      <IconButton
+  const renderTabContextMenu = (id: string) => (
+    <>
+      <ContextMenuItem
         icon={<SplitIcon className="size-3.5" />}
-        variant={splitActive ? "primary" : "ghost"}
-        size="xs"
-        onClick={toggleSplit}
-        ariaLabel={splitActive ? "Close split view" : "Split view"}
+        label="Split left"
+        onClick={() => placeTab(id, "left")}
       />
-    </Tooltip>
+      <ContextMenuItem
+        icon={<SplitIcon className="size-3.5" />}
+        label="Split right"
+        onClick={() => placeTab(id, "right")}
+      />
+      {splitActive && (
+        <ContextMenuItem
+          icon={<CloseIcon className="size-3.5" />}
+          label="Close split view"
+          onClick={() => setSplitState(null)}
+        />
+      )}
+    </>
   );
 
   const centerColumn = (
@@ -1130,6 +1129,7 @@ export default function NotebookPage() {
               onSelect={selectTab}
               onClose={closeTab}
               onTabPointerDown={handleTabPointerDown}
+              renderTabContextMenu={renderTabContextMenu}
               className="h-11"
             />
             <div
@@ -1149,7 +1149,7 @@ export default function NotebookPage() {
               onSelect={selectTab}
               onClose={closeTab}
               onTabPointerDown={handleTabPointerDown}
-              actions={splitToggleButton}
+              renderTabContextMenu={renderTabContextMenu}
               className="h-11"
             />
             <div
@@ -1170,7 +1170,7 @@ export default function NotebookPage() {
             onSelect={selectTab}
             onClose={closeTab}
             onTabPointerDown={handleTabPointerDown}
-            actions={splitToggleButton}
+            renderTabContextMenu={renderTabContextMenu}
           />
           <div
             ref={contentRef}
