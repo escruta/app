@@ -4,6 +4,10 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+if (process.platform === "linux") {
+  app.commandLine.appendSwitch("blink-settings", "middleClickPasteAllowed=false");
+}
+
 let mainWindow: BrowserWindow | null = null;
 
 function resolveIconPath(): string | undefined {
@@ -30,15 +34,11 @@ function registerWindowControls() {
   });
 }
 
-// Ctrl+W / Cmd+W cierra la ventana por defecto en Chromium. Lo interceptamos
-// antes de que llegue al renderer para que no cierre la app: en su lugar
-// avisamos al renderer para que cierre el tab interno activo.
 function interceptCloseTabShortcut(window: BrowserWindow) {
   window.webContents.on("before-input-event", (event, input) => {
     if (input.type !== "keyDown") return;
     if (typeof input.key !== "string" || input.key.toLowerCase() !== "w") return;
     if (!input.control && !input.meta) return;
-    // Dejamos pasar Ctrl+Shift+W / Cmd+Shift+W (cerrar ventana) y combos con Alt.
     if (input.shift || input.alt) return;
     event.preventDefault();
     window.webContents.send("shortcut:close-tab");
