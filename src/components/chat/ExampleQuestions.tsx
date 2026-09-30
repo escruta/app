@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import { Alert, Button, Skeleton } from "@/components/ui";
-import { RestartIcon } from "@/components/icons";
+import { RestartIcon, StarsIcon } from "@/components/icons";
 import { getHttpErrorMessage } from "@/lib/utils";
 
 interface ExampleQuestionsProps {
@@ -24,10 +24,18 @@ export function ExampleQuestions({
   refetchExampleQuestions,
   onQuestionSelect,
 }: ExampleQuestionsProps) {
+  const showPlaceholder =
+    isExampleQuestionsLoading ||
+    isAutoRegenerating ||
+    skipExampleQuestionsFetch ||
+    readySourcesCount === 0;
+
+  const questions = exampleQuestions?.questions ?? [];
+
   return (
-    <div className="mt-6 px-4">
+    <div className="mb-1.5 flex flex-col">
       {exampleQuestionsError && !skipExampleQuestionsFetch ? (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col items-start gap-2 px-1 py-1">
           <Alert message={getHttpErrorMessage(exampleQuestionsError?.status)} variant="danger" />
           <Button
             onClick={() => refetchExampleQuestions(true)}
@@ -40,62 +48,38 @@ export function ExampleQuestions({
           </Button>
         </div>
       ) : (
-        <div className="flex flex-col gap-2">
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={
-                isExampleQuestionsLoading ||
-                isAutoRegenerating ||
-                skipExampleQuestionsFetch ||
-                readySourcesCount === 0
-                  ? "loading"
-                  : "questions"
-              }
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15, ease: "easeInOut" }}
-              className="flex flex-col gap-2"
-            >
-              {isExampleQuestionsLoading ||
-              isAutoRegenerating ||
-              skipExampleQuestionsFetch ||
-              readySourcesCount === 0 ? (
-                <>
-                  <Skeleton variant="rectangle" height={34} />
-                  <Skeleton variant="rectangle" height={34} />
-                  <Skeleton variant="rectangle" height={34} />
-                </>
-              ) : exampleQuestions?.questions && exampleQuestions.questions.length > 0 ? (
-                <>
-                  {exampleQuestions.questions.map((question, index) => (
-                    <button
-                      key={index}
-                      type="button"
-                      onClick={() => onQuestionSelect(question)}
-                      className="group flex w-full items-start gap-2 text-left"
-                    >
-                      <span className="mt-0.5 shrink-0 font-medium text-gray-400 transition-colors group-hover:text-blue-500 dark:text-gray-500 dark:group-hover:text-blue-400">
-                        +
-                      </span>
-                      <span className="text-sm leading-relaxed text-gray-600 transition-colors group-hover:text-blue-600 dark:text-gray-300 dark:group-hover:text-blue-400">
-                        {question}
-                      </span>
-                    </button>
-                  ))}
-                  <Button
-                    icon={<RestartIcon className="size-3.5" />}
-                    variant="ghost"
-                    onClick={() => refetchExampleQuestions(true)}
-                    size="sm"
-                  >
-                    Refresh questions
-                  </Button>
-                </>
-              ) : null}
-            </motion.div>
-          </AnimatePresence>
-        </div>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={showPlaceholder ? "loading" : "questions"}
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            transition={{ duration: 0.15, ease: "easeInOut" }}
+            className="flex flex-col"
+          >
+            {showPlaceholder ? (
+              <div className="space-y-1">
+                <Skeleton variant="rectangle" height={30} />
+                <Skeleton variant="rectangle" height={30} />
+                <Skeleton variant="rectangle" height={30} />
+              </div>
+            ) : questions.length > 0 ? (
+              questions.map((question, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => onQuestionSelect(question)}
+                  className="group flex w-full items-center gap-2 rounded-sm px-1 py-1.5 text-left transition-colors hover:bg-gray-100/70 dark:hover:bg-gray-800/50"
+                >
+                  <StarsIcon className="size-3.5 shrink-0 text-gray-300 transition-colors group-hover:text-blue-400 dark:text-gray-600 dark:group-hover:text-blue-400" />
+                  <span className="text-[13px] leading-relaxed text-gray-500 transition-colors group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-200">
+                    {question}
+                  </span>
+                </button>
+              ))
+            ) : null}
+          </motion.div>
+        </AnimatePresence>
       )}
     </div>
   );
