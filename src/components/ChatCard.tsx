@@ -1,4 +1,4 @@
-import { useFetch, useCookie, useChatStream, useChatGreeting, useRealtimeEvent } from "@/hooks";
+import { useFetch, useCookie, useChatStream, useRealtimeEvent } from "@/hooks";
 import { FileIcon, SendIcon, ChatNewIcon } from "@/components/icons";
 import { Divider, TextField, IconButton, Tooltip, Spinner } from "@/components/ui";
 import type { ConversationMessages, Source } from "@/interfaces";
@@ -46,8 +46,6 @@ export function ChatCard({
 }: ChatCardProps) {
   const sourcesCount = sources.length;
   const readySourcesCount = sources.filter((s) => s.status === "READY").length;
-
-  const { greeting, subtitle } = useChatGreeting();
 
   const [cachedExampleQuestions, setCachedExampleQuestions] = useCookie<{
     questions: string[];
@@ -378,45 +376,59 @@ export function ChatCard({
   const inputField = (
     <div
       ref={inputContainerRef}
-      className="pointer-events-auto relative mx-auto my-6 flex w-[calc(100%-2rem)] max-w-2xl flex-col rounded-xs border border-gray-300 bg-white shadow-sm transition-all focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400"
+      className="pointer-events-auto relative mx-auto my-6 flex w-[calc(100%-2rem)] max-w-2xl flex-col"
     >
-      <TextField
-        id="chat-input"
-        value={input}
-        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setInput(e.target.value)}
-        onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-          if (e.key === "Enter" && !e.shiftKey && !isChatLoading && input.trim()) {
-            e.preventDefault();
-            handleSendMessage();
+      {!isChatLoading && sourcesCount > 0 && messages.length === 0 && (
+        <ExampleQuestions
+          exampleQuestionsError={exampleQuestionsError}
+          skipExampleQuestionsFetch={false}
+          isExampleQuestionsLoading={isExampleQuestionsLoading}
+          isAutoRegenerating={false}
+          readySourcesCount={readySourcesCount}
+          exampleQuestions={exampleQuestions}
+          refetchExampleQuestions={refetchExampleQuestions}
+          onQuestionSelect={(q) => setInput(q)}
+        />
+      )}
+      <div className="relative flex flex-col rounded-xs border border-gray-300 bg-white shadow-sm transition-all focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400">
+        <TextField
+          id="chat-input"
+          value={input}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setInput(e.target.value)}
+          onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+            if (e.key === "Enter" && !e.shiftKey && !isChatLoading && input.trim()) {
+              e.preventDefault();
+              handleSendMessage();
+            }
+          }}
+          placeholder={
+            sourcesCount === 0
+              ? "Add sources to start chatting..."
+              : selectedSourceIds.length > 0
+                ? `Ask a question (${selectedSourceIds.length} source${selectedSourceIds.length !== 1 ? "s" : ""} selected)...`
+                : "Select sources to start chatting..."
           }
-        }}
-        placeholder={
-          sourcesCount === 0
-            ? "Add sources to start chatting..."
-            : selectedSourceIds.length > 0
-              ? `Ask a question (${selectedSourceIds.length} source${selectedSourceIds.length !== 1 ? "s" : ""} selected)...`
-              : "Select sources to start chatting..."
-        }
-        className="w-full rounded-t-xs border-0 bg-transparent pt-3 pr-4 pb-1 pl-4 shadow-none hover:border-transparent hover:ring-0 hover:ring-offset-0 focus:border-transparent focus:ring-0 focus:ring-offset-0 dark:hover:ring-offset-0 dark:focus:ring-0 dark:focus:ring-offset-0"
-        disabled={isChatLoading || selectedSourceIds.length === 0}
-        autoFocus={autoFocus}
-        minRows={2}
-        maxRows={8}
-        multiline
-      />
-      <div className="h-px bg-gray-200/80 dark:bg-gray-700/60" />
-      <div className="flex items-center justify-between gap-2 px-2.5 py-1.5">
-        <ChatModeToggle value={mode} onChange={setMode} disabled={isChatLoading} />
-        <Tooltip text="Send your question" position="top">
-          <IconButton
-            icon={<SendIcon />}
-            onClick={handleSendMessage}
-            disabled={isChatLoading || !input.trim() || selectedSourceIds.length === 0}
-            aria-label="Send your question"
-            size="sm"
-            variant="primary"
-          />
-        </Tooltip>
+          className="w-full rounded-t-xs border-0 bg-transparent pt-3 pr-4 pb-1 pl-4 shadow-none hover:border-transparent hover:ring-0 hover:ring-offset-0 focus:border-transparent focus:ring-0 focus:ring-offset-0 dark:hover:ring-offset-0 dark:focus:ring-0 dark:focus:ring-offset-0"
+          disabled={isChatLoading || selectedSourceIds.length === 0}
+          autoFocus={autoFocus}
+          minRows={2}
+          maxRows={8}
+          multiline
+        />
+        <div className="h-px bg-gray-200/80 dark:bg-gray-700/60" />
+        <div className="flex items-center justify-between gap-2 px-2.5 py-1.5">
+          <ChatModeToggle value={mode} onChange={setMode} disabled={isChatLoading} />
+          <Tooltip text="Send your question" position="top">
+            <IconButton
+              icon={<SendIcon />}
+              onClick={handleSendMessage}
+              disabled={isChatLoading || !input.trim() || selectedSourceIds.length === 0}
+              aria-label="Send your question"
+              size="sm"
+              variant="primary"
+            />
+          </Tooltip>
+        </div>
       </div>
     </div>
   );
@@ -487,15 +499,7 @@ export function ChatCard({
             className="absolute inset-0 flex overflow-y-auto px-4 pt-6 md:px-6"
             style={{ paddingBottom: inputHeight + 24 }}
           >
-            <div className="m-auto w-[calc(100%-2rem)] max-w-3xl">
-              {sourcesCount > 0 && (
-                <div className="px-4 text-center">
-                  <h3 className="text-foreground mb-1 text-xl font-semibold">{greeting}</h3>
-                  <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                    {subtitle}
-                  </p>
-                </div>
-              )}
+            <div className="m-auto w-full max-w-xl">
               {sourcesCount === 0 && (
                 <div className="flex flex-col items-center px-4 pb-2 text-center">
                   <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
@@ -511,18 +515,6 @@ export function ChatCard({
                     text, or add web links.
                   </p>
                 </div>
-              )}
-              {!isChatLoading && sourcesCount > 0 && (
-                <ExampleQuestions
-                  exampleQuestionsError={exampleQuestionsError}
-                  skipExampleQuestionsFetch={false}
-                  isExampleQuestionsLoading={isExampleQuestionsLoading}
-                  isAutoRegenerating={false}
-                  readySourcesCount={readySourcesCount}
-                  exampleQuestions={exampleQuestions}
-                  refetchExampleQuestions={refetchExampleQuestions}
-                  onQuestionSelect={(q) => setInput(q)}
-                />
               )}
             </div>
           </div>
