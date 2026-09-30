@@ -2,12 +2,14 @@ import { useState, useRef, useCallback } from "react";
 import { useCookie } from "./useCookie";
 import { AUTH_TOKEN_KEY, BACKEND_BASE_URL } from "@/config";
 import type { Token } from "@/interfaces";
+import type { ChatMode } from "@/interfaces";
 import type { CitedSource } from "@/components/chat/ChatMessage";
 
 export interface ChatStreamData {
   userInput: string;
   conversationId: string | null;
   selectedSourceIds: string[];
+  mode: ChatMode;
 }
 
 export interface ChatStreamCallbacks {

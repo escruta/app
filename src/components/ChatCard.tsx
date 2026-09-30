@@ -2,12 +2,14 @@ import { useFetch, useCookie, useChatStream, useChatGreeting, useRealtimeEvent }
 import { FileIcon, SendIcon, ChatNewIcon } from "@/components/icons";
 import { Divider, TextField, IconButton, Tooltip, Spinner } from "@/components/ui";
 import type { ConversationMessages, Source } from "@/interfaces";
+import type { ChatMode } from "@/interfaces";
 import { useEffect, useState, useRef, useMemo, useCallback, useLayoutEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { getHttpErrorMessage } from "@/lib/utils";
 
 import { ChatMessage, type Message } from "./chat/ChatMessage";
 import { ExampleQuestions } from "./chat/ExampleQuestions";
+import { ChatModeToggle } from "./chat/ChatModeToggle";
 
 type Sender = "user" | "ai";
 
@@ -98,6 +100,7 @@ export function ChatCard({
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
+  const [mode, setMode] = useState<ChatMode>("NORMAL");
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [conversationTitle, setConversationTitle] = useState<string | null>(null);
   const [conversationToLoadId, setConversationToLoadId] = useState<string | null>(null);
@@ -154,6 +157,7 @@ export function ChatCard({
         setMessages(loadedMessages);
         setConversationId(conversationToLoadId);
         setConversationTitle(pendingConversationTitle);
+        setMode(data.mode ?? "NORMAL");
         setConversationToLoadId(null);
         setPendingConversationTitle(null);
       },
@@ -265,9 +269,10 @@ export function ChatCard({
         userInput: pendingMessageRef.current || "",
         conversationId: overrideConversationId,
         selectedSourceIds,
+        mode,
       });
     },
-    [conversationId, selectedSourceIds, streamChat],
+    [conversationId, selectedSourceIds, streamChat, mode],
   );
 
   const handleSendMessage = async () => {
@@ -364,6 +369,7 @@ export function ChatCard({
     setInput("");
     setConversationId(null);
     setConversationTitle(null);
+    setMode("NORMAL");
     setExtraBottomSpacer(0);
     setPendingAlign(false);
     scrollTargetRef.current = null;
@@ -372,7 +378,7 @@ export function ChatCard({
   const inputField = (
     <div
       ref={inputContainerRef}
-      className="pointer-events-auto relative mx-auto my-6 flex w-[calc(100%-2rem)] max-w-3xl flex-col rounded-xs border border-gray-300 bg-white shadow-sm transition-all focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400"
+      className="pointer-events-auto relative mx-auto my-6 flex w-[calc(100%-2rem)] max-w-2xl flex-col rounded-xs border border-gray-300 bg-white shadow-sm transition-all focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400"
     >
       <TextField
         id="chat-input"
@@ -391,13 +397,16 @@ export function ChatCard({
               ? `Ask a question (${selectedSourceIds.length} source${selectedSourceIds.length !== 1 ? "s" : ""} selected)...`
               : "Select sources to start chatting..."
         }
-        className="w-full rounded-t-xs border-0 bg-transparent py-3 pr-12 pl-4 shadow-none hover:border-transparent hover:ring-0 hover:ring-offset-0 focus:border-transparent focus:ring-0 focus:ring-offset-0 dark:hover:ring-offset-0 dark:focus:ring-0 dark:focus:ring-offset-0"
+        className="w-full rounded-t-xs border-0 bg-transparent pt-3 pr-4 pb-1 pl-4 shadow-none hover:border-transparent hover:ring-0 hover:ring-offset-0 focus:border-transparent focus:ring-0 focus:ring-offset-0 dark:hover:ring-offset-0 dark:focus:ring-0 dark:focus:ring-offset-0"
         disabled={isChatLoading || selectedSourceIds.length === 0}
         autoFocus={autoFocus}
-        maxRows={5}
+        minRows={2}
+        maxRows={8}
         multiline
       />
-      <div className="absolute right-2 bottom-2">
+      <div className="h-px bg-gray-200/80 dark:bg-gray-700/60" />
+      <div className="flex items-center justify-between gap-2 px-2.5 py-1.5">
+        <ChatModeToggle value={mode} onChange={setMode} disabled={isChatLoading} />
         <Tooltip text="Send your question" position="top">
           <IconButton
             icon={<SendIcon />}
@@ -441,75 +450,69 @@ export function ChatCard({
         )}
       </div>
       <Divider className="my-0" />
-      <AnimatePresence mode="wait">
+      <div className="relative min-h-0 flex-1">
         {messages.length > 0 ? (
-          <motion.div
-            key="chat-messages"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+          <div
             ref={scrollContainerRef}
-            className="min-h-0 flex-1 scroll-pt-4 space-y-4 overflow-y-auto scroll-smooth px-4 py-4 *:mx-auto *:max-w-3xl md:px-6"
+            className="absolute inset-0 scroll-pt-4 scrollbar-gutter-stable overflow-y-auto scroll-smooth px-4 py-4 md:px-6"
           >
-            <AnimatePresence initial={false}>
-              {messages.map((message, index) => (
-                <ChatMessage
-                  key={message.id}
-                  message={message}
-                  index={index}
-                  onRetryFromError={handleRetryFromError}
-                  onSourceClick={handleSourceClick}
-                />
-              ))}
-            </AnimatePresence>
-            {(isWaitingForResponse || isLoadingConversation) && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.2 }}
-                className="flex justify-start"
-              >
-                <Spinner />
-              </motion.div>
-            )}
+            <div className="space-y-4 *:mx-auto *:max-w-3xl">
+              <AnimatePresence initial={false}>
+                {messages.map((message, index) => (
+                  <ChatMessage
+                    key={message.id}
+                    message={message}
+                    index={index}
+                    onRetryFromError={handleRetryFromError}
+                    onSourceClick={handleSourceClick}
+                  />
+                ))}
+              </AnimatePresence>
+              {(isWaitingForResponse || isLoadingConversation) && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex justify-start"
+                >
+                  <Spinner />
+                </motion.div>
+              )}
+            </div>
             <div style={{ height: inputHeight + extraBottomSpacer + 20 }} className="shrink-0" />
-          </motion.div>
+          </div>
         ) : (
-          <motion.div
-            key="chat-empty"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="flex min-h-0 grow flex-col justify-center overflow-y-auto px-4"
+          <div
+            className="absolute inset-0 flex overflow-y-auto px-4 pt-6 md:px-6"
+            style={{ paddingBottom: inputHeight + 24 }}
           >
-            {sourcesCount > 0 && (
-              <div className="mx-auto w-[calc(100%-2rem)] max-w-3xl px-4 text-center">
-                <h3 className="text-foreground mb-1 text-xl font-semibold">{greeting}</h3>
-                <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                  {subtitle}
-                </p>
-              </div>
-            )}
-            {sourcesCount === 0 && (
-              <div className="flex flex-col items-center px-4 pb-2 text-center">
-                <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
-                  <div className="size-10 text-blue-500 dark:text-blue-400">
-                    <FileIcon />
-                  </div>
+            <div className="m-auto w-[calc(100%-2rem)] max-w-3xl">
+              {sourcesCount > 0 && (
+                <div className="px-4 text-center">
+                  <h3 className="text-foreground mb-1 text-xl font-semibold">{greeting}</h3>
+                  <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                    {subtitle}
+                  </p>
                 </div>
-                <h3 className="text-foreground mb-2 text-lg font-semibold">No sources here yet</h3>
-                <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                  Add sources to start chatting with your documents. You can upload PDFs, paste
-                  text, or add web links.
-                </p>
-              </div>
-            )}
-            {inputField}
-            {!isChatLoading && sourcesCount > 0 && (
-              <div className="pointer-events-auto relative z-10 mx-auto -mt-3 mb-6 w-[calc(100%-2rem)] max-w-3xl">
+              )}
+              {sourcesCount === 0 && (
+                <div className="flex flex-col items-center px-4 pb-2 text-center">
+                  <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
+                    <div className="size-10 text-blue-500 dark:text-blue-400">
+                      <FileIcon />
+                    </div>
+                  </div>
+                  <h3 className="text-foreground mb-2 text-lg font-semibold">
+                    No sources here yet
+                  </h3>
+                  <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                    Add sources to start chatting with your documents. You can upload PDFs, paste
+                    text, or add web links.
+                  </p>
+                </div>
+              )}
+              {!isChatLoading && sourcesCount > 0 && (
                 <ExampleQuestions
                   exampleQuestionsError={exampleQuestionsError}
                   skipExampleQuestionsFetch={false}
@@ -520,17 +523,15 @@ export function ChatCard({
                   refetchExampleQuestions={refetchExampleQuestions}
                   onQuestionSelect={(q) => setInput(q)}
                 />
-              </div>
-            )}
-          </motion.div>
+              )}
+            </div>
+          </div>
         )}
-      </AnimatePresence>
-      {messages.length > 0 && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 shrink-0">
-          <div className="absolute inset-0 mx-4 bg-linear-to-t from-white from-50% to-transparent dark:from-gray-950/90 dark:from-50% dark:to-transparent" />
-          {inputField}
-        </div>
-      )}
+      </div>
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 shrink-0">
+        <div className="absolute inset-0 mx-4 bg-linear-to-t from-white from-50% to-transparent dark:from-gray-950/90 dark:from-50% dark:to-transparent" />
+        {inputField}
+      </div>
     </div>
   );
 }

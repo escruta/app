@@ -1,6 +1,9 @@
+export type ChatMode = "NORMAL" | "LEARNING";
+
 export interface Conversation {
   id: string;
   title: string;
+  mode: ChatMode;
   createdAt: string;
   updatedAt: string;
 }
@@ -21,6 +24,7 @@ interface ConversationMessage {
 
 export interface ConversationMessages {
   conversationId: string;
+  mode: ChatMode;
   messages: ConversationMessage[];
 }
 
