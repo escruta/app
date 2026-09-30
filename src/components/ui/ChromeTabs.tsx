@@ -1,4 +1,4 @@
-import type { MouseEvent, PointerEvent, ReactNode } from "react";
+import { useState, type MouseEvent, type PointerEvent, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { CloseIcon } from "@/components/icons";
 import { IconButton } from "./IconButton";
@@ -29,20 +29,31 @@ export function ChromeTabs({
   onTabPointerDown,
   actions,
 }: ChromeTabsProps) {
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+
   if (tabs.length === 0) return null;
 
   return (
     <div
       className={cn(
-        "flex justify-between h-11 shrink-0 items-center border-b border-gray-200 bg-gray-50/60 dark:border-gray-800 dark:bg-gray-900/40",
+        "relative flex h-11 shrink-0 items-stretch justify-between bg-gray-50/60 dark:bg-gray-900/40",
         className,
       )}
     >
+      {/* Hairline separating the strip from the content. The active tab paints over
+          it so its bottom edge blends seamlessly into the page below. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gray-200 dark:bg-gray-800" />
+
       {/* Chrome/Safari style strip: no scroll, tabs shrink equally as more are added */}
-      <div className="flex min-w-0 flex-1 items-stretch gap-1.75 overflow-hidden pr-3 pl-3">
-        {tabs.map((tab) => {
+      <div className="relative z-10 flex min-w-0 flex-1 items-stretch gap-0.5 overflow-hidden px-2">
+        {tabs.map((tab, index) => {
           const active = tab.id === activeTabId;
           const closable = tab.closable !== false;
+          const previous = tabs[index - 1];
+          // Hairline between two adjacent inactive tabs, like Chrome. It fades out
+          // when either neighbour is hovered so the hovered tab reads as one piece.
+          const hasSeparator = Boolean(!active && previous && previous.id !== activeTabId);
+          const separatorHidden = hoveredId === tab.id || hoveredId === previous?.id;
           return (
             <div
               key={tab.id}
@@ -71,16 +82,29 @@ export function ChromeTabs({
                   onSelect(tab.id);
                 }
               }}
+              onMouseEnter={() => setHoveredId(tab.id)}
+              onMouseLeave={() => setHoveredId((current) => (current === tab.id ? null : current))}
               className={cn(
-                "group relative flex h-full min-w-0 max-w-56 flex-1 cursor-pointer touch-none items-center gap-2 py-1 pl-3 pr-1 text-sm transition-[background-color,border-color,color] duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 dark:focus-visible:ring-blue-500 select-none",
+                "relative flex h-full min-w-0 max-w-56 flex-1 cursor-pointer touch-none items-center gap-2 rounded-t-xs border border-b-0 px-3 py-1 text-sm font-medium transition-[background-color,border-color,color] duration-200 select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-inset dark:focus-visible:ring-blue-500",
                 {
-                  "bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 border border-blue-500":
+                  "border-gray-200 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100":
                     active,
-                  "border border-gray-200 dark:border-gray-700 text-gray-500 hover:border-blue-300 hover:bg-gray-100/70 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-500 dark:hover:bg-gray-800/50 dark:hover:text-gray-200":
+                  "border-transparent text-gray-500 hover:bg-gray-200/50 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-gray-800/40 dark:hover:text-gray-200":
                     !active,
                 },
               )}
             >
+              {hasSeparator && (
+                <span
+                  className={cn(
+                    "pointer-events-none absolute top-1/2 -left-0.5 h-4 w-px -translate-y-1/2 bg-gray-300 transition-opacity duration-200 dark:bg-gray-700",
+                    separatorHidden ? "opacity-0" : "opacity-100",
+                  )}
+                />
+              )}
+              {active && (
+                <span className="pointer-events-none absolute -inset-x-px -top-px h-0.5 rounded-t-xs bg-blue-500 dark:bg-blue-400" />
+              )}
               {tab.icon && (
                 <span className="shrink-0 [&>svg]:size-3.5 [&>svg]:shrink-0">{tab.icon}</span>
               )}

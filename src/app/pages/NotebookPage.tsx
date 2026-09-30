@@ -1121,7 +1121,7 @@ export default function NotebookPage() {
       {splitActive && splitState && splitLeftTab && splitRightTab ? (
         <div ref={contentRef} className="flex min-h-0 flex-1">
           <div
-            className="flex min-h-0 shrink-0 flex-col overflow-hidden"
+            className="flex min-h-0 shrink-0 flex-col overflow-hidden bg-white dark:bg-gray-950"
             style={{ width: `${splitRatio ?? 50}%` }}
           >
             <ChromeTabs
@@ -1142,7 +1142,7 @@ export default function NotebookPage() {
             </div>
           </div>
           {splitResizer}
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-white dark:bg-gray-950">
             <ChromeTabs
               tabs={rightStripItems}
               activeTabId={splitState.rightKey}
