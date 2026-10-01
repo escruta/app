@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createLowlight, common } from "lowlight";
 import { Mark, mergeAttributes } from "@tiptap/core";
 import { useEditor, EditorContent, ReactNodeViewRenderer } from "@tiptap/react";
@@ -15,27 +15,10 @@ import Code from "@tiptap/extension-code";
 import { Markdown } from "@tiptap/markdown";
 import { cn } from "@/lib/utils";
 import { EditorCodeBlock } from "./EditorCodeBlock";
-import {
-  BoldIcon,
-  ItalicIcon,
-  UnderlineIcon,
-  FormatListBulletedIcon,
-  FormatListNumberedIcon,
-  CodeIcon,
-  Heading1Icon,
-  Heading2Icon,
-  Heading3Icon,
-  MathIcon,
-  QuoteIcon,
-  TaskListIcon,
-  HighlightIcon,
-  CopyIcon,
-  CutIcon,
-  PasteIcon,
-} from "@/components/icons";
+import { createSlashCommandExtension, type PromptUser } from "./EditorSlashCommand";
+import { CopyIcon, CutIcon, PasteIcon } from "@/components/icons";
 import {
   Divider,
-  Tooltip,
   Modal,
   TextField,
   Button,
@@ -72,36 +55,6 @@ const Highlight = Mark.create({
   },
 });
 
-interface ToolbarButtonProps {
-  isActive: boolean;
-  onClick: () => void;
-  title: string;
-  children: React.ReactNode;
-}
-
-function ToolbarButton({ isActive, onClick, title, children }: ToolbarButtonProps) {
-  return (
-    <Tooltip text={title} position="top">
-      <button
-        onClick={onClick}
-        className={cn(
-          "h-8 px-2 rounded-xs flex items-center justify-center transition-all duration-200 focus:outline-none select-none cursor-pointer",
-          "border border-transparent",
-          {
-            "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400": isActive,
-            "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200 active:bg-gray-200 dark:active:bg-gray-700":
-              !isActive,
-          },
-        )}
-        aria-label={title}
-        type="button"
-      >
-        {children}
-      </button>
-    </Tooltip>
-  );
-}
-
 interface EditorProps {
   initialContent?: string;
   onContentChange?: (content: string) => void;
@@ -132,7 +85,7 @@ export function Editor({
     onConfirm: () => {},
   });
 
-  const promptUser = (title: string, initialValue: string): Promise<string | null> => {
+  const promptUser: PromptUser = useCallback((title, initialValue) => {
     return new Promise((resolve) => {
       setPromptState({
         isOpen: true,
@@ -144,7 +97,9 @@ export function Editor({
         },
       });
     });
-  };
+  }, []);
+
+  const slashCommand = useMemo(() => createSlashCommandExtension(promptUser), [promptUser]);
 
   const editor = useEditor({
     extensions: [
@@ -203,6 +158,7 @@ export function Editor({
       TaskItem.configure({
         nested: true,
       }),
+      slashCommand,
     ],
     editorProps: {
       handleDOMEvents: {
@@ -385,182 +341,6 @@ export function Editor({
 
   return (
     <div className={cn("relative flex w-full flex-col", { "h-full": scrollable })}>
-      <div
-        className={cn(
-          "mx-auto flex w-full max-w-3xl items-center gap-1 overflow-x-auto overflow-y-hidden bg-white py-1 dark:bg-gray-950",
-          {
-            "top-0 z-10 px-2": scrollable,
-            "border border-gray-200 dark:border-gray-700": !scrollable,
-            "sticky top-0 z-10 px-1": !scrollable,
-            "justify-center w-auto": !scrollable,
-          },
-        )}
-      >
-        <ToolbarButton
-          isActive={editor.isActive("heading", { level: 1 })}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          title="Heading 1"
-        >
-          <Heading1Icon className="size-4" />
-        </ToolbarButton>
-
-        <ToolbarButton
-          isActive={editor.isActive("heading", { level: 2 })}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          title="Heading 2"
-        >
-          <Heading2Icon className="size-4" />
-        </ToolbarButton>
-
-        <ToolbarButton
-          isActive={editor.isActive("heading", { level: 3 })}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          title="Heading 3"
-        >
-          <Heading3Icon className="size-4" />
-        </ToolbarButton>
-
-        <Divider orientation="vertical" className="h-5" />
-
-        <ToolbarButton
-          isActive={editor.isActive("bold")}
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          title="Bold"
-        >
-          <BoldIcon className="size-4" />
-        </ToolbarButton>
-
-        <ToolbarButton
-          isActive={editor.isActive("italic")}
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          title="Italic"
-        >
-          <ItalicIcon className="size-4" />
-        </ToolbarButton>
-
-        <ToolbarButton
-          isActive={editor.isActive("underline")}
-          onClick={() => editor.chain().focus().toggleUnderline().run()}
-          title="Underline"
-        >
-          <UnderlineIcon className="size-4" />
-        </ToolbarButton>
-
-        <ToolbarButton
-          isActive={editor.isActive("highlight")}
-          onClick={() => editor.chain().focus().toggleMark("highlight").run()}
-          title="Highlight"
-        >
-          <HighlightIcon className="size-4" />
-        </ToolbarButton>
-
-        <Divider orientation="vertical" className="h-5" />
-
-        <ToolbarButton
-          isActive={editor.isActive("bulletList")}
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          title="Bullet List"
-        >
-          <FormatListBulletedIcon className="size-4" />
-        </ToolbarButton>
-
-        <ToolbarButton
-          isActive={editor.isActive("orderedList")}
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          title="Numbered List"
-        >
-          <FormatListNumberedIcon className="size-4" />
-        </ToolbarButton>
-
-        <ToolbarButton
-          isActive={editor.isActive("taskList")}
-          onClick={() => editor.chain().focus().toggleTaskList().run()}
-          title="Task List"
-        >
-          <TaskListIcon className="size-4" />
-        </ToolbarButton>
-
-        <ToolbarButton
-          isActive={editor.isActive("blockquote")}
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          title="Quote"
-        >
-          <QuoteIcon className="size-4" />
-        </ToolbarButton>
-
-        <Divider orientation="vertical" className="h-5" />
-
-        <ToolbarButton
-          isActive={editor.isActive("codeBlock")}
-          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          title="Code Block"
-        >
-          <CodeIcon className="size-4" />
-        </ToolbarButton>
-
-        <ToolbarButton
-          isActive={editor.isActive("inlineMath") || editor.isActive("blockMath")}
-          onClick={async () => {
-            const isInline = editor.isActive("inlineMath");
-            const isBlock = editor.isActive("blockMath");
-            const { empty, from, to, $from, $to } = editor.state.selection;
-            const selectedText = empty ? "" : editor.state.doc.textBetween(from, to, "\n");
-
-            const currentLatex = isInline
-              ? editor.getAttributes("inlineMath").latex
-              : isBlock
-                ? editor.getAttributes("blockMath").latex
-                : selectedText;
-
-            let latex: string | null = currentLatex;
-
-            if (empty || isInline || isBlock) {
-              latex = await promptUser("Type your math expression (LaTeX):", currentLatex);
-            }
-
-            if (latex !== null && latex.trim() !== "") {
-              if (isInline) {
-                editor.chain().focus().updateInlineMath({ latex }).run();
-              } else if (isBlock) {
-                editor.chain().focus().updateBlockMath({ latex }).run();
-              } else {
-                if (!empty) {
-                  const isEntireNodeSelected =
-                    $from.parent === $to.parent &&
-                    $from.parentOffset === 0 &&
-                    $to.parentOffset === $to.parent.content.size;
-                  const spansMultipleBlocks = $from.parent !== $to.parent;
-                  const shouldBeBlock = isEntireNodeSelected || spansMultipleBlocks;
-
-                  if (shouldBeBlock) {
-                    editor.chain().focus().deleteSelection().insertBlockMath({ latex }).run();
-                  } else {
-                    editor.chain().focus().deleteSelection().insertInlineMath({ latex }).run();
-                  }
-                } else {
-                  const isCurrentNodeEmpty =
-                    editor.state.selection.$head.parent.textContent.trim() === "";
-                  if (isCurrentNodeEmpty) {
-                    editor.chain().focus().insertBlockMath({ latex }).run();
-                  } else {
-                    editor.chain().focus().insertInlineMath({ latex }).run();
-                  }
-                }
-              }
-            } else if (latex !== null && latex.trim() === "") {
-              if (isInline) {
-                editor.chain().focus().deleteInlineMath().run();
-              } else if (isBlock) {
-                editor.chain().focus().deleteBlockMath().run();
-              }
-            }
-          }}
-          title="Mathematical Formula"
-        >
-          <MathIcon className="size-4" />
-        </ToolbarButton>
-      </div>
-
       {scrollable && <Divider orientation="horizontal" className="my-0" />}
 
       <ContextMenu>

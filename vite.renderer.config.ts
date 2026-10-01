@@ -28,6 +28,7 @@ export default defineConfig({
             "@tiptap/extension-task-item",
             "@tiptap/extension-code",
             "@tiptap/extension-mathematics",
+            "@tiptap/suggestion",
           ],
           "markdown-vendor": ["react-markdown", "remark-math", "remark-gfm", "rehype-katex"],
           "highlight-vendor": ["lowlight"],
