@@ -11,7 +11,7 @@
     "build": "electron-forge make",
     "lint": "oxlint --fix",
     "format": "oxfmt",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json",
     "check": "pnpm run lint && pnpm run format && pnpm run typecheck"
   },
   "dependencies": {
@@ -29,6 +29,7 @@
     "@tiptap/markdown": "^3.31.3",
     "@tiptap/react": "^3.31.3",
     "@tiptap/starter-kit": "^3.31.3",
+    "@tiptap/suggestion": "^3.31.3",
     "clsx": "^2.1.1",
     "js-cookie": "^3.0.8",
     "katex": "^0.17.0",

@@ -355,3 +355,8 @@ html.dark .ProseMirror span[data-type="inline-math"].ProseMirror-selectednode {
   color: var(--color-blue-100);
   outline-color: var(--color-blue-700);
 }
+
+.ProseMirror .suggestion {
+  color: var(--color-gray-400);
+  border-radius: var(--radius-xs);
+}
