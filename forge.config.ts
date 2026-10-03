@@ -6,7 +6,7 @@ import { MakerRpm } from "@electron-forge/maker-rpm";
 import { VitePlugin } from "@electron-forge/plugin-vite";
 import path from "node:path";
 
-const iconPath = path.resolve(__dirname, "src", "assets", "AppIcon");
+const iconPath = path.resolve(import.meta.dirname, "src", "assets", "AppIcon");
 
 const config: ForgeConfig = {
   packagerConfig: {
@@ -14,7 +14,7 @@ const config: ForgeConfig = {
       unpack: "**/assets/**",
     },
     executableName: "Escruta",
-    extraResource: [path.join(__dirname, "src", "assets", "AppIcon.png")],
+    extraResource: [path.join(import.meta.dirname, "src", "assets", "AppIcon.png")],
     icon: iconPath,
   },
   makers: [
