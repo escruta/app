@@ -367,16 +367,14 @@ export default function HomePage() {
             </Tooltip>
           </div>
 
-          <div className="sticky top-0 z-20 bg-white/95 py-1 backdrop-blur-sm dark:bg-gray-950/95">
-            <TextField
-              id="home-search"
-              value={query}
-              onChange={(e) => handleSearch(e.target.value)}
-              onClear={() => handleSearch("")}
-              placeholder="Search all notebooks..."
-              search
-            />
-          </div>
+          <TextField
+            id="home-search"
+            value={query}
+            onChange={(e) => handleSearch(e.target.value)}
+            onClear={() => handleSearch("")}
+            placeholder="Search all notebooks..."
+            search
+          />
 
           {isSearchActive ? (
             <section>
