@@ -168,9 +168,14 @@ export function WelcomePage() {
       <div className="app-region-no-drag w-full max-w-xs text-left">
         {step === "email" && (
           <div className="flex flex-col gap-2">
-            <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-              We&apos;ll send a verification code to your email.
-            </p>
+            <div className="mb-2 flex flex-col gap-1">
+              <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Welcome to <span className="font-semibold">Escruta</span>
+              </h1>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                We&apos;ll send a verification code to your email.
+              </p>
+            </div>
             <TextField
               id="email"
               label="Email"
