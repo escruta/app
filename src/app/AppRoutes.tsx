@@ -3,8 +3,6 @@ import { type RouteObject } from "react-router";
 import { AppLayout } from "./AppLayout";
 
 const HomePage = lazy(() => import("./pages/HomePage"));
-const NotebooksPage = lazy(() => import("./pages/NotebooksPage"));
-const FolderPage = lazy(() => import("./pages/FolderPage"));
 const NotebookPage = lazy(() => import("./pages/NotebookPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 
@@ -17,23 +15,8 @@ export const AppRoutes: RouteObject[] = [
         Component: HomePage,
       },
       {
-        path: "notebooks",
-        Component: NotebooksPage,
-      },
-      {
         path: "settings",
         Component: SettingsPage,
-      },
-      {
-        path: "folder/:folderId",
-        loader: async ({ params }) => {
-          const folderId = params.folderId;
-          if (!folderId) {
-            throw new Error("Folder ID is required");
-          }
-          return folderId;
-        },
-        Component: FolderPage,
       },
       {
         path: "notebook/:notebookId",
