@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Outlet } from "react-router";
 import { useAuth, useCookie } from "@/hooks";
 import { GlobalContextMenu } from "@/components/ui";
+import { SettingsProvider } from "@/providers";
 import type { User } from "@/interfaces";
 
 export function AppLayout() {
@@ -19,11 +20,13 @@ export function AppLayout() {
   }, [fetchUserData]);
 
   return (
-    <div className="flex h-screen flex-col bg-white text-black select-none dark:bg-gray-950 dark:text-white">
-      <div className="grow overflow-hidden">
-        <Outlet />
+    <SettingsProvider>
+      <div className="flex h-screen flex-col bg-white text-black select-none dark:bg-gray-950 dark:text-white">
+        <div className="grow overflow-hidden">
+          <Outlet />
+        </div>
+        <GlobalContextMenu />
       </div>
-      <GlobalContextMenu />
-    </div>
+    </SettingsProvider>
   );
 }
