@@ -1,5 +1,6 @@
 import { app, BrowserWindow, ipcMain, shell } from "electron";
 import path from "node:path";
+import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -9,6 +10,42 @@ if (process.platform === "linux") {
 }
 
 let mainWindow: BrowserWindow | null = null;
+
+function readLinuxDistro(): string | null {
+  for (const file of ["/etc/os-release", "/usr/lib/os-release"]) {
+    try {
+      const content = fs.readFileSync(file, "utf8");
+      const pretty = content.match(/^PRETTY_NAME="?([^"\n]+)"?/m)?.[1]?.trim();
+      if (pretty) return pretty;
+
+      const name = content.match(/^NAME="?([^"\n]+)"?/m)?.[1]?.trim();
+      const versionId = content.match(/^VERSION_ID="?([^"\n]+)"?/m)?.[1]?.trim();
+      if (name) return versionId ? `${name} ${versionId}` : name;
+    } catch {}
+  }
+  return null;
+}
+
+function detectOperatingSystem(): string {
+  if (process.platform === "linux") {
+    return readLinuxDistro() ?? "Linux";
+  }
+
+  if (process.platform === "darwin") {
+    return `macOS ${process.getSystemVersion()}`;
+  }
+
+  if (process.platform === "win32") {
+    const build = Number(process.getSystemVersion().split(".").pop());
+    return build >= 22000 ? "Windows 11" : "Windows 10";
+  }
+
+  return process.platform;
+}
+
+function buildUserAgent(): string {
+  return `Escruta/${app.getVersion()} (${detectOperatingSystem()})`;
+}
 
 function resolveIconPath(): string | undefined {
   if (process.platform === "darwin") {
@@ -92,6 +129,7 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  app.userAgentFallback = buildUserAgent();
   registerWindowControls();
   createWindow();
 

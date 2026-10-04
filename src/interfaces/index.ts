@@ -8,6 +8,7 @@ export type * from "./Notebook";
 export type * from "./NotebookContent";
 export type * from "./QuestionnaireResponse";
 export type * from "./SearchResult";
+export type * from "./Session";
 export type * from "./Source";
 export type * from "./SourceGroup";
 export type * from "./StudyGuideResponse";
