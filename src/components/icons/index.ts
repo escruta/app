@@ -12,6 +12,7 @@ export * from "./CompressIcon";
 export * from "./CopyIcon";
 export * from "./CutIcon";
 export * from "./DeleteIcon";
+export * from "./DevicesIcon";
 export * from "./DotsVerticalIcon";
 export * from "./EditIcon";
 export * from "./ExpandHorizontalIcon";
