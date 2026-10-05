@@ -2,7 +2,7 @@ import { useFetch } from "@/hooks";
 import type { Session } from "@/interfaces";
 import { Alert, Button, Spinner } from "@/components/ui";
 import { DevicesIcon } from "@/components/icons";
-import { SettingsGroup, SettingsSection } from "./SettingsSection";
+import { SettingsGroup, SettingsSection } from "../shared/SettingsSection";
 
 function detectBrowser(userAgent: string): string {
   if (/edg\//i.test(userAgent)) return "Microsoft Edge";
@@ -126,7 +126,7 @@ export function SessionsSection() {
 
   return (
     <SettingsSection
-      title="Active sessions"
+      title="Sessions"
       description="Devices and browsers currently signed in to your account. Revoke any session you don't recognize."
       className="gap-6"
     >

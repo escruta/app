@@ -1,15 +1,15 @@
 import { useTheme } from "@/hooks";
 import { Divider, Dropdown } from "@/components/ui";
-import { SettingsGroup, SettingsSection } from "./SettingsSection";
-import { DisplaySettings } from "./ViewModeSection";
+import { SettingsGroup, SettingsSection } from "../shared/SettingsSection";
+import { DisplaySettings } from "./DisplaySection";
 import { SortSettings } from "./SortSection";
 
-export function AppearanceSection() {
+export function PreferencesSection() {
   const { themePreference, setTheme, ThemeOptions } = useTheme();
 
   return (
     <SettingsSection
-      title="Appearance"
+      title="Preferences"
       description="Customize how Escruta looks and organizes your content across the application."
     >
       <SettingsGroup title="Theme">

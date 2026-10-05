@@ -1,21 +1,13 @@
 import { useCookie } from "@/hooks";
 import { GridIcon, ListIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
-import { SettingsGroup } from "./SettingsSection";
-
-export type ViewMode = "grid" | "list";
-
-export const VIEW_MODE_COOKIE_KEYS = {
-  folder: "globalFolderViewMode",
-  notebook: "globalNotebookViewMode",
-} as const;
-
-const VIEW_MODE_LABELS: Record<ViewMode, string> = {
-  grid: "Grid",
-  list: "List",
-};
-
-const VIEW_MODES: ViewMode[] = ["grid", "list"];
+import { SettingsGroup } from "../shared/SettingsSection";
+import {
+  VIEW_MODE_COOKIE_KEYS,
+  VIEW_MODE_LABELS,
+  VIEW_MODES,
+  type ViewMode,
+} from "../lib/view-mode";
 
 type ViewCategory = "folder" | "notebook";
 

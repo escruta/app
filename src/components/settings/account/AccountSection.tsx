@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Alert, Button, Modal, Spinner, TextField } from "@/components/ui";
 import { useAuth, useFetch } from "@/hooks";
 import { CheckIcon } from "@/components/icons";
-import { SettingsSection } from "./SettingsSection";
+import { SettingsSection } from "../shared/SettingsSection";
+import { SignOutModal } from "./SignOutModal";
 
 export function AccountSection() {
   const { signOut, currentUser: user, fetchUserData } = useAuth();
@@ -10,6 +11,7 @@ export function AccountSection() {
   const [isNameModalOpen, setIsNameModalOpen] = useState(false);
   const [newName, setNewName] = useState(user?.name || "");
   const [errorNameMessage, setErrorNameMessage] = useState("");
+  const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [errorDeleteMessage, setErrorDeleteMessage] = useState("");
@@ -56,6 +58,11 @@ export function AccountSection() {
     executeDeleteAccount();
   };
 
+  const handleSignOut = () => {
+    setIsSignOutModalOpen(false);
+    signOut();
+  };
+
   return (
     <SettingsSection
       title="Account"
@@ -84,7 +91,7 @@ export function AccountSection() {
         <Button variant="secondary" onClick={() => setIsNameModalOpen(true)}>
           Change name
         </Button>
-        <Button variant="secondary" onClick={() => signOut()}>
+        <Button variant="secondary" onClick={() => setIsSignOutModalOpen(true)}>
           Sign out
         </Button>
       </div>
@@ -143,6 +150,12 @@ export function AccountSection() {
           {errorNameMessage && <div className="text-sm text-red-500">{errorNameMessage}</div>}
         </div>
       </Modal>
+
+      <SignOutModal
+        isOpen={isSignOutModalOpen}
+        onClose={() => setIsSignOutModalOpen(false)}
+        onConfirm={handleSignOut}
+      />
 
       <Modal
         isOpen={isDeleteModalOpen}
