@@ -27,7 +27,7 @@ import {
   getSortedItems,
   type SortOption,
   type ViewMode,
-  VIEW_MODE_COOKIE_KEYS,
+  VIEW_MODE_COOKIE_KEY,
 } from "@/components/settings";
 
 const SEARCH_PAGE_SIZE = 20;
@@ -50,8 +50,7 @@ export default function HomePage() {
   const { greeting, subtitle } = useGreeting();
 
   const [globalSort] = useCookie<SortOption>("globalSortPreference", "Newest");
-  const [globalFolderViewMode] = useCookie<ViewMode>(VIEW_MODE_COOKIE_KEYS.folder, "grid");
-  const [globalNotebookViewMode] = useCookie<ViewMode>(VIEW_MODE_COOKIE_KEYS.notebook, "grid");
+  const [globalNotebookViewMode] = useCookie<ViewMode>(VIEW_MODE_COOKIE_KEY, "grid");
 
   const [isCreateNotebookOpen, setIsCreateNotebookOpen] = useState(false);
   const [newNotebookTitle, setNewNotebookTitle] = useState("");
@@ -140,7 +139,6 @@ export default function HomePage() {
     false,
   );
 
-  const folderViewMode = globalFolderViewMode || "grid";
   const notebookViewMode = globalNotebookViewMode || "grid";
   const sortBy = globalSort || "Newest";
 
@@ -168,18 +166,6 @@ export default function HomePage() {
     }
     return map;
   }, [notebooks]);
-
-  const folderGroups = useMemo(() => {
-    const groups: Folder[][] = [];
-    if (folderViewMode === "grid") {
-      for (let i = 0; i < folderItems.length; i += gridColumns) {
-        groups.push(folderItems.slice(i, i + gridColumns));
-      }
-    } else {
-      for (const folder of folderItems) groups.push([folder]);
-    }
-    return groups;
-  }, [folderItems, folderViewMode, gridColumns]);
 
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -456,8 +442,8 @@ export default function HomePage() {
                 </h3>
 
                 {foldersLoading && !folders ? (
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4">
-                    {Array.from({ length: 4 }).map((_, i) => (
+                  <div className="flex flex-col gap-3">
+                    {Array.from({ length: 3 }).map((_, i) => (
                       <div
                         key={i}
                         className="h-12.5 w-full animate-pulse rounded-xs border border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-800"
@@ -466,43 +452,29 @@ export default function HomePage() {
                   </div>
                 ) : hasFolders ? (
                   <div className="flex flex-col gap-3">
-                    {folderGroups.map((group) => (
-                      <div key={group[0]?.id}>
-                        <div
-                          className={
-                            folderViewMode === "grid"
-                              ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
-                              : "flex flex-col gap-3"
-                          }
-                        >
-                          {group.map((folder) => (
-                            <FolderCard
-                              key={folder.id}
-                              folder={folder}
-                              isExpanded={expandedFolderIds.has(folder.id)}
-                              notebookCount={(notebooksByFolder.get(folder.id) ?? []).length}
-                              onToggle={() => handleToggleFolder(folder)}
-                              onEditFolder={() => handleEditFolder(folder)}
-                              onDeleteFolder={() => setFolderToDelete(folder)}
-                            />
-                          ))}
-                        </div>
-
+                    {folderItems.map((folder) => (
+                      <div key={folder.id}>
+                        <FolderCard
+                          folder={folder}
+                          isExpanded={expandedFolderIds.has(folder.id)}
+                          notebookCount={(notebooksByFolder.get(folder.id) ?? []).length}
+                          onToggle={() => handleToggleFolder(folder)}
+                          onEditFolder={() => handleEditFolder(folder)}
+                          onDeleteFolder={() => setFolderToDelete(folder)}
+                        />
                         <AnimatePresence initial={false}>
-                          {group
-                            .filter((folder) => expandedFolderIds.has(folder.id))
-                            .map((folder) => (
-                              <motion.div
-                                key={folder.id}
-                                initial={{ height: 0 }}
-                                animate={{ height: "auto" }}
-                                exit={{ height: 0 }}
-                                transition={{ duration: 0.15, ease: "easeOut" }}
-                                className="overflow-hidden"
-                              >
-                                {renderFolderContents(folder)}
-                              </motion.div>
-                            ))}
+                          {expandedFolderIds.has(folder.id) && (
+                            <motion.div
+                              key={folder.id}
+                              initial={{ height: 0 }}
+                              animate={{ height: "auto" }}
+                              exit={{ height: 0 }}
+                              transition={{ duration: 0.15, ease: "easeOut" }}
+                              className="overflow-hidden"
+                            >
+                              {renderFolderContents(folder)}
+                            </motion.div>
+                          )}
                         </AnimatePresence>
                       </div>
                     ))}
