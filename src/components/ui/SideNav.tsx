@@ -1,6 +1,7 @@
 import { useState, useImperativeHandle, forwardRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
+import { panelSwitchTransition } from "@/lib/motion";
 import { IconButton } from "./IconButton";
 import { ChatNewIcon, CollapseHorizontalIcon, ExpandHorizontalIcon } from "@/components/icons";
 import { Tooltip } from "./Tooltip";
@@ -143,10 +144,7 @@ export const SideNav = forwardRef<SideNavRef, SideNavProps>(
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{
-                  duration: 0.15,
-                  ease: "easeOut",
-                }}
+                transition={panelSwitchTransition}
                 className="flex h-full w-full min-w-0 flex-col overflow-hidden"
               >
                 <div className="flex h-full w-full min-w-0 flex-1 flex-col overflow-hidden">

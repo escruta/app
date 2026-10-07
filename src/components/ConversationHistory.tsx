@@ -1,8 +1,17 @@
 import { useFetch } from "@/hooks";
 import type { Conversation, ConversationsPage } from "@/interfaces";
 import { useMemo, useCallback, useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "motion/react";
-import { Skeleton, IconButton, TextField, Spinner, Divider, Tooltip } from "@/components/ui";
+import { AnimatePresence } from "motion/react";
+import {
+  Skeleton,
+  IconButton,
+  TextField,
+  Spinner,
+  Tooltip,
+  SidePanel,
+  PanelList,
+  PanelListItem,
+} from "@/components/ui";
 import { DeleteIcon, ChatNewIcon, ChatIcon, SearchIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import type { UseFetchOptions } from "@/hooks/useFetch";
@@ -180,131 +189,123 @@ export function ConversationHistory({
   const isLoadingMore = loading && conversations.length > 0;
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden">
-      <div className="z-10 shrink-0">
-        <div className="flex h-15 items-center px-4 pt-4 pb-3">
-          <h2 className="font-sans text-lg font-semibold">Conversations</h2>
-          <div className="flex flex-1 items-center justify-end gap-2">
-            <Tooltip text="New conversation" position="bottom">
-              <IconButton
-                icon={<ChatNewIcon className="size-3.5" />}
-                variant="primary"
-                size="sm"
-                onClick={onNewConversation}
-              />
-            </Tooltip>
-          </div>
-        </div>
-        <Divider className="my-0" />
-      </div>
-      <div className="flex min-h-0 flex-1 flex-col">
-        <div className="shrink-0 px-4 pt-3">
-          <TextField
-            id="search-conversations"
-            search
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={total > 0 ? "Search your conversations..." : "No conversations yet"}
-            onClear={() => setSearchQuery("")}
+    <SidePanel
+      title="Conversations"
+      actions={
+        <Tooltip text="New conversation" position="bottom">
+          <IconButton
+            icon={<ChatNewIcon className="size-3.5" />}
+            variant="primary"
+            size="sm"
+            onClick={onNewConversation}
           />
-        </div>
-        <div className="flex min-h-0 flex-1 flex-col space-y-2 overflow-y-auto px-4 py-3">
-          {isInitialLoading ? (
-            <>
-              <Skeleton variant="rectangle" height={48} />
-              <Skeleton variant="rectangle" height={48} />
-              <Skeleton variant="rectangle" height={48} />
-            </>
-          ) : conversations.length === 0 ? (
-            debouncedSearch ? (
-              <div className="flex size-full flex-col items-center justify-start pt-12 text-center">
-                <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
-                  <div className="size-10 text-blue-500 dark:text-blue-400">
-                    <SearchIcon />
-                  </div>
-                </div>
-                <h3 className="text-foreground mb-2 text-lg font-semibold">No results</h3>
-                <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                  No conversations match that, try another search.
-                </p>
+        </Tooltip>
+      }
+      toolbar={
+        <TextField
+          id="search-conversations"
+          search
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder={total > 0 ? "Search your conversations..." : "No conversations yet"}
+          onClear={() => setSearchQuery("")}
+        />
+      }
+      contentClassName="space-y-2 px-4 py-3"
+    >
+      {isInitialLoading ? (
+        <>
+          <Skeleton variant="rectangle" height={48} />
+          <Skeleton variant="rectangle" height={48} />
+          <Skeleton variant="rectangle" height={48} />
+        </>
+      ) : conversations.length === 0 ? (
+        debouncedSearch ? (
+          <div className="flex size-full flex-col items-center justify-start pt-12 text-center">
+            <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
+              <div className="size-10 text-blue-500 dark:text-blue-400">
+                <SearchIcon />
               </div>
-            ) : (
-              <div className="flex size-full flex-col items-center justify-start pt-12 text-center">
-                <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
-                  <div className="size-10 text-blue-500 dark:text-blue-400">
-                    <ChatIcon />
-                  </div>
-                </div>
-                <h3 className="text-foreground mb-2 text-lg font-semibold">No conversations yet</h3>
-                <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                  Start a new conversation to chat with your documents.
-                </p>
+            </div>
+            <h3 className="text-foreground mb-2 text-lg font-semibold">No results</h3>
+            <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+              No conversations match that, try another search.
+            </p>
+          </div>
+        ) : (
+          <div className="flex size-full flex-col items-center justify-start pt-12 text-center">
+            <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
+              <div className="size-10 text-blue-500 dark:text-blue-400">
+                <ChatIcon />
               </div>
-            )
-          ) : (
-            <>
-              <AnimatePresence>
-                {conversations.map((conversation) => (
-                  <motion.div
-                    key={conversation.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className={cn(
-                      "group flex items-center justify-between rounded-xs border p-2.5 transition-colors cursor-pointer",
-                      {
-                        "bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700":
-                          conversation.id === currentConversationId,
-                        "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 hover:bg-gray-100/65 dark:hover:bg-gray-800":
-                          conversation.id !== currentConversationId,
-                      },
-                    )}
-                    onClick={() => onSelectConversation(conversation.id, conversation.title)}
-                  >
-                    <div className="mr-2 min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
-                        {conversation.title}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {formatDate(conversation.updatedAt)}
-                      </p>
-                    </div>
-                    <div
-                      onClick={(e) => {
+            </div>
+            <h3 className="text-foreground mb-2 text-lg font-semibold">No conversations yet</h3>
+            <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+              Start a new conversation to chat with your documents.
+            </p>
+          </div>
+        )
+      ) : (
+        <>
+          <PanelList className="flex flex-col gap-2">
+            <AnimatePresence>
+              {conversations.map((conversation) => (
+                <PanelListItem
+                  key={conversation.id}
+                  className={cn(
+                    "group flex items-center justify-between rounded-xs border p-2.5 transition-colors cursor-pointer",
+                    {
+                      "bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700":
+                        conversation.id === currentConversationId,
+                      "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 hover:bg-gray-100/65 dark:hover:bg-gray-800":
+                        conversation.id !== currentConversationId,
+                    },
+                  )}
+                  onClick={() => onSelectConversation(conversation.id, conversation.title)}
+                >
+                  <div className="mr-2 min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
+                      {conversation.title}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {formatDate(conversation.updatedAt)}
+                    </p>
+                  </div>
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(conversation.id);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
                         e.stopPropagation();
                         handleDelete(conversation.id);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.stopPropagation();
-                          handleDelete(conversation.id);
-                        }
-                      }}
-                      role="button"
-                      tabIndex={0}
-                      className="opacity-0 transition-opacity group-hover:opacity-100"
-                    >
-                      <IconButton
-                        icon={<DeleteIcon />}
-                        variant="ghost"
-                        size="sm"
-                        disabled={isDeleting && conversationToDeleteId === conversation.id}
-                        ariaLabel="Delete conversation"
-                      />
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-              <div ref={setLoadMoreRef} className={cn("h-4", !hasMore && "hidden")} />
-              {isLoadingMore && (
-                <div className="flex justify-center py-2">
-                  <Spinner />
-                </div>
-              )}
-            </>
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    className="opacity-0 transition-opacity group-hover:opacity-100"
+                  >
+                    <IconButton
+                      icon={<DeleteIcon />}
+                      variant="ghost"
+                      size="sm"
+                      disabled={isDeleting && conversationToDeleteId === conversation.id}
+                      ariaLabel="Delete conversation"
+                    />
+                  </div>
+                </PanelListItem>
+              ))}
+            </AnimatePresence>
+          </PanelList>
+          <div ref={setLoadMoreRef} className={cn("h-4", !hasMore && "hidden")} />
+          {isLoadingMore && (
+            <div className="flex justify-center py-2">
+              <Spinner />
+            </div>
           )}
-        </div>
-      </div>
-    </div>
+        </>
+      )}
+    </SidePanel>
   );
 }

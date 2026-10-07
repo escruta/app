@@ -1,7 +1,7 @@
 import type { Note } from "@/interfaces";
 import { AddIcon, EditIcon } from "@/components/icons";
 import { NoteChip } from "./NoteChip";
-import { Divider, IconButton, Spinner, Tooltip } from "@/components/ui";
+import { IconButton, Spinner, Tooltip, SidePanel, PanelList, PanelListItem } from "@/components/ui";
 import { useFetch } from "@/hooks";
 import { useEffect } from "react";
 
@@ -46,68 +46,50 @@ export function NotesCard({ notebookId, onNoteSelect, refreshTrigger }: NotesCar
   );
 
   return (
-    <>
-      <div className="flex h-full w-full flex-col overflow-hidden">
-        <div className="z-10 shrink-0">
-          <div className="flex h-15 items-center px-4 pt-4 pb-3">
-            <h2 className="font-sans text-lg font-semibold">Notes</h2>
-            <div className="flex flex-1 items-center justify-end gap-2">
-              <Tooltip text={addingNote ? "Adding note..." : "Add note"} position="bottom">
-                <IconButton
-                  icon={addingNote ? <Spinner /> : <AddIcon />}
-                  variant="primary"
-                  size="sm"
-                  onClick={() => createNote()}
-                  disabled={addingNote}
-                />
-              </Tooltip>
+    <SidePanel
+      title="Notes"
+      actions={
+        <Tooltip text={addingNote ? "Adding note..." : "Add note"} position="bottom">
+          <IconButton
+            icon={addingNote ? <Spinner /> : <AddIcon />}
+            variant="primary"
+            size="sm"
+            onClick={() => createNote()}
+            disabled={addingNote}
+          />
+        </Tooltip>
+      }
+      contentClassName="px-4"
+    >
+      {loading ? (
+        <div className="flex size-full items-center justify-center">
+          <Spinner />
+        </div>
+      ) : error ? (
+        <div className="text-sm text-red-500">We couldn't load your notes: {error.message}</div>
+      ) : notes && notes.length > 0 ? (
+        <PanelList className="flex flex-col gap-2 py-4">
+          {[...notes]
+            .sort((a, b) => a.title.localeCompare(b.title))
+            .map((note) => (
+              <PanelListItem key={note.id}>
+                <NoteChip note={note} onSelect={onNoteSelect} />
+              </PanelListItem>
+            ))}
+        </PanelList>
+      ) : (
+        <div className="flex size-full flex-col items-center justify-start pt-24 text-center">
+          <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
+            <div className="size-10 text-blue-500 dark:text-blue-400">
+              <EditIcon />
             </div>
           </div>
-          <Divider className="my-0" />
+          <h3 className="text-foreground mb-2 text-lg font-semibold">No notes yet</h3>
+          <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+            Create your first note to start capturing ideas and insights from your sources.
+          </p>
         </div>
-        <div className="w-full flex-1 overflow-y-auto px-4">
-          {(() => {
-            if (loading) {
-              return (
-                <div className="flex size-full items-center justify-center">
-                  <Spinner />
-                </div>
-              );
-            }
-            if (error) {
-              return (
-                <div className="text-sm text-red-500">
-                  We couldn't load your notes: {error.message}
-                </div>
-              );
-            }
-            if (notes && notes.length > 0) {
-              return (
-                <div className="flex flex-col gap-2 py-4">
-                  {notes
-                    .sort((a, b) => a.title.localeCompare(b.title))
-                    .map((note) => (
-                      <NoteChip key={note.id} note={note} onSelect={onNoteSelect} />
-                    ))}
-                </div>
-              );
-            }
-            return (
-              <div className="flex size-full flex-col items-center justify-start pt-24 text-center">
-                <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
-                  <div className="size-10 text-blue-500 dark:text-blue-400">
-                    <EditIcon />
-                  </div>
-                </div>
-                <h3 className="text-foreground mb-2 text-lg font-semibold">No notes yet</h3>
-                <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                  Create your first note to start capturing ideas and insights from your sources.
-                </p>
-              </div>
-            );
-          })()}
-        </div>
-      </div>
-    </>
+      )}
+    </SidePanel>
   );
 }
