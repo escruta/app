@@ -11,10 +11,13 @@ import {
   Skeleton,
   Spinner,
   CopyButton,
-  Divider,
+  SidePanel,
+  PanelList,
+  PanelListItem,
 } from "@/components/ui";
 import { NoteIcon, RestartIcon, StarsIcon } from "@/components/icons";
 import { getHttpErrorMessage, getSourceIcon, timeAgo } from "@/lib/utils";
+import { panelSwitchTransition } from "@/lib/motion";
 import type { Note, Source } from "@/interfaces";
 
 interface OverviewPanelProps {
@@ -170,133 +173,130 @@ export function OverviewPanel({
   const showActivity = recentItems.length > 0 && !isLoading && !summaryGenerateError;
 
   return (
-    <div className="flex h-full w-full flex-col overflow-hidden">
-      <div className="z-10 shrink-0">
-        <div className="flex h-15 items-center px-4 pt-4 pb-3">
-          <h2 className="font-sans text-lg font-semibold">Overview</h2>
-          <div className="flex flex-1 items-center justify-end gap-2">
-            {notebookSummary && !isLoading && (
-              <>
-                <Tooltip text="Copy summary" position="bottom">
-                  <CopyButton
-                    textToCopy={notebookSummary}
-                    tooltipText="Copy summary"
-                    disabled={isLoading}
-                  />
-                </Tooltip>
-                <Tooltip
-                  text={isSummaryRegenerating ? "Regenerating summary" : "Regenerate summary"}
-                  position="bottom"
-                >
-                  <IconButton
-                    icon={isSummaryRegenerating ? <Spinner /> : <RestartIcon />}
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => regenerateSummary()}
-                    disabled={isSummaryRegenerating}
-                  />
-                </Tooltip>
-              </>
-            )}
-            {isAutoRegenerating && (
-              <Tooltip text="Auto-regenerating..." position="bottom">
-                <div className="flex h-8 w-8 items-center justify-center">
-                  <Spinner />
-                </div>
-              </Tooltip>
-            )}
-          </div>
-        </div>
-        <Divider className="my-0" />
-      </div>
-      <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 py-4">
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={
-              isLoading
-                ? "loading"
-                : summaryGenerateError
-                  ? "error"
-                  : notebookSummary?.trim()
-                    ? "summary"
-                    : "empty"
-            }
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15, ease: "easeInOut" }}
-            className="max-w-none"
-          >
-            {isLoading ? (
-              <Skeleton lines={6} className="w-full" />
-            ) : summaryGenerateError ? (
-              <div className="flex flex-col gap-3">
-                <Alert
-                  variant="danger"
-                  message={getHttpErrorMessage(summaryGenerateError?.status)}
+    <SidePanel
+      title="Overview"
+      actions={
+        <>
+          {notebookSummary && !isLoading && (
+            <>
+              <Tooltip text="Copy summary" position="bottom">
+                <CopyButton
+                  textToCopy={notebookSummary}
+                  tooltipText="Copy summary"
+                  disabled={isLoading}
                 />
-                <Button
-                  onClick={() => regenerateSummary()}
-                  disabled={isSummaryRegenerating}
+              </Tooltip>
+              <Tooltip
+                text={isSummaryRegenerating ? "Regenerating summary" : "Regenerate summary"}
+                position="bottom"
+              >
+                <IconButton
+                  icon={isSummaryRegenerating ? <Spinner /> : <RestartIcon />}
                   variant="ghost"
                   size="sm"
-                  icon={<RestartIcon className="h-4 w-4" />}
+                  onClick={() => regenerateSummary()}
+                  disabled={isSummaryRegenerating}
+                />
+              </Tooltip>
+            </>
+          )}
+          {isAutoRegenerating && (
+            <Tooltip text="Auto-regenerating..." position="bottom">
+              <div className="flex h-8 w-8 items-center justify-center">
+                <Spinner />
+              </div>
+            </Tooltip>
+          )}
+        </>
+      }
+      contentClassName="space-y-6 px-4 py-4"
+    >
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={
+            isLoading
+              ? "loading"
+              : summaryGenerateError
+                ? "error"
+                : notebookSummary?.trim()
+                  ? "summary"
+                  : "empty"
+          }
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={panelSwitchTransition}
+          className="max-w-none"
+        >
+          {isLoading ? (
+            <Skeleton lines={6} className="w-full" />
+          ) : summaryGenerateError ? (
+            <div className="flex flex-col gap-3">
+              <Alert variant="danger" message={getHttpErrorMessage(summaryGenerateError?.status)} />
+              <Button
+                onClick={() => regenerateSummary()}
+                disabled={isSummaryRegenerating}
+                variant="ghost"
+                size="sm"
+                icon={<RestartIcon className="h-4 w-4" />}
+              >
+                Regenerate summary
+              </Button>
+            </div>
+          ) : notebookSummary?.trim() ? (
+            <div className="flex flex-col gap-1.5">
+              <SectionLabel>Summary</SectionLabel>
+              <div className="text-sm leading-relaxed select-text">
+                <Markdown text={notebookSummary} />
+              </div>
+            </div>
+          ) : (
+            <div className="flex size-full flex-col items-center justify-start pt-24 text-center">
+              <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
+                <div className="size-10 text-blue-500 dark:text-blue-400">
+                  <StarsIcon />
+                </div>
+              </div>
+              <h3 className="text-foreground mb-2 text-lg font-semibold">No overview yet</h3>
+              <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                Summarize all the information gathered from your sources into one clear overview.
+              </p>
+              {readySourcesCount > 0 && (
+                <Button
+                  className="mt-5"
+                  onClick={() => regenerateSummary()}
+                  disabled={isSummaryRegenerating}
                 >
-                  Regenerate summary
+                  Generate summary
                 </Button>
-              </div>
-            ) : notebookSummary?.trim() ? (
-              <div className="flex flex-col gap-1.5">
-                <SectionLabel>Summary</SectionLabel>
-                <div className="text-sm leading-relaxed select-text">
-                  <Markdown text={notebookSummary} />
-                </div>
-              </div>
-            ) : (
-              <div className="flex size-full flex-col items-center justify-start pt-24 text-center">
-                <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
-                  <div className="size-10 text-blue-500 dark:text-blue-400">
-                    <StarsIcon />
-                  </div>
-                </div>
-                <h3 className="text-foreground mb-2 text-lg font-semibold">No overview yet</h3>
-                <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                  Summarize all the information gathered from your sources into one clear overview.
-                </p>
-                {readySourcesCount > 0 && (
-                  <Button
-                    className="mt-5"
-                    onClick={() => regenerateSummary()}
-                    disabled={isSummaryRegenerating}
-                  >
-                    Generate summary
-                  </Button>
-                )}
-              </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
+              )}
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
 
-        {!isLoading && !summaryGenerateError && keyTopics.length > 0 && (
-          <div className="flex flex-col gap-1.5">
-            <SectionLabel>Key concepts</SectionLabel>
-            <div className="flex flex-wrap gap-1.5">
-              {keyTopics.map((topic) => (
-                <Chip key={topic} size="sm" title={topic} className="select-text">
+      {!isLoading && !summaryGenerateError && keyTopics.length > 0 && (
+        <div className="flex flex-col gap-1.5">
+          <SectionLabel>Key concepts</SectionLabel>
+          <PanelList className="flex flex-wrap gap-1.5">
+            {keyTopics.map((topic) => (
+              <PanelListItem key={topic}>
+                <Chip size="sm" title={topic} className="select-text">
                   {topic}
                 </Chip>
-              ))}
-            </div>
-          </div>
-        )}
+              </PanelListItem>
+            ))}
+          </PanelList>
+        </div>
+      )}
 
-        {showActivity && (
-          <div>
-            <SectionLabel>Recently added</SectionLabel>
-            <div className="flex flex-col">
-              {recentItems.map((item) => (
+      {showActivity && (
+        <div>
+          <SectionLabel>Recently added</SectionLabel>
+          <PanelList className="flex flex-col">
+            {recentItems.map((item) => (
+              <PanelListItem key={item.id}>
                 <button
-                  key={item.id}
                   type="button"
                   onClick={item.onOpen}
                   title={item.title}
@@ -312,11 +312,11 @@ export function OverviewPanel({
                     {timeAgo(item.date)}
                   </span>
                 </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+              </PanelListItem>
+            ))}
+          </PanelList>
+        </div>
+      )}
+    </SidePanel>
   );
 }

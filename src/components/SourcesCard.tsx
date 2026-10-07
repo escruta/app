@@ -15,7 +15,6 @@ import { SourceGroupSection } from "./SourceGroupSection";
 import { SearchSourcesModal } from "./SearchSourcesModal";
 import {
   Button,
-  Divider,
   MenuLabel,
   Modal,
   SelectList,
@@ -28,6 +27,9 @@ import {
   MenuItem,
   IconButton,
   Tooltip,
+  SidePanel,
+  PanelList,
+  PanelListItem,
 } from "@/components/ui";
 import { useState, useEffect } from "react";
 import { useFetch } from "@/hooks";
@@ -286,24 +288,25 @@ export function SourcesCard({
   };
 
   const renderSourceChip = (source: Source) => (
-    <SourceChip
-      key={source.id}
-      source={source}
-      notebookId={notebookId}
-      groups={groups ?? undefined}
-      onSourceSelect={onSourceSelect}
-      selected={selectedSourceIds.includes(source.id)}
-      onToggle={() => onToggleSource?.(source.id)}
-      onDelete={() => {
-        onSourcesChange?.();
-      }}
-      onMove={() => {
-        onSourcesChange?.();
-      }}
-      onDragStart={(dragged) => setDraggingSourceId(dragged.id)}
-      onDragEnd={handleSourceDragEnd}
-      isDragging={draggingSourceId === source.id}
-    />
+    <PanelListItem key={source.id}>
+      <SourceChip
+        source={source}
+        notebookId={notebookId}
+        groups={groups ?? undefined}
+        onSourceSelect={onSourceSelect}
+        selected={selectedSourceIds.includes(source.id)}
+        onToggle={() => onToggleSource?.(source.id)}
+        onDelete={() => {
+          onSourcesChange?.();
+        }}
+        onMove={() => {
+          onSourcesChange?.();
+        }}
+        onDragStart={(dragged) => setDraggingSourceId(dragged.id)}
+        onDragEnd={handleSourceDragEnd}
+        isDragging={draggingSourceId === source.id}
+      />
+    </PanelListItem>
   );
 
   function handleSourceDragEnd() {
@@ -353,89 +356,89 @@ export function SourcesCard({
 
   return (
     <>
-      <div className="flex h-full w-full flex-col overflow-hidden">
-        <div className="z-10 shrink-0">
-          <div className="flex h-15 items-center px-4 pt-4 pb-3">
-            <h2 className="font-sans text-lg font-semibold">Sources</h2>
-            <div className="flex flex-1 items-center justify-end gap-2">
-              <Menu>
-                <Tooltip text="Add source" position="bottom">
-                  <MenuTrigger>
-                    <IconButton icon={<AddIcon />} variant="primary" size="sm" />
-                  </MenuTrigger>
-                </Tooltip>
-                <MenuContent>
-                  <MenuItem
-                    icon={<FileIcon />}
-                    label="Upload file"
-                    onClick={() => handleOpenModal("File")}
-                  />
-                  <MenuItem
-                    icon={<LinkIcon />}
-                    label="Website link"
-                    onClick={() => handleOpenModal("Website")}
-                  />
-                  <MenuItem
-                    icon={<NoteIcon />}
-                    label="Direct text"
-                    onClick={() => handleOpenModal("Text")}
-                  />
-                  <MenuItem
-                    icon={<SearchIcon />}
-                    label="Search web"
-                    onClick={() => setIsSearchModalOpen(true)}
-                  />
-                </MenuContent>
-              </Menu>
-              <Tooltip text="New group" position="bottom">
+      <SidePanel
+        title="Sources"
+        actions={
+          <>
+            <Menu>
+              <Tooltip text="Add source" position="bottom">
+                <MenuTrigger>
+                  <IconButton icon={<AddIcon />} variant="primary" size="sm" />
+                </MenuTrigger>
+              </Tooltip>
+              <MenuContent>
+                <MenuItem
+                  icon={<FileIcon />}
+                  label="Upload file"
+                  onClick={() => handleOpenModal("File")}
+                />
+                <MenuItem
+                  icon={<LinkIcon />}
+                  label="Website link"
+                  onClick={() => handleOpenModal("Website")}
+                />
+                <MenuItem
+                  icon={<NoteIcon />}
+                  label="Direct text"
+                  onClick={() => handleOpenModal("Text")}
+                />
+                <MenuItem
+                  icon={<SearchIcon />}
+                  label="Search web"
+                  onClick={() => setIsSearchModalOpen(true)}
+                />
+              </MenuContent>
+            </Menu>
+            <Tooltip text="New group" position="bottom">
+              <IconButton
+                icon={<FolderAddIcon />}
+                onClick={() => setIsNewGroupModalOpen(true)}
+                variant="secondary"
+                size="sm"
+                ariaLabel="New group"
+              />
+            </Tooltip>
+            {onToggleCollapse && (
+              <Tooltip text="Collapse panel" position="bottom">
                 <IconButton
-                  icon={<FolderAddIcon />}
-                  onClick={() => setIsNewGroupModalOpen(true)}
+                  icon={<CompressIcon />}
+                  onClick={onToggleCollapse}
                   variant="secondary"
                   size="sm"
-                  ariaLabel="New group"
+                  aria-label="Collapse panel"
                 />
               </Tooltip>
-              {onToggleCollapse && (
-                <Tooltip text="Collapse panel" position="bottom">
-                  <IconButton
-                    icon={<CompressIcon />}
-                    onClick={onToggleCollapse}
-                    variant="secondary"
-                    size="sm"
-                    aria-label="Collapse panel"
-                  />
-                </Tooltip>
-              )}
-            </div>
-          </div>
-          <Divider className="my-0" />
-        </div>
-        <div className="w-full flex-1 overflow-y-auto px-4">
-          {(() => {
-            if (isLoading) {
-              return (
-                <div className="flex size-full items-center justify-center">
-                  <Spinner />
-                </div>
-              );
-            }
-            if (sources && sources.length > 0) {
-              return (
-                <div
-                  className="flex flex-col gap-2 py-4"
-                  onDragOver={hasGroups ? (e) => handleGroupDragOver(e, null) : undefined}
-                  onDragLeave={hasGroups ? handleGroupDragLeave : undefined}
-                  onDrop={hasGroups ? (e) => handleGroupDrop(e, null) : undefined}
-                >
+            )}
+          </>
+        }
+        contentClassName="px-4"
+      >
+        {(() => {
+          if (isLoading) {
+            return (
+              <div className="flex size-full items-center justify-center">
+                <Spinner />
+              </div>
+            );
+          }
+          if (sources && sources.length > 0) {
+            return (
+              <PanelList
+                className="flex flex-col gap-2 py-4"
+                onDragOver={hasGroups ? (e) => handleGroupDragOver(e, null) : undefined}
+                onDragLeave={hasGroups ? handleGroupDragLeave : undefined}
+                onDrop={hasGroups ? (e) => handleGroupDrop(e, null) : undefined}
+              >
+                <PanelListItem>
                   <Button variant="secondary" size="sm" onClick={handleSelectAllToggle}>
                     {isAllSelected ? "Deselect all sources" : "Select all sources"}
                   </Button>
-                  {hasGroups ? (
-                    <>
-                      {groupedSources.map(({ group, sources: groupSources }) => (
+                </PanelListItem>
+                {hasGroups ? (
+                  <>
+                    {groupedSources.map(({ group, sources: groupSources }) => (
+                      <PanelListItem key={group.id}>
                         <SourceGroupSection
-                          key={group.id}
                           notebookId={notebookId}
                           group={group}
                           onChanged={handleGroupsChanged}
@@ -452,8 +455,10 @@ export function SourcesCard({
                             </p>
                           )}
                         </SourceGroupSection>
-                      ))}
-                      {ungroupedSources.length > 0 && (
+                      </PanelListItem>
+                    ))}
+                    {ungroupedSources.length > 0 && (
+                      <PanelListItem>
                         <div
                           className={cn(
                             "flex flex-col gap-2 rounded-xs pt-1 transition-colors duration-150",
@@ -466,31 +471,31 @@ export function SourcesCard({
                           </span>
                           {ungroupedSources.map(renderSourceChip)}
                         </div>
-                      )}
-                    </>
-                  ) : (
-                    sources.map(renderSourceChip)
-                  )}
-                </div>
-              );
-            }
-            return (
-              <div className="flex size-full flex-col items-center justify-start pt-24 text-center">
-                <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
-                  <div className="size-10 text-blue-500 dark:text-blue-400">
-                    <UploadIcon />
-                  </div>
-                </div>
-                <h3 className="text-foreground mb-2 text-lg font-semibold">No sources yet</h3>
-                <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                  Add your first source to start gathering information. You can upload PDFs, add web
-                  links or paste text.
-                </p>
-              </div>
+                      </PanelListItem>
+                    )}
+                  </>
+                ) : (
+                  sources.map(renderSourceChip)
+                )}
+              </PanelList>
             );
-          })()}
-        </div>
-      </div>
+          }
+          return (
+            <div className="flex size-full flex-col items-center justify-start pt-24 text-center">
+              <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
+                <div className="size-10 text-blue-500 dark:text-blue-400">
+                  <UploadIcon />
+                </div>
+              </div>
+              <h3 className="text-foreground mb-2 text-lg font-semibold">No sources yet</h3>
+              <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                Add your first source to start gathering information. You can upload PDFs, add web
+                links or paste text.
+              </p>
+            </div>
+          );
+        })()}
+      </SidePanel>
 
       <SearchSourcesModal
         isOpen={isSearchModalOpen}

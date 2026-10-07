@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { MindMapIcon, StudyIcon, CardIcon, QuestionnaireIcon } from "@/components/icons";
-import { Divider } from "@/components/ui";
+import { SidePanel, PanelList, PanelListItem } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import { panelSwitchTransition } from "@/lib/motion";
 import { ToolCard } from "./ToolCard";
 import { ToolResultViewer } from "./ToolResultViewer";
 import { useGenerationJob } from "@/hooks";
@@ -88,7 +89,7 @@ export function ToolsCard({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
+            transition={panelSwitchTransition}
             className="absolute inset-0 z-10 h-[96%] self-end"
           >
             <ToolResultViewer
@@ -111,28 +112,21 @@ export function ToolsCard({
           "opacity-100 scale-100": onOpenTool || !selectedTool,
         })}
       >
-        <div className="flex h-full flex-col overflow-hidden">
-          <div className="z-10 shrink-0">
-            <div className="flex h-15 items-center px-4 pt-4 pb-3">
-              <h2 className="font-sans text-lg font-semibold">Tools</h2>
-            </div>
-            <Divider className="my-0" />
-          </div>
-          <div className="w-full flex-1 overflow-y-auto p-4">
-            <div className="grid grid-cols-1 gap-2">
-              {tools.map((tool) => (
+        <SidePanel title="Tools" contentClassName="p-4">
+          <PanelList className="grid grid-cols-1 gap-2">
+            {tools.map((tool) => (
+              <PanelListItem key={tool.type}>
                 <ToolItem
-                  key={tool.type}
                   tool={tool}
                   notebookId={notebookId}
                   onSelect={handleSelectTool}
                   onOpenTool={onOpenTool}
                   disabled={!hasSources}
                 />
-              ))}
-            </div>
-          </div>
-        </div>
+              </PanelListItem>
+            ))}
+          </PanelList>
+        </SidePanel>
       </div>
     </div>
   );
