@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback, type ReactNode } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Markdown } from "../Markdown";
 import { useFetch, useRealtimeEvent } from "@/hooks";
 import {
   Alert,
   Button,
+  Chip,
   IconButton,
   Tooltip,
   Skeleton,
@@ -12,15 +13,46 @@ import {
   CopyButton,
   Divider,
 } from "@/components/ui";
-import { RestartIcon, StarsIcon } from "@/components/icons";
-import { getHttpErrorMessage } from "@/lib/utils";
+import { NoteIcon, RestartIcon, StarsIcon } from "@/components/icons";
+import { getHttpErrorMessage, getSourceIcon, timeAgo } from "@/lib/utils";
+import type { Note, Source } from "@/interfaces";
 
 interface OverviewPanelProps {
   notebookId: string;
   readySourcesCount: number;
+  sources: Source[];
+  notes: Note[];
+  createdAt?: Date;
+  onOpenSource: (source: Source) => void;
+  onOpenNote: (note: Note) => void;
 }
 
-export function OverviewPanel({ notebookId, readySourcesCount }: OverviewPanelProps) {
+interface RecentItem {
+  id: string;
+  title: string;
+  date: Date;
+  icon: ReactNode;
+  onOpen: () => void;
+}
+
+const MAX_RECENT_ITEMS = 4;
+
+function SectionLabel({ children }: { children: ReactNode }) {
+  return (
+    <div className="mb-2 text-xs font-bold tracking-widest text-gray-500 uppercase select-none dark:text-gray-400">
+      {children}
+    </div>
+  );
+}
+
+export function OverviewPanel({
+  notebookId,
+  readySourcesCount,
+  sources,
+  notes,
+  onOpenSource,
+  onOpenNote,
+}: OverviewPanelProps) {
   const [summaryGenerateError, setSummaryGenerateError] = useState<FetchError | null>(null);
   const [isSummaryGenerating, setIsSummaryGenerating] = useState(false);
   const [isAutoRegenerating, setIsAutoRegenerating] = useState(false);
@@ -39,7 +71,10 @@ export function OverviewPanel({ notebookId, readySourcesCount }: OverviewPanelPr
     data: notebookSummaryData,
     loading: isSummaryLoading,
     refetch: refetchSummary,
-  } = useFetch<{ summary: string }>(`notebooks/${notebookId}/summary`, summaryOptions);
+  } = useFetch<{ summary: string; topics: string[] }>(
+    `notebooks/${notebookId}/summary`,
+    summaryOptions,
+  );
 
   const handleSummaryUpdated = useCallback(
     (event: { notebookId?: string; summary?: string }) => {
@@ -110,6 +145,30 @@ export function OverviewPanel({ notebookId, readySourcesCount }: OverviewPanelPr
   const isLoading =
     isSummaryLoading || isSummaryRegenerating || isSummaryGenerating || isAutoRegenerating;
 
+  const keyTopics = notebookSummaryData?.topics ?? [];
+  const recentItems = useMemo<RecentItem[]>(() => {
+    const items: RecentItem[] = [
+      ...sources.map((source) => ({
+        id: `source-${source.id}`,
+        title: source.title,
+        date: new Date(source.createdAt),
+        icon: getSourceIcon(source.type),
+        onOpen: () => onOpenSource(source),
+      })),
+      ...notes.map((note) => ({
+        id: `note-${note.id}`,
+        title: note.title,
+        date: new Date(note.createdAt),
+        icon: <NoteIcon />,
+        onOpen: () => onOpenNote(note),
+      })),
+    ];
+
+    return items.sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, MAX_RECENT_ITEMS);
+  }, [sources, notes, onOpenSource, onOpenNote]);
+
+  const showActivity = recentItems.length > 0 && !isLoading && !summaryGenerateError;
+
   return (
     <div className="flex h-full w-full flex-col overflow-hidden">
       <div className="z-10 shrink-0">
@@ -150,7 +209,7 @@ export function OverviewPanel({ notebookId, readySourcesCount }: OverviewPanelPr
         </div>
         <Divider className="my-0" />
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
+      <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 py-4">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={
@@ -187,8 +246,11 @@ export function OverviewPanel({ notebookId, readySourcesCount }: OverviewPanelPr
                 </Button>
               </div>
             ) : notebookSummary?.trim() ? (
-              <div className="text-sm leading-relaxed select-text">
-                <Markdown text={notebookSummary} />
+              <div className="flex flex-col gap-1.5">
+                <SectionLabel>Summary</SectionLabel>
+                <div className="text-sm leading-relaxed select-text">
+                  <Markdown text={notebookSummary} />
+                </div>
               </div>
             ) : (
               <div className="flex size-full flex-col items-center justify-start pt-24 text-center">
@@ -214,6 +276,46 @@ export function OverviewPanel({ notebookId, readySourcesCount }: OverviewPanelPr
             )}
           </motion.div>
         </AnimatePresence>
+
+        {!isLoading && !summaryGenerateError && keyTopics.length > 0 && (
+          <div className="flex flex-col gap-1.5">
+            <SectionLabel>Key concepts</SectionLabel>
+            <div className="flex flex-wrap gap-1.5">
+              {keyTopics.map((topic) => (
+                <Chip key={topic} size="sm" title={topic} className="select-text">
+                  {topic}
+                </Chip>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {showActivity && (
+          <div>
+            <SectionLabel>Recently added</SectionLabel>
+            <div className="flex flex-col">
+              {recentItems.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={item.onOpen}
+                  title={item.title}
+                  className="group flex w-full items-center gap-2 rounded-sm px-1 py-1.5 text-left transition-colors hover:bg-gray-100/70 dark:hover:bg-gray-800/50"
+                >
+                  <span className="flex size-3.5 shrink-0 items-center justify-center text-gray-400 transition-colors group-hover:text-blue-500 dark:text-gray-500 dark:group-hover:text-blue-400">
+                    {item.icon}
+                  </span>
+                  <span className="min-w-0 flex-1 truncate text-[13px] text-gray-600 transition-colors group-hover:text-gray-900 dark:text-gray-300 dark:group-hover:text-gray-100">
+                    {item.title}
+                  </span>
+                  <span className="shrink-0 text-[11px] text-gray-400 dark:text-gray-500">
+                    {timeAgo(item.date)}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
