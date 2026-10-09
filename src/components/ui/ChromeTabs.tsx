@@ -20,6 +20,7 @@ interface ChromeTabsProps {
   onTabPointerDown?: (e: PointerEvent<HTMLDivElement>, id: string) => void;
   actions?: ReactNode;
   renderTabContextMenu?: (id: string) => ReactNode;
+  activeIndicatorClassName?: string;
 }
 
 export function ChromeTabs({
@@ -31,6 +32,7 @@ export function ChromeTabs({
   onTabPointerDown,
   actions,
   renderTabContextMenu,
+  activeIndicatorClassName,
 }: ChromeTabsProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
@@ -99,7 +101,14 @@ export function ChromeTabs({
                 />
               )}
               {active && (
-                <span className="pointer-events-none absolute -inset-x-px -top-px h-0.5 rounded-t-xs bg-blue-500 dark:bg-blue-400" />
+                <span
+                  className={cn(
+                    "pointer-events-none absolute -inset-x-px -top-px h-0.5 rounded-t-xs",
+                    {
+                      "bg-blue-500 dark:bg-blue-400": activeIndicatorClassName,
+                    },
+                  )}
+                />
               )}
               {tab.icon && (
                 <span className="shrink-0 [&>svg]:size-3.5 [&>svg]:shrink-0">{tab.icon}</span>

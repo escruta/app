@@ -1066,6 +1066,9 @@ export default function NotebookPage() {
     </>
   );
 
+  const tabActiveIndicatorFor = (isPaneActive: boolean) =>
+    isPaneActive ? undefined : cn("bg-gray-300 dark:bg-gray-700");
+
   const centerColumn = (
     <div ref={centerRef} className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
       {splitActive && splitState && splitLeftTab && splitRightTab ? (
@@ -1082,6 +1085,9 @@ export default function NotebookPage() {
               onTabPointerDown={handleTabPointerDown}
               renderTabContextMenu={renderTabContextMenu}
               className="h-11"
+              activeIndicatorClassName={tabActiveIndicatorFor(
+                !rightGroupKeys.includes(effectiveActiveKey),
+              )}
             />
             <div
               className="relative min-h-0 flex-1 overflow-hidden"
@@ -1102,6 +1108,9 @@ export default function NotebookPage() {
               onTabPointerDown={handleTabPointerDown}
               renderTabContextMenu={renderTabContextMenu}
               className="h-11"
+              activeIndicatorClassName={tabActiveIndicatorFor(
+                rightGroupKeys.includes(effectiveActiveKey),
+              )}
             />
             <div
               className="relative min-h-0 flex-1 overflow-hidden"
