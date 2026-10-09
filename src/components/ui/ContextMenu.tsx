@@ -14,11 +14,40 @@ import {
 import { createPortal } from "react-dom";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
-import { CopyIcon } from "@/components/icons";
+import { CopyIcon, CutIcon, PasteIcon } from "@/components/icons";
 
 interface ContextMenuState {
   isOpen: boolean;
   position: { x: number; y: number };
+  target?: HTMLInputElement | HTMLTextAreaElement | null;
+}
+
+const TEXT_INPUT_TYPES = new Set(["", "text", "search", "email", "password", "url", "tel"]);
+
+function isTextField(target: EventTarget | null): target is HTMLInputElement | HTMLTextAreaElement {
+  if (target instanceof HTMLTextAreaElement) return true;
+  if (target instanceof HTMLInputElement) return TEXT_INPUT_TYPES.has(target.type);
+  return false;
+}
+
+function setNativeValue(el: HTMLInputElement | HTMLTextAreaElement, value: string) {
+  const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement : HTMLInputElement;
+  const descriptor = Object.getOwnPropertyDescriptor(proto.prototype, "value");
+  descriptor?.set?.call(el, value);
+}
+
+function replaceRange(
+  el: HTMLInputElement | HTMLTextAreaElement,
+  start: number,
+  end: number,
+  replacement: string,
+) {
+  const next = el.value.slice(0, start) + replacement + el.value.slice(end);
+  el.focus();
+  setNativeValue(el, next);
+  const caret = start + replacement.length;
+  el.setSelectionRange(caret, caret);
+  el.dispatchEvent(new Event("input", { bubbles: true }));
 }
 
 interface ContextMenuContextType {
@@ -325,6 +354,65 @@ function ContextMenuCopy({
   );
 }
 
+function TextFieldContextMenuItems() {
+  const context = useContext(ContextMenuContext);
+  const target = context?.state.target ?? null;
+  const start = target?.selectionStart ?? 0;
+  const end = target?.selectionEnd ?? 0;
+  const text = target ? target.value.slice(start, end) : "";
+  const hasSelection = text.length > 0;
+  const isEditable = !!target && !target.readOnly && !target.disabled;
+
+  const handleCopy = useCallback(async () => {
+    if (!target || !hasSelection) return;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (e) {
+      console.warn("Clipboard write failed:", e);
+    }
+  }, [target, hasSelection, text]);
+
+  const handleCut = useCallback(async () => {
+    if (!target || !hasSelection || !isEditable) return;
+    await handleCopy();
+    replaceRange(target, start, end, "");
+  }, [target, hasSelection, isEditable, handleCopy, start, end]);
+
+  const handlePaste = useCallback(async () => {
+    if (!target || !isEditable) return;
+    try {
+      const clipboardText = await navigator.clipboard.readText();
+      if (!clipboardText) return;
+      replaceRange(target, start, end, clipboardText);
+    } catch (e) {
+      console.warn("Clipboard read failed:", e);
+    }
+  }, [target, isEditable, start, end]);
+
+  return (
+    <>
+      <ContextMenuItem
+        label="Cut"
+        icon={<CutIcon className="size-full" />}
+        onClick={handleCut}
+        disabled={!hasSelection || !isEditable}
+      />
+      <ContextMenuItem
+        label="Copy"
+        icon={<CopyIcon className="size-full" />}
+        onClick={handleCopy}
+        disabled={!hasSelection}
+      />
+      <ContextMenuItem
+        label="Paste"
+        icon={<PasteIcon className="size-full" />}
+        onClick={handlePaste}
+        disabled={!isEditable}
+      />
+    </>
+  );
+}
+
 function SyntheticTrigger() {
   const context = useContext(ContextMenuContext);
 
@@ -333,11 +421,22 @@ function SyntheticTrigger() {
     const handleContextMenu = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
 
-      if (
-        target?.closest(
-          "[data-context-menu-trigger], .ProseMirror, input, textarea, [contenteditable='true']",
-        )
-      ) {
+      if (target?.closest("[data-context-menu-trigger], .ProseMirror")) {
+        context.setState({ isOpen: false, position: { x: 0, y: 0 } });
+        return;
+      }
+
+      if (isTextField(target)) {
+        e.preventDefault();
+        context.setState({
+          isOpen: true,
+          position: { x: e.clientX, y: e.clientY },
+          target,
+        });
+        return;
+      }
+
+      if (target?.closest("input, textarea, [contenteditable='true']")) {
         context.setState({ isOpen: false, position: { x: 0, y: 0 } });
         return;
       }
@@ -361,11 +460,19 @@ function SyntheticTrigger() {
   return null;
 }
 
+function TextFieldAwareItems({ children }: { children?: ReactNode }) {
+  const context = useContext(ContextMenuContext);
+  if (context?.state.target) return <TextFieldContextMenuItems />;
+  return <>{children ?? <ContextMenuCopy />}</>;
+}
+
 export function GlobalContextMenu({ children }: { children?: ReactNode }) {
   return (
     <ContextMenu>
       <SyntheticTrigger />
-      <ContextMenuContent compact>{children ?? <ContextMenuCopy />}</ContextMenuContent>
+      <ContextMenuContent compact>
+        <TextFieldAwareItems>{children}</TextFieldAwareItems>
+      </ContextMenuContent>
     </ContextMenu>
   );
 }
