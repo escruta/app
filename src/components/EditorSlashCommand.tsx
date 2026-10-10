@@ -284,17 +284,21 @@ function SlashCommandList({ items, command, loading, keyDownRef }: SlashCommandL
           onMouseEnter={() => setSelectedIndex(index)}
           className={cn(
             "flex w-full cursor-pointer items-center gap-2 rounded-xs px-2 py-1 text-left text-sm transition-colors duration-150 select-none",
-            index === selectedIndex
-              ? "bg-blue-50 text-blue-600 dark:bg-gray-800 dark:text-blue-400"
-              : "text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800/60",
+            {
+              "bg-blue-50 text-blue-600 dark:bg-gray-800 dark:text-blue-400":
+                index === selectedIndex,
+              "text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800/60":
+                index !== selectedIndex,
+            },
           )}
         >
           <span
             className={cn(
               "flex size-4 shrink-0 items-center justify-center transition-colors duration-150",
-              index === selectedIndex
-                ? "text-blue-600 dark:text-blue-400"
-                : "text-gray-500 dark:text-gray-400",
+              {
+                "text-blue-600 dark:text-blue-400": index === selectedIndex,
+                "text-gray-500 dark:text-gray-400": index !== selectedIndex,
+              },
             )}
           >
             {item.icon}

@@ -58,7 +58,10 @@ export const Markdown = memo(function Markdown({
           <ul
             className={cn(
               "my-4 pl-6",
-              className?.includes("contains-task-list") ? "list-none pl-0" : "list-disc",
+              {
+                "list-none pl-0": className?.includes("contains-task-list"),
+                "list-disc": !className?.includes("contains-task-list"),
+              },
               className,
             )}
           >
@@ -72,7 +75,7 @@ export const Markdown = memo(function Markdown({
           <li
             className={cn(
               "mb-2 leading-normal",
-              className?.includes("task-list-item") ? "flex items-start" : "",
+              { "flex items-start": className?.includes("task-list-item") },
               className,
             )}
           >

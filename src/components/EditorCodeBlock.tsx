@@ -63,12 +63,12 @@ export function EditorCodeBlock({ node, updateAttributes }: NodeViewProps) {
     languages.find((l) => l.value === (node.attrs.language || "plaintext"))?.label || "Plain Text";
 
   return (
-    <NodeViewWrapper className={cn("relative group my-4", isDropdownOpen && "z-50")}>
+    <NodeViewWrapper className={cn("relative group my-4", { "z-50": isDropdownOpen })}>
       <div
-        className={cn(
-          "absolute right-2 top-2 transition-opacity z-10 flex gap-2 items-center",
-          isDropdownOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100",
-        )}
+        className={cn("absolute right-2 top-2 transition-opacity z-10 flex gap-2 items-center", {
+          "opacity-100": isDropdownOpen,
+          "opacity-0 group-hover:opacity-100": !isDropdownOpen,
+        })}
         contentEditable={false}
       >
         <IconButton
@@ -96,7 +96,7 @@ export function EditorCodeBlock({ node, updateAttributes }: NodeViewProps) {
       >
         <NodeViewContent
           as={"code" as "div"}
-          className={node.attrs.language ? `language-${node.attrs.language}` : ""}
+          className={cn({ [`language-${node.attrs.language}`]: Boolean(node.attrs.language) })}
         />
       </pre>
     </NodeViewWrapper>

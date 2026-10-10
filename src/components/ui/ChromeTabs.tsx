@@ -96,7 +96,7 @@ export function ChromeTabs({
                 <span
                   className={cn(
                     "pointer-events-none absolute top-1/2 -left-0.5 h-4 w-px -translate-y-1/2 bg-gray-300 transition-opacity duration-200 dark:bg-gray-700",
-                    separatorHidden ? "opacity-0" : "opacity-100",
+                    { "opacity-0": separatorHidden, "opacity-100": !separatorHidden },
                   )}
                 />
               )}

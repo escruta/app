@@ -39,7 +39,7 @@ function Shimmer({ className, animate = true, delay = 0, style }: ShimmerProps) 
       className={cn(
         "relative overflow-hidden bg-gray-200/80 dark:bg-gray-800/80",
         "rounded-xs isolate",
-        animate && "animate-pulse",
+        { "animate-pulse": animate },
         className,
       )}
       style={{

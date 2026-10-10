@@ -148,8 +148,6 @@ export function Dropdown<T>({
           disabled={disabled}
           className={cn(
             "relative w-full text-left",
-            size === "sm" && "h-8 px-2 pr-7 text-xs",
-            size === "md" && "h-10 px-3 pr-10 text-sm",
             "bg-white dark:bg-gray-900",
             "border border-gray-300 dark:border-gray-600",
             "rounded-xs",
@@ -158,6 +156,8 @@ export function Dropdown<T>({
             "transition-all duration-200 ease-in-out",
             "select-none",
             {
+              "h-8 px-2 pr-7 text-xs": size === "sm",
+              "h-10 px-3 pr-10 text-sm": size === "md",
               "hover:border-blue-500 hover:ring-1 hover:ring-blue-300 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-gray-900 dark:hover:border-blue-400 cursor-pointer":
                 !disabled,
               "opacity-50 cursor-not-allowed bg-gray-50 dark:bg-gray-900 hover:ring-0": disabled,
@@ -175,17 +175,17 @@ export function Dropdown<T>({
           </span>
 
           <span
-            className={cn(
-              "absolute inset-y-0 right-0 flex items-center pointer-events-none",
-              size === "sm" ? "pr-2" : "pr-3",
-            )}
+            className={cn("absolute inset-y-0 right-0 flex items-center pointer-events-none", {
+              "pr-2": size === "sm",
+              "pr-3": size !== "sm",
+            })}
           >
             <ChevronIcon
               direction={isOpen !== up ? "up" : "down"}
-              className={cn(
-                "text-gray-400 dark:text-gray-400 transition-transform duration-200",
-                size === "sm" ? "size-4" : "size-5",
-              )}
+              className={cn("text-gray-400 dark:text-gray-400 transition-transform duration-200", {
+                "size-4": size === "sm",
+                "size-5": size !== "sm",
+              })}
             />
           </span>
         </button>
@@ -230,12 +230,13 @@ export function Dropdown<T>({
                       onClick={() => handleSelect(option)}
                       className={cn(
                         "relative flex w-full items-center text-left font-medium",
-                        size === "sm" ? "px-2 py-1.5 text-xs" : "px-3 py-2 text-sm",
                         "text-gray-700 dark:text-gray-200",
                         "transition-all duration-200 outline-none select-none cursor-pointer rounded-xs",
                         "hover:bg-blue-50 hover:ring-1 hover:ring-blue-300 focus:bg-blue-50 dark:hover:bg-gray-700 dark:focus:bg-gray-700 hover:text-blue-600 dark:hover:text-blue-400 active:bg-blue-100 dark:active:bg-gray-600",
                         "focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900",
                         {
+                          "px-2 py-1.5 text-xs": size === "sm",
+                          "px-3 py-2 text-sm": size !== "sm",
                           "bg-blue-100 dark:bg-gray-700 text-blue-700 dark:text-blue-300":
                             selectedOption === option,
                         },
@@ -246,10 +247,15 @@ export function Dropdown<T>({
                         <span
                           className={cn(
                             "absolute inset-y-0 right-0 flex items-center text-blue-600 dark:text-blue-400",
-                            size === "sm" ? "pr-2" : "pr-3",
+                            {
+                              "pr-2": size === "sm",
+                              "pr-3": size !== "sm",
+                            },
                           )}
                         >
-                          <CheckIcon className={size === "sm" ? "size-4" : "size-5"} />
+                          <CheckIcon
+                            className={cn({ "size-4": size === "sm", "size-5": size !== "sm" })}
+                          />
                         </span>
                       )}
                     </motion.button>

@@ -126,8 +126,10 @@ export function FolderCard({
             "hover:bg-blue-100/80 dark:hover:bg-blue-900/40",
             "hover:border-blue-300 dark:hover:border-blue-700",
             "hover:ring-1 hover:ring-blue-300/60 dark:hover:ring-blue-700/60",
-            isExpanded &&
-              "border-blue-400 ring-2 ring-blue-400/60 hover:ring-blue-400/60 dark:border-blue-500 dark:ring-blue-500/50 dark:hover:ring-blue-500/50",
+            {
+              "border-blue-400 ring-2 ring-blue-400/60 hover:ring-blue-400/60 dark:border-blue-500 dark:ring-blue-500/50 dark:hover:ring-blue-500/50":
+                isExpanded,
+            },
           )}
           onClick={handleCardClick}
           onKeyDown={handleCardKeyDown}
