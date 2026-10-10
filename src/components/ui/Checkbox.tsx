@@ -61,10 +61,9 @@ export function Checkbox({
       {label && (
         <label
           htmlFor={id}
-          className={cn(
-            "text-sm cursor-pointer select-none",
-            disabled && "opacity-50 cursor-not-allowed",
-          )}
+          className={cn("text-sm cursor-pointer select-none", {
+            "opacity-50 cursor-not-allowed": disabled,
+          })}
         >
           {label}
         </label>

@@ -19,8 +19,10 @@ export function TopBar({ title }: TopBarProps = {}) {
     <div
       className={cn(
         "app-region-drag z-50 flex h-14 w-full shrink-0 flex-row items-center justify-between border-b border-gray-200 bg-white pr-4 pl-4 md:pr-6 md:pl-6 dark:border-gray-800 dark:bg-gray-950",
-        isMac && "pl-20",
-        isElectron && !isMac && "pr-36",
+        {
+          "pl-20": isMac,
+          "pr-36": isElectron && !isMac,
+        },
       )}
     >
       <div className="flex items-center gap-4">

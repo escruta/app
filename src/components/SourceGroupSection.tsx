@@ -97,10 +97,9 @@ export function SourceGroupSection({
 
   return (
     <div
-      className={cn(
-        "flex flex-col rounded-xs transition-colors duration-150",
-        isDropTarget && "bg-blue-50/60 ring-1 ring-blue-300 dark:bg-blue-900/10 dark:ring-blue-700",
-      )}
+      className={cn("flex flex-col rounded-xs transition-colors duration-150", {
+        "bg-blue-50/60 ring-1 ring-blue-300 dark:bg-blue-900/10 dark:ring-blue-700": isDropTarget,
+      })}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}

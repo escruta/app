@@ -235,9 +235,11 @@ export function Tooltip({
                 "backdrop-blur-md",
                 "border border-gray-200 dark:border-gray-800",
                 "ring-1 ring-black/5 dark:ring-white/5",
-                typeof text === "string"
-                  ? "px-3 py-1.5 text-center text-sm font-medium whitespace-normal wrap-break-word"
-                  : "flex flex-col overflow-hidden text-left p-0",
+                {
+                  "px-3 py-1.5 text-center text-sm font-medium whitespace-normal wrap-break-word":
+                    typeof text === "string",
+                  "flex flex-col overflow-hidden text-left p-0": typeof text !== "string",
+                },
               )}
             >
               {text}
@@ -265,9 +267,9 @@ export function Tooltip({
                         position === "left",
                       "left-[-5.5px] -translate-y-1/2 rotate-135 border-t-0 border-l-0":
                         position === "right",
+                      "left-1/2": (position === "top" || position === "bottom") && !arrowOffset.x,
+                      "top-1/2": (position === "left" || position === "right") && !arrowOffset.y,
                     },
-                    (position === "top" || position === "bottom") && !arrowOffset.x && "left-1/2",
-                    (position === "left" || position === "right") && !arrowOffset.y && "top-1/2",
                   )}
                 />
               )}

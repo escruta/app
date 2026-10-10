@@ -462,8 +462,10 @@ export function SourcesCard({
                         <div
                           className={cn(
                             "flex flex-col gap-2 rounded-xs pt-1 transition-colors duration-150",
-                            dragOverTarget === null &&
-                              "bg-blue-50/60 ring-1 ring-blue-300 dark:bg-blue-900/10 dark:ring-blue-700",
+                            {
+                              "bg-blue-50/60 ring-1 ring-blue-300 dark:bg-blue-900/10 dark:ring-blue-700":
+                                dragOverTarget === null,
+                            },
                           )}
                         >
                           <span className="px-1 text-xs font-medium tracking-wide text-gray-400 uppercase select-none dark:text-gray-500">

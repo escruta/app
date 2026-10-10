@@ -87,7 +87,10 @@ function processMessage(
   return parts.map((part, index) => {
     if (part.type === "code") {
       return (
-        <CodeBlock key={index} className={part.language ? `language-${part.language}` : ""}>
+        <CodeBlock
+          key={index}
+          className={cn({ [`language-${part.language}`]: Boolean(part.language) })}
+        >
           {part.content}
         </CodeBlock>
       );

@@ -298,7 +298,7 @@ export function ConversationHistory({
               ))}
             </AnimatePresence>
           </PanelList>
-          <div ref={setLoadMoreRef} className={cn("h-4", !hasMore && "hidden")} />
+          <div ref={setLoadMoreRef} className={cn("h-4", { hidden: !hasMore })} />
           {isLoadingMore && (
             <div className="flex justify-center py-2">
               <Spinner />

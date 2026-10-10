@@ -573,7 +573,7 @@ function QuestionContent({
                 "border-gray-200 dark:border-gray-600",
                 "placeholder:text-gray-400 dark:placeholder:text-gray-500",
                 "focus:outline-none focus:border-blue-400 dark:focus:border-blue-500 focus:ring-1 focus:ring-blue-400/30 dark:focus:ring-blue-500/30",
-                state.answered && "opacity-60 cursor-not-allowed",
+                { "opacity-60 cursor-not-allowed": state.answered },
               )}
               rows={3}
             />

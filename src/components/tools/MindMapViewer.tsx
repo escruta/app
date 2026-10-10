@@ -538,7 +538,7 @@ export function MindMapViewer({ data, className, onNodeSelect }: MindMapViewerPr
         ref={containerRef}
         className={cn(
           "size-full overflow-hidden bg-gray-50/20 dark:bg-gray-900/20 rounded-xs touch-none",
-          isDragging ? "cursor-grabbing" : "cursor-grab",
+          { "cursor-grabbing": isDragging, "cursor-grab": !isDragging },
         )}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}

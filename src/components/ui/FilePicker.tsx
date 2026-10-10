@@ -77,7 +77,7 @@ export function FilePicker({
   );
 
   return (
-    <div className={label ? "mb-4" : ""}>
+    <div className={cn({ "mb-4": label })}>
       {label && (
         <label className="mb-2 block text-gray-700 select-none dark:text-gray-300" htmlFor={id}>
           {label}

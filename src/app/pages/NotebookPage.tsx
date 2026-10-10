@@ -709,11 +709,11 @@ export default function NotebookPage() {
           return (
             <div
               key={side}
-              className={cn(
-                "flex h-full w-1/2 p-2 transition-colors duration-200",
-                side === "left" ? "justify-start" : "justify-end",
-                dimmed && "bg-gray-100/50 dark:bg-black/30",
-              )}
+              className={cn("flex h-full w-1/2 p-2 transition-colors duration-200", {
+                "justify-start": side === "left",
+                "justify-end": side !== "left",
+                "bg-gray-100/50 dark:bg-black/30": dimmed,
+              })}
             >
               <div
                 className={cn(
@@ -747,7 +747,10 @@ export default function NotebookPage() {
       <div
         className={cn(
           "pointer-events-none fixed z-50 flex items-center gap-1.5 rounded-xs border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-700 shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200",
-          tabDrag.side ? "opacity-100" : "opacity-60",
+          {
+            "opacity-100": tabDrag.side,
+            "opacity-60": !tabDrag.side,
+          },
         )}
         style={{
           left: tabDrag.x,

@@ -216,7 +216,7 @@ export function Modal({
             {onSubmit ? (
               <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
                 <div className={cn("overflow-y-auto flex-1 min-h-0", contentClassname)}>
-                  <div className={noPadding ? "h-full" : "p-4"}>{children}</div>
+                  <div className={cn({ "h-full": noPadding, "p-4": !noPadding })}>{children}</div>
                 </div>
 
                 {actions && (
@@ -228,7 +228,7 @@ export function Modal({
             ) : (
               <>
                 <div className={cn("overflow-y-auto", contentClassname)}>
-                  <div className={noPadding ? "h-full" : "p-4"}>{children}</div>
+                  <div className={cn({ "h-full": noPadding, "p-4": !noPadding })}>{children}</div>
                 </div>
 
                 {actions && (
@@ -292,7 +292,7 @@ export function Modal({
             {onSubmit ? (
               <form onSubmit={handleSubmit}>
                 <div className={cn("max-h-96 overflow-y-auto", contentClassname)}>
-                  <div className={noPadding ? "h-full" : "p-4"}>{children}</div>
+                  <div className={cn({ "h-full": noPadding, "p-4": !noPadding })}>{children}</div>
                 </div>
 
                 {actions && (
@@ -304,7 +304,7 @@ export function Modal({
             ) : (
               <>
                 <div className={cn("max-h-96 overflow-y-auto", contentClassname)}>
-                  <div className={noPadding ? "h-full" : "p-4"}>{children}</div>
+                  <div className={cn({ "h-full": noPadding, "p-4": !noPadding })}>{children}</div>
                 </div>
 
                 {actions && (

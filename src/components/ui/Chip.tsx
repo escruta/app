@@ -72,7 +72,9 @@ export function Chip({
       )}
     >
       {icon && <span className="flex items-center">{icon}</span>}
-      {children && <span className={multiline ? "text-clip" : "truncate"}>{children}</span>}
+      {children && (
+        <span className={cn({ "text-clip": multiline, truncate: !multiline })}>{children}</span>
+      )}
     </span>
   );
 }
