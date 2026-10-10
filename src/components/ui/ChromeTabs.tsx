@@ -105,7 +105,7 @@ export function ChromeTabs({
                   className={cn(
                     "pointer-events-none absolute -inset-x-px -top-px h-0.5 rounded-t-xs",
                     {
-                      "bg-blue-500 dark:bg-blue-400": activeIndicatorClassName,
+                      "bg-blue-500 dark:bg-blue-400": !activeIndicatorClassName,
                     },
                   )}
                 />
