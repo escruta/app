@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Alert, Button, Modal, Spinner, TextField } from "@/components/ui";
+import { Alert, Button, Divider, Modal, Spinner, TextField } from "@/components/ui";
 import { useAuth, useFetch } from "@/hooks";
 import { CheckIcon } from "@/components/icons";
 import { SettingsSection } from "../shared/SettingsSection";
@@ -95,6 +95,7 @@ export function AccountSection() {
           Sign out
         </Button>
       </div>
+      <Divider />
       <div className="mt-2 rounded-xs border border-red-200 bg-red-50/60 p-4 dark:border-red-900/60 dark:bg-red-950/30">
         <h3 className="mb-1 text-sm font-semibold text-red-600 dark:text-red-400">Danger Zone</h3>
         <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
