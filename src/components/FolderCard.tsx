@@ -5,19 +5,12 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   Menu,
-  IconButton,
   Tooltip,
   MenuTrigger,
   MenuContent,
   MenuItem,
 } from "@/components/ui";
-import {
-  ChevronIcon,
-  DotsVerticalIcon,
-  EditIcon,
-  DeleteIcon,
-  FolderIcon,
-} from "@/components/icons";
+import { DotsVerticalIcon, EditIcon, DeleteIcon, FolderIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 
 interface FolderCardProps {
@@ -88,70 +81,78 @@ export function FolderCard({
     </>
   );
 
-  const renderMenu = () => (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={(e) => e.stopPropagation()}
-      onKeyDown={(e) => e.key === "Enter" && e.stopPropagation()}
-    >
-      <Menu>
-        <Tooltip text="Folder settings" position="top">
-          <MenuTrigger>
-            <IconButton
-              icon={<DotsVerticalIcon className="size-3.5" />}
-              size="sm"
-              ariaLabel="Folder settings"
-              variant="ghost"
-            />
-          </MenuTrigger>
-        </Tooltip>
-        <MenuContent align="right">{renderMenuItems()}</MenuContent>
-      </Menu>
-    </div>
-  );
-
   return (
     <ContextMenu>
       <ContextMenuTrigger>
         <div
           role="button"
           tabIndex={0}
-          aria-expanded={onToggle ? isExpanded : undefined}
+          aria-pressed={onToggle ? isExpanded : undefined}
           className={cn(
-            "w-full p-4 flex flex-row items-center gap-2.25",
-            "group relative z-10 overflow-hidden rounded-xs border cursor-pointer transition-all duration-300 ease-out",
-            "bg-blue-50 dark:bg-blue-950/40",
-            "border-blue-200/80 dark:border-blue-800/50",
-            "hover:bg-blue-100/80 dark:hover:bg-blue-900/40",
-            "hover:border-blue-300 dark:hover:border-blue-700",
-            "hover:ring-1 hover:ring-blue-300/60 dark:hover:ring-blue-700/60",
-            {
-              "border-blue-400 ring-2 ring-blue-400/60 hover:ring-blue-400/60 dark:border-blue-500 dark:ring-blue-500/50 dark:hover:ring-blue-500/50":
-                isExpanded,
-            },
+            "group relative inline-flex h-9 shrink-0 items-center gap-2 rounded-xs border px-3 text-sm font-medium transition-all duration-200 ease-out select-none cursor-pointer",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-gray-900",
+            isExpanded
+              ? "border-blue-400 bg-blue-50 text-blue-900 ring-1 ring-blue-400/50 dark:border-blue-500 dark:bg-blue-950/60 dark:text-blue-100 dark:ring-blue-500/40"
+              : "border-gray-200 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50/70 hover:text-blue-900 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:border-gray-500 dark:hover:bg-gray-800 dark:hover:text-blue-100",
           )}
           onClick={handleCardClick}
           onKeyDown={handleCardKeyDown}
         >
-          <div className="rounded-xs bg-blue-100 p-1.5 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400">
-            <FolderIcon className="size-3.5" />
+          <div
+            className={cn(
+              "flex size-5 shrink-0 items-center justify-center rounded-xs transition-colors",
+              isExpanded
+                ? "bg-blue-500 text-white dark:bg-blue-500 dark:text-white"
+                : "bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400",
+            )}
+          >
+            <FolderIcon className="size-3" />
           </div>
-          <h2 className="min-w-0 flex-1 truncate text-sm font-semibold text-blue-900 transition-colors duration-300 group-hover:text-blue-700 dark:text-blue-100 dark:group-hover:text-blue-50">
-            {folder.title}
-          </h2>
+
+          <span className="max-w-44 truncate font-semibold">{folder.title}</span>
+
           {typeof notebookCount === "number" && notebookCount > 0 && (
-            <span className="shrink-0 rounded-xs bg-blue-100/80 px-1.5 py-0.5 text-[11px] font-semibold text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
+            <span
+              className={cn(
+                "shrink-0 rounded-xs px-1.5 py-0.5 text-[11px] leading-none font-semibold transition-colors",
+                isExpanded
+                  ? "bg-blue-200/70 text-blue-800 dark:bg-blue-900/80 dark:text-blue-200"
+                  : "bg-gray-100 text-gray-600 group-hover:bg-blue-100/80 group-hover:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:group-hover:bg-gray-700 dark:group-hover:text-gray-200",
+              )}
+            >
               {notebookCount}
             </span>
           )}
-          {onToggle && (
-            <ChevronIcon
-              direction={isExpanded ? "up" : "down"}
-              className="size-4 shrink-0 text-blue-500/70 dark:text-blue-400/70"
-            />
+
+          {(onEditFolder || onDeleteFolder) && (
+            <div
+              role="button"
+              tabIndex={0}
+              onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.key === "Enter" && e.stopPropagation()}
+              className="-mr-1 flex items-center"
+            >
+              <Menu>
+                <Tooltip text="Folder settings" position="top">
+                  <MenuTrigger>
+                    <button
+                      type="button"
+                      aria-label="Folder settings"
+                      className={cn(
+                        "flex size-5 items-center justify-center rounded-xs transition-colors cursor-pointer",
+                        isExpanded
+                          ? "text-blue-600 hover:bg-blue-200/60 hover:text-blue-900 dark:text-blue-300 dark:hover:bg-blue-900/60 dark:hover:text-white"
+                          : "text-gray-400 hover:bg-blue-100 hover:text-blue-700 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-200",
+                      )}
+                    >
+                      <DotsVerticalIcon className="size-3.5" />
+                    </button>
+                  </MenuTrigger>
+                </Tooltip>
+                <MenuContent align="left">{renderMenuItems()}</MenuContent>
+              </Menu>
+            </div>
           )}
-          {renderMenu()}
         </div>
       </ContextMenuTrigger>
       <ContextMenuContent>{renderContextMenuItems()}</ContextMenuContent>

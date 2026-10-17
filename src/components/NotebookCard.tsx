@@ -289,6 +289,26 @@ export function NotebookCard({
     </div>
   );
 
+  const renderFolderBadge = () => {
+    if (!notebook.folderId || !folderTitle) return null;
+    return (
+      <div
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+        className="min-w-0"
+      >
+        <Chip
+          size="sm"
+          icon={<FolderIcon className="size-3 text-blue-500 dark:text-blue-400" />}
+          title={folderTitle}
+          className="max-w-32 border-gray-200/80 bg-gray-100/80 text-gray-600 dark:border-gray-700/80 dark:bg-gray-800/80 dark:text-gray-300"
+        >
+          {folderTitle}
+        </Chip>
+      </div>
+    );
+  };
+
   return (
     <ContextMenu>
       <ContextMenuTrigger>
@@ -304,27 +324,14 @@ export function NotebookCard({
         >
           {viewMode === "grid" ? (
             <>
-              <div className="flex items-start justify-between">
+              <div className="flex items-start justify-between gap-2">
                 <div className="shrink-0 rounded-xs bg-blue-100 p-2 dark:bg-blue-900/50">
                   <div className="flex size-4 items-center justify-center text-blue-600 dark:text-blue-400 [&>svg]:h-full [&>svg]:w-full">
                     <NotebookIcon />
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  {notebook.folderId && folderTitle && (
-                    <div
-                      onPointerDown={(e) => e.stopPropagation()}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Tooltip text={folderTitle} position="top">
-                        <Chip
-                          size="sm"
-                          icon={<FolderIcon className="size-2.5" />}
-                          className="border-none bg-gray-50/40 opacity-40 transition-opacity hover:opacity-100 dark:bg-gray-800/40"
-                        />
-                      </Tooltip>
-                    </div>
-                  )}
+                <div className="flex min-w-0 items-center gap-1.5">
+                  {renderFolderBadge()}
                   {renderMenu()}
                 </div>
               </div>
@@ -363,7 +370,10 @@ export function NotebookCard({
                 </div>
               </div>
 
-              {renderMenu()}
+              <div className="flex shrink-0 items-center gap-2">
+                {renderFolderBadge()}
+                {renderMenu()}
+              </div>
             </>
           )}
         </div>
