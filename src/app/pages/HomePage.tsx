@@ -16,12 +16,10 @@ import {
   AddIcon,
   FireIcon,
   FolderAddIcon,
-  FolderIcon,
   NotebookIcon,
   SearchIcon,
   SettingsIcon,
 } from "@/components/icons";
-import { AnimatePresence, motion } from "motion/react";
 import type { Folder, Notebook, NotebooksPageResponse } from "@/interfaces";
 import {
   getSortedItems,
@@ -29,8 +27,11 @@ import {
   type ViewMode,
   VIEW_MODE_COOKIE_KEY,
 } from "@/components/settings";
+import { cn } from "@/lib/utils";
 
 const SEARCH_PAGE_SIZE = 20;
+
+type ActiveFilter = "all" | string;
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -62,7 +63,7 @@ export default function HomePage() {
   const [editingFolderId, setEditingFolderId] = useState<string | null>(null);
   const [folderToDelete, setFolderToDelete] = useState<Folder | null>(null);
 
-  const [expandedFolderIds, setExpandedFolderIds] = useState<Set<string>>(new Set());
+  const [activeFilter, setActiveFilter] = useState<ActiveFilter>("all");
   const [showAllNotebooks, setShowAllNotebooks] = useState(false);
 
   const {
@@ -90,11 +91,14 @@ export default function HomePage() {
     {
       method: "POST",
       data: { title: folderTitle },
-      onSuccess: () => {
+      onSuccess: (createdFolder) => {
         useFetch.clearCache();
         refetchFolders(true, false);
         setIsFolderModalOpen(false);
         setFolderTitle("");
+        if (createdFolder?.id) {
+          setActiveFilter(createdFolder.id);
+        }
       },
     },
     false,
@@ -124,14 +128,8 @@ export default function HomePage() {
         useFetch.clearCache();
         refetchFolders(true, false);
         refetchNotebooks(true, false);
-        if (folderToDelete) {
-          const deletedFolderId = folderToDelete.id;
-          setExpandedFolderIds((prev) => {
-            if (!prev.has(deletedFolderId)) return prev;
-            const next = new Set(prev);
-            next.delete(deletedFolderId);
-            return next;
-          });
+        if (folderToDelete && activeFilter === folderToDelete.id) {
+          setActiveFilter("all");
         }
         setFolderToDelete(null);
       },
@@ -148,24 +146,38 @@ export default function HomePage() {
   const MAX_NOTEBOOK_ITEMS = notebookViewMode === "grid" ? gridColumns * 2 : 5;
 
   const folderItems = folders ?? [];
+  const allNotebooks = notebooks ?? [];
 
-  const unfiledNotebooks = (notebooks ?? []).filter((nb) => !nb.folderId);
-  const sortedUnfiledNotebooks = getSortedItems(unfiledNotebooks, sortBy);
-  const displayedNotebooks = showAllNotebooks
-    ? sortedUnfiledNotebooks
-    : sortedUnfiledNotebooks.slice(0, MAX_NOTEBOOK_ITEMS);
-  const hasMoreNotebooks = sortedUnfiledNotebooks.length > MAX_NOTEBOOK_ITEMS;
+  const foldersById = useMemo(() => {
+    const map = new Map<string, Folder>();
+    for (const folder of folderItems) {
+      map.set(folder.id, folder);
+    }
+    return map;
+  }, [folderItems]);
 
   const notebooksByFolder = useMemo(() => {
     const map = new Map<string, Notebook[]>();
-    for (const notebook of notebooks ?? []) {
+    for (const notebook of allNotebooks) {
       if (!notebook.folderId) continue;
       const list = map.get(notebook.folderId) ?? [];
       list.push(notebook);
       map.set(notebook.folderId, list);
     }
     return map;
-  }, [notebooks]);
+  }, [allNotebooks]);
+
+  const filteredNotebooks = useMemo(() => {
+    if (activeFilter === "all") return getSortedItems(allNotebooks, sortBy);
+    return getSortedItems(notebooksByFolder.get(activeFilter) ?? [], sortBy);
+  }, [activeFilter, allNotebooks, notebooksByFolder, sortBy]);
+
+  const displayedNotebooks = showAllNotebooks
+    ? filteredNotebooks
+    : filteredNotebooks.slice(0, MAX_NOTEBOOK_ITEMS);
+  const hasMoreNotebooks = filteredNotebooks.length > MAX_NOTEBOOK_ITEMS;
+
+  const activeFolder = activeFilter !== "all" ? foldersById.get(activeFilter) : undefined;
 
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -254,17 +266,9 @@ export default function HomePage() {
     };
   }, []);
 
-  const handleToggleFolder = (folder: Folder) => {
+  const handleSelectFilter = (nextFilter: ActiveFilter) => {
     setShowAllNotebooks(false);
-    setExpandedFolderIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(folder.id)) {
-        next.delete(folder.id);
-      } else {
-        next.add(folder.id);
-      }
-      return next;
-    });
+    setActiveFilter((prev) => (prev === nextFilter && nextFilter !== "all" ? "all" : nextFilter));
   };
 
   const handleSaveFolder = () => {
@@ -293,41 +297,13 @@ export default function HomePage() {
     setFolderTitle("");
   };
 
-  const hasFolders = !!folders?.length;
+  const hasFolders = folderItems.length > 0;
+  const isAllActive = activeFilter === "all";
 
   const notebookGridClassName =
     notebookViewMode === "grid"
       ? "grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 md:gap-4"
       : "flex flex-col gap-3";
-
-  const renderFolderContents = (folder: Folder) => {
-    const folderNotebooks = getSortedItems(notebooksByFolder.get(folder.id) ?? [], sortBy);
-
-    return (
-      <div className="mt-3 mb-4 rounded-xs border border-blue-200/70 bg-blue-50/40 p-4 dark:border-blue-800/50 dark:bg-blue-950/20">
-        {folderNotebooks.length > 0 ? (
-          <div className={notebookGridClassName}>
-            {folderNotebooks.map((notebook) => (
-              <NotebookCard
-                key={notebook.id}
-                notebook={notebook}
-                viewMode={notebookViewMode}
-                folders={folders ?? undefined}
-                onChange={() => refetchNotebooks(true, false)}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="flex w-full flex-col items-center justify-center gap-1 rounded-xs border-2 border-dashed border-blue-400/40 bg-white/50 px-6 py-6 text-center dark:border-blue-600/40 dark:bg-gray-900/30">
-            <h4 className="text-foreground text-sm font-semibold">This folder is empty</h4>
-            <p className="text-xs leading-relaxed text-gray-500 dark:text-gray-400">
-              Move a notebook into it from its card menu to start organizing.
-            </p>
-          </div>
-        )}
-      </div>
-    );
-  };
 
   return (
     <div className="flex h-screen max-h-full w-full flex-col">
@@ -401,6 +377,9 @@ export default function HomePage() {
                         notebook={notebook}
                         viewMode={notebookViewMode}
                         folders={folders ?? undefined}
+                        folderTitle={
+                          notebook.folderId ? foldersById.get(notebook.folderId)?.title : undefined
+                        }
                         onChange={() => refetchNotebooks(true, false)}
                       />
                     ))}
@@ -424,160 +403,163 @@ export default function HomePage() {
               )}
             </section>
           ) : (
-            <>
-              <section>
-                <h3 className="mb-3 flex items-center justify-between gap-2 text-base font-semibold tracking-tight text-gray-900 dark:text-gray-100">
-                  <span className="flex items-center gap-1.5">
-                    <FolderIcon className="size-3.5 text-blue-500 dark:text-blue-400" />
-                    Folders
-                  </span>
+            <section className="flex flex-col gap-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className="flex items-center gap-1.5 text-base font-semibold tracking-tight text-gray-900 dark:text-gray-100">
+                  <NotebookIcon className="size-3.5 text-blue-500 dark:text-blue-400" />
+                  <span>Notebooks</span>
+                </h3>
+                <div className="flex items-center gap-2">
                   <Button
                     icon={<FolderAddIcon className="size-4" />}
-                    variant="primary"
+                    variant="secondary"
                     size="sm"
                     onClick={handleCreateFolder}
                   >
                     New folder
                   </Button>
-                </h3>
-
-                {foldersLoading && !folders ? (
-                  <div className="flex flex-col gap-3">
-                    {Array.from({ length: 3 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="h-12.5 w-full animate-pulse rounded-xs border border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-800"
-                      />
-                    ))}
-                  </div>
-                ) : hasFolders ? (
-                  <div className="flex flex-col gap-3">
-                    {folderItems.map((folder) => (
-                      <div key={folder.id}>
-                        <FolderCard
-                          folder={folder}
-                          isExpanded={expandedFolderIds.has(folder.id)}
-                          notebookCount={(notebooksByFolder.get(folder.id) ?? []).length}
-                          onToggle={() => handleToggleFolder(folder)}
-                          onEditFolder={() => handleEditFolder(folder)}
-                          onDeleteFolder={() => setFolderToDelete(folder)}
-                        />
-                        <AnimatePresence initial={false}>
-                          {expandedFolderIds.has(folder.id) && (
-                            <motion.div
-                              key={folder.id}
-                              initial={{ height: 0 }}
-                              animate={{ height: "auto" }}
-                              exit={{ height: 0 }}
-                              transition={{ duration: 0.15, ease: "easeOut" }}
-                              className="overflow-hidden"
-                            >
-                              {renderFolderContents(folder)}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex w-full flex-col items-center justify-center gap-1 rounded-xs border-2 border-dashed border-blue-400/60 bg-gray-50/60 px-6 py-8 text-center dark:border-blue-600/60 dark:bg-gray-900/30">
-                    <h3 className="text-foreground text-lg font-semibold">No folders yet</h3>
-                    <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                      Folders are a handy way to keep related notebooks together. Create your first
-                      one to start organizing.
-                    </p>
-                  </div>
-                )}
-              </section>
-
-              <section>
-                <h3 className="mb-3 flex items-center justify-between gap-2 text-base font-semibold tracking-tight text-gray-900 dark:text-gray-100">
-                  <span className="flex items-center gap-1.5">
-                    <NotebookIcon className="size-3.5 text-blue-500 dark:text-blue-400" />
-                    Notebooks
-                  </span>
                   <Button
                     icon={<AddIcon className="size-4" />}
+                    variant="primary"
                     size="sm"
                     onClick={() => setIsCreateNotebookOpen(true)}
                   >
                     New notebook
                   </Button>
-                </h3>
+                </div>
+              </div>
 
-                {notebooksLoading ? (
+              {(foldersLoading && !folders) || hasFolders ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    aria-pressed={isAllActive}
+                    onClick={() => handleSelectFilter("all")}
+                    className={cn(
+                      "group relative inline-flex h-9 shrink-0 items-center gap-2 rounded-xs border px-3 text-sm font-medium transition-all duration-200 ease-out select-none cursor-pointer",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-gray-900",
+                      isAllActive
+                        ? "border-blue-400 bg-blue-50 text-blue-900 ring-1 ring-blue-400/50 dark:border-blue-500 dark:bg-blue-950/60 dark:text-blue-100 dark:ring-blue-500/40"
+                        : "border-gray-200 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50/70 hover:text-blue-900 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:border-gray-500 dark:hover:bg-gray-800 dark:hover:text-blue-100",
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "flex size-5 shrink-0 items-center justify-center rounded-xs transition-colors",
+                        isAllActive
+                          ? "bg-blue-500 text-white dark:bg-blue-500 dark:text-white"
+                          : "bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400",
+                      )}
+                    >
+                      <NotebookIcon className="size-3" />
+                    </div>
+                    <span className="font-semibold">All</span>
+                    {allNotebooks.length > 0 && (
+                      <span
+                        className={cn(
+                          "shrink-0 rounded-xs px-1.5 py-0.5 text-[11px] leading-none font-semibold transition-colors",
+                          isAllActive
+                            ? "bg-blue-200/70 text-blue-800 dark:bg-blue-900/80 dark:text-blue-200"
+                            : "bg-gray-100 text-gray-600 group-hover:bg-blue-100/80 group-hover:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:group-hover:bg-gray-700 dark:group-hover:text-gray-200",
+                        )}
+                      >
+                        {allNotebooks.length}
+                      </span>
+                    )}
+                  </button>
+
+                  {foldersLoading && !folders
+                    ? Array.from({ length: 3 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="h-9 w-28 animate-pulse rounded-xs border border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-800"
+                        />
+                      ))
+                    : folderItems.map((folder) => (
+                        <FolderCard
+                          key={folder.id}
+                          folder={folder}
+                          isExpanded={activeFilter === folder.id}
+                          notebookCount={(notebooksByFolder.get(folder.id) ?? []).length}
+                          onToggle={() => handleSelectFilter(folder.id)}
+                          onEditFolder={() => handleEditFolder(folder)}
+                          onDeleteFolder={() => setFolderToDelete(folder)}
+                        />
+                      ))}
+                </div>
+              ) : null}
+
+              {notebooksLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Spinner />
+                </div>
+              ) : notebooksError ? (
+                <div className="border-y border-gray-200 bg-gray-50 px-6 py-5 dark:border-gray-700 dark:bg-gray-950">
                   <div className="flex items-center justify-center py-12">
-                    <Spinner />
-                  </div>
-                ) : notebooksError ? (
-                  <div className="border-y border-gray-200 bg-gray-50 px-6 py-5 dark:border-gray-700 dark:bg-gray-950">
-                    <div className="flex items-center justify-center py-12">
-                      <div className="max-w-md text-center">
-                        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-xs bg-red-50 dark:bg-red-950">
-                          <div className="h-8 w-8 text-red-500">
-                            <FireIcon />
-                          </div>
+                    <div className="max-w-md text-center">
+                      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-xs bg-red-50 dark:bg-red-950">
+                        <div className="h-8 w-8 text-red-500">
+                          <FireIcon />
                         </div>
-                        <h4 className="mb-2 text-lg font-medium text-red-600 dark:text-red-400">
-                          We couldn't load your notebooks
-                        </h4>
-                        <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
-                          {notebooksError.message}
-                        </p>
                       </div>
+                      <h4 className="mb-2 text-lg font-medium text-red-600 dark:text-red-400">
+                        We couldn't load your notebooks
+                      </h4>
+                      <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+                        {notebooksError.message}
+                      </p>
                     </div>
                   </div>
-                ) : (
-                  <>
-                    {notebooks && notebooks.length > 0 ? (
-                      sortedUnfiledNotebooks.length > 0 ? (
-                        <>
-                          <div className={notebookGridClassName}>
-                            {displayedNotebooks.map((notebook) => (
-                              <NotebookCard
-                                key={notebook.id}
-                                notebook={notebook}
-                                viewMode={notebookViewMode}
-                                folders={folders ?? undefined}
-                                onChange={() => refetchNotebooks(true, false)}
-                              />
-                            ))}
-                          </div>
-                          {hasMoreNotebooks && (
-                            <button
-                              className="mt-3 w-full rounded-xs border border-dashed border-gray-200 bg-gray-50/50 px-4 py-2.5 text-sm font-medium text-blue-600 transition-colors hover:border-blue-300 hover:bg-blue-50/70 dark:border-gray-700 dark:bg-gray-800/30 dark:text-blue-400 dark:hover:border-blue-800 dark:hover:bg-blue-900/30"
-                              onClick={() => setShowAllNotebooks((prev) => !prev)}
-                            >
-                              {showAllNotebooks
-                                ? "Show less"
-                                : `Show all ${sortedUnfiledNotebooks.length} notebooks`}
-                            </button>
-                          )}
-                        </>
-                      ) : (
-                        <div className="flex w-full flex-col items-center justify-center gap-1 rounded-xs border-2 border-dashed border-gray-400/30 bg-gray-50/60 px-6 py-8 text-center dark:border-gray-600/30 dark:bg-gray-900/30">
-                          <h3 className="text-foreground text-md font-semibold">
-                            All your notebooks are tucked into folders.
-                          </h3>
-                          <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                            Open a folder above to find them, or create a new notebook to start
-                            fresh.
-                          </p>
-                        </div>
-                      )
-                    ) : (
-                      <div className="flex w-full flex-col items-center justify-center gap-1 rounded-xs border-2 border-dashed border-blue-400/60 bg-gray-50/60 px-6 py-8 text-center dark:border-blue-600/60 dark:bg-gray-900/30">
-                        <h3 className="text-foreground text-lg font-semibold">No notebooks yet</h3>
-                        <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                          Notebooks bring your sources and AI-powered insights together in one
-                          place. Create your first one to get started.
-                        </p>
-                      </div>
-                    )}
-                  </>
-                )}
-              </section>
-            </>
+                </div>
+              ) : allNotebooks.length === 0 ? (
+                <div className="flex w-full flex-col items-center justify-center gap-1 rounded-xs border-2 border-dashed border-blue-400/60 bg-gray-50/60 px-6 py-8 text-center dark:border-blue-600/60 dark:bg-gray-900/30">
+                  <h3 className="text-foreground text-lg font-semibold">No notebooks yet</h3>
+                  <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                    Notebooks bring your sources and AI-powered insights together in one place.
+                    Create your first one to get started.
+                  </p>
+                </div>
+              ) : filteredNotebooks.length > 0 ? (
+                <>
+                  <div className={notebookGridClassName}>
+                    {displayedNotebooks.map((notebook) => (
+                      <NotebookCard
+                        key={notebook.id}
+                        notebook={notebook}
+                        viewMode={notebookViewMode}
+                        folders={folders ?? undefined}
+                        folderTitle={
+                          isAllActive && notebook.folderId
+                            ? foldersById.get(notebook.folderId)?.title
+                            : undefined
+                        }
+                        onChange={() => refetchNotebooks(true, false)}
+                      />
+                    ))}
+                  </div>
+                  {hasMoreNotebooks && (
+                    <button
+                      type="button"
+                      className="mt-1 w-full rounded-xs border border-dashed border-gray-200 bg-gray-50/50 px-4 py-2.5 text-sm font-medium text-blue-600 transition-colors hover:border-blue-300 hover:bg-blue-50/70 dark:border-gray-700 dark:bg-gray-800/30 dark:text-blue-400 dark:hover:border-blue-800 dark:hover:bg-blue-900/30"
+                      onClick={() => setShowAllNotebooks((prev) => !prev)}
+                    >
+                      {showAllNotebooks
+                        ? "Show less"
+                        : `Show all ${filteredNotebooks.length} notebooks`}
+                    </button>
+                  )}
+                </>
+              ) : (
+                <div className="flex w-full flex-col items-center justify-center gap-1 rounded-xs border-2 border-dashed border-gray-400/30 bg-gray-50/60 px-6 py-8 text-center dark:border-gray-600/30 dark:bg-gray-900/30">
+                  <h3 className="text-foreground text-md font-semibold">
+                    {activeFolder ? `"${activeFolder.title}" is empty` : "This folder is empty"}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                    Move a notebook into this folder from its card menu to start organizing.
+                  </p>
+                </div>
+              )}
+            </section>
           )}
         </div>
 
