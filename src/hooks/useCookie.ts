@@ -6,21 +6,26 @@ const defaultOptions: Cookies.CookieAttributes = {
   secure: true,
 };
 
+interface UseCookieResult<T> {
+  value: T;
+  setValue: (newValue: T | undefined) => void;
+}
+
 export function useCookie<T>(
   keyName: string,
   defaultValue: T,
   options?: Cookies.CookieAttributes,
-): readonly [T, (newValue: T | undefined) => void];
+): UseCookieResult<T>;
 export function useCookie<T>(
   keyName: string,
   defaultValue?: T,
   options?: Cookies.CookieAttributes,
-): readonly [T | undefined, (newValue: T | undefined) => void];
+): UseCookieResult<T | undefined>;
 export function useCookie<T>(
   keyName: string,
   defaultValue?: T,
   options: Cookies.CookieAttributes = defaultOptions,
-): readonly [T | undefined, (newValue: T | undefined) => void] {
+): UseCookieResult<T | undefined> {
   const [storedValue, setStoredValue] = useState<T | undefined>(() => {
     try {
       const item = Cookies.get(keyName);
@@ -54,5 +59,5 @@ export function useCookie<T>(
     [keyName, options],
   );
 
-  return [storedValue, setValue] as const;
+  return { value: storedValue, setValue };
 }

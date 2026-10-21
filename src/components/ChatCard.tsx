@@ -47,7 +47,7 @@ export function ChatCard({
   const sourcesCount = sources.length;
   const readySourcesCount = sources.filter((s) => s.status === "READY").length;
 
-  const [cachedExampleQuestions, setCachedExampleQuestions] = useCookie<{
+  const { value: cachedExampleQuestions, setValue: setCachedExampleQuestions } = useCookie<{
     questions: string[];
     count: number;
   }>(`notebookExampleQuestions-${notebookId}`);

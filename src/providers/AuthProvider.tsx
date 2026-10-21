@@ -7,12 +7,12 @@ import type { Token, User } from "@/interfaces";
 const DEFAULT_SESSION_EXPIRY = 7 * 24 * 60 * 60 * 1000;
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [tokenCookie, setTokenCookie] = useCookie<Token>(AUTH_TOKEN_KEY, {
+  const { value: tokenCookie, setValue: setTokenCookie } = useCookie<Token>(AUTH_TOKEN_KEY, {
     token: null,
     expiresIn: 0,
   });
   const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useCookie<User | null>("user", null);
+  const { value: currentUser, setValue: setCurrentUser } = useCookie<User | null>("user", null);
 
   const fetchUserData = useCallback(async () => {
     if (tokenCookie?.token) {

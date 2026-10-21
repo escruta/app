@@ -107,14 +107,23 @@ export default function NotebookPage() {
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
   const [notesRefreshKey, setNotesRefreshKey] = useState<number>(0);
   const [conversationsRefreshKey, setConversationsRefreshKey] = useState<number>(0);
-  const [leftPanelWidth, setLeftPanelWidth] = useCookie<number>("notebookLeftPanelWidth", 30);
-  const [isLeftCollapsed, setIsLeftCollapsed] = useCookie<boolean>("notebookLeftCollapsed", false);
+  const { value: leftPanelWidth, setValue: setLeftPanelWidth } = useCookie<number>(
+    "notebookLeftPanelWidth",
+    30,
+  );
+  const { value: isLeftCollapsed, setValue: setIsLeftCollapsed } = useCookie<boolean>(
+    "notebookLeftCollapsed",
+    false,
+  );
   const [activeResizer, setActiveResizer] = useState<"left" | "split" | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const [splitRatio, setSplitRatio] = useCookie<number>("notebookSplitRatio", 50);
-  const [splitState, setSplitState] = useCookie<SplitState | null>(
+  const { value: splitRatio, setValue: setSplitRatio } = useCookie<number>(
+    "notebookSplitRatio",
+    50,
+  );
+  const { value: splitState, setValue: setSplitState } = useCookie<SplitState | null>(
     `notebookSplit-${notebookId}`,
     null,
   );
@@ -126,11 +135,11 @@ export default function NotebookPage() {
   const centerRef = useRef<HTMLDivElement>(null);
   const placeTabRef = useRef<(id: string, side: "left" | "right") => void>(() => {});
 
-  const [persistedTabs, setPersistedTabs] = useCookie<TabDescriptor[]>(
+  const { value: persistedTabs, setValue: setPersistedTabs } = useCookie<TabDescriptor[]>(
     `notebookTabs-${notebookId}`,
     [],
   );
-  const [persistedActiveKey, setPersistedActiveKey] = useCookie<string | null>(
+  const { value: persistedActiveKey, setValue: setPersistedActiveKey } = useCookie<string | null>(
     `notebookActiveTab-${notebookId}`,
     null,
   );

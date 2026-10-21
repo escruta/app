@@ -9,7 +9,10 @@ import {
 } from "../lib/view-mode";
 
 export function DisplaySettings() {
-  const [viewMode, setViewMode] = useCookie<ViewMode>(VIEW_MODE_COOKIE_KEY, "grid");
+  const { value: viewMode, setValue: setViewMode } = useCookie<ViewMode>(
+    VIEW_MODE_COOKIE_KEY,
+    "grid",
+  );
 
   return (
     <SettingsGroup

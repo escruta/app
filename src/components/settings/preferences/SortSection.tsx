@@ -4,7 +4,10 @@ import { SettingsGroup } from "../shared/SettingsSection";
 import { SORT_LABELS, SORT_OPTIONS, type SortOption } from "../lib/sort";
 
 export function SortSettings() {
-  const [sortBy, setSortBy] = useCookie<SortOption>("globalSortPreference", "Newest");
+  const { value: sortBy, setValue: setSortBy } = useCookie<SortOption>(
+    "globalSortPreference",
+    "Newest",
+  );
 
   return (
     <SettingsGroup

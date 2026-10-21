@@ -22,7 +22,7 @@ export interface ChatStreamCallbacks {
 }
 
 export function useChatStream(endpoint: string, callbacks: ChatStreamCallbacks) {
-  const [token] = useCookie<Token>(AUTH_TOKEN_KEY);
+  const { value: token } = useCookie<Token>(AUTH_TOKEN_KEY);
   const [isStreaming, setIsStreaming] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const callbacksRef = useRef(callbacks);

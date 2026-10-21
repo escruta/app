@@ -24,7 +24,7 @@ export function useFetch<T = unknown>(
   options?: UseFetchOptions<T>,
   immediate = true,
 ) {
-  const [token] = useCookie<Token>(AUTH_TOKEN_KEY);
+  const { value: token } = useCookie<Token>(AUTH_TOKEN_KEY);
   const [state, setState] = useState<UseFetchState<T>>({
     data: null,
     loading: immediate,
