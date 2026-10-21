@@ -50,8 +50,8 @@ export default function HomePage() {
   } = useFetch<Folder[]>("/folders");
   const { greeting, subtitle } = useGreeting();
 
-  const [globalSort] = useCookie<SortOption>("globalSortPreference", "Newest");
-  const [globalNotebookViewMode] = useCookie<ViewMode>(VIEW_MODE_COOKIE_KEY, "grid");
+  const { value: globalSort } = useCookie<SortOption>("globalSortPreference", "Newest");
+  const { value: globalNotebookViewMode } = useCookie<ViewMode>(VIEW_MODE_COOKIE_KEY, "grid");
 
   const [isCreateNotebookOpen, setIsCreateNotebookOpen] = useState(false);
   const [newNotebookTitle, setNewNotebookTitle] = useState("");

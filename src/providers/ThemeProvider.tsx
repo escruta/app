@@ -32,7 +32,7 @@ const applyOverlayColors = (theme: "light" | "dark") => {
 };
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [themePreference, setThemePreference] = useCookie<ThemeOptions>(
+  const { value: themePreference, setValue: setThemePreference } = useCookie<ThemeOptions>(
     THEME_COOKIE_KEY,
     ThemeOptions.System,
   );

@@ -7,7 +7,7 @@ import type { User } from "@/interfaces";
 
 export function AppLayout() {
   const { currentUser, fetchUserData } = useAuth();
-  const [, setUserData] = useCookie<User | null>("user", null);
+  const { setValue: setUserData } = useCookie<User | null>("user", null);
 
   useEffect(() => {
     if (currentUser) {

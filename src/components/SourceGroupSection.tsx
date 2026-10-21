@@ -43,7 +43,7 @@ export function SourceGroupSection({
   onDragLeave,
   onDrop,
 }: SourceGroupSectionProps) {
-  const [collapsed, setCollapsed] = useCookie<boolean>(
+  const { value: collapsed, setValue: setCollapsed } = useCookie<boolean>(
     `sourceGroupCollapsed-${notebookId}-${group.id}`,
     false,
   );
