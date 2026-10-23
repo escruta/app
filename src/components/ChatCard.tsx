@@ -1,7 +1,7 @@
 import { useFetch, useCookie, useChatStream, useRealtimeEvent } from "@/hooks";
 import { FileIcon, SendIcon, ChatNewIcon } from "@/components/icons";
 import { Divider, TextField, IconButton, Tooltip, Spinner } from "@/components/ui";
-import type { ConversationMessages, Source } from "@/interfaces";
+import type { ConversationMessages, ConversationStatus, Source } from "@/interfaces";
 import type { ChatMode } from "@/interfaces";
 import { useEffect, useState, useRef, useMemo, useCallback, useLayoutEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
@@ -26,6 +26,11 @@ interface ChatCardProps {
   onConversationCreated?: (conversationId: string) => void;
   onTitleChange?: (title: string) => void;
   onConversationCompleted?: () => void;
+  onConversationSeen?: (conversationId: string) => void;
+  onConversationStateChange?: (
+    conversationId: string,
+    state: { status: ConversationStatus; hasUnseenReply: boolean },
+  ) => void;
   onNewChat?: () => void;
 }
 
@@ -42,6 +47,8 @@ export function ChatCard({
   onConversationCreated,
   onTitleChange,
   onConversationCompleted,
+  onConversationSeen,
+  onConversationStateChange,
   onNewChat,
 }: ChatCardProps) {
   const sourcesCount = sources.length;
@@ -99,10 +106,17 @@ export function ChatCard({
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
   const [mode, setMode] = useState<ChatMode>("NORMAL");
-  const [conversationId, setConversationId] = useState<string | null>(null);
-  const [conversationTitle, setConversationTitle] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(
+    initialConversationId ?? null,
+  );
+  const [conversationTitle, setConversationTitle] = useState<string | null>(
+    initialConversationTitle ?? null,
+  );
   const [conversationToLoadId, setConversationToLoadId] = useState<string | null>(null);
   const [pendingConversationTitle, setPendingConversationTitle] = useState<string | null>(null);
+  const [isBackendGenerating, setIsBackendGenerating] = useState<boolean>(false);
+  const autoFocusRef = useRef(autoFocus);
+  autoFocusRef.current = autoFocus;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const pendingMessageRef = useRef<string | null>(null);
   const inputObserverRef = useRef<ResizeObserver | null>(null);
@@ -111,6 +125,38 @@ export function ChatCard({
   const [pendingAlign, setPendingAlign] = useState(false);
   const scrollTargetRef = useRef<number | null>(null);
   const extraBottomSpacerRef = useRef(0);
+
+  const [conversationToMarkSeenId, setConversationToMarkSeenId] = useState<string | null>(null);
+
+  const markAsSeenOptions = useMemo(
+    () => ({
+      method: "PATCH" as const,
+      onSuccess: () => {
+        if (conversationToMarkSeenId) {
+          onConversationSeen?.(conversationToMarkSeenId);
+        }
+        setConversationToMarkSeenId(null);
+      },
+      onError: () => {
+        setConversationToMarkSeenId(null);
+      },
+    }),
+    [conversationToMarkSeenId, onConversationSeen],
+  );
+
+  useFetch<void>(
+    `notebooks/${notebookId}/conversations/${conversationToMarkSeenId}/seen`,
+    markAsSeenOptions,
+    conversationToMarkSeenId !== null,
+  );
+
+  const markConversationSeen = useCallback(
+    (id: string) => {
+      onConversationSeen?.(id);
+      setConversationToMarkSeenId(id);
+    },
+    [onConversationSeen],
+  );
 
   useEffect(() => {
     extraBottomSpacerRef.current = extraBottomSpacer;
@@ -154,8 +200,20 @@ export function ChatCard({
 
         setMessages(loadedMessages);
         setConversationId(conversationToLoadId);
-        setConversationTitle(pendingConversationTitle);
+        if (pendingConversationTitle) {
+          setConversationTitle(pendingConversationTitle);
+        }
         setMode(data.mode ?? "NORMAL");
+        setIsBackendGenerating(data.status === "GENERATING");
+        if (conversationToLoadId) {
+          onConversationStateChange?.(conversationToLoadId, {
+            status: data.status ?? "IDLE",
+            hasUnseenReply: autoFocusRef.current ? false : Boolean(data.hasUnseenReply),
+          });
+        }
+        if (data.hasUnseenReply && autoFocusRef.current && conversationToLoadId) {
+          markConversationSeen(conversationToLoadId);
+        }
         setConversationToLoadId(null);
         setPendingConversationTitle(null);
       },
@@ -165,7 +223,12 @@ export function ChatCard({
         setPendingConversationTitle(null);
       },
     }),
-    [conversationToLoadId, pendingConversationTitle],
+    [
+      conversationToLoadId,
+      pendingConversationTitle,
+      markConversationSeen,
+      onConversationStateChange,
+    ],
   );
 
   const { loading: isLoadingConversation } = useFetch<ConversationMessages>(
@@ -237,6 +300,7 @@ export function ChatCard({
         pendingMessageRef.current = null;
         streamingMessageIdRef.current = null;
         setIsWaitingForResponse(false);
+        setIsBackendGenerating(false);
         onConversationCompleted?.();
       },
       onError: (status, message) => {
@@ -251,9 +315,63 @@ export function ChatCard({
         }
         streamingMessageIdRef.current = null;
         setIsWaitingForResponse(false);
+        setIsBackendGenerating(false);
       },
     },
   );
+
+  const isBusy = isChatLoading || isBackendGenerating;
+
+  const handleConversationUpdated = useCallback(
+    (event: {
+      notebookId?: string;
+      conversationId?: string;
+      title?: string;
+      status?: string;
+      hasUnseenReply?: boolean;
+    }) => {
+      if (event?.notebookId !== notebookId) return;
+      if (!conversationId || event.conversationId !== conversationId) return;
+
+      if (event.title && event.title !== conversationTitle) {
+        setConversationTitle(event.title);
+        onTitleChange?.(event.title);
+      }
+
+      if (event.status === "GENERATING") {
+        setIsBackendGenerating(true);
+        return;
+      }
+
+      if (event.status === "IDLE") {
+        setIsBackendGenerating(false);
+        if (!isChatLoading) {
+          loadConversation(conversationId, event.title ?? conversationTitle ?? "");
+        } else if (event.hasUnseenReply && autoFocusRef.current) {
+          markConversationSeen(conversationId);
+        }
+      } else if (event.status === "FAILED") {
+        setIsBackendGenerating(false);
+      }
+    },
+    [
+      notebookId,
+      conversationId,
+      conversationTitle,
+      isChatLoading,
+      loadConversation,
+      markConversationSeen,
+      onTitleChange,
+    ],
+  );
+
+  useRealtimeEvent("conversation.updated", handleConversationUpdated);
+
+  useEffect(() => {
+    if (autoFocus && conversationId && !isBusy && !isLoadingConversation) {
+      markConversationSeen(conversationId);
+    }
+  }, [autoFocus, conversationId, isBusy, isLoadingConversation, markConversationSeen]);
 
   const handleStreamChat = useCallback(
     async (overrideConversationId: string | null = conversationId) => {
@@ -353,14 +471,14 @@ export function ChatCard({
 
   const streamStartedRef = useRef(false);
   useEffect(() => {
-    if (isChatLoading) {
+    if (isBusy) {
       streamStartedRef.current = true;
       return;
     }
     if (!streamStartedRef.current) return;
     streamStartedRef.current = false;
     settleSpacer();
-  }, [isChatLoading, settleSpacer]);
+  }, [isBusy, settleSpacer]);
 
   const handleNewConversation = useCallback(() => {
     setMessages([]);
@@ -368,6 +486,7 @@ export function ChatCard({
     setConversationId(null);
     setConversationTitle(null);
     setMode("NORMAL");
+    setIsBackendGenerating(false);
     setExtraBottomSpacer(0);
     setPendingAlign(false);
     scrollTargetRef.current = null;
@@ -378,7 +497,7 @@ export function ChatCard({
       ref={inputContainerRef}
       className="pointer-events-auto relative mx-auto my-6 flex w-[calc(100%-2rem)] max-w-2xl flex-col"
     >
-      {!isChatLoading && sourcesCount > 0 && messages.length === 0 && (
+      {!isBusy && sourcesCount > 0 && messages.length === 0 && (
         <ExampleQuestions
           exampleQuestionsError={exampleQuestionsError}
           skipExampleQuestionsFetch={false}
@@ -396,7 +515,7 @@ export function ChatCard({
           value={input}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setInput(e.target.value)}
           onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-            if (e.key === "Enter" && !e.shiftKey && !isChatLoading && input.trim()) {
+            if (e.key === "Enter" && !e.shiftKey && !isBusy && input.trim()) {
               e.preventDefault();
               handleSendMessage();
             }
@@ -409,7 +528,7 @@ export function ChatCard({
                 : "Select sources to start chatting..."
           }
           className="w-full rounded-t-xs border-0 bg-transparent pt-3 pr-4 pb-1 pl-4 shadow-none hover:border-transparent hover:ring-0 hover:ring-offset-0 focus:border-transparent focus:ring-0 focus:ring-offset-0 dark:hover:ring-offset-0 dark:focus:ring-0 dark:focus:ring-offset-0"
-          disabled={isChatLoading || selectedSourceIds.length === 0}
+          disabled={isBusy || selectedSourceIds.length === 0}
           autoFocus={autoFocus}
           minRows={2}
           maxRows={8}
@@ -417,12 +536,12 @@ export function ChatCard({
         />
         <div className="h-px bg-gray-200/80 dark:bg-gray-700/60" />
         <div className="flex items-center justify-between gap-2 px-2.5 py-1.5">
-          <ChatModeToggle value={mode} onChange={setMode} disabled={isChatLoading} />
+          <ChatModeToggle value={mode} onChange={setMode} disabled={isBusy} />
           <Tooltip text="Send your question" position="top">
             <IconButton
               icon={<SendIcon />}
               onClick={handleSendMessage}
-              disabled={isChatLoading || !input.trim() || selectedSourceIds.length === 0}
+              disabled={isBusy || !input.trim() || selectedSourceIds.length === 0}
               aria-label="Send your question"
               size="sm"
               variant="primary"
@@ -451,7 +570,7 @@ export function ChatCard({
                 icon={<ChatNewIcon />}
                 ariaLabel="New conversation"
                 onClick={() => (onNewChat ? onNewChat() : handleNewConversation())}
-                disabled={(messages.length === 0 && !onNewChat) || isChatLoading}
+                disabled={(messages.length === 0 && !onNewChat) || isBusy}
                 variant="ghost"
                 size="sm"
               />
@@ -480,7 +599,9 @@ export function ChatCard({
                   />
                 ))}
               </AnimatePresence>
-              {(isWaitingForResponse || isLoadingConversation) && (
+              {(isWaitingForResponse ||
+                isLoadingConversation ||
+                (isBackendGenerating && !isChatLoading)) && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}

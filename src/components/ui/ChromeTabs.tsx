@@ -8,6 +8,7 @@ interface ChromeTabItem {
   id: string;
   label: string;
   icon?: ReactNode;
+  indicator?: ReactNode;
   closable?: boolean;
 }
 
@@ -111,11 +112,14 @@ export function ChromeTabs({
                 />
               )}
               {tab.icon && (
-                <span className="shrink-0 [&>svg]:size-3.5 [&>svg]:shrink-0">{tab.icon}</span>
+                <span className="flex shrink-0 items-center [&>svg]:size-3.5 [&>svg]:shrink-0">
+                  {tab.icon}
+                </span>
               )}
               <span className="min-w-0 flex-1 truncate whitespace-nowrap">
                 {tab.label || "Untitled"}
               </span>
+              {tab.indicator && <span className="shrink-0">{tab.indicator}</span>}
               {closable && (
                 <span
                   className="shrink-0"
