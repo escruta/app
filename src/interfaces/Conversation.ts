@@ -1,9 +1,12 @@
 export type ChatMode = "NORMAL" | "LEARNING";
+export type ConversationStatus = "IDLE" | "GENERATING" | "FAILED";
 
 export interface Conversation {
   id: string;
   title: string;
   mode: ChatMode;
+  status: ConversationStatus;
+  hasUnseenReply: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -25,6 +28,8 @@ interface ConversationMessage {
 export interface ConversationMessages {
   conversationId: string;
   mode: ChatMode;
+  status: ConversationStatus;
+  hasUnseenReply: boolean;
   messages: ConversationMessage[];
 }
 

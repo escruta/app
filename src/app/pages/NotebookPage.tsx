@@ -1,7 +1,14 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useLoaderData } from "react-router";
 import { useFetch, useCookie, useRealtimeEvent } from "@/hooks";
-import type { Note, Source, Notebook, NotebookContent, JobType } from "@/interfaces";
+import type {
+  Note,
+  Source,
+  Notebook,
+  NotebookContent,
+  JobType,
+  ConversationStatus,
+} from "@/interfaces";
 import {
   SourcesCard,
   NotesCard,
@@ -107,6 +114,10 @@ export default function NotebookPage() {
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
   const [notesRefreshKey, setNotesRefreshKey] = useState<number>(0);
   const [conversationsRefreshKey, setConversationsRefreshKey] = useState<number>(0);
+  const [seenConversationId, setSeenConversationId] = useState<string | null>(null);
+  const [conversationStates, setConversationStates] = useState<
+    Record<string, { status: ConversationStatus; hasUnseenReply: boolean }>
+  >({});
   const { value: leftPanelWidth, setValue: setLeftPanelWidth } = useCookie<number>(
     "notebookLeftPanelWidth",
     30,
@@ -551,6 +562,56 @@ export default function NotebookPage() {
     setConversationsRefreshKey((prev) => prev + 1);
   }, []);
 
+  const handleConversationSeen = useCallback((conversationId: string) => {
+    setSeenConversationId(conversationId);
+    setConversationStates((prev) => {
+      const current = prev[conversationId];
+      if (!current || !current.hasUnseenReply) return prev;
+      return {
+        ...prev,
+        [conversationId]: { ...current, hasUnseenReply: false },
+      };
+    });
+  }, []);
+
+  const handleConversationUpdated = useCallback(
+    (event: {
+      notebookId?: string;
+      conversationId?: string;
+      title?: string;
+      status?: ConversationStatus;
+      hasUnseenReply?: boolean;
+    }) => {
+      if (event?.notebookId !== notebookId || !event.conversationId) return;
+
+      if (event.title) {
+        setTabs((prev) =>
+          prev.map((t) =>
+            t.kind === "chat" && t.refId === event.conversationId && t.title !== event.title
+              ? { ...t, title: event.title! }
+              : t,
+          ),
+        );
+      }
+
+      setConversationStates((prev) => {
+        const existing = prev[event.conversationId!];
+        const status = event.status ?? existing?.status ?? "IDLE";
+        const isCurrentActive = event.conversationId === currentConversationId;
+        const hasUnseenReply = isCurrentActive
+          ? false
+          : (event.hasUnseenReply ?? existing?.hasUnseenReply ?? false);
+        return {
+          ...prev,
+          [event.conversationId!]: { status, hasUnseenReply },
+        };
+      });
+    },
+    [notebookId, currentConversationId],
+  );
+
+  useRealtimeEvent("conversation.updated", handleConversationUpdated);
+
   const handleTabTitleChange = useCallback((tabKeyStr: string, title: string) => {
     if (!title) return;
     setTabs((prev) =>
@@ -962,6 +1023,10 @@ export default function NotebookPage() {
             onConversationCreated={(id) => handleConversationCreated(k, id)}
             onTitleChange={(title) => handleTabTitleChange(k, title)}
             onConversationCompleted={handleConversationCompleted}
+            onConversationSeen={handleConversationSeen}
+            onConversationStateChange={(id, state) =>
+              setConversationStates((prev) => ({ ...prev, [id]: state }))
+            }
             onNewChat={openNewChatTab}
           />
         );
@@ -1014,12 +1079,38 @@ export default function NotebookPage() {
     }
   };
 
-  const chromeTabsItems = tabs.map((t) => ({
-    id: tabKey(t),
-    label: t.title || (t.kind === "chat" ? "New conversation" : t.title),
-    icon: getTabIcon(t),
-    closable: true,
-  }));
+  const chromeTabsItems = tabs.map((t) => {
+    const k = tabKey(t);
+    const isActive = k === effectiveActiveKey;
+    const convState =
+      t.kind === "chat" && t.refId !== NEW_CHAT_ID ? conversationStates[t.refId] : undefined;
+    const isGenerating = convState?.status === "GENERATING";
+    const hasUnseen = Boolean(convState?.hasUnseenReply) && !isGenerating && !isActive;
+
+    return {
+      id: k,
+      label: t.title || (t.kind === "chat" ? "New conversation" : t.title),
+      icon: isGenerating ? (
+        <Spinner
+          size={14}
+          className="text-blue-500 dark:text-blue-400"
+          aria-label="Generating response"
+        />
+      ) : (
+        getTabIcon(t)
+      ),
+      indicator: hasUnseen ? (
+        <span
+          className="relative flex size-2 items-center justify-center"
+          aria-label="New response ready"
+        >
+          <span className="absolute inline-flex size-full animate-ping rounded-full bg-blue-400 opacity-75 dark:bg-blue-500" />
+          <span className="relative inline-flex size-2 rounded-full bg-blue-500 dark:bg-blue-400" />
+        </span>
+      ) : undefined,
+      closable: true,
+    };
+  });
 
   const itemsByKey = new Map(chromeTabsItems.map((item) => [item.id, item]));
   const rightGroupKeys = splitState ? splitState.rightGroup : [];
@@ -1251,6 +1342,7 @@ export default function NotebookPage() {
                         notebookId={notebookId}
                         currentConversationId={currentConversationId}
                         refreshTrigger={conversationsRefreshKey}
+                        seenConversationId={seenConversationId}
                         onSelectConversation={(id, title) =>
                           openTab({ kind: "chat", refId: id, title })
                         }
