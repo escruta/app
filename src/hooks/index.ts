@@ -7,6 +7,7 @@ export * from "./useGenerationJob";
 export * from "./useGreeting";
 export * from "./useIsDevice";
 export * from "./useTheme";
+export * from "./useDensity";
 export * from "./useVisualViewportHeight";
 export * from "./useRealtimeEvent";
 export * from "./useSettings";

@@ -142,6 +142,18 @@ html.dark *::selection {
   --color-black: #000;
 }
 
+html[data-density="compact"] {
+  --spacing: 0.21875rem;
+}
+
+html[data-density="comfortable"] {
+  --spacing: 0.25rem;
+}
+
+html[data-density="spacious"] {
+  --spacing: 0.28125rem;
+}
+
 @supports (scrollbar-color: auto) {
   * {
     scrollbar-color: var(--color-gray-300) transparent;
