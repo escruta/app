@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { createHashRouter, RouterProvider } from "react-router";
-import { AuthProvider, ThemeProvider, RealtimeProvider } from "./providers";
+import { AuthProvider, ThemeProvider, DensityProvider, RealtimeProvider } from "./providers";
 
 import { WelcomePage } from "./auth/WelcomePage";
 import { AppRoutes } from "./app/AppRoutes";
@@ -35,7 +35,9 @@ createRoot(root).render(
   <AuthProvider>
     <RealtimeProvider>
       <ThemeProvider>
-        <RouterProvider router={router} />
+        <DensityProvider>
+          <RouterProvider router={router} />
+        </DensityProvider>
       </ThemeProvider>
     </RealtimeProvider>
   </AuthProvider>,

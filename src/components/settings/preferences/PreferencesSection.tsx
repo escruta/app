@@ -1,6 +1,7 @@
 import { useTheme } from "@/hooks";
 import { Divider, Dropdown } from "@/components/ui";
 import { SettingsGroup, SettingsSection } from "../shared/SettingsSection";
+import { DensitySettings } from "./DensitySection";
 import { DisplaySettings } from "./DisplaySection";
 import { SortSettings } from "./SortSection";
 
@@ -24,6 +25,8 @@ export function PreferencesSection() {
       </SettingsGroup>
       <Divider />
       <DisplaySettings />
+      <Divider />
+      <DensitySettings />
       <Divider />
       <SortSettings />
     </SettingsSection>
