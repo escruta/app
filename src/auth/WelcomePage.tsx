@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { useAuth } from "@/hooks";
+import { useAuth, useShortcut } from "@/hooks";
 import { Button, Divider, Spinner, TextField } from "@/components/ui";
 import { BACKEND_BASE_URL } from "@/config";
 
@@ -154,12 +154,29 @@ export function WelcomePage() {
     await requestCode(email);
   };
 
-  const submitOnEnter = (fn: () => void) => (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !pending) {
-      e.preventDefault();
-      fn();
-    }
-  };
+  const handleEmailKeyDown = useShortcut(
+    "dialog-confirm",
+    () => {
+      void handleEmailSubmit();
+    },
+    { enabled: !pending },
+  );
+
+  const handleCodeKeyDown = useShortcut(
+    "dialog-confirm",
+    () => {
+      void handleCodeSubmit();
+    },
+    { enabled: !pending },
+  );
+
+  const handleNameKeyDown = useShortcut(
+    "dialog-confirm",
+    () => {
+      void handleNameSubmit();
+    },
+    { enabled: !pending },
+  );
 
   return (
     <div className="app-region-drag flex h-screen flex-col items-center justify-center gap-10 bg-white px-6 select-none dark:bg-gray-950">
@@ -182,7 +199,7 @@ export function WelcomePage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={submitOnEnter(handleEmailSubmit)}
+              onKeyDown={handleEmailKeyDown}
               placeholder="you@example.com"
               autoFocus
               autoComplete="email"
@@ -210,7 +227,7 @@ export function WelcomePage() {
               type="text"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              onKeyDown={submitOnEnter(handleCodeSubmit)}
+              onKeyDown={handleCodeKeyDown}
               placeholder="Enter the 6-digit code"
               autoFocus
               autoComplete="one-time-code"
@@ -253,7 +270,7 @@ export function WelcomePage() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              onKeyDown={submitOnEnter(handleNameSubmit)}
+              onKeyDown={handleNameKeyDown}
               placeholder="What should we call you?"
               autoFocus
               autoComplete="name"

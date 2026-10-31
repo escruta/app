@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useShortcut } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { ChevronIcon } from "@/components/icons";
 import type { MindMapResponse, Branch } from "@/interfaces";
@@ -107,6 +108,14 @@ function BranchNode({
     }
   };
 
+  const handleNodeKeyDown = useShortcut("dialog-activate", handleNodeClick);
+
+  const handleChevronKeyDown = useShortcut(
+    "dialog-activate",
+    () => setIsExpanded((prev) => !prev),
+    { stopPropagation: true },
+  );
+
   return (
     <div className="flex items-center py-1.5">
       <div className={cn("h-px w-8 shrink-0", getLineColor(level - 1))} />
@@ -123,12 +132,7 @@ function BranchNode({
               },
             )}
             onClick={handleNodeClick}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleNodeClick();
-              }
-            }}
+            onKeyDown={handleNodeKeyDown}
             tabIndex={0}
             role="button"
           >
@@ -145,13 +149,7 @@ function BranchNode({
                 e.stopPropagation();
                 setIsExpanded((prev) => !prev);
               }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setIsExpanded((prev) => !prev);
-                }
-              }}
+              onKeyDown={handleChevronKeyDown}
               tabIndex={0}
               role="button"
             >
@@ -249,6 +247,14 @@ function MainBranch({
     }
   }
 
+  const handleNodeKeyDown = useShortcut("dialog-activate", handleNodeClick);
+
+  const handleChevronKeyDown = useShortcut(
+    "dialog-activate",
+    () => setIsExpanded((prev) => !prev),
+    { stopPropagation: true },
+  );
+
   return (
     <div className="flex items-center py-2">
       <div className="flex items-center">
@@ -263,12 +269,7 @@ function MainBranch({
               },
             )}
             onClick={handleNodeClick}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleNodeClick();
-              }
-            }}
+            onKeyDown={handleNodeKeyDown}
             tabIndex={0}
             role="button"
           >
@@ -285,13 +286,7 @@ function MainBranch({
                 e.stopPropagation();
                 setIsExpanded((prev) => !prev);
               }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setIsExpanded((prev) => !prev);
-                }
-              }}
+              onKeyDown={handleChevronKeyDown}
               tabIndex={0}
               role="button"
             >

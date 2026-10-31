@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { useFetch } from "@/hooks";
+import { useFetch, useShortcut } from "@/hooks";
 import {
   Button,
   TextField,
@@ -114,6 +114,10 @@ export function SearchSourcesModal({
     }
   }
 
+  const handleSearchKeyDown = useShortcut("dialog-confirm", () => {
+    void handleSearch();
+  });
+
   return (
     <Modal
       isOpen={isOpen}
@@ -151,9 +155,7 @@ export function SearchSourcesModal({
               value={searchTerm}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
               placeholder="Search for articles, blogs or videos..."
-              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                if (e.key === "Enter") handleSearch();
-              }}
+              onKeyDown={handleSearchKeyDown}
               className="mb-0"
             />
           </div>

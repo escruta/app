@@ -29,6 +29,7 @@ export * from "./Heading3Icon";
 export * from "./HighlightIcon";
 export * from "./InfoIcon";
 export * from "./ItalicIcon";
+export * from "./KeyboardIcon";
 export * from "./LinkIcon";
 export * from "./ListIcon";
 export * from "./LoadingIcon";

@@ -1,4 +1,5 @@
 import { useState, type MouseEvent, type PointerEvent, type ReactNode } from "react";
+import { useShortcut } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { CloseIcon } from "@/components/icons";
 import { IconButton } from "./IconButton";
@@ -36,6 +37,11 @@ export function ChromeTabs({
   activeIndicatorClassName,
 }: ChromeTabsProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+
+  const handleTabKeyDown = useShortcut("dialog-activate", (event) => {
+    const id = (event.currentTarget as HTMLElement).dataset.tabId;
+    if (id) onSelect(id);
+  });
 
   if (tabs.length === 0) return null;
 
@@ -75,12 +81,7 @@ export function ChromeTabs({
                   if (closable) onClose(tab.id);
                 }
               }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  onSelect(tab.id);
-                }
-              }}
+              onKeyDown={handleTabKeyDown}
               onMouseEnter={() => setHoveredId(tab.id)}
               onMouseLeave={() => setHoveredId((current) => (current === tab.id ? null : current))}
               className={cn(

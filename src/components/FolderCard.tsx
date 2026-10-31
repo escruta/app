@@ -11,6 +11,7 @@ import {
   MenuItem,
 } from "@/components/ui";
 import { DotsVerticalIcon, EditIcon, DeleteIcon, FolderIcon } from "@/components/icons";
+import { useShortcut } from "@/hooks";
 import { cn } from "@/lib/utils";
 
 interface FolderCardProps {
@@ -34,12 +35,14 @@ export function FolderCard({
     onToggle?.();
   };
 
-  const handleCardKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      handleCardClick();
-    }
-  };
+  const handleCardKeyDown = useShortcut("dialog-activate", () => {
+    onToggle?.();
+  });
+
+  const handleMenuWrapperKeyDown = useShortcut("dialog-activate", () => {}, {
+    preventDefault: false,
+    stopPropagation: true,
+  });
 
   const renderMenuItems = () => (
     <>
@@ -129,7 +132,7 @@ export function FolderCard({
               role="button"
               tabIndex={0}
               onClick={(e) => e.stopPropagation()}
-              onKeyDown={(e) => e.key === "Enter" && e.stopPropagation()}
+              onKeyDown={handleMenuWrapperKeyDown}
               className="-mr-1 flex items-center"
             >
               <Menu>

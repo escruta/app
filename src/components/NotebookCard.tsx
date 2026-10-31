@@ -27,7 +27,7 @@ import {
   FolderIcon,
 } from "@/components/icons";
 import { useState, useRef, useLayoutEffect } from "react";
-import { useFetch } from "@/hooks";
+import { useFetch, useShortcut } from "@/hooks";
 import { useNavigate } from "react-router";
 import { cn } from "@/lib/utils";
 import { RenameNotebookModal } from "@/app/pages/notebook/RenameNotebookModal";
@@ -197,6 +197,18 @@ export function NotebookCard({
     e.stopPropagation();
   };
 
+  const handleMenuKeyDown = useShortcut("dialog-activate", () => {}, {
+    preventDefault: false,
+    stopPropagation: true,
+  });
+
+  const handleCardClick = () => {
+    navigate(`/notebook/${notebook.id}`);
+    window.scrollTo(0, 0);
+  };
+
+  const handleCardKeyDown = useShortcut("dialog-activate", handleCardClick);
+
   if (isDeleted) {
     return null;
   }
@@ -211,18 +223,6 @@ export function NotebookCard({
 
   const gridClasses = cn("h-42 w-full p-4 flex flex-col justify-between");
   const listClasses = cn("h-20 w-full p-4 flex flex-row items-center justify-between");
-
-  const handleCardClick = () => {
-    navigate(`/notebook/${notebook.id}`);
-    window.scrollTo(0, 0);
-  };
-
-  const handleCardKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      handleCardClick();
-    }
-  };
 
   const renderMenuItems = () => (
     <>
@@ -267,12 +267,7 @@ export function NotebookCard({
   );
 
   const renderMenu = () => (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={handleMenuClick}
-      onKeyDown={(e) => e.key === "Enter" && handleMenuClick(e as unknown as React.MouseEvent)}
-    >
+    <div role="button" tabIndex={0} onClick={handleMenuClick} onKeyDown={handleMenuKeyDown}>
       <Menu>
         <Tooltip text="More options" position="top">
           <MenuTrigger>

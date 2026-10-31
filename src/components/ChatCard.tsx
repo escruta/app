@@ -1,4 +1,4 @@
-import { useFetch, useCookie, useChatStream, useRealtimeEvent } from "@/hooks";
+import { useFetch, useCookie, useChatStream, useRealtimeEvent, useShortcut } from "@/hooks";
 import { FileIcon, SendIcon, ChatNewIcon } from "@/components/icons";
 import { Divider, TextField, IconButton, Tooltip, Spinner } from "@/components/ui";
 import type { ConversationMessages, ConversationStatus, Source } from "@/interfaces";
@@ -410,6 +410,16 @@ export function ChatCard({
     await handleStreamChat();
   };
 
+  const handleInputKeyDown = useShortcut(
+    "chat-send",
+    () => {
+      void handleSendMessage();
+    },
+    {
+      enabled: !isBusy && input.trim().length > 0,
+    },
+  );
+
   const handleRetryFromError = useCallback(
     (messageIndex: number) => {
       if (!pendingMessageRef.current) return;
@@ -514,12 +524,7 @@ export function ChatCard({
           id="chat-input"
           value={input}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setInput(e.target.value)}
-          onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-            if (e.key === "Enter" && !e.shiftKey && !isBusy && input.trim()) {
-              e.preventDefault();
-              handleSendMessage();
-            }
-          }}
+          onKeyDown={handleInputKeyDown}
           placeholder={
             sourcesCount === 0
               ? "Add sources to start chatting..."

@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { useShortcut } from "@/hooks";
 import { Spinner } from "@/components/ui";
 import { CloseIcon } from "@/components/icons";
 import type { JobStatus } from "@/interfaces";
@@ -77,6 +78,10 @@ export function ToolCard({
     }
   }
 
+  const handleKeyDown = useShortcut("dialog-activate", handleClick, {
+    enabled: !disabled && !isLoading,
+  });
+
   return (
     <div
       className={cn(
@@ -91,12 +96,7 @@ export function ToolCard({
         className,
       )}
       onClick={handleClick}
-      onKeyDown={(e) => {
-        if (!disabled && !isLoading && (e.key === "Enter" || e.key === " ")) {
-          e.preventDefault();
-          handleClick();
-        }
-      }}
+      onKeyDown={handleKeyDown}
       tabIndex={disabled || isLoading ? -1 : 0}
       role="button"
       aria-disabled={disabled || isLoading}

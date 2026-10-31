@@ -16,7 +16,7 @@ import {
   Spinner,
   Tooltip,
 } from "@/components/ui";
-import { useFetch } from "@/hooks";
+import { useFetch, useShortcut } from "@/hooks";
 import { useState } from "react";
 
 interface SourceChipProps {
@@ -99,13 +99,17 @@ export function SourceChip({
     await moveSource();
   }
 
-  const handleChipClick = (e: React.MouseEvent | React.KeyboardEvent) => {
+  const handleChipClick = (e: { target: EventTarget | null }) => {
     if (isPending || isFailed) return;
     if ((e.target as HTMLElement).closest("#checkbox")) {
       return;
     }
     onSourceSelect?.(source);
   };
+
+  const handleChipKeyDown = useShortcut("dialog-activate", handleChipClick, {
+    enabled: !isPending && !isFailed,
+  });
 
   return (
     <>
@@ -138,12 +142,7 @@ export function SourceChip({
         }}
         onDragEnd={() => onDragEnd?.()}
         onClick={handleChipClick}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            handleChipClick(e);
-          }
-        }}
+        onKeyDown={handleChipKeyDown}
         tabIndex={isPending || isFailed ? -1 : 0}
         role="button"
       >
