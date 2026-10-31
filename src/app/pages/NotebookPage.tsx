@@ -384,6 +384,8 @@ export default function NotebookPage() {
   effectiveActiveKeyRef.current = effectiveActiveKey;
   const cycleTabRef = useRef(cycleTab);
   cycleTabRef.current = cycleTab;
+  const isLeftCollapsedRef = useRef(isLeftCollapsed);
+  isLeftCollapsedRef.current = isLeftCollapsed;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -392,6 +394,13 @@ export default function NotebookPage() {
         e.preventDefault();
         e.stopPropagation();
         closeTabRef.current(effectiveActiveKeyRef.current);
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && (e.key === "b" || e.key === "B")) {
+        if (e.shiftKey || e.altKey || e.defaultPrevented) return;
+        e.preventDefault();
+        e.stopPropagation();
+        setIsLeftCollapsed(!isLeftCollapsedRef.current);
         return;
       }
       if (e.ctrlKey && !e.metaKey && !e.altKey && e.key === "Tab") {
