@@ -27,7 +27,6 @@ import {
   type ViewMode,
   VIEW_MODE_COOKIE_KEY,
 } from "@/components/settings";
-import { cn } from "@/lib/utils";
 
 const SEARCH_PAGE_SIZE = 20;
 
@@ -266,9 +265,9 @@ export default function HomePage() {
     };
   }, []);
 
-  const handleSelectFilter = (nextFilter: ActiveFilter) => {
+  const handleSelectFilter = (folderId: string) => {
     setShowAllNotebooks(false);
-    setActiveFilter((prev) => (prev === nextFilter && nextFilter !== "all" ? "all" : nextFilter));
+    setActiveFilter((prev) => (prev === folderId ? "all" : folderId));
   };
 
   const handleSaveFolder = () => {
@@ -431,43 +430,6 @@ export default function HomePage() {
 
               {(foldersLoading && !folders) || hasFolders ? (
                 <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    aria-pressed={isAllActive}
-                    onClick={() => handleSelectFilter("all")}
-                    className={cn(
-                      "group relative inline-flex h-9 shrink-0 items-center gap-2 rounded-xs border px-3 text-sm font-medium transition-all duration-200 ease-out select-none cursor-pointer",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-gray-900",
-                      isAllActive
-                        ? "border-blue-400 bg-blue-50 text-blue-900 ring-1 ring-blue-400/50 dark:border-blue-500 dark:bg-blue-950/60 dark:text-blue-100 dark:ring-blue-500/40"
-                        : "border-gray-200 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50/70 hover:text-blue-900 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:border-gray-500 dark:hover:bg-gray-800 dark:hover:text-blue-100",
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "flex size-5 shrink-0 items-center justify-center rounded-xs transition-colors",
-                        isAllActive
-                          ? "bg-blue-500 text-white dark:bg-blue-500 dark:text-white"
-                          : "bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400",
-                      )}
-                    >
-                      <NotebookIcon className="size-3" />
-                    </div>
-                    <span className="font-semibold">All</span>
-                    {allNotebooks.length > 0 && (
-                      <span
-                        className={cn(
-                          "shrink-0 rounded-xs px-1.5 py-0.5 text-[11px] leading-none font-semibold transition-colors",
-                          isAllActive
-                            ? "bg-blue-200/70 text-blue-800 dark:bg-blue-900/80 dark:text-blue-200"
-                            : "bg-gray-100 text-gray-600 group-hover:bg-blue-100/80 group-hover:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:group-hover:bg-gray-700 dark:group-hover:text-gray-200",
-                        )}
-                      >
-                        {allNotebooks.length}
-                      </span>
-                    )}
-                  </button>
-
                   {foldersLoading && !folders
                     ? Array.from({ length: 3 }).map((_, i) => (
                         <div
