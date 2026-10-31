@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useLoaderData } from "react-router";
-import { useFetch, useCookie, useRealtimeEvent } from "@/hooks";
+import { useFetch, useCookie, useRealtimeEvent, useShortcut, useShortcuts } from "@/hooks";
 import type {
   Note,
   Source,
@@ -388,32 +388,6 @@ export default function NotebookPage() {
   isLeftCollapsedRef.current = isLeftCollapsed;
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && (e.key === "w" || e.key === "W")) {
-        if (e.shiftKey || e.altKey) return;
-        e.preventDefault();
-        e.stopPropagation();
-        closeTabRef.current(effectiveActiveKeyRef.current);
-        return;
-      }
-      if ((e.ctrlKey || e.metaKey) && (e.key === "b" || e.key === "B")) {
-        if (e.shiftKey || e.altKey || e.defaultPrevented) return;
-        e.preventDefault();
-        e.stopPropagation();
-        setIsLeftCollapsed(!isLeftCollapsedRef.current);
-        return;
-      }
-      if (e.ctrlKey && !e.metaKey && !e.altKey && e.key === "Tab") {
-        e.preventDefault();
-        e.stopPropagation();
-        cycleTabRef.current(e.shiftKey ? -1 : 1);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
-  useEffect(() => {
     const cleanup = window.electronAPI?.shortcuts?.onCloseTabRequest(() => {
       closeTabRef.current(effectiveActiveKeyRef.current);
     });
@@ -750,24 +724,51 @@ export default function NotebookPage() {
 
     const handlePointerUp = () => endTabDrag(true);
     const handleCancel = () => endTabDrag(false);
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") endTabDrag(false);
-    };
     const handleBlur = () => endTabDrag(false);
 
     window.addEventListener("pointermove", handlePointerMove);
     window.addEventListener("pointerup", handlePointerUp);
     window.addEventListener("pointercancel", handleCancel);
-    window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("blur", handleBlur);
     return () => {
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
       window.removeEventListener("pointercancel", handleCancel);
-      window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("blur", handleBlur);
     };
   }, [endTabDrag]);
+
+  useShortcuts(
+    [
+      {
+        id: "close-tab",
+        handler: () => closeTabRef.current(effectiveActiveKeyRef.current),
+        stopPropagation: true,
+      },
+      {
+        id: "toggle-sidebar",
+        handler: () => setIsLeftCollapsed(!isLeftCollapsedRef.current),
+        stopPropagation: true,
+      },
+      {
+        id: "next-tab",
+        handler: () => cycleTabRef.current(1),
+        stopPropagation: true,
+      },
+      {
+        id: "previous-tab",
+        handler: () => cycleTabRef.current(-1),
+        stopPropagation: true,
+      },
+      {
+        id: "cancel-tab-drag",
+        handler: () => endTabDrag(false),
+        enabled: Boolean(tabDrag),
+        stopPropagation: true,
+      },
+    ],
+    { global: true },
+  );
 
   const handlePaneMouseDown = (side: "left" | "right") => (e: React.MouseEvent) => {
     if (e.button !== 0 || !splitState) return;
@@ -915,6 +916,10 @@ export default function NotebookPage() {
       console.error("Error renaming notebook:", error);
     }
   }
+
+  const handleRenameNotebookKeyDown = useShortcut("dialog-confirm", (event) => {
+    (event.currentTarget as HTMLInputElement).blur();
+  });
 
   if (!validNotebookId) {
     return (
@@ -1288,11 +1293,7 @@ export default function NotebookPage() {
                   handleRenameNotebook();
                 }
               }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.currentTarget.blur();
-                }
-              }}
+              onKeyDown={handleRenameNotebookKeyDown}
               disabled={renamingNotebook}
               placeholder="Give your notebook a title..."
             />

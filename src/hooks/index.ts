@@ -11,3 +11,4 @@ export * from "./useDensity";
 export * from "./useVisualViewportHeight";
 export * from "./useRealtimeEvent";
 export * from "./useSettings";
+export * from "./useShortcuts";

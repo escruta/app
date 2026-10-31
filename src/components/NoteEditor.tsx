@@ -1,7 +1,7 @@
 import { lazy } from "react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { useFetch } from "@/hooks";
+import { useFetch, useShortcut } from "@/hooks";
 import type { Note } from "@/interfaces";
 import { DeleteIcon, DotsVerticalIcon } from "@/components/icons";
 import {
@@ -140,6 +140,10 @@ export function NoteEditor({
     false,
   );
 
+  const handleTitleKeyDown = useShortcut("dialog-confirm", (event) => {
+    (event.currentTarget as HTMLInputElement).blur();
+  });
+
   return (
     <>
       <ViewerFrame className={className}>
@@ -162,11 +166,7 @@ export function NoteEditor({
                   updateNote();
                 }
               }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.currentTarget.blur();
-                }
-              }}
+              onKeyDown={handleTitleKeyDown}
               disabled={updatingNote}
               placeholder="Give your note a title..."
             />

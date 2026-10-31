@@ -1,15 +1,17 @@
 import { useState } from "react";
-import { DevicesIcon, PaletteIcon, UserIcon } from "@/components/icons";
+import { DevicesIcon, KeyboardIcon, PaletteIcon, UserIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { AccountSection } from "./account/AccountSection";
 import { PreferencesSection } from "./preferences/PreferencesSection";
 import { SessionsSection } from "./sessions/SessionsSection";
+import { ShortcutsSection } from "./shortcuts/ShortcutsSection";
 
-type SectionId = "account" | "preferences" | "sessions";
+type SectionId = "account" | "preferences" | "shortcuts" | "sessions";
 
 const SECTIONS: { id: SectionId; label: string; icon: React.ReactNode }[] = [
   { id: "account", label: "Account", icon: <UserIcon className="size-4" /> },
   { id: "preferences", label: "Preferences", icon: <PaletteIcon className="size-4" /> },
+  { id: "shortcuts", label: "Shortcuts", icon: <KeyboardIcon className="size-4" /> },
   { id: "sessions", label: "Sessions", icon: <DevicesIcon className="size-4" /> },
 ];
 
@@ -44,6 +46,7 @@ export function SettingsContent() {
       <div className="min-w-0 flex-1 overflow-y-auto p-4 md:p-6">
         {activeSection === "account" && <AccountSection />}
         {activeSection === "preferences" && <PreferencesSection />}
+        {activeSection === "shortcuts" && <ShortcutsSection />}
         {activeSection === "sessions" && <SessionsSection />}
       </div>
     </div>

@@ -7,11 +7,11 @@ import {
   useContext,
   cloneElement,
   type ReactNode,
-  type KeyboardEvent,
   type ReactElement,
   type HTMLAttributes,
 } from "react";
 import { createPortal } from "react-dom";
+import { useShortcut } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { CopyIcon, CutIcon, PasteIcon } from "@/components/icons";
@@ -67,6 +67,16 @@ export function ContextMenu({ children }: { children: ReactNode }) {
   });
   const contentRef = useRef<HTMLElement>(null);
 
+  const handleClose = useCallback(() => {
+    setState({ isOpen: false, position: { x: 0, y: 0 } });
+  }, []);
+
+  useShortcut("dialog-close", handleClose, {
+    global: true,
+    enabled: state.isOpen,
+    preventDefault: false,
+  });
+
   useEffect(() => {
     if (!state.isOpen) return;
 
@@ -77,17 +87,9 @@ export function ContextMenu({ children }: { children: ReactNode }) {
       }
     };
 
-    const handleKeyDown = (e: globalThis.KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setState({ isOpen: false, position: { x: 0, y: 0 } });
-      }
-    };
-
     document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [state.isOpen]);
 
@@ -264,14 +266,16 @@ export function ContextMenuItem({
   const context = useContext(ContextMenuContext);
   const compact = useContext(CompactContext);
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
-    if (disabled) return;
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
+  const handleKeyDown = useShortcut(
+    "dialog-activate",
+    () => {
       onClick();
       context?.setState({ isOpen: false, position: { x: 0, y: 0 } });
-    }
-  };
+    },
+    {
+      enabled: !disabled,
+    },
+  );
 
   const baseStyles = compact
     ? "flex w-full items-center gap-1.5 rounded-xs px-2 py-1 text-xs transition-all duration-200 outline-none select-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-1 focus:ring-offset-white dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"

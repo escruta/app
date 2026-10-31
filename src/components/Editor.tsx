@@ -14,6 +14,8 @@ import TaskItem from "@tiptap/extension-task-item";
 import Code from "@tiptap/extension-code";
 import { Markdown } from "@tiptap/markdown";
 import { cn } from "@/lib/utils";
+import { useShortcut } from "@/hooks";
+import { toTiptapShortcut } from "@/lib/shortcuts";
 import { EditorCodeBlock } from "./EditorCodeBlock";
 import { createSlashCommandExtension, type PromptUser } from "./EditorSlashCommand";
 import { CopyIcon, CutIcon, PasteIcon } from "@/components/icons";
@@ -50,7 +52,7 @@ const Highlight = Mark.create({
   },
   addKeyboardShortcuts() {
     return {
-      "Mod-Shift-h": () => this.editor.commands.toggleMark(this.name),
+      [toTiptapShortcut("editor-highlight")]: () => this.editor.commands.toggleMark(this.name),
     };
   },
 });
@@ -98,6 +100,10 @@ export function Editor({
       });
     });
   }, []);
+
+  const handlePromptKeyDown = useShortcut("dialog-confirm", () => {
+    promptState.onConfirm(promptState.value);
+  });
 
   const slashCommand = useMemo(() => createSlashCommandExtension(promptUser), [promptUser]);
 
@@ -398,12 +404,7 @@ export function Editor({
             id="editor-prompt-input"
             value={promptState.value}
             onChange={(e) => setPromptState((prev) => ({ ...prev, value: e.target.value }))}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                promptState.onConfirm(promptState.value);
-              }
-            }}
+            onKeyDown={handlePromptKeyDown}
             multiline
             minRows={3}
             maxRows={6}

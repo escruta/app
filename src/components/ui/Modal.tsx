@@ -4,7 +4,7 @@ import { motion, AnimatePresence, useAnimate } from "motion/react";
 import { IconButton } from "./IconButton";
 import { CloseIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
-import { useIsMobile, useVisualViewportHeight } from "@/hooks";
+import { useIsMobile, useVisualViewportHeight, useShortcut } from "@/hooks";
 import { Tooltip } from "./Tooltip";
 
 const modalListeners = new Set<() => void>();
@@ -130,6 +130,12 @@ export function Modal({
     onClose();
   };
 
+  useShortcut("dialog-close", handleClose, {
+    global: true,
+    enabled: isOpen && closeOnEscape,
+    preventDefault: false,
+  });
+
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
     onSubmit?.();
@@ -140,17 +146,10 @@ export function Modal({
 
     document.body.style.overflow = "hidden";
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && closeOnEscape) handleClose();
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
     return () => {
       document.body.style.overflow = "";
-      window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen, closeOnEscape]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

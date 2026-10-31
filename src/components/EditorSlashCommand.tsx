@@ -5,6 +5,7 @@ import Suggestion, {
   type SuggestionOptions,
 } from "@tiptap/suggestion";
 import { ReactRenderer } from "@tiptap/react";
+import { useShortcuts } from "@/hooks";
 import { cn } from "@/lib/utils";
 import {
   BoldIcon,
@@ -240,27 +241,28 @@ function SlashCommandList({ items, command, loading, keyDownRef }: SlashCommandL
       ?.scrollIntoView({ block: "nearest" });
   }, [selectedIndex]);
 
-  keyDownRef.current = ({ event }) => {
-    if (items.length === 0) return false;
+  const handleKeyDown = useShortcuts([
+    {
+      id: "block-menu-previous",
+      enabled: items.length > 0,
+      handler: () => setSelectedIndex((selectedIndex + items.length - 1) % items.length),
+    },
+    {
+      id: "block-menu-next",
+      enabled: items.length > 0,
+      handler: () => setSelectedIndex((selectedIndex + 1) % items.length),
+    },
+    {
+      id: "block-menu-select",
+      enabled: items.length > 0,
+      handler: () => {
+        const item = items[selectedIndex];
+        if (item) command(item);
+      },
+    },
+  ]);
 
-    if (event.key === "ArrowUp") {
-      setSelectedIndex((selectedIndex + items.length - 1) % items.length);
-      return true;
-    }
-
-    if (event.key === "ArrowDown") {
-      setSelectedIndex((selectedIndex + 1) % items.length);
-      return true;
-    }
-
-    if (event.key === "Enter") {
-      const item = items[selectedIndex];
-      if (item) command(item);
-      return true;
-    }
-
-    return false;
-  };
+  keyDownRef.current = ({ event }) => handleKeyDown(event);
 
   return (
     <div

@@ -1,4 +1,4 @@
-import { useFetch, useRealtimeEvent } from "@/hooks";
+import { useFetch, useRealtimeEvent, useShortcut } from "@/hooks";
 import type { ChatMode, Conversation, ConversationStatus, ConversationsPage } from "@/interfaces";
 import { useMemo, useCallback, useState, useEffect, useRef } from "react";
 import { AnimatePresence } from "motion/react";
@@ -242,6 +242,15 @@ export function ConversationHistory({
     setConversationToDeleteId(conversationId);
   }, []);
 
+  const handleDeleteKeyDown = useShortcut(
+    "dialog-activate",
+    (event) => {
+      const conversationId = (event.currentTarget as HTMLElement).dataset.conversationId;
+      if (conversationId) handleDelete(conversationId);
+    },
+    { stopPropagation: true },
+  );
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -405,12 +414,8 @@ export function ConversationHistory({
                         e.stopPropagation();
                         handleDelete(conversation.id);
                       }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.stopPropagation();
-                          handleDelete(conversation.id);
-                        }
-                      }}
+                      onKeyDown={handleDeleteKeyDown}
+                      data-conversation-id={conversation.id}
                       role="button"
                       tabIndex={0}
                       className="opacity-0 transition-opacity group-hover:opacity-100"

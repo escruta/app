@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { useShortcut } from "@/hooks";
 import type { Note } from "@/interfaces";
 import { NoteIcon } from "@/components/icons";
 
@@ -9,6 +10,8 @@ interface NoteChipProps {
 }
 
 export function NoteChip({ note, className, onSelect }: NoteChipProps) {
+  const handleKeyDown = useShortcut("dialog-activate", () => onSelect?.(note));
+
   return (
     <div
       className={cn(
@@ -23,12 +26,7 @@ export function NoteChip({ note, className, onSelect }: NoteChipProps) {
         className,
       )}
       onClick={() => onSelect?.(note)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onSelect?.(note);
-        }
-      }}
+      onKeyDown={handleKeyDown}
       tabIndex={0}
       role="button"
     >

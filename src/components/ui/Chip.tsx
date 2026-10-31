@@ -1,3 +1,4 @@
+import { useShortcut } from "@/hooks";
 import { cn } from "@/lib/utils";
 
 type ChipVariants = "default" | "primary";
@@ -45,12 +46,13 @@ export function Chip({
     md: "px-3 py-1 text-sm",
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLSpanElement>) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
+  const handleKeyDown = useShortcut(
+    "dialog-activate",
+    () => {
       onClick?.();
-    }
-  };
+    },
+    { enabled: !!onClick },
+  );
 
   return (
     <span

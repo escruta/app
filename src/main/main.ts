@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, shell } from "electron";
 import path from "node:path";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
+import { matchesShortcut } from "../lib/shortcuts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -74,9 +75,17 @@ function registerWindowControls() {
 function interceptCloseTabShortcut(window: BrowserWindow) {
   window.webContents.on("before-input-event", (event, input) => {
     if (input.type !== "keyDown") return;
-    if (typeof input.key !== "string" || input.key.toLowerCase() !== "w") return;
-    if (!input.control && !input.meta) return;
-    if (input.shift || input.alt) return;
+    if (typeof input.key !== "string") return;
+
+    const matches = matchesShortcut("close-tab", {
+      key: input.key,
+      ctrlKey: input.control,
+      metaKey: input.meta,
+      shiftKey: input.shift,
+      altKey: input.alt,
+    });
+
+    if (!matches) return;
     event.preventDefault();
     window.webContents.send("shortcut:close-tab");
   });

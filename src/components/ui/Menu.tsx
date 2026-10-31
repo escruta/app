@@ -13,6 +13,7 @@ import {
   type HTMLAttributes,
 } from "react";
 import { createPortal } from "react-dom";
+import { useShortcut } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -30,6 +31,12 @@ export function Menu({ children, className }: { children: ReactNode; className?:
   const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLElement>(null);
   const contentRef = useRef<HTMLElement>(null);
+
+  useShortcut("dialog-close", () => setIsOpen(false), {
+    global: true,
+    enabled: isOpen,
+    preventDefault: false,
+  });
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -63,6 +70,10 @@ export function MenuTrigger({
   const context = useContext(MenuContext);
   const localRef = useRef<HTMLSpanElement>(null);
 
+  const handleKeyDown = useShortcut("dialog-activate", () => context?.setIsOpen(true), {
+    enabled: !!context,
+  });
+
   const setRefs = useCallback(
     (node: HTMLSpanElement | null) => {
       localRef.current = node;
@@ -85,10 +96,7 @@ export function MenuTrigger({
         },
         onKeyDown: (e: KeyboardEvent<HTMLElement>) => {
           children.props.onKeyDown?.(e);
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            context.setIsOpen(true);
-          }
+          handleKeyDown(e);
         },
         "aria-haspopup": "menu",
         "aria-expanded": context.isOpen,
@@ -226,14 +234,16 @@ export function MenuItem({
 }) {
   const context = useContext(MenuContext);
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
-    if (disabled) return;
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
+  const handleKeyDown = useShortcut(
+    "dialog-activate",
+    () => {
       onClick();
       context?.setIsOpen(false);
-    }
-  };
+    },
+    {
+      enabled: !disabled,
+    },
+  );
 
   const baseStyles =
     "flex w-full items-center gap-2 rounded-xs px-3 py-2 text-sm transition-all duration-200 outline-none select-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none";

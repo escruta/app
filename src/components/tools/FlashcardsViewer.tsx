@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useShortcuts } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { IconButton, Tooltip, Button } from "@/components/ui";
 import { ChevronIcon, CheckIcon, RestartIcon } from "@/components/icons";
@@ -80,24 +81,12 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
     setKnownCards(new Set());
   }
 
-  function handleKeyDown(e: React.KeyboardEvent) {
-    switch (e.key) {
-      case " ":
-      case "Enter":
-        e.preventDefault();
-        handleFlip();
-        break;
-      case "ArrowRight":
-        handleNext();
-        break;
-      case "ArrowLeft":
-        handlePrev();
-        break;
-      case "k":
-        handleMarkKnown();
-        break;
-    }
-  }
+  const handleKeyDown = useShortcuts([
+    { id: "flashcards-flip", handler: handleFlip },
+    { id: "flashcards-next", handler: handleNext },
+    { id: "flashcards-previous", handler: handlePrev },
+    { id: "flashcards-known", handler: handleMarkKnown },
+  ]);
 
   if (!flashcards || flashcards.length === 0) {
     return (

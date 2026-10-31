@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
+import { useShortcuts } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { CheckIcon, ChevronIcon } from "@/components/icons";
@@ -121,16 +122,19 @@ export function Dropdown<T>({
     handleOpenChange(false);
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (disabled) return;
-
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      handleOpenChange(!isOpen);
-    } else if (event.key === "Escape") {
-      handleOpenChange(false);
-    }
-  };
+  const handleKeyDown = useShortcuts([
+    {
+      id: "dialog-activate",
+      handler: () => handleOpenChange(!isOpen),
+      enabled: !disabled,
+    },
+    {
+      id: "dialog-close",
+      handler: () => handleOpenChange(false),
+      enabled: isOpen,
+      preventDefault: false,
+    },
+  ]);
 
   return (
     <div className={cn("flex items-center gap-3", className)}>
