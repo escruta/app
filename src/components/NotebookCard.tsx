@@ -296,7 +296,7 @@ export function NotebookCard({
           size="sm"
           icon={<FolderIcon className="size-3 text-blue-500 dark:text-blue-400" />}
           title={folderTitle}
-          className="max-w-32 border-gray-200/80 bg-gray-100/80 text-gray-600 dark:border-gray-700/80 dark:bg-gray-800/80 dark:text-gray-300"
+          className="max-w-32 border-gray-200/80 bg-gray-50/80 text-gray-600 dark:border-gray-700/80 dark:bg-gray-800/80 dark:text-gray-300"
         >
           {folderTitle}
         </Chip>
