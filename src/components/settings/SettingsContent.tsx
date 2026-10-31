@@ -19,35 +19,37 @@ export function SettingsContent() {
   const [activeSection, setActiveSection] = useState<SectionId>("account");
 
   return (
-    <div className="mx-auto flex h-full max-w-5xl flex-col md:flex-row">
-      <nav className="flex shrink-0 gap-1 overflow-x-auto border-b border-gray-200 p-2 md:w-56 md:flex-col md:overflow-y-auto md:border-r md:border-b-0 md:p-3 dark:border-gray-800">
-        {SECTIONS.map((section) => {
-          const active = activeSection === section.id;
-          return (
-            <button
-              key={section.id}
-              type="button"
-              onClick={() => setActiveSection(section.id)}
-              aria-current={active ? "page" : undefined}
-              className={cn(
-                "flex shrink-0 cursor-pointer items-center gap-2.5 rounded-xs px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors",
-                active
-                  ? "bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300"
-                  : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800",
-              )}
-            >
-              {section.icon}
-              {section.label}
-            </button>
-          );
-        })}
-      </nav>
+    <div className="h-full w-full overflow-y-scroll">
+      <div className="mx-auto flex min-h-full max-w-5xl flex-col md:flex-row">
+        <nav className="sticky top-0 z-10 flex shrink-0 gap-1 overflow-x-auto border-b border-gray-200 bg-white p-2 md:w-56 md:flex-col md:self-start md:border-b-0 md:p-3 dark:border-gray-800 dark:bg-gray-950">
+          {SECTIONS.map((section) => {
+            const active = activeSection === section.id;
+            return (
+              <button
+                key={section.id}
+                type="button"
+                onClick={() => setActiveSection(section.id)}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "flex shrink-0 cursor-pointer items-center gap-2.5 rounded-xs px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors",
+                  active
+                    ? "bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300"
+                    : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800",
+                )}
+              >
+                {section.icon}
+                {section.label}
+              </button>
+            );
+          })}
+        </nav>
 
-      <div className="min-w-0 flex-1 overflow-y-auto p-4 md:p-6">
-        {activeSection === "account" && <AccountSection />}
-        {activeSection === "preferences" && <PreferencesSection />}
-        {activeSection === "shortcuts" && <ShortcutsSection />}
-        {activeSection === "sessions" && <SessionsSection />}
+        <div className="min-w-0 flex-1 p-4 md:border-l md:border-gray-200 md:p-6 dark:border-gray-800">
+          {activeSection === "account" && <AccountSection />}
+          {activeSection === "preferences" && <PreferencesSection />}
+          {activeSection === "shortcuts" && <ShortcutsSection />}
+          {activeSection === "sessions" && <SessionsSection />}
+        </div>
       </div>
     </div>
   );
