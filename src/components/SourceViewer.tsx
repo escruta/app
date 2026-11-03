@@ -1,4 +1,4 @@
-import { useEffect, useState, useTransition, useCallback, lazy, Suspense } from "react";
+import { memo, useEffect, useMemo, useRef, useState, useTransition, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useFetch, useRealtimeEvent } from "@/hooks";
 import type { Source } from "@/interfaces";
@@ -26,22 +26,85 @@ import {
   ViewerFrame,
 } from "@/components/ui";
 import { getYouTubeVideoId, getHttpErrorMessage } from "@/lib/utils";
+import { Markdown } from "./Markdown";
 
-const Markdown = lazy(() => import("./Markdown").then((module) => ({ default: module.Markdown })));
+const TARGET_CHUNK_SIZE = 2200;
+const HARD_MAX_CHUNK_SIZE = 4500;
+const INITIAL_VISIBLE_CHUNKS = 3;
+const IDLE_CHUNK_STEP = 2;
+const SCROLL_CHUNK_STEP = 6;
+const MAX_CACHED_SOURCES = 60;
+
+const chunksCache = new Map<string, { raw: string; chunks: string[] }>();
+
+function getOrSplitChunks(sourceId: string, text: string): string[] {
+  if (!text) return [];
+  const cached = chunksCache.get(sourceId);
+  if (cached && cached.raw === text) {
+    return cached.chunks;
+  }
+
+  const chunks: string[] = [];
+  let currentChunk = "";
+  let inCodeBlock = false;
+  let inMathBlock = false;
+
+  const lines = text.split("\n");
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    if (trimmed.startsWith("```") || trimmed.startsWith("~~~")) {
+      inCodeBlock = !inCodeBlock;
+    }
+    if (trimmed.startsWith("$$")) {
+      inMathBlock = !inMathBlock;
+    }
+
+    currentChunk += line + "\n";
+
+    if (!inCodeBlock && !inMathBlock) {
+      const nextLineTrimmed = i + 1 < lines.length ? lines[i + 1].trim() : "";
+      const inTable = trimmed.startsWith("|") || nextLineTrimmed.startsWith("|");
+
+      if (
+        (currentChunk.length >= TARGET_CHUNK_SIZE && trimmed === "" && !inTable) ||
+        (currentChunk.length >= HARD_MAX_CHUNK_SIZE && !inTable)
+      ) {
+        chunks.push(currentChunk);
+        currentChunk = "";
+      }
+    }
+  }
+
+  if (currentChunk) {
+    chunks.push(currentChunk);
+  }
+
+  if (chunksCache.size >= MAX_CACHED_SOURCES) {
+    const oldestKey = chunksCache.keys().next().value;
+    if (oldestKey !== undefined) chunksCache.delete(oldestKey);
+  }
+  chunksCache.set(sourceId, { raw: text, chunks });
+
+  return chunks;
+}
 
 interface SourceViewerProps {
   notebookId: string;
   source: Source;
   handleCloseSource: () => void;
   onSourceDelete: () => void;
+  isActive?: boolean;
   className?: string;
 }
 
-export function SourceViewer({
+export const SourceViewer = memo(function SourceViewer({
   notebookId,
   source,
   handleCloseSource,
   onSourceDelete,
+  isActive = true,
   className,
 }: SourceViewerProps) {
   const [summaryGenerateError, setSummaryGenerateError] = useState<FetchError | null>(null);
@@ -55,64 +118,77 @@ export function SourceViewer({
   } = useFetch<Source>(`notebooks/${notebookId}/sources/${source.id}`);
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
-  const [currentSourceId, setCurrentSourceId] = useState<string>(source.id);
-  const [contentChunks, setContentChunks] = useState<string[]>([]);
-  const [visibleChunks, setVisibleChunks] = useState<number>(0);
   const [_, startTransition] = useTransition();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   const youtubeVideoId =
     source.type === "YouTube Video" ? getYouTubeVideoId(fullSource?.link || source.link) : null;
 
+  const contentChunks = useMemo(() => {
+    if (!fullSource?.content) return [];
+    return getOrSplitChunks(source.id, fullSource.content);
+  }, [source.id, fullSource?.content]);
+
+  const [visibleChunks, setVisibleChunks] = useState<number>(INITIAL_VISIBLE_CHUNKS);
+  const prevSourceIdRef = useRef<string>(source.id);
+
   useEffect(() => {
-    if (source.id !== currentSourceId) {
-      setCurrentSourceId(source.id);
-      setContentChunks([]);
-      setVisibleChunks(0);
+    if (prevSourceIdRef.current !== source.id) {
+      prevSourceIdRef.current = source.id;
+      setVisibleChunks(INITIAL_VISIBLE_CHUNKS);
     }
-  }, [source.id, currentSourceId]);
+  }, [source.id]);
 
   useEffect(() => {
-    if (fullSource?.content !== undefined) {
-      const text = fullSource.content || "";
-      const chunks: string[] = [];
-      let currentChunk = "";
-      let inCodeBlock = false;
-      let inMathBlock = false;
+    if (!isActive || contentChunks.length === 0 || visibleChunks >= contentChunks.length) {
+      return;
+    }
 
-      const lines = text.split("\n");
-      for (const line of lines) {
-        if (line.trim().startsWith("```")) {
-          inCodeBlock = !inCodeBlock;
-        }
-        if (line.trim().startsWith("$$")) {
-          inMathBlock = !inMathBlock;
-        }
-        currentChunk += line + "\n";
+    const win = window as Window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
 
-        if (!inCodeBlock && !inMathBlock && currentChunk.length > 4000 && line.trim() === "") {
-          chunks.push(currentChunk);
-          currentChunk = "";
-        }
-      }
-      if (currentChunk) chunks.push(currentChunk);
-
+    const advance = () => {
       startTransition(() => {
-        setContentChunks(chunks);
-        setVisibleChunks(1);
+        setVisibleChunks((v) => Math.min(contentChunks.length, v + IDLE_CHUNK_STEP));
       });
+    };
+
+    if (typeof win.requestIdleCallback === "function") {
+      const id = win.requestIdleCallback(advance, { timeout: 120 });
+      return () => win.cancelIdleCallback?.(id);
     }
-  }, [fullSource?.content]);
+
+    const timer = window.setTimeout(advance, 40);
+    return () => window.clearTimeout(timer);
+  }, [isActive, contentChunks.length, visibleChunks]);
 
   useEffect(() => {
-    if (contentChunks.length > 0 && visibleChunks < contentChunks.length) {
-      const timer = setTimeout(() => {
-        startTransition(() => {
-          setVisibleChunks((v) => v + 1);
-        });
-      }, 50);
-      return () => clearTimeout(timer);
+    const sentinel = sentinelRef.current;
+    const root = scrollContainerRef.current;
+    if (!isActive || !sentinel || !root || visibleChunks >= contentChunks.length) {
+      return;
     }
-  }, [contentChunks, visibleChunks]);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          startTransition(() => {
+            setVisibleChunks((v) => Math.min(contentChunks.length, v + SCROLL_CHUNK_STEP));
+          });
+        }
+      },
+      {
+        root,
+        rootMargin: "1600px 0px",
+      },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [isActive, contentChunks.length, visibleChunks]);
 
   const {
     loading: deletingSource,
@@ -270,7 +346,7 @@ export function SourceViewer({
           </div>
         )}
         {fullSource && !loading && !error && (
-          <div className="w-full flex-1 overflow-y-auto">
+          <div ref={scrollContainerRef} className="w-full flex-1 overflow-y-auto">
             <div className="mx-auto flex w-full max-w-3xl flex-col">
               <div className="px-6 pt-4">
                 <Card className="border-gray-200 bg-gray-50 shadow-sm ring-0 dark:border-gray-700 dark:bg-gray-800/60">
@@ -360,12 +436,10 @@ export function SourceViewer({
                         </div>
                       ) : sourceSummary?.trim() ? (
                         <div className="max-w-none text-base leading-relaxed font-medium text-gray-900 select-text dark:text-gray-100">
-                          <Suspense fallback={<Skeleton lines={4} />}>
-                            <Markdown
-                              text={sourceSummary}
-                              baseUrl={fullSource?.link || source.link}
-                            />
-                          </Suspense>
+                          <Markdown
+                            text={sourceSummary}
+                            baseUrl={fullSource?.link || source.link}
+                          />
                         </div>
                       ) : (
                         <Button onClick={regenerateSummary} icon={<StarsIcon />}>
@@ -392,22 +466,19 @@ export function SourceViewer({
                       <div className="overflow-x-hidden wrap-break-word select-text">
                         <div className="max-w-none leading-relaxed">
                           {contentChunks.length > 0 ? (
-                            <Suspense
-                              fallback={
-                                <Skeleton
-                                  lines={10}
-                                  className="[&>div]:bg-gray-200! dark:[&>div]:bg-gray-800!"
-                                />
-                              }
-                            >
+                            <>
                               {contentChunks.slice(0, visibleChunks).map((chunk, index) => (
-                                <Markdown
-                                  key={index}
-                                  text={chunk}
-                                  baseUrl={fullSource?.link || source.link}
-                                />
+                                <div key={index} className="source-chunk">
+                                  <Markdown
+                                    text={chunk}
+                                    baseUrl={fullSource?.link || source.link}
+                                  />
+                                </div>
                               ))}
-                            </Suspense>
+                              {visibleChunks < contentChunks.length && (
+                                <div ref={sentinelRef} className="h-4 w-full" aria-hidden="true" />
+                              )}
+                            </>
                           ) : (
                             <Skeleton
                               lines={10}
@@ -422,22 +493,16 @@ export function SourceViewer({
                   <div className="h-auto min-h-[80%] w-full overflow-x-hidden px-6 py-8 wrap-break-word select-text">
                     <div className="max-w-none leading-relaxed">
                       {contentChunks.length > 0 ? (
-                        <Suspense
-                          fallback={
-                            <Skeleton
-                              lines={10}
-                              className="[&>div]:bg-gray-200! dark:[&>div]:bg-gray-800!"
-                            />
-                          }
-                        >
+                        <>
                           {contentChunks.slice(0, visibleChunks).map((chunk, index) => (
-                            <Markdown
-                              key={index}
-                              text={chunk}
-                              baseUrl={fullSource?.link || source.link}
-                            />
+                            <div key={index} className="source-chunk">
+                              <Markdown text={chunk} baseUrl={fullSource?.link || source.link} />
+                            </div>
                           ))}
-                        </Suspense>
+                          {visibleChunks < contentChunks.length && (
+                            <div ref={sentinelRef} className="h-4 w-full" aria-hidden="true" />
+                          )}
+                        </>
                       ) : (
                         <Skeleton
                           lines={10}
@@ -488,4 +553,4 @@ export function SourceViewer({
       </Modal>
     </>
   );
-}
+});

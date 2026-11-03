@@ -350,3 +350,15 @@ body.tab-dragging * {
 .animate-shimmer {
   animation: shimmer 1.5s infinite linear;
 }
+
+.source-chunk {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 420px;
+}
+
+.tab-pane-inactive {
+  content-visibility: hidden;
+  pointer-events: none;
+  visibility: hidden;
+  z-index: -1;
+}
