@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { createLowlight, common } from "lowlight";
 import { cn } from "@/lib/utils";
 import type { RootContent } from "hast";
@@ -7,64 +7,86 @@ import { IconButton } from "./ui";
 
 const lowlight = createLowlight(common);
 
+const MAX_AUTO_HIGHLIGHT_LENGTH = 1500;
+const MAX_HIGHLIGHT_LENGTH = 50000;
+const MAX_CACHE_ENTRIES = 200;
+const highlightCache = new Map<string, string | null>();
+
+function escapeHtml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function hastNodeToHtml(node: RootContent): string {
+  if (node.type === "text") return escapeHtml(node.value);
+  if (node.type === "element") {
+    const childrenHtml = node.children.map(hastNodeToHtml).join("");
+    const classNameProp = node.properties?.className;
+    const classAttr = classNameProp
+      ? ` class="${Array.isArray(classNameProp) ? classNameProp.join(" ") : classNameProp}"`
+      : "";
+    return `<${node.tagName}${classAttr}>${childrenHtml}</${node.tagName}>`;
+  }
+  return "";
+}
+
+function getHighlightedHtml(text: string, language: string): string | null {
+  if (!text || text.length > MAX_HIGHLIGHT_LENGTH) return null;
+  if (!language && text.length > MAX_AUTO_HIGHLIGHT_LENGTH) return null;
+
+  const cacheKey = `${language}:${text}`;
+  if (highlightCache.has(cacheKey)) {
+    return highlightCache.get(cacheKey) ?? null;
+  }
+
+  let html: string | null = null;
+  try {
+    const highlighted =
+      language && lowlight.registered(language)
+        ? lowlight.highlight(language, text)
+        : !language
+          ? lowlight.highlightAuto(text)
+          : null;
+
+    if (highlighted) {
+      html = highlighted.children.map(hastNodeToHtml).join("");
+    }
+  } catch (e) {
+    console.warn("Failed to highlight code:", e);
+  }
+
+  if (highlightCache.size >= MAX_CACHE_ENTRIES) {
+    const firstKey = highlightCache.keys().next().value;
+    if (firstKey !== undefined) highlightCache.delete(firstKey);
+  }
+  highlightCache.set(cacheKey, html);
+
+  return html;
+}
+
 interface CodeBlockProps {
   children: React.ReactNode;
   className?: string;
   inline?: boolean;
 }
 
-export function CodeBlock({ children, className, inline }: CodeBlockProps) {
-  const codeRef = useRef<HTMLElement>(null);
+export const CodeBlock = memo(function CodeBlock({ children, className, inline }: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    if (codeRef.current && !inline && children) {
-      const text = String(children);
-      const match = /language-(\w+)/.exec(className || "");
-      const language = match ? match[1] : "";
+  const text = useMemo(() => (children ? String(children) : ""), [children]);
+  const language = useMemo(() => {
+    const match = /language-(\w+)/.exec(className || "");
+    return match ? match[1] : "";
+  }, [className]);
 
-      let highlighted = null;
-      try {
-        if (language && lowlight.registered(language)) {
-          highlighted = lowlight.highlight(language, text);
-        } else {
-          highlighted = lowlight.highlightAuto(text);
-        }
-      } catch (e) {
-        console.warn("Failed to highlight code:", e);
-      }
-
-      if (highlighted) {
-        const toHtml = (node: RootContent): string => {
-          if (node.type === "text") return escapeHtml(node.value);
-          if (node.type === "element") {
-            const childrenHtml = node.children.map(toHtml).join("");
-            const classNameProp = node.properties?.className;
-            const classAttr = classNameProp
-              ? ` class="${Array.isArray(classNameProp) ? classNameProp.join(" ") : classNameProp}"`
-              : "";
-            return `<${node.tagName}${classAttr}>${childrenHtml}</${node.tagName}>`;
-          }
-          return "";
-        };
-
-        const escapeHtml = (unsafe: string) => {
-          return unsafe
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-        };
-
-        const html = highlighted.children.map(toHtml).join("");
-        codeRef.current.innerHTML = html;
-        codeRef.current.classList.add("hljs");
-      } else {
-        codeRef.current.textContent = text;
-      }
-    }
-  }, [children, className, inline]);
+  const highlightedHtml = useMemo(() => {
+    if (inline || !text) return null;
+    return getHighlightedHtml(text, language);
+  }, [inline, text, language]);
 
   if (inline) {
     return (
@@ -75,7 +97,6 @@ export function CodeBlock({ children, className, inline }: CodeBlockProps) {
   }
 
   const handleCopy = () => {
-    const text = String(children);
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -97,13 +118,17 @@ export function CodeBlock({ children, className, inline }: CodeBlockProps) {
         />
       </div>
       <div className="overflow-x-auto p-4">
-        <code
-          ref={codeRef}
-          className="block font-mono text-sm leading-normal font-medium whitespace-pre"
-        >
-          {children}
-        </code>
+        {highlightedHtml !== null ? (
+          <code
+            className="hljs block font-mono text-sm leading-normal font-medium whitespace-pre"
+            dangerouslySetInnerHTML={{ __html: highlightedHtml }}
+          />
+        ) : (
+          <code className="block font-mono text-sm leading-normal font-medium whitespace-pre">
+            {text}
+          </code>
+        )}
       </div>
     </div>
   );
-}
+});

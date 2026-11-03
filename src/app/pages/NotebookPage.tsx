@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback, useMemo } from "react";
+import { memo, useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useLoaderData } from "react-router";
 import { useFetch, useCookie, useRealtimeEvent, useShortcut, useShortcuts } from "@/hooks";
 import type {
@@ -90,6 +90,182 @@ function getPixelConstraints(containerWidth: number) {
   return { minSidePercent, minCenterPercent };
 }
 
+function sanitizeTabsForCookie(tabs: TabDescriptor[]): TabDescriptor[] {
+  return tabs.map((t) => ({
+    ...t,
+    source: t.source ? { ...t.source, content: undefined } : undefined,
+    note: t.note ? { ...t.note, content: "" } : undefined,
+  }));
+}
+
+const EMPTY_SOURCES: Source[] = [];
+
+interface TabPaneContentProps {
+  tab: TabDescriptor;
+  tabKeyStr: string;
+  notebookId: string;
+  isActive: boolean;
+  isVisible: boolean;
+  sources: Source[];
+  selectedSourceIds: string[];
+  chatQuestion: string | null;
+  onClearChatQuestion: () => void;
+  onSourceSelectFromChat: (sourceId: string) => void;
+  onConversationCreated: (tabKeyStr: string, conversationId: string) => void;
+  onTabTitleChange: (tabKeyStr: string, title: string) => void;
+  onConversationCompleted: () => void;
+  onConversationSeen: (conversationId: string) => void;
+  onConversationStateChange: (
+    id: string,
+    state: { status: ConversationStatus; hasUnseenReply: boolean },
+  ) => void;
+  onNewChat: () => void;
+  onCloseTab: (tabKeyStr: string) => void;
+  onSourceDeleted: (tabKeyStr: string) => void;
+  onNoteUpdated: (tabKeyStr: string, updatedNote: Note) => void;
+  onNoteDeleted: (tabKeyStr: string) => void;
+  onNodeSelect: (question: string) => void;
+}
+
+const TabPaneContent = memo(
+  function TabPaneContent({
+    tab,
+    tabKeyStr,
+    notebookId,
+    isActive,
+    isVisible,
+    sources,
+    selectedSourceIds,
+    chatQuestion,
+    onClearChatQuestion,
+    onSourceSelectFromChat,
+    onConversationCreated,
+    onTabTitleChange,
+    onConversationCompleted,
+    onConversationSeen,
+    onConversationStateChange,
+    onNewChat,
+    onCloseTab,
+    onSourceDeleted,
+    onNoteUpdated,
+    onNoteDeleted,
+    onNodeSelect,
+  }: TabPaneContentProps) {
+    const handleClose = useCallback(() => onCloseTab(tabKeyStr), [onCloseTab, tabKeyStr]);
+    const handleSourceDelete = useCallback(
+      () => onSourceDeleted(tabKeyStr),
+      [onSourceDeleted, tabKeyStr],
+    );
+    const handleConvCreated = useCallback(
+      (id: string) => onConversationCreated(tabKeyStr, id),
+      [onConversationCreated, tabKeyStr],
+    );
+    const handleTitleChange = useCallback(
+      (title: string) => onTabTitleChange(tabKeyStr, title),
+      [onTabTitleChange, tabKeyStr],
+    );
+    const handleNoteUpdate = useCallback(
+      (updatedNote: Note) => onNoteUpdated(tabKeyStr, updatedNote),
+      [onNoteUpdated, tabKeyStr],
+    );
+    const handleNoteDelete = useCallback(
+      () => onNoteDeleted(tabKeyStr),
+      [onNoteDeleted, tabKeyStr],
+    );
+
+    switch (tab.kind) {
+      case "chat":
+        return (
+          <ChatCard
+            notebookId={notebookId}
+            sources={sources}
+            selectedSourceIds={selectedSourceIds}
+            onSourceSelect={onSourceSelectFromChat}
+            externalQuestion={isActive ? chatQuestion : null}
+            onExternalQuestionHandled={onClearChatQuestion}
+            autoFocus={isActive}
+            initialConversationId={tab.refId === NEW_CHAT_ID ? null : tab.refId}
+            initialConversationTitle={tab.refId === NEW_CHAT_ID ? null : tab.title}
+            onConversationCreated={handleConvCreated}
+            onTitleChange={handleTitleChange}
+            onConversationCompleted={onConversationCompleted}
+            onConversationSeen={onConversationSeen}
+            onConversationStateChange={onConversationStateChange}
+            onNewChat={onNewChat}
+          />
+        );
+      case "source":
+        if (!tab.source) return null;
+        return (
+          <SourceViewer
+            notebookId={notebookId}
+            source={tab.source}
+            isActive={isVisible}
+            handleCloseSource={handleClose}
+            onSourceDelete={handleSourceDelete}
+            className="h-full"
+          />
+        );
+      case "note":
+        if (!tab.note) return null;
+        return (
+          <NoteEditor
+            note={tab.note}
+            className="h-full"
+            handleCloseNote={handleClose}
+            onNoteUpdated={handleNoteUpdate}
+            onNoteDeleted={handleNoteDelete}
+          />
+        );
+      case "tool":
+        if (!tab.toolType) return null;
+        return (
+          <ToolResultTab
+            notebookId={notebookId}
+            toolType={tab.toolType}
+            title={tab.title}
+            onClose={handleClose}
+            onNodeSelect={onNodeSelect}
+          />
+        );
+    }
+  },
+  (prev, next) => {
+    if (
+      prev.tabKeyStr !== next.tabKeyStr ||
+      prev.notebookId !== next.notebookId ||
+      prev.tab.kind !== next.tab.kind
+    ) {
+      return false;
+    }
+
+    switch (next.tab.kind) {
+      case "source":
+        return prev.isVisible === next.isVisible && prev.tab.source === next.tab.source;
+      case "note":
+        return prev.isVisible === next.isVisible && prev.tab.note === next.tab.note;
+      case "tool":
+        return (
+          prev.isVisible === next.isVisible &&
+          prev.tab.toolType === next.tab.toolType &&
+          prev.tab.title === next.tab.title
+        );
+      case "chat":
+        if (!prev.isVisible && !next.isVisible && prev.tab === next.tab) {
+          return true;
+        }
+        return (
+          prev.isActive === next.isActive &&
+          prev.isVisible === next.isVisible &&
+          prev.tab === next.tab &&
+          prev.sources === next.sources &&
+          prev.selectedSourceIds === next.selectedSourceIds &&
+          (next.isActive ? prev.chatQuestion === next.chatQuestion : true)
+        );
+    }
+  },
+);
+
 export default function NotebookPage() {
   const notebookId: string = useLoaderData();
   const validNotebookId = notebookId !== "null" && notebookId !== "undefined" ? notebookId : null;
@@ -172,6 +348,7 @@ export default function NotebookPage() {
   const tabSeqRef = useRef<number>(
     Math.max(0, ...(persistedTabs ?? []).map((t) => t.seq ?? 0)) + 1,
   );
+  const mountedTabKeysRef = useRef<Set<string>>(new Set());
 
   const initialLoadRef = useRef(true);
 
@@ -323,6 +500,7 @@ export default function NotebookPage() {
 
   const closeTab = useCallback(
     (key: string) => {
+      mountedTabKeysRef.current.delete(key);
       setTabs((prev) => {
         const idx = prev.findIndex((t) => tabKey(t) === key);
         if (idx < 0) return prev;
@@ -458,7 +636,7 @@ export default function NotebookPage() {
   placeTabRef.current = placeTab;
 
   useEffect(() => {
-    setPersistedTabs(tabs);
+    setPersistedTabs(sanitizeTabsForCookie(tabs));
   }, [tabs, setPersistedTabs]);
 
   useEffect(() => {
@@ -602,13 +780,52 @@ export default function NotebookPage() {
     );
   }, []);
 
-  const handleNodeSelect = (question: string) => {
-    const firstChat = tabs.find((t) => t.kind === "chat");
-    if (firstChat && activeTab?.kind !== "chat") {
-      selectTab(tabKey(firstChat));
-    }
-    setChatQuestion(question);
-  };
+  const handleNodeSelect = useCallback(
+    (question: string) => {
+      const firstChat = tabs.find((t) => t.kind === "chat");
+      if (firstChat && activeTab?.kind !== "chat") {
+        selectTab(tabKey(firstChat));
+      }
+      setChatQuestion(question);
+    },
+    [tabs, activeTab, selectTab],
+  );
+
+  const handleClearChatQuestion = useCallback(() => {
+    setChatQuestion(null);
+  }, []);
+
+  const handleConversationStateChange = useCallback(
+    (id: string, state: { status: ConversationStatus; hasUnseenReply: boolean }) => {
+      setConversationStates((prev) => ({ ...prev, [id]: state }));
+    },
+    [],
+  );
+
+  const handleSourceDeleted = useCallback(
+    (tabKeyStr: string) => {
+      closeTab(tabKeyStr);
+      refetchNotebook(true, false);
+    },
+    [closeTab, refetchNotebook],
+  );
+
+  const handleNoteUpdated = useCallback((tabKeyStr: string, updatedNote: Note) => {
+    setTabs((prev) =>
+      prev.map((t) =>
+        tabKey(t) === tabKeyStr ? { ...t, title: updatedNote.title, note: updatedNote } : t,
+      ),
+    );
+    setNotesRefreshKey((prev) => prev + 1);
+  }, []);
+
+  const handleNoteDeleted = useCallback(
+    (tabKeyStr: string) => {
+      closeTab(tabKeyStr);
+      setNotesRefreshKey((prev) => prev + 1);
+    },
+    [closeTab],
+  );
 
   useEffect(() => {
     if (notebook?.title) {
@@ -1019,80 +1236,6 @@ export default function NotebookPage() {
     />
   );
 
-  const renderTabContent = (tab: TabDescriptor, isActive: boolean) => {
-    const k = tabKey(tab);
-    switch (tab.kind) {
-      case "chat":
-        return (
-          <ChatCard
-            notebookId={notebookId}
-            sources={notebook?.sources || []}
-            selectedSourceIds={selectedSourceIds}
-            onSourceSelect={handleSourceSelectFromChat}
-            externalQuestion={isActive ? chatQuestion : null}
-            onExternalQuestionHandled={() => setChatQuestion(null)}
-            autoFocus={isActive}
-            initialConversationId={tab.refId === NEW_CHAT_ID ? null : tab.refId}
-            initialConversationTitle={tab.refId === NEW_CHAT_ID ? null : tab.title}
-            onConversationCreated={(id) => handleConversationCreated(k, id)}
-            onTitleChange={(title) => handleTabTitleChange(k, title)}
-            onConversationCompleted={handleConversationCompleted}
-            onConversationSeen={handleConversationSeen}
-            onConversationStateChange={(id, state) =>
-              setConversationStates((prev) => ({ ...prev, [id]: state }))
-            }
-            onNewChat={openNewChatTab}
-          />
-        );
-      case "source":
-        if (!tab.source) return null;
-        return (
-          <SourceViewer
-            notebookId={notebookId}
-            source={tab.source}
-            handleCloseSource={() => closeTab(k)}
-            onSourceDelete={() => {
-              closeTab(k);
-              refetchNotebook(true, false);
-            }}
-            className="h-full"
-          />
-        );
-      case "note":
-        if (!tab.note) return null;
-        return (
-          <NoteEditor
-            note={tab.note}
-            className="h-full"
-            handleCloseNote={() => closeTab(k)}
-            onNoteUpdated={(updatedNote) => {
-              setTabs((prev) =>
-                prev.map((t) =>
-                  tabKey(t) === k ? { ...t, title: updatedNote.title, note: updatedNote } : t,
-                ),
-              );
-              setNotesRefreshKey((prev) => prev + 1);
-            }}
-            onNoteDeleted={() => {
-              closeTab(k);
-              setNotesRefreshKey((prev) => prev + 1);
-            }}
-          />
-        );
-      case "tool":
-        if (!tab.toolType) return null;
-        return (
-          <ToolResultTab
-            notebookId={notebookId}
-            toolType={tab.toolType}
-            title={tab.title}
-            onClose={() => closeTab(k)}
-            onNodeSelect={handleNodeSelect}
-          />
-        );
-    }
-  };
-
   const chromeTabsItems = tabs.map((t) => {
     const k = tabKey(t);
     const isActive = k === effectiveActiveKey;
@@ -1145,22 +1288,6 @@ export default function NotebookPage() {
     : null;
   const splitActive = splitState !== null && splitLeftTab !== null && splitRightTab !== null;
 
-  const splitResizer = (
-    <div
-      className="group relative z-5 flex shrink-0 cursor-col-resize items-stretch justify-center after:absolute after:-inset-3"
-      onMouseDown={handleMouseDownSplit}
-      title="Drag to resize"
-    >
-      <div
-        className={cn("w-px rounded-xs transition-all duration-150", {
-          "bg-blue-500 dark:bg-blue-400": activeResizer === "split",
-          "bg-gray-200 group-hover:bg-blue-400/70 dark:bg-gray-800 dark:group-hover:bg-blue-500/70":
-            activeResizer !== "split",
-        })}
-      />
-    </div>
-  );
-
   const renderTabContextMenu = (id: string) => (
     <>
       <ContextMenuItem
@@ -1186,14 +1313,13 @@ export default function NotebookPage() {
   const tabActiveIndicatorFor = (isPaneActive: boolean) =>
     isPaneActive ? undefined : cn("bg-gray-300 dark:bg-gray-700");
 
+  const effectiveSplitRatio = splitRatio ?? 50;
+
   const centerColumn = (
     <div ref={centerRef} className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-      {splitActive && splitState && splitLeftTab && splitRightTab ? (
-        <div ref={contentRef} className="flex min-h-0 flex-1">
-          <div
-            className="flex min-h-0 shrink-0 flex-col overflow-hidden bg-white dark:bg-gray-950"
-            style={{ width: `${splitRatio ?? 50}%` }}
-          >
+      {splitActive && splitState ? (
+        <div className="flex h-11 shrink-0 overflow-hidden bg-white dark:bg-gray-950">
+          <div className="shrink-0 overflow-hidden" style={{ width: `${effectiveSplitRatio}%` }}>
             <ChromeTabs
               tabs={leftStripItems}
               activeTabId={splitState.leftKey}
@@ -1206,17 +1332,9 @@ export default function NotebookPage() {
                 !rightGroupKeys.includes(effectiveActiveKey),
               )}
             />
-            <div
-              className="relative min-h-0 flex-1 overflow-hidden"
-              onMouseDown={handlePaneMouseDown("left")}
-            >
-              <div key={tabKey(splitLeftTab)} className="h-full">
-                {renderTabContent(splitLeftTab, tabKey(splitLeftTab) === effectiveActiveKey)}
-              </div>
-            </div>
           </div>
-          {splitResizer}
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-white dark:bg-gray-950">
+          <div className="w-px shrink-0 bg-gray-200 dark:bg-gray-800" />
+          <div className="min-w-0 flex-1 overflow-hidden">
             <ChromeTabs
               tabs={rightStripItems}
               activeTabId={splitState.rightKey}
@@ -1229,42 +1347,113 @@ export default function NotebookPage() {
                 rightGroupKeys.includes(effectiveActiveKey),
               )}
             />
-            <div
-              className="relative min-h-0 flex-1 overflow-hidden"
-              onMouseDown={handlePaneMouseDown("right")}
-            >
-              <div key={tabKey(splitRightTab)} className="h-full">
-                {renderTabContent(splitRightTab, tabKey(splitRightTab) === effectiveActiveKey)}
-              </div>
-            </div>
           </div>
         </div>
       ) : (
-        <>
-          <ChromeTabs
-            tabs={chromeTabsItems}
-            activeTabId={effectiveActiveKey}
-            onSelect={selectTab}
-            onClose={closeTab}
-            onTabPointerDown={handleTabPointerDown}
-            renderTabContextMenu={renderTabContextMenu}
-          />
-          <div
-            ref={contentRef}
-            className="relative min-h-0 flex-1 overflow-hidden bg-white dark:bg-gray-950"
-          >
-            {tabs.map((t) => {
-              const k = tabKey(t);
-              const isActive = k === effectiveActiveKey;
-              return (
-                <div key={k} className={cn("absolute inset-0 h-full", { hidden: !isActive })}>
-                  {renderTabContent(t, isActive)}
-                </div>
-              );
-            })}
-          </div>
-        </>
+        <ChromeTabs
+          tabs={chromeTabsItems}
+          activeTabId={effectiveActiveKey}
+          onSelect={selectTab}
+          onClose={closeTab}
+          onTabPointerDown={handleTabPointerDown}
+          renderTabContextMenu={renderTabContextMenu}
+        />
       )}
+
+      <div
+        ref={contentRef}
+        className="relative min-h-0 flex-1 overflow-hidden bg-white dark:bg-gray-950"
+      >
+        {tabs.map((t) => {
+          const k = tabKey(t);
+          const isActive = k === effectiveActiveKey;
+          const paneRole: "full" | "left" | "right" | "hidden" =
+            splitActive && splitState
+              ? k === splitState.leftKey
+                ? "left"
+                : k === splitState.rightKey
+                  ? "right"
+                  : "hidden"
+              : isActive
+                ? "full"
+                : "hidden";
+          const isVisible = paneRole !== "hidden";
+
+          if (isVisible) {
+            mountedTabKeysRef.current.add(k);
+          }
+
+          if (!mountedTabKeysRef.current.has(k)) {
+            return null;
+          }
+
+          const paneStyle: React.CSSProperties | undefined =
+            paneRole === "left"
+              ? { left: 0, width: `${effectiveSplitRatio}%` }
+              : paneRole === "right"
+                ? { left: `calc(${effectiveSplitRatio}% + 1px)`, right: 0 }
+                : undefined;
+
+          return (
+            <div
+              key={k}
+              style={paneStyle}
+              onMouseDown={
+                paneRole === "left"
+                  ? handlePaneMouseDown("left")
+                  : paneRole === "right"
+                    ? handlePaneMouseDown("right")
+                    : undefined
+              }
+              className={cn("absolute inset-y-0 h-full overflow-hidden", {
+                "inset-x-0": paneRole === "full" || paneRole === "hidden",
+                "tab-pane-inactive": !isVisible,
+              })}
+            >
+              <TabPaneContent
+                tab={t}
+                tabKeyStr={k}
+                notebookId={notebookId}
+                isActive={isActive}
+                isVisible={isVisible}
+                sources={notebook?.sources ?? EMPTY_SOURCES}
+                selectedSourceIds={selectedSourceIds}
+                chatQuestion={isActive ? chatQuestion : null}
+                onClearChatQuestion={handleClearChatQuestion}
+                onSourceSelectFromChat={handleSourceSelectFromChat}
+                onConversationCreated={handleConversationCreated}
+                onTabTitleChange={handleTabTitleChange}
+                onConversationCompleted={handleConversationCompleted}
+                onConversationSeen={handleConversationSeen}
+                onConversationStateChange={handleConversationStateChange}
+                onNewChat={openNewChatTab}
+                onCloseTab={closeTab}
+                onSourceDeleted={handleSourceDeleted}
+                onNoteUpdated={handleNoteUpdated}
+                onNoteDeleted={handleNoteDeleted}
+                onNodeSelect={handleNodeSelect}
+              />
+            </div>
+          );
+        })}
+
+        {splitActive && (
+          <div
+            style={{ left: `${effectiveSplitRatio}%` }}
+            className="group absolute inset-y-0 z-5 flex -translate-x-1/2 cursor-col-resize items-stretch justify-center after:absolute after:-inset-x-3 after:inset-y-0"
+            onMouseDown={handleMouseDownSplit}
+            title="Drag to resize"
+          >
+            <div
+              className={cn("w-px rounded-xs transition-all duration-150", {
+                "bg-blue-500 dark:bg-blue-400": activeResizer === "split",
+                "bg-gray-200 group-hover:bg-blue-400/70 dark:bg-gray-800 dark:group-hover:bg-blue-500/70":
+                  activeResizer !== "split",
+              })}
+            />
+          </div>
+        )}
+      </div>
       {dropOverlay}
       {dragGhost}
     </div>

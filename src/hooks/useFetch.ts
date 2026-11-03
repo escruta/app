@@ -25,10 +25,24 @@ export function useFetch<T = unknown>(
   immediate = true,
 ) {
   const { value: token } = useCookie<Token>(AUTH_TOKEN_KEY);
-  const [state, setState] = useState<UseFetchState<T>>({
-    data: null,
-    loading: immediate,
-    error: null,
+  const [state, setState] = useState<UseFetchState<T>>(() => {
+    if (immediate && endpoint) {
+      const cacheTime = options?.cacheTime ?? 5 * 60 * 1000;
+      const method = options?.method ?? "GET";
+      const skipCache = options?.skipCache || cacheTime <= 0 || method !== "GET";
+      if (!skipCache) {
+        const cacheKey = generateCacheKey(endpoint, options);
+        const cached = cacheInstance.get<T>(cacheKey);
+        if (cached && Date.now() - cached.timestamp < cacheTime) {
+          return { data: cached.data, loading: false, error: null };
+        }
+      }
+    }
+    return {
+      data: null,
+      loading: immediate,
+      error: null,
+    };
   });
 
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -62,7 +76,11 @@ export function useFetch<T = unknown>(
 
       if (!skipCache && cached && now - cached.timestamp < cacheTime) {
         if (mountedRef.current) {
-          setState({ data: cached.data, loading: false, error: null });
+          setState((prev) =>
+            prev.data === cached.data && !prev.loading && prev.error === null
+              ? prev
+              : { data: cached.data, loading: false, error: null },
+          );
           currentOptions?.onSuccess?.(cached.data);
         }
         return;
