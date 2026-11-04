@@ -1,8 +1,7 @@
 import type { ForgeConfig } from "@electron-forge/shared-types";
 import { MakerSquirrel } from "@electron-forge/maker-squirrel";
 import { MakerZIP } from "@electron-forge/maker-zip";
-import { MakerDeb } from "@electron-forge/maker-deb";
-import { MakerRpm } from "@electron-forge/maker-rpm";
+import { MakerAppImage } from "electron-forge-maker-appimage";
 import { VitePlugin } from "@electron-forge/plugin-vite";
 import path from "node:path";
 
@@ -19,9 +18,8 @@ const config: ForgeConfig = {
   },
   makers: [
     new MakerSquirrel({ setupIcon: `${iconPath}.ico` }),
-    new MakerZIP({}, ["darwin", "linux"]),
-    new MakerDeb({ options: { bin: "Escruta", icon: `${iconPath}.png` } }),
-    new MakerRpm({ options: { bin: "Escruta", icon: `${iconPath}.png` } }),
+    new MakerZIP({}, ["darwin"]),
+    new MakerAppImage(),
   ],
   plugins: [
     new VitePlugin({

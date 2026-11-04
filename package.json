@@ -47,22 +47,26 @@
   },
   "devDependencies": {
     "@electron-forge/cli": "^8.0.1",
-    "@electron-forge/maker-deb": "^8.0.1",
-    "@electron-forge/maker-rpm": "^8.0.1",
     "@electron-forge/maker-squirrel": "^8.0.1",
     "@electron-forge/maker-zip": "^8.0.1",
     "@electron-forge/plugin-vite": "^8.0.1",
     "@types/hast": "^3.0.5",
     "@types/js-cookie": "^3.0.6",
-    "@types/node": "^24",
+    "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.2.1",
     "electron": "^45.2.1",
+    "electron-forge-maker-appimage": "^26.18.0",
     "oxfmt": "^0.75.0",
     "oxlint": "^1.90.0",
     "typescript": "^7.0.2",
     "vite": "^8.3.5"
+  },
+  "build": {
+    "linux": {
+      "icon": "src/assets/AppIcon.png"
+    }
   },
   "productName": "Escruta"
 }
