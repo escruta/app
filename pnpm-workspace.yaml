@@ -5,18 +5,16 @@ allowBuilds:
   esbuild: true
 blockExoticSubdeps: false
 minimumReleaseAgeExclude:
-  - app-builder-lib@26.15.6
-  - dmg-builder@26.15.6
-  - electron-builder-squirrel-windows@26.15.6
-  - electron-forge-maker-appimage@26.15.6
+  - app-builder-lib@26.18.0
+  - dmg-builder@26.18.0
+  - electron-builder-squirrel-windows@26.18.0
+  - electron-forge-maker-appimage@26.18.0
 nodeLinker: hoisted
 onlyBuiltDependencies:
   - "@swc/core"
   - electron
   - electron-winstaller
   - esbuild
-patchedDependencies:
-  electron-installer-redhat: patches/electron-installer-redhat.patch
 peerDependencyRules:
   allowedVersions:
     katex: "0.19"
