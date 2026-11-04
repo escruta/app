@@ -555,8 +555,8 @@ export function SourcesCard({
                   }
                 }}
                 value={newSourceFile}
-                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.md"
-                placeholder="PDF, DOCX, XLSX, PPTX, TXT or MD (Max 50MB)"
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.md,.markdown,.csv,.html,.htm,.mp3,.wav"
+                placeholder="PDF, DOCX, XLSX, PPTX, TXT, MD, CSV, HTML or Audio (Max 50MB)"
                 className="h-full"
               />
             )}
