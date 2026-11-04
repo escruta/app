@@ -17,3 +17,6 @@ onlyBuiltDependencies:
   - esbuild
 patchedDependencies:
   electron-installer-redhat: patches/electron-installer-redhat.patch
+peerDependencyRules:
+  allowedVersions:
+    katex: "0.19"
