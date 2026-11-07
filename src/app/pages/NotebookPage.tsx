@@ -426,29 +426,72 @@ export default function NotebookPage() {
     setSelectedSourceIds([]);
   };
 
+  const effectiveSplitState = useMemo<SplitState | null>(() => {
+    if (!splitState) return null;
+    const keys = tabs.map(tabKey);
+    const shapeOk =
+      Array.isArray(splitState.rightGroup) &&
+      typeof splitState.leftKey === "string" &&
+      typeof splitState.rightKey === "string";
+
+    if (!shapeOk) {
+      const rightGroup = keys.filter((k) => k !== effectiveActiveKey);
+      return rightGroup.length > 0
+        ? { leftKey: effectiveActiveKey, rightKey: rightGroup[0], rightGroup }
+        : null;
+    }
+
+    const rightGroup = splitState.rightGroup.filter((k) => keys.includes(k));
+    const leftGroup = keys.filter((k) => !rightGroup.includes(k));
+    if (leftGroup.length === 0 || rightGroup.length === 0) {
+      return null;
+    }
+
+    const leftKey = leftGroup.includes(splitState.leftKey)
+      ? splitState.leftKey
+      : leftGroup.includes(effectiveActiveKey)
+        ? effectiveActiveKey
+        : leftGroup[0];
+    const rightKey = rightGroup.includes(splitState.rightKey)
+      ? splitState.rightKey
+      : rightGroup.includes(effectiveActiveKey)
+        ? effectiveActiveKey
+        : rightGroup[0];
+
+    if (
+      leftKey === splitState.leftKey &&
+      rightKey === splitState.rightKey &&
+      rightGroup.length === splitState.rightGroup.length
+    ) {
+      return splitState;
+    }
+
+    return { leftKey, rightKey, rightGroup };
+  }, [splitState, tabs, effectiveActiveKey]);
+
   const selectTab = useCallback(
     (key: string) => {
-      if (splitState) {
-        const inRight = splitState.rightGroup.includes(key);
+      if (effectiveSplitState) {
+        const inRight = effectiveSplitState.rightGroup.includes(key);
         const inLeft = !inRight && tabs.some((t) => tabKey(t) === key);
         if (inRight) {
-          setSplitState({ ...splitState, rightKey: key });
+          setSplitState({ ...effectiveSplitState, rightKey: key });
         } else if (inLeft) {
-          setSplitState({ ...splitState, leftKey: key });
-        } else if (splitState.rightGroup.includes(effectiveActiveKey)) {
+          setSplitState({ ...effectiveSplitState, leftKey: key });
+        } else if (effectiveSplitState.rightGroup.includes(effectiveActiveKey)) {
           setSplitState({
-            ...splitState,
-            rightGroup: [...splitState.rightGroup, key],
+            ...effectiveSplitState,
+            rightGroup: [...effectiveSplitState.rightGroup, key],
             rightKey: key,
           });
         } else {
-          setSplitState({ ...splitState, leftKey: key });
+          setSplitState({ ...effectiveSplitState, leftKey: key });
         }
       }
       setActiveTabKey(key);
       setPersistedActiveKey(key);
     },
-    [splitState, tabs, effectiveActiveKey, setPersistedActiveKey],
+    [effectiveSplitState, tabs, effectiveActiveKey, setSplitState, setPersistedActiveKey],
   );
 
   const openTab = useCallback(
@@ -500,42 +543,105 @@ export default function NotebookPage() {
 
   const closeTab = useCallback(
     (key: string) => {
+      const idx = tabs.findIndex((t) => tabKey(t) === key);
+      if (idx < 0) return;
+
       mountedTabKeysRef.current.delete(key);
-      setTabs((prev) => {
-        const idx = prev.findIndex((t) => tabKey(t) === key);
-        if (idx < 0) return prev;
-        const next = prev.filter((t) => tabKey(t) !== key);
-        if (next.length === 0) {
-          const fresh: TabDescriptor = {
-            kind: "chat",
-            refId: NEW_CHAT_ID,
-            seq: tabSeqRef.current++,
-            title: "New conversation",
-          };
-          const freshKey = tabKey(fresh);
-          setActiveTabKey(freshKey);
-          setPersistedActiveKey(freshKey);
-          return [fresh];
+      const next = tabs.filter((t) => tabKey(t) !== key);
+
+      if (next.length === 0) {
+        const fresh: TabDescriptor = {
+          kind: "chat",
+          refId: NEW_CHAT_ID,
+          seq: tabSeqRef.current++,
+          title: "New conversation",
+        };
+        const freshKey = tabKey(fresh);
+        setTabs([fresh]);
+        setSplitState(null);
+        setActiveTabKey(freshKey);
+        setPersistedActiveKey(freshKey);
+        return;
+      }
+
+      if (effectiveSplitState) {
+        const prevRightGroup = effectiveSplitState.rightGroup;
+        const prevLeftGroup = tabs.map(tabKey).filter((k) => !prevRightGroup.includes(k));
+        const closingRight = prevRightGroup.includes(key);
+        const nextRightGroup = prevRightGroup.filter((k) => k !== key);
+        const nextLeftGroup = prevLeftGroup.filter((k) => k !== key);
+
+        if (nextLeftGroup.length === 0 || nextRightGroup.length === 0) {
+          const survivingVisibleKey =
+            nextLeftGroup.length === 0 ? effectiveSplitState.rightKey : effectiveSplitState.leftKey;
+          const fallbackKey = next.some((t) => tabKey(t) === survivingVisibleKey)
+            ? survivingVisibleKey
+            : tabKey(next[Math.min(idx, next.length - 1)]);
+          setTabs(next);
+          setSplitState(null);
+          setActiveTabKey(fallbackKey);
+          setPersistedActiveKey(fallbackKey);
+          return;
         }
-        if (tabKey(prev[idx]) === activeTabKey) {
-          const neighbour = next[Math.min(idx, next.length - 1)];
-          const neighbourKey = tabKey(neighbour);
-          setActiveTabKey(neighbourKey);
-          setPersistedActiveKey(neighbourKey);
+
+        let nextLeftKey = effectiveSplitState.leftKey;
+        if (!closingRight && key === effectiveSplitState.leftKey) {
+          const leftIdx = prevLeftGroup.indexOf(key);
+          nextLeftKey = nextLeftGroup[Math.min(Math.max(0, leftIdx), nextLeftGroup.length - 1)];
         }
-        return next;
-      });
-      if (persistedActiveKey === key) setPersistedActiveKey(null);
+
+        let nextRightKey = effectiveSplitState.rightKey;
+        if (closingRight && key === effectiveSplitState.rightKey) {
+          const rightIdx = prevRightGroup.indexOf(key);
+          nextRightKey = nextRightGroup[Math.min(Math.max(0, rightIdx), nextRightGroup.length - 1)];
+        }
+
+        const nextActiveKey =
+          key === effectiveActiveKey
+            ? closingRight
+              ? nextRightKey
+              : nextLeftKey
+            : effectiveActiveKey;
+
+        setTabs(next);
+        setSplitState({
+          leftKey: nextLeftKey,
+          rightKey: nextRightKey,
+          rightGroup: nextRightGroup,
+        });
+        if (nextActiveKey !== activeTabKey) {
+          setActiveTabKey(nextActiveKey);
+          setPersistedActiveKey(nextActiveKey);
+        }
+        return;
+      }
+
+      setTabs(next);
+      if (key === effectiveActiveKey) {
+        const neighbour = next[Math.min(idx, next.length - 1)];
+        const neighbourKey = tabKey(neighbour);
+        setActiveTabKey(neighbourKey);
+        setPersistedActiveKey(neighbourKey);
+      }
     },
-    [activeTabKey, persistedActiveKey, setPersistedActiveKey],
+    [
+      tabs,
+      effectiveSplitState,
+      effectiveActiveKey,
+      activeTabKey,
+      setSplitState,
+      setPersistedActiveKey,
+    ],
   );
 
   const cycleTab = useCallback(
     (direction: 1 | -1) => {
       if (tabs.length <= 1) return;
       let list: string[];
-      if (splitState) {
-        const rightGroup = splitState.rightGroup.filter((k) => tabs.some((t) => tabKey(t) === k));
+      if (effectiveSplitState) {
+        const rightGroup = effectiveSplitState.rightGroup.filter((k) =>
+          tabs.some((t) => tabKey(t) === k),
+        );
         const leftGroup = tabs.map(tabKey).filter((k) => !rightGroup.includes(k));
         if (rightGroup.includes(effectiveActiveKey)) {
           list = rightGroup.length > 1 ? rightGroup : tabs.map(tabKey);
@@ -553,7 +659,7 @@ export default function NotebookPage() {
       const next = (current + direction + list.length) % list.length;
       selectTab(list[next]);
     },
-    [tabs, effectiveActiveKey, splitState, selectTab],
+    [tabs, effectiveActiveKey, effectiveSplitState, selectTab],
   );
 
   const closeTabRef = useRef(closeTab);
@@ -591,7 +697,7 @@ export default function NotebookPage() {
   const placeTab = useCallback(
     (id: string, side: "left" | "right") => {
       const keys = tabs.map(tabKey);
-      if (!splitState) {
+      if (!effectiveSplitState) {
         const others = keys.filter((k) => k !== id);
         const otherKey = others.length > 0 ? others[0] : createChatTabSilent();
         setSplitState(
@@ -600,30 +706,31 @@ export default function NotebookPage() {
             : { leftKey: otherKey, rightKey: id, rightGroup: [id] },
         );
       } else if (side === "right") {
-        if (splitState.rightGroup.includes(id)) {
-          setSplitState({ ...splitState, rightKey: id });
+        if (effectiveSplitState.rightGroup.includes(id)) {
+          setSplitState({ ...effectiveSplitState, rightKey: id });
         } else {
-          const rightGroup = [...splitState.rightGroup, id];
+          const rightGroup = [...effectiveSplitState.rightGroup, id];
           const leftGroup = keys.filter((k) => !rightGroup.includes(k));
           if (leftGroup.length === 0) {
             setSplitState(null);
           } else {
             const leftKey =
-              splitState.leftKey === id || !leftGroup.includes(splitState.leftKey)
+              effectiveSplitState.leftKey === id || !leftGroup.includes(effectiveSplitState.leftKey)
                 ? leftGroup[0]
-                : splitState.leftKey;
+                : effectiveSplitState.leftKey;
             setSplitState({ leftKey, rightKey: id, rightGroup });
           }
         }
       } else {
-        if (!splitState.rightGroup.includes(id)) {
-          setSplitState({ ...splitState, leftKey: id });
+        if (!effectiveSplitState.rightGroup.includes(id)) {
+          setSplitState({ ...effectiveSplitState, leftKey: id });
         } else {
-          const rightGroup = splitState.rightGroup.filter((k) => k !== id);
+          const rightGroup = effectiveSplitState.rightGroup.filter((k) => k !== id);
           if (rightGroup.length === 0) {
             setSplitState(null);
           } else {
-            const rightKey = splitState.rightKey === id ? rightGroup[0] : splitState.rightKey;
+            const rightKey =
+              effectiveSplitState.rightKey === id ? rightGroup[0] : effectiveSplitState.rightKey;
             setSplitState({ leftKey: id, rightKey, rightGroup });
           }
         }
@@ -631,7 +738,7 @@ export default function NotebookPage() {
       setActiveTabKey(id);
       setPersistedActiveKey(id);
     },
-    [tabs, splitState, createChatTabSilent, setPersistedActiveKey],
+    [tabs, effectiveSplitState, createChatTabSilent, setSplitState, setPersistedActiveKey],
   );
   placeTabRef.current = placeTab;
 
@@ -671,44 +778,12 @@ export default function NotebookPage() {
     if (activeTab?.kind === "chat" && activeTab.refId !== NEW_CHAT_ID) return activeTab.refId;
     return null;
   }, [activeTab]);
+
   useEffect(() => {
-    if (!splitState) return;
-    const keys = tabs.map(tabKey);
-    const effActive = keys.includes(activeTabKey) ? activeTabKey : keys[0];
-    const shapeOk =
-      Array.isArray(splitState.rightGroup) &&
-      typeof splitState.leftKey === "string" &&
-      typeof splitState.rightKey === "string";
-
-    if (!shapeOk) {
-      const rightGroup = keys.filter((k) => k !== effActive);
-      setSplitState(
-        rightGroup.length > 0 ? { leftKey: effActive, rightKey: rightGroup[0], rightGroup } : null,
-      );
-      return;
+    if (effectiveSplitState !== splitState) {
+      setSplitState(effectiveSplitState);
     }
-
-    const rightGroup = splitState.rightGroup.filter((k) => keys.includes(k));
-    const leftGroup = keys.filter((k) => !rightGroup.includes(k));
-    if (leftGroup.length === 0 || rightGroup.length === 0) {
-      setSplitState(null);
-      return;
-    }
-    let { leftKey, rightKey } = splitState;
-    if (!leftGroup.includes(leftKey)) {
-      leftKey = leftGroup.includes(effActive) ? effActive : leftGroup[0];
-    }
-    if (!rightGroup.includes(rightKey)) {
-      rightKey = rightGroup.includes(effActive) ? effActive : rightGroup[0];
-    }
-    if (
-      leftKey !== splitState.leftKey ||
-      rightKey !== splitState.rightKey ||
-      rightGroup.length !== splitState.rightGroup.length
-    ) {
-      setSplitState({ leftKey, rightKey, rightGroup });
-    }
-  }, [tabs, activeTabKey, splitState, setSplitState]);
+  }, [effectiveSplitState, splitState, setSplitState]);
   const handleConversationCreated = useCallback((tabKeyStr: string, conversationId: string) => {
     setTabs((prev) =>
       prev.map((t) => {
@@ -988,8 +1063,8 @@ export default function NotebookPage() {
   );
 
   const handlePaneMouseDown = (side: "left" | "right") => (e: React.MouseEvent) => {
-    if (e.button !== 0 || !splitState) return;
-    const key = side === "left" ? splitState.leftKey : splitState.rightKey;
+    if (e.button !== 0 || !effectiveSplitState) return;
+    const key = side === "left" ? effectiveSplitState.leftKey : effectiveSplitState.rightKey;
     if (key && key !== activeTabKey) {
       setActiveTabKey(key);
       setPersistedActiveKey(key);
@@ -1270,8 +1345,8 @@ export default function NotebookPage() {
   });
 
   const itemsByKey = new Map(chromeTabsItems.map((item) => [item.id, item]));
-  const rightGroupKeys = splitState ? splitState.rightGroup : [];
-  const leftGroupKeys = splitState
+  const rightGroupKeys = effectiveSplitState ? effectiveSplitState.rightGroup : [];
+  const leftGroupKeys = effectiveSplitState
     ? tabs.map(tabKey).filter((k) => !rightGroupKeys.includes(k))
     : [];
   const leftStripItems = leftGroupKeys
@@ -1280,13 +1355,14 @@ export default function NotebookPage() {
   const rightStripItems = rightGroupKeys
     .map((k) => itemsByKey.get(k))
     .filter((item): item is (typeof chromeTabsItems)[number] => item !== undefined);
-  const splitLeftTab = splitState
-    ? (tabs.find((t) => tabKey(t) === splitState.leftKey) ?? null)
+  const splitLeftTab = effectiveSplitState
+    ? (tabs.find((t) => tabKey(t) === effectiveSplitState.leftKey) ?? null)
     : null;
-  const splitRightTab = splitState
-    ? (tabs.find((t) => tabKey(t) === splitState.rightKey) ?? null)
+  const splitRightTab = effectiveSplitState
+    ? (tabs.find((t) => tabKey(t) === effectiveSplitState.rightKey) ?? null)
     : null;
-  const splitActive = splitState !== null && splitLeftTab !== null && splitRightTab !== null;
+  const splitActive =
+    effectiveSplitState !== null && splitLeftTab !== null && splitRightTab !== null;
 
   const renderTabContextMenu = (id: string) => (
     <>
@@ -1317,48 +1393,48 @@ export default function NotebookPage() {
 
   const centerColumn = (
     <div ref={centerRef} className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-      {splitActive && splitState ? (
-        <div className="flex h-11 shrink-0 overflow-hidden bg-white dark:bg-gray-950">
-          <div className="shrink-0 overflow-hidden" style={{ width: `${effectiveSplitRatio}%` }}>
-            <ChromeTabs
-              tabs={leftStripItems}
-              activeTabId={splitState.leftKey}
-              onSelect={selectTab}
-              onClose={closeTab}
-              onTabPointerDown={handleTabPointerDown}
-              renderTabContextMenu={renderTabContextMenu}
-              className="h-11"
-              activeIndicatorClassName={tabActiveIndicatorFor(
-                !rightGroupKeys.includes(effectiveActiveKey),
-              )}
-            />
-          </div>
-          <div className="w-px shrink-0 bg-gray-200 dark:bg-gray-800" />
-          <div className="min-w-0 flex-1 overflow-hidden">
-            <ChromeTabs
-              tabs={rightStripItems}
-              activeTabId={splitState.rightKey}
-              onSelect={selectTab}
-              onClose={closeTab}
-              onTabPointerDown={handleTabPointerDown}
-              renderTabContextMenu={renderTabContextMenu}
-              className="h-11"
-              activeIndicatorClassName={tabActiveIndicatorFor(
-                rightGroupKeys.includes(effectiveActiveKey),
-              )}
-            />
-          </div>
+      <div className="flex h-11 shrink-0 overflow-hidden bg-white dark:bg-gray-950">
+        <div
+          className="min-w-0 shrink-0 overflow-hidden"
+          style={{ width: splitActive ? `${effectiveSplitRatio}%` : "100%" }}
+        >
+          <ChromeTabs
+            tabs={splitActive ? leftStripItems : chromeTabsItems}
+            activeTabId={
+              splitActive && effectiveSplitState ? effectiveSplitState.leftKey : effectiveActiveKey
+            }
+            onSelect={selectTab}
+            onClose={closeTab}
+            onTabPointerDown={handleTabPointerDown}
+            renderTabContextMenu={renderTabContextMenu}
+            className="h-11"
+            activeIndicatorClassName={
+              splitActive
+                ? tabActiveIndicatorFor(!rightGroupKeys.includes(effectiveActiveKey))
+                : undefined
+            }
+          />
         </div>
-      ) : (
-        <ChromeTabs
-          tabs={chromeTabsItems}
-          activeTabId={effectiveActiveKey}
-          onSelect={selectTab}
-          onClose={closeTab}
-          onTabPointerDown={handleTabPointerDown}
-          renderTabContextMenu={renderTabContextMenu}
-        />
-      )}
+        {splitActive && effectiveSplitState && (
+          <>
+            <div className="w-px shrink-0 bg-gray-200 dark:bg-gray-800" />
+            <div className="min-w-0 flex-1 overflow-hidden">
+              <ChromeTabs
+                tabs={rightStripItems}
+                activeTabId={effectiveSplitState.rightKey}
+                onSelect={selectTab}
+                onClose={closeTab}
+                onTabPointerDown={handleTabPointerDown}
+                renderTabContextMenu={renderTabContextMenu}
+                className="h-11"
+                activeIndicatorClassName={tabActiveIndicatorFor(
+                  rightGroupKeys.includes(effectiveActiveKey),
+                )}
+              />
+            </div>
+          </>
+        )}
+      </div>
 
       <div
         ref={contentRef}
@@ -1368,10 +1444,10 @@ export default function NotebookPage() {
           const k = tabKey(t);
           const isActive = k === effectiveActiveKey;
           const paneRole: "full" | "left" | "right" | "hidden" =
-            splitActive && splitState
-              ? k === splitState.leftKey
+            splitActive && effectiveSplitState
+              ? k === effectiveSplitState.leftKey
                 ? "left"
-                : k === splitState.rightKey
+                : k === effectiveSplitState.rightKey
                   ? "right"
                   : "hidden"
               : isActive
