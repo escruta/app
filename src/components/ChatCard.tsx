@@ -117,6 +117,7 @@ export function ChatCard({
   autoFocusRef.current = autoFocus;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const pendingMessageRef = useRef<string | null>(null);
+  const chatInputRef = useRef<HTMLTextAreaElement | null>(null);
   const inputObserverRef = useRef<ResizeObserver | null>(null);
   const [inputHeight, setInputHeight] = useState(0);
   const [extraBottomSpacer, setExtraBottomSpacer] = useState(0);
@@ -160,13 +161,30 @@ export function ChatCard({
     extraBottomSpacerRef.current = extraBottomSpacer;
   }, [extraBottomSpacer]);
 
+  const focusInput = useCallback(() => {
+    const textarea = chatInputRef.current;
+    if (!textarea || textarea.disabled) return;
+
+    textarea.focus({ preventScroll: true });
+    const end = textarea.value.length;
+    textarea.setSelectionRange(end, end);
+  }, []);
+
+  const focusInputAfterRender = useCallback(() => {
+    requestAnimationFrame(focusInput);
+  }, [focusInput]);
+
   const inputContainerRef = useCallback((el: HTMLDivElement | null) => {
     if (inputObserverRef.current) {
       inputObserverRef.current.disconnect();
       inputObserverRef.current = null;
     }
-    if (!el) return;
+    if (!el) {
+      chatInputRef.current = null;
+      return;
+    }
 
+    chatInputRef.current = el.querySelector<HTMLTextAreaElement>("#chat-input");
     setInputHeight(el.offsetHeight);
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
@@ -253,9 +271,10 @@ export function ChatCard({
   useEffect(() => {
     if (externalQuestion) {
       setInput(externalQuestion);
+      focusInputAfterRender();
       onExternalQuestionHandled?.();
     }
-  }, [externalQuestion, onExternalQuestionHandled]);
+  }, [externalQuestion, onExternalQuestionHandled, focusInputAfterRender]);
 
   const handleSourceClick = (sourceId: string) => {
     if (!/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(sourceId)) {
@@ -370,6 +389,32 @@ export function ChatCard({
       markConversationSeen(conversationId);
     }
   }, [autoFocus, conversationId, isBusy, isLoadingConversation, markConversationSeen]);
+
+  useEffect(() => {
+    if (!autoFocus || isBusy || isLoadingConversation) return;
+
+    const frame = requestAnimationFrame(focusInput);
+    return () => cancelAnimationFrame(frame);
+  }, [autoFocus, isBusy, isLoadingConversation, conversationId, focusInput]);
+
+  const handleCardClick = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      if (event.button !== 0) return;
+
+      const target = event.target as HTMLElement;
+      if (
+        target.closest(
+          "button, a, input, textarea, select, [contenteditable='true'], [role='button'], [role='textbox']",
+        )
+      ) {
+        return;
+      }
+      if (!window.getSelection()?.isCollapsed) return;
+
+      focusInput();
+    },
+    [focusInput],
+  );
 
   const handleStreamChat = useCallback(
     async (overrideConversationId: string | null = conversationId) => {
@@ -502,10 +547,13 @@ export function ChatCard({
           readySourcesCount={readySourcesCount}
           exampleQuestions={exampleQuestions}
           refetchExampleQuestions={refetchExampleQuestions}
-          onQuestionSelect={(q) => setInput(q)}
+          onQuestionSelect={(q) => {
+            setInput(q);
+            focusInputAfterRender();
+          }}
         />
       )}
-      <div className="flex items-center gap-2 rounded-xs border border-gray-300 bg-white py-1.5 pr-1.5 pl-4 shadow-sm transition-all focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400">
+      <div className="flex items-center gap-2 rounded-xs border border-gray-300 bg-white py-1.5 pr-1.5 pl-4 shadow-sm transition-[border-color,box-shadow,background-color,color] focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400">
         <TextField
           id="chat-input"
           value={input}
@@ -518,7 +566,7 @@ export function ChatCard({
                 ? `Ask a question (${selectedSourceIds.length} source${selectedSourceIds.length !== 1 ? "s" : ""} selected)...`
                 : "Select sources to start chatting..."
           }
-          className="min-h-0! min-w-0 flex-1 rounded-xs border-0 bg-transparent p-0 leading-6 shadow-none hover:border-transparent hover:ring-0 hover:ring-offset-0 focus:border-transparent focus:ring-0 focus:ring-offset-0 dark:hover:ring-offset-0 dark:focus:ring-0 dark:focus:ring-offset-0"
+          className="min-h-0! min-w-0 flex-1 rounded-xs border-0 bg-transparent p-0 leading-6 shadow-none transition-none hover:border-transparent hover:ring-0 hover:ring-offset-0 focus:border-transparent focus:ring-0 focus:ring-offset-0 dark:hover:ring-offset-0 dark:focus:ring-0 dark:focus:ring-offset-0"
           disabled={isBusy || selectedSourceIds.length === 0}
           autoFocus={autoFocus}
           minRows={1}
@@ -540,7 +588,7 @@ export function ChatCard({
   );
 
   return (
-    <div className="relative flex h-full flex-col overflow-hidden">
+    <div className="relative flex h-full flex-col overflow-hidden" onClick={handleCardClick}>
       <div className="flex h-15 items-center gap-2 px-4 pt-4 pb-3">
         <h2 className="flex min-w-0 flex-1 items-baseline gap-1.5">
           <span className="shrink-0 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
@@ -550,7 +598,14 @@ export function ChatCard({
             {conversationTitle || "New conversation"}
           </span>
         </h2>
-        <ChatModeToggle value={mode} onChange={setMode} disabled={isBusy} />
+        <ChatModeToggle
+          value={mode}
+          onChange={(newMode) => {
+            setMode(newMode);
+            focusInputAfterRender();
+          }}
+          disabled={isBusy}
+        />
       </div>
       <Divider className="my-0" />
       <div className="relative min-h-0 flex-1">
