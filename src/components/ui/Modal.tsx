@@ -155,10 +155,14 @@ export function Modal({
 
   return createPortal(
     <AnimatePresence>
-      <div
+      <motion.div
         key="modal-backdrop"
         className="fixed inset-0 bg-gray-950/30 backdrop-blur-[1px] dark:bg-gray-950/60"
         style={{ zIndex: zIndexBackdrop }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.15, ease: "easeOut" }}
         onClick={closeOnOutsideClick ? handleClose : undefined}
       />
 
