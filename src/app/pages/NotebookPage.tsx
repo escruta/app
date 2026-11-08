@@ -132,7 +132,6 @@ interface TabPaneContentProps {
     id: string,
     state: { status: ConversationStatus; hasUnseenReply: boolean },
   ) => void;
-  onNewChat: () => void;
   onCloseTab: (tabKeyStr: string) => void;
   onSourceDeleted: (tabKeyStr: string) => void;
   onNoteUpdated: (tabKeyStr: string, updatedNote: Note) => void;
@@ -157,7 +156,6 @@ const TabPaneContent = memo(
     onConversationCompleted,
     onConversationSeen,
     onConversationStateChange,
-    onNewChat,
     onCloseTab,
     onSourceDeleted,
     onNoteUpdated,
@@ -204,7 +202,6 @@ const TabPaneContent = memo(
             onConversationCompleted={onConversationCompleted}
             onConversationSeen={onConversationSeen}
             onConversationStateChange={onConversationStateChange}
-            onNewChat={onNewChat}
           />
         );
       case "source":
@@ -1505,7 +1502,6 @@ export default function NotebookPage() {
                 onConversationCompleted={handleConversationCompleted}
                 onConversationSeen={handleConversationSeen}
                 onConversationStateChange={handleConversationStateChange}
-                onNewChat={openNewChatTab}
                 onCloseTab={closeTab}
                 onSourceDeleted={handleSourceDeleted}
                 onNoteUpdated={handleNoteUpdated}

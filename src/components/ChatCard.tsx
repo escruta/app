@@ -1,5 +1,5 @@
 import { useFetch, useCookie, useChatStream, useRealtimeEvent, useShortcut } from "@/hooks";
-import { FileIcon, SendIcon, ChatNewIcon } from "@/components/icons";
+import { FileIcon, SendIcon } from "@/components/icons";
 import { Divider, TextField, IconButton, Tooltip, Spinner } from "@/components/ui";
 import type { ConversationMessages, ConversationStatus, Source } from "@/interfaces";
 import type { ChatMode } from "@/interfaces";
@@ -31,7 +31,6 @@ interface ChatCardProps {
     conversationId: string,
     state: { status: ConversationStatus; hasUnseenReply: boolean },
   ) => void;
-  onNewChat?: () => void;
 }
 
 export function ChatCard({
@@ -49,7 +48,6 @@ export function ChatCard({
   onConversationCompleted,
   onConversationSeen,
   onConversationStateChange,
-  onNewChat,
 }: ChatCardProps) {
   const sourcesCount = sources.length;
   const readySourcesCount = sources.filter((s) => s.status === "READY").length;
@@ -490,18 +488,6 @@ export function ChatCard({
     settleSpacer();
   }, [isBusy, settleSpacer]);
 
-  const handleNewConversation = useCallback(() => {
-    setMessages([]);
-    setInput("");
-    setConversationId(null);
-    setConversationTitle(null);
-    setMode("NORMAL");
-    setIsBackendGenerating(false);
-    setExtraBottomSpacer(0);
-    setPendingAlign(false);
-    scrollTargetRef.current = null;
-  }, []);
-
   const inputField = (
     <div
       ref={inputContainerRef}
@@ -519,7 +505,7 @@ export function ChatCard({
           onQuestionSelect={(q) => setInput(q)}
         />
       )}
-      <div className="relative flex flex-col rounded-xs border border-gray-300 bg-white shadow-sm transition-all focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400">
+      <div className="flex items-center gap-2 rounded-xs border border-gray-300 bg-white py-1.5 pr-1.5 pl-4 shadow-sm transition-all focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400">
         <TextField
           id="chat-input"
           value={input}
@@ -532,35 +518,31 @@ export function ChatCard({
                 ? `Ask a question (${selectedSourceIds.length} source${selectedSourceIds.length !== 1 ? "s" : ""} selected)...`
                 : "Select sources to start chatting..."
           }
-          className="w-full rounded-t-xs border-0 bg-transparent pt-3 pr-4 pb-1 pl-4 shadow-none hover:border-transparent hover:ring-0 hover:ring-offset-0 focus:border-transparent focus:ring-0 focus:ring-offset-0 dark:hover:ring-offset-0 dark:focus:ring-0 dark:focus:ring-offset-0"
+          className="min-h-0! min-w-0 flex-1 rounded-xs border-0 bg-transparent p-0 leading-6 shadow-none hover:border-transparent hover:ring-0 hover:ring-offset-0 focus:border-transparent focus:ring-0 focus:ring-offset-0 dark:hover:ring-offset-0 dark:focus:ring-0 dark:focus:ring-offset-0"
           disabled={isBusy || selectedSourceIds.length === 0}
           autoFocus={autoFocus}
-          minRows={2}
+          minRows={1}
           maxRows={8}
           multiline
         />
-        <div className="h-px bg-gray-200/80 dark:bg-gray-700/60" />
-        <div className="flex items-center justify-between gap-2 px-2.5 py-1.5">
-          <ChatModeToggle value={mode} onChange={setMode} disabled={isBusy} />
-          <Tooltip text="Send your question" position="top">
-            <IconButton
-              icon={<SendIcon />}
-              onClick={handleSendMessage}
-              disabled={isBusy || !input.trim() || selectedSourceIds.length === 0}
-              aria-label="Send your question"
-              size="sm"
-              variant="primary"
-            />
-          </Tooltip>
-        </div>
+        <Tooltip text="Send your question" position="top">
+          <IconButton
+            icon={<SendIcon />}
+            onClick={handleSendMessage}
+            disabled={isBusy || !input.trim() || selectedSourceIds.length === 0}
+            ariaLabel="Send your question"
+            size="sm"
+            variant="primary"
+          />
+        </Tooltip>
       </div>
     </div>
   );
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden">
-      <div className="flex h-15 items-center px-4 pt-4 pb-3">
-        <h2 className="flex min-w-0 items-baseline justify-center gap-1.5">
+      <div className="flex h-15 items-center gap-2 px-4 pt-4 pb-3">
+        <h2 className="flex min-w-0 flex-1 items-baseline gap-1.5">
           <span className="shrink-0 text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
             Chat /{" "}
           </span>
@@ -568,22 +550,7 @@ export function ChatCard({
             {conversationTitle || "New conversation"}
           </span>
         </h2>
-        {sourcesCount > 0 && messages.length > 0 ? (
-          <div className="flex flex-1 items-center justify-end gap-1">
-            <Tooltip text="New conversation" position="left">
-              <IconButton
-                icon={<ChatNewIcon />}
-                ariaLabel="New conversation"
-                onClick={() => (onNewChat ? onNewChat() : handleNewConversation())}
-                disabled={(messages.length === 0 && !onNewChat) || isBusy}
-                variant="ghost"
-                size="sm"
-              />
-            </Tooltip>
-          </div>
-        ) : (
-          <div className="flex flex-1" />
-        )}
+        <ChatModeToggle value={mode} onChange={setMode} disabled={isBusy} />
       </div>
       <Divider className="my-0" />
       <div className="relative min-h-0 flex-1">
