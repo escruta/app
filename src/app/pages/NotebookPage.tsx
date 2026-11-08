@@ -1057,6 +1057,11 @@ export default function NotebookPage() {
         stopPropagation: true,
       },
       {
+        id: "chat-new",
+        handler: () => openNewChatTab(),
+        stopPropagation: true,
+      },
+      {
         id: "next-tab",
         handler: () => cycleTabRef.current(1),
         stopPropagation: true,
