@@ -245,6 +245,13 @@ const SHORTCUT_DEFINITIONS = [
   },
 
   {
+    id: "chat-new",
+    label: "New conversation",
+    keys: ["Mod", "N"],
+    description: "Opens a new conversation in a new tab.",
+    category: "chat",
+  },
+  {
     id: "chat-send",
     label: "Send message",
     keys: ["Enter"],
