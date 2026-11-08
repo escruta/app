@@ -1398,7 +1398,7 @@ export default function NotebookPage() {
 
   const centerColumn = (
     <div ref={centerRef} className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-      <div className="flex h-11 shrink-0 overflow-hidden bg-white dark:bg-gray-950">
+      <div className="flex h-12 shrink-0 overflow-hidden bg-white dark:bg-gray-950">
         <div
           className="min-w-0 shrink-0 overflow-hidden"
           style={{ width: splitActive ? `${effectiveSplitRatio}%` : "100%" }}
@@ -1412,7 +1412,7 @@ export default function NotebookPage() {
             onClose={closeTab}
             onTabPointerDown={handleTabPointerDown}
             renderTabContextMenu={renderTabContextMenu}
-            className="h-11"
+            className="h-12"
             activeIndicatorClassName={
               splitActive
                 ? tabActiveIndicatorFor(!rightGroupKeys.includes(effectiveActiveKey))
@@ -1431,7 +1431,7 @@ export default function NotebookPage() {
                 onClose={closeTab}
                 onTabPointerDown={handleTabPointerDown}
                 renderTabContextMenu={renderTabContextMenu}
-                className="h-11"
+                className="h-12"
                 activeIndicatorClassName={tabActiveIndicatorFor(
                   rightGroupKeys.includes(effectiveActiveKey),
                 )}

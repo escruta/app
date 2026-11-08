@@ -85,9 +85,9 @@ export const SideNav = forwardRef<SideNavRef, SideNavProps>(
 
     return (
       <div className={cn("flex h-full w-full min-w-0 flex-row overflow-hidden", className)}>
-        <div className="flex w-18 max-w-18 min-w-18 shrink-0 flex-col items-center gap-1 overflow-x-hidden overflow-y-auto border-r border-gray-200 py-2 dark:border-gray-800">
+        <div className="flex w-18 max-w-18 min-w-18 shrink-0 flex-col items-center overflow-x-hidden overflow-y-auto border-r border-gray-200 dark:border-gray-800">
           {onNewChat && (
-            <>
+            <div className="flex h-12 w-full shrink-0 items-center justify-center border-b border-gray-200 dark:border-gray-800">
               <Tooltip text="New conversation" position="right">
                 <IconButton
                   icon={<ChatNewIcon className="size-4" />}
@@ -97,10 +97,12 @@ export const SideNav = forwardRef<SideNavRef, SideNavProps>(
                   ariaLabel="New conversation"
                 />
               </Tooltip>
-              <div className="my-1 h-px w-full shrink-0 bg-gray-200 dark:bg-gray-800" />
-            </>
+            </div>
           )}
-          <nav aria-label="Panel sections" className="flex w-full flex-col items-center gap-1 px-1">
+          <nav
+            aria-label="Panel sections"
+            className="flex w-full flex-col items-center gap-1 px-1 py-2"
+          >
             {items.map((tab) => {
               const active = activeTab.id === tab.id;
               return (
@@ -133,7 +135,7 @@ export const SideNav = forwardRef<SideNavRef, SideNavProps>(
             })}
           </nav>
           {onToggleCollapse && (
-            <div className="mt-auto flex flex-col items-center gap-1 pt-2">
+            <div className="mt-auto flex flex-col items-center gap-1 p-2">
               <Tooltip text={collapsed ? "Expand panel" : "Collapse panel"} position="right">
                 <IconButton
                   icon={
