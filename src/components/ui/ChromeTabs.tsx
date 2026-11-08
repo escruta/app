@@ -48,7 +48,7 @@ export function ChromeTabs({
   return (
     <div
       className={cn(
-        "relative flex h-11 shrink-0 items-stretch justify-between bg-gray-50/60 dark:bg-gray-900/40",
+        "relative flex h-12 shrink-0 items-stretch justify-between bg-gray-50/60 dark:bg-gray-900/40",
         className,
       )}
     >
