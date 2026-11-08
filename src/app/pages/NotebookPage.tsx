@@ -28,11 +28,11 @@ import {
   StudyIcon,
   CardIcon,
   QuestionnaireIcon,
-  GridIcon,
   ChatIcon,
-  StarsIcon,
+  BookOpenIcon,
   SplitIcon,
-  StackIcon,
+  FileTextIcon,
+  ToolsIcon,
   CloseIcon,
 } from "@/components/icons";
 import { Spinner, ChromeTabs, SideNav, ContextMenuItem } from "@/components/ui";
@@ -40,10 +40,10 @@ import { ToolResultTab } from "@/components/tools";
 import { NotebookErrorState } from "./notebook/NotebookStates";
 import { RenameNotebookModal } from "./notebook/RenameNotebookModal";
 
-const COLLAPSED_SIDE_PANEL_PX = 56;
-const MIN_SIDE_PANEL_PX = 360;
-const MAX_SIDE_PANEL_PX = 448;
-const DEFAULT_SIDE_PANEL_PX = 360;
+const COLLAPSED_SIDE_PANEL_PX = 72;
+const MIN_SIDE_PANEL_PX = 376;
+const MAX_SIDE_PANEL_PX = 464;
+const DEFAULT_SIDE_PANEL_PX = 376;
 const MIN_CENTER_PANEL_PX = 400;
 const MIN_SPLIT_PERCENT = 30;
 const MAX_SPLIT_PERCENT = 70;
@@ -1590,7 +1590,7 @@ export default function NotebookPage() {
                   {
                     id: "overview",
                     label: "Overview",
-                    icon: <StarsIcon />,
+                    icon: <BookOpenIcon />,
                     content: (
                       <OverviewPanel
                         notebookId={notebookId}
@@ -1615,7 +1615,7 @@ export default function NotebookPage() {
                   },
                   {
                     id: "conversations",
-                    label: "Conversations",
+                    label: "History",
                     icon: <ChatIcon />,
                     content: (
                       <ConversationHistory
@@ -1633,7 +1633,7 @@ export default function NotebookPage() {
                   {
                     id: "sources",
                     label: "Sources",
-                    icon: <StackIcon />,
+                    icon: <FileTextIcon />,
                     content: sourcesListContent(),
                   },
                   {
@@ -1645,7 +1645,7 @@ export default function NotebookPage() {
                   {
                     id: "tools",
                     label: "Tools",
-                    icon: <GridIcon />,
+                    icon: <ToolsIcon />,
                     content: toolsListContent,
                   },
                 ]}
