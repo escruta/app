@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, useCallback, type ReactNode } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { Markdown } from "../Markdown";
 import { useFetch, useRealtimeEvent } from "@/hooks";
 import {
@@ -211,69 +211,66 @@ export function OverviewPanel({
       }
       contentClassName="space-y-6 px-4 py-4"
     >
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div
-          key={
-            isLoading
-              ? "loading"
-              : summaryGenerateError
-                ? "error"
-                : notebookSummary?.trim()
-                  ? "summary"
-                  : "empty"
-          }
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={panelSwitchTransition}
-          className="max-w-none"
-        >
-          {isLoading ? (
-            <Skeleton lines={6} className="w-full" />
-          ) : summaryGenerateError ? (
-            <div className="flex flex-col gap-3">
-              <Alert variant="danger" message={getHttpErrorMessage(summaryGenerateError?.status)} />
+      <motion.div
+        key={
+          isLoading
+            ? "loading"
+            : summaryGenerateError
+              ? "error"
+              : notebookSummary?.trim()
+                ? "summary"
+                : "empty"
+        }
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={panelSwitchTransition}
+        className="max-w-none"
+      >
+        {isLoading ? (
+          <Skeleton lines={6} className="w-full" />
+        ) : summaryGenerateError ? (
+          <div className="flex flex-col gap-3">
+            <Alert variant="danger" message={getHttpErrorMessage(summaryGenerateError?.status)} />
+            <Button
+              onClick={() => regenerateSummary()}
+              disabled={isSummaryRegenerating}
+              variant="ghost"
+              size="sm"
+              icon={<RestartIcon className="h-4 w-4" />}
+            >
+              Regenerate summary
+            </Button>
+          </div>
+        ) : notebookSummary?.trim() ? (
+          <div className="flex flex-col gap-1.5">
+            <SectionLabel>Summary</SectionLabel>
+            <div className="text-sm leading-relaxed select-text">
+              <Markdown text={notebookSummary} />
+            </div>
+          </div>
+        ) : (
+          <div className="flex size-full flex-col items-center justify-start pt-24 text-center">
+            <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
+              <div className="size-10 text-blue-500 dark:text-blue-400">
+                <StarsIcon />
+              </div>
+            </div>
+            <h3 className="text-foreground mb-2 text-lg font-semibold">No overview yet</h3>
+            <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+              Summarize all the information gathered from your sources into one clear overview.
+            </p>
+            {readySourcesCount > 0 && (
               <Button
+                className="mt-5"
                 onClick={() => regenerateSummary()}
                 disabled={isSummaryRegenerating}
-                variant="ghost"
-                size="sm"
-                icon={<RestartIcon className="h-4 w-4" />}
               >
-                Regenerate summary
+                Generate summary
               </Button>
-            </div>
-          ) : notebookSummary?.trim() ? (
-            <div className="flex flex-col gap-1.5">
-              <SectionLabel>Summary</SectionLabel>
-              <div className="text-sm leading-relaxed select-text">
-                <Markdown text={notebookSummary} />
-              </div>
-            </div>
-          ) : (
-            <div className="flex size-full flex-col items-center justify-start pt-24 text-center">
-              <div className="mb-5 flex size-20 items-center justify-center rounded-xs border border-blue-300 bg-blue-50 shadow-sm dark:border-blue-700 dark:bg-blue-950/30">
-                <div className="size-10 text-blue-500 dark:text-blue-400">
-                  <StarsIcon />
-                </div>
-              </div>
-              <h3 className="text-foreground mb-2 text-lg font-semibold">No overview yet</h3>
-              <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                Summarize all the information gathered from your sources into one clear overview.
-              </p>
-              {readySourcesCount > 0 && (
-                <Button
-                  className="mt-5"
-                  onClick={() => regenerateSummary()}
-                  disabled={isSummaryRegenerating}
-                >
-                  Generate summary
-                </Button>
-              )}
-            </div>
-          )}
-        </motion.div>
-      </AnimatePresence>
+            )}
+          </div>
+        )}
+      </motion.div>
 
       {!isLoading && !summaryGenerateError && keyTopics.length > 0 && (
         <div className="flex flex-col gap-1.5">
