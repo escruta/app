@@ -13,6 +13,7 @@ export * from "./IconButton";
 export * from "./Menu";
 export * from "./Modal";
 export * from "./PanelList";
+export * from "./Select";
 export * from "./SelectList";
 export * from "./SideNav";
 export * from "./SidePanel";

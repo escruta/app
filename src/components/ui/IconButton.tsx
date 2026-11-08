@@ -1,25 +1,21 @@
 import { cn } from "@/lib/utils";
 
-type IconButtonProps = {
+type IconButtonProps = Omit<React.ComponentPropsWithRef<"button">, "children"> & {
   icon: React.ReactNode;
-  onClick?: () => void;
-  className?: string;
   variant?: "primary" | "secondary" | "danger" | "ghost";
-  disabled?: boolean;
   ariaLabel?: string;
   size?: "xs" | "sm" | "md" | "lg";
-  tabIndex?: number;
 };
 
 export function IconButton({
   icon,
-  onClick,
   className = "",
   variant = "primary",
   disabled = false,
   ariaLabel,
   size = "md",
-  tabIndex,
+  type = "button",
+  ...props
 }: IconButtonProps) {
   const baseStyles =
     "flex items-center justify-center rounded-xs transition-all duration-200 select-none focus-visible:outline-none cursor-pointer";
@@ -46,7 +42,8 @@ export function IconButton({
 
   return (
     <button
-      onClick={onClick}
+      {...props}
+      type={type}
       className={cn(
         baseStyles,
         variantStyles[variant],
@@ -56,10 +53,8 @@ export function IconButton({
         },
         className,
       )}
-      type="button"
       disabled={disabled}
-      aria-label={ariaLabel}
-      tabIndex={tabIndex}
+      aria-label={ariaLabel ?? props["aria-label"]}
     >
       {icon}
     </button>
