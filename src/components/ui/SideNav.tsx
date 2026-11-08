@@ -56,13 +56,26 @@ export const SideNav = forwardRef<SideNavRef, SideNavProps>(
       },
     }));
 
+    const setPanelCollapsed = (next: boolean) => {
+      if (onCollapsedChange) {
+        onCollapsedChange(next);
+      } else if (next !== collapsed) {
+        onToggleCollapse?.();
+      }
+    };
+
     const handleTabClick = (tabId: string) => {
+      if (tabId === activeTabId) {
+        setPanelCollapsed(!collapsed);
+        return;
+      }
+
       setActiveTabId(tabId);
       if (onChange) {
         onChange(tabId);
       }
-      if (collapsed && onCollapsedChange) {
-        onCollapsedChange(false);
+      if (collapsed) {
+        setPanelCollapsed(false);
       }
     };
 
@@ -72,12 +85,7 @@ export const SideNav = forwardRef<SideNavRef, SideNavProps>(
 
     return (
       <div className={cn("flex h-full w-full min-w-0 flex-row overflow-hidden", className)}>
-        <div
-          className={cn(
-            "flex w-14 min-w-14 max-w-14 shrink-0 flex-col items-center gap-1 overflow-x-hidden overflow-y-auto py-2",
-            !collapsed && "border-r border-gray-200 dark:border-gray-800",
-          )}
-        >
+        <div className="flex w-18 max-w-18 min-w-18 shrink-0 flex-col items-center gap-1 overflow-x-hidden overflow-y-auto border-r border-gray-200 py-2 dark:border-gray-800">
           {onNewChat && (
             <>
               <Tooltip text="New conversation" position="right">
@@ -89,34 +97,38 @@ export const SideNav = forwardRef<SideNavRef, SideNavProps>(
                   ariaLabel="New conversation"
                 />
               </Tooltip>
-              <div className="my-1 h-px w-8 shrink-0 bg-gray-200 dark:bg-gray-800" />
+              <div className="my-1 h-px w-full shrink-0 bg-gray-200 dark:bg-gray-800" />
             </>
           )}
-          <nav aria-label="Panel sections" className="flex w-full flex-col items-center gap-1">
+          <nav aria-label="Panel sections" className="flex w-full flex-col items-center gap-1 px-1">
             {items.map((tab) => {
               const active = activeTab.id === tab.id;
               return (
-                <Tooltip key={tab.id} text={tab.label} position="right">
-                  <button
-                    onClick={() => handleTabClick(tab.id)}
-                    type="button"
-                    aria-current={active ? "page" : undefined}
-                    aria-label={tab.label}
-                    className={cn(
-                      "group relative flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-xs transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 dark:focus-visible:ring-blue-500",
-                      active
-                        ? "bg-blue-100 text-blue-700 ring-1 ring-blue-200 ring-inset dark:bg-blue-500/20 dark:text-blue-200 dark:ring-blue-700/60"
-                        : "text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200",
-                    )}
-                  >
-                    <span className="shrink-0 [&>svg]:size-5 [&>svg]:shrink-0">{tab.icon}</span>
+                <button
+                  key={tab.id}
+                  onClick={() => handleTabClick(tab.id)}
+                  type="button"
+                  aria-current={active ? "page" : undefined}
+                  aria-label={tab.label}
+                  className={cn(
+                    "group relative flex w-full shrink-0 cursor-pointer flex-col items-center justify-center gap-1 rounded-xs px-1 py-1.5 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 dark:focus-visible:ring-blue-500",
+                    active
+                      ? "bg-blue-100 text-blue-700 ring-1 ring-blue-200 ring-inset dark:bg-blue-500/20 dark:text-blue-200 dark:ring-blue-700/60"
+                      : "text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200",
+                  )}
+                >
+                  <span className="relative flex size-5 shrink-0 items-center justify-center [&>svg]:size-5 [&>svg]:shrink-0">
+                    {tab.icon}
                     {typeof tab.badge === "number" && tab.badge > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-500 px-1 text-[10px] leading-none font-semibold text-white dark:bg-blue-600">
+                      <span className="absolute -top-1.5 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-500 px-1 text-[10px] leading-none font-semibold text-white dark:bg-blue-600">
                         {tab.badge > 99 ? "99+" : tab.badge}
                       </span>
                     )}
-                  </button>
-                </Tooltip>
+                  </span>
+                  <span className="w-full truncate text-center text-[11px] leading-tight font-medium">
+                    {tab.label}
+                  </span>
+                </button>
               );
             })}
           </nav>
@@ -145,7 +157,7 @@ export const SideNav = forwardRef<SideNavRef, SideNavProps>(
           aria-hidden={collapsed}
           inert={collapsed || undefined}
           className={cn(
-            "flex h-full min-h-0 min-w-[304px] flex-1 flex-col overflow-hidden",
+            "flex h-full min-h-0 min-w-76 flex-1 flex-col overflow-hidden",
             collapsed && "pointer-events-none invisible",
           )}
         >
