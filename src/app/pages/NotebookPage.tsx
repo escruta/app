@@ -40,9 +40,11 @@ import { ToolResultTab } from "@/components/tools";
 import { NotebookErrorState } from "./notebook/NotebookStates";
 import { RenameNotebookModal } from "./notebook/RenameNotebookModal";
 
+const COLLAPSED_SIDE_PANEL_PX = 56;
 const MIN_SIDE_PANEL_PX = 360;
+const MAX_SIDE_PANEL_PX = 448;
+const DEFAULT_SIDE_PANEL_PX = 360;
 const MIN_CENTER_PANEL_PX = 400;
-const MAX_LEFT_PANEL_PERCENT = 40;
 const MIN_SPLIT_PERCENT = 30;
 const MAX_SPLIT_PERCENT = 70;
 const TAB_DRAG_THRESHOLD_PX = 4;
@@ -84,10 +86,21 @@ function getTabIcon(tab: TabDescriptor) {
   }
 }
 
-function getPixelConstraints(containerWidth: number) {
-  const minSidePercent = (MIN_SIDE_PANEL_PX / containerWidth) * 100;
-  const minCenterPercent = (MIN_CENTER_PANEL_PX / containerWidth) * 100;
-  return { minSidePercent, minCenterPercent };
+function normalizeSidePanelWidth(value: number | undefined): number {
+  if (typeof value !== "number" || !Number.isFinite(value) || value < MIN_SIDE_PANEL_PX) {
+    return DEFAULT_SIDE_PANEL_PX;
+  }
+  return Math.min(MAX_SIDE_PANEL_PX, Math.max(MIN_SIDE_PANEL_PX, Math.round(value)));
+}
+
+function getMaxSidePanelPx(containerWidth: number): number {
+  if (!Number.isFinite(containerWidth) || containerWidth <= 0) {
+    return MAX_SIDE_PANEL_PX;
+  }
+  return Math.max(
+    MIN_SIDE_PANEL_PX,
+    Math.min(MAX_SIDE_PANEL_PX, containerWidth - MIN_CENTER_PANEL_PX),
+  );
 }
 
 function sanitizeTabsForCookie(tabs: TabDescriptor[]): TabDescriptor[] {
@@ -296,12 +309,15 @@ export default function NotebookPage() {
   >({});
   const { value: leftPanelWidth, setValue: setLeftPanelWidth } = useCookie<number>(
     "notebookLeftPanelWidth",
-    30,
+    DEFAULT_SIDE_PANEL_PX,
   );
   const { value: isLeftCollapsed, setValue: setIsLeftCollapsed } = useCookie<boolean>(
     "notebookLeftCollapsed",
     false,
   );
+  const normalizedLeftPanelWidth = normalizeSidePanelWidth(leftPanelWidth);
+  const leftDragStartWidthRef = useRef<number>(normalizedLeftPanelWidth);
+  const [containerWidth, setContainerWidth] = useState<number>(0);
   const [activeResizer, setActiveResizer] = useState<"left" | "split" | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -924,16 +940,16 @@ export default function NotebookPage() {
 
       const rect = sectionRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left;
-      const { minSidePercent, minCenterPercent } = getPixelConstraints(rect.width);
 
       if (activeResizer === "left") {
-        const maxAvailable = 100 - minCenterPercent;
-        const maxLimit = Math.min(MAX_LEFT_PANEL_PERCENT, maxAvailable);
-        const pct = (x / rect.width) * 100;
-        if (pct < minSidePercent) {
+        const maxAllowedPx = getMaxSidePanelPx(rect.width);
+        const collapseThresholdPx = (COLLAPSED_SIDE_PANEL_PX + MIN_SIDE_PANEL_PX) / 2;
+        if (x < collapseThresholdPx) {
+          setLeftPanelWidth(leftDragStartWidthRef.current);
           setIsLeftCollapsed(true);
         } else {
-          setLeftPanelWidth(Math.min(Math.max(pct, minSidePercent), maxLimit));
+          const clampedPx = Math.round(Math.min(Math.max(x, MIN_SIDE_PANEL_PX), maxAllowedPx));
+          setLeftPanelWidth(clampedPx);
           setIsLeftCollapsed(false);
         }
       }
@@ -959,6 +975,7 @@ export default function NotebookPage() {
 
   const handleMouseDownLeft = (e: React.MouseEvent) => {
     e.preventDefault();
+    leftDragStartWidthRef.current = normalizedLeftPanelWidth;
     setActiveResizer("left");
   };
 
@@ -1138,48 +1155,31 @@ export default function NotebookPage() {
     ) : null;
 
   useEffect(() => {
-    if (!sectionRef.current) return;
+    if (leftPanelWidth !== normalizedLeftPanelWidth) {
+      setLeftPanelWidth(normalizedLeftPanelWidth);
+    }
+  }, [leftPanelWidth, normalizedLeftPanelWidth, setLeftPanelWidth]);
 
-    const clampPanelWidths = (containerWidth: number) => {
-      const { minSidePercent, minCenterPercent } = getPixelConstraints(containerWidth);
+  useEffect(() => {
+    const node = sectionRef.current;
+    if (!node) return;
 
-      const left = isLeftCollapsed ? 0 : (leftPanelWidth ?? 30);
-
-      let clampedLeft = left;
-
-      if (left > 0 && left < minSidePercent) {
-        clampedLeft = minSidePercent;
-      }
-
-      const maxLimit = Math.min(MAX_LEFT_PANEL_PERCENT, 100 - minCenterPercent);
-      clampedLeft = Math.min(clampedLeft, maxLimit);
-
-      if (clampedLeft !== left) setLeftPanelWidth(clampedLeft);
-    };
+    setContainerWidth(node.getBoundingClientRect().width);
 
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        clampPanelWidths(entry.contentRect.width);
+        if (entry.contentRect.width > 0) {
+          setContainerWidth(entry.contentRect.width);
+        }
       }
     });
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
+    observer.observe(node);
     return () => observer.disconnect();
-  }, [isLeftCollapsed, leftPanelWidth, setLeftPanelWidth]);
+  }, [loading, error, validNotebookId]);
 
   const handleDoubleClickLeft = () => {
-    if (!isLeftCollapsed) {
-      setIsLeftCollapsed(true);
-      return;
-    }
-    const containerWidth = sectionRef.current?.getBoundingClientRect().width ?? window.innerWidth;
-    const { minSidePercent, minCenterPercent } = getPixelConstraints(containerWidth);
-    const maxLimit = Math.min(MAX_LEFT_PANEL_PERCENT, 100 - minCenterPercent);
-    const desired = Math.max(minSidePercent, leftPanelWidth ?? minSidePercent);
-    setLeftPanelWidth(Math.min(desired, maxLimit));
-    setIsLeftCollapsed(false);
+    setIsLeftCollapsed(!isLeftCollapsed);
   };
 
   const {
@@ -1390,6 +1390,9 @@ export default function NotebookPage() {
     isPaneActive ? undefined : cn("bg-gray-300 dark:bg-gray-700");
 
   const effectiveSplitRatio = splitRatio ?? 50;
+  const renderedLeftWidthPx = isLeftCollapsed
+    ? COLLAPSED_SIDE_PANEL_PX
+    : Math.min(normalizedLeftPanelWidth, getMaxSidePanelPx(containerWidth));
 
   const centerColumn = (
     <div ref={centerRef} className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
@@ -1570,9 +1573,15 @@ export default function NotebookPage() {
         <section ref={sectionRef} className="flex h-full overflow-hidden">
           <div
             className={cn(
-              "min-h-0 flex max-w-md flex-col overflow-hidden border-r border-gray-200 bg-gray-50/60 transition-[width,background-color,border-color] duration-200 ease-out shrink-0 dark:border-gray-800 dark:bg-gray-900/50",
+              "flex min-h-0 shrink-0 flex-col overflow-hidden bg-gray-50/60 dark:bg-gray-900/50",
+              activeResizer !== "left" &&
+                "transition-[width,min-width,max-width,background-color,border-color] duration-200 ease-out",
             )}
-            style={{ width: isLeftCollapsed ? "57px" : `${leftPanelWidth ?? 25}%` }}
+            style={{
+              width: `${renderedLeftWidthPx}px`,
+              minWidth: `${renderedLeftWidthPx}px`,
+              maxWidth: `${renderedLeftWidthPx}px`,
+            }}
           >
             <div className="h-full w-full">
               <SideNav

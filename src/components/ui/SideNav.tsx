@@ -1,5 +1,5 @@
 import { useState, useImperativeHandle, forwardRef } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { panelSwitchTransition } from "@/lib/motion";
 import { IconButton } from "./IconButton";
@@ -68,11 +68,16 @@ export const SideNav = forwardRef<SideNavRef, SideNavProps>(
 
     if (items.length === 0) return null;
 
-    const activeTab = items.find((tab) => tab.id === activeTabId);
+    const activeTab = items.find((tab) => tab.id === activeTabId) ?? items[0];
 
     return (
-      <div className={cn("flex h-full w-full flex-row overflow-hidden", className)}>
-        <div className="flex w-14 shrink-0 flex-col items-center gap-1 overflow-x-hidden overflow-y-auto border-r border-gray-200 py-2 dark:border-gray-800">
+      <div className={cn("flex h-full w-full min-w-0 flex-row overflow-hidden", className)}>
+        <div
+          className={cn(
+            "flex w-14 min-w-14 max-w-14 shrink-0 flex-col items-center gap-1 overflow-x-hidden overflow-y-auto py-2",
+            !collapsed && "border-r border-gray-200 dark:border-gray-800",
+          )}
+        >
           {onNewChat && (
             <>
               <Tooltip text="New conversation" position="right">
@@ -89,7 +94,7 @@ export const SideNav = forwardRef<SideNavRef, SideNavProps>(
           )}
           <nav aria-label="Panel sections" className="flex w-full flex-col items-center gap-1">
             {items.map((tab) => {
-              const active = activeTabId === tab.id;
+              const active = activeTab.id === tab.id;
               return (
                 <Tooltip key={tab.id} text={tab.label} position="right">
                   <button
@@ -136,24 +141,24 @@ export const SideNav = forwardRef<SideNavRef, SideNavProps>(
           )}
         </div>
 
-        {!collapsed && (
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTabId}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={panelSwitchTransition}
-                className="flex h-full w-full min-w-0 flex-col overflow-hidden"
-              >
-                <div className="flex h-full w-full min-w-0 flex-1 flex-col overflow-hidden">
-                  {activeTab?.content}
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-        )}
+        <div
+          aria-hidden={collapsed}
+          inert={collapsed || undefined}
+          className={cn(
+            "flex h-full min-h-0 min-w-[304px] flex-1 flex-col overflow-hidden",
+            collapsed && "pointer-events-none invisible",
+          )}
+        >
+          <motion.div
+            key={activeTab.id}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={panelSwitchTransition}
+            className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden"
+          >
+            {activeTab.content}
+          </motion.div>
+        </div>
       </div>
     );
   },

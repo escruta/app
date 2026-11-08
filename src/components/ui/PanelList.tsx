@@ -15,7 +15,7 @@ type PanelListItemProps = HTMLMotionProps<"div">;
 
 export function PanelListItem({ children, ...props }: PanelListItemProps) {
   return (
-    <motion.div variants={listItemVariants} exit="exit" {...props}>
+    <motion.div variants={listItemVariants} initial="hidden" animate="show" {...props}>
       {children}
     </motion.div>
   );
