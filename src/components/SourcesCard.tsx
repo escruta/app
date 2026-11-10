@@ -611,7 +611,7 @@ export function SourcesCard({
                   options={(groups ?? []).map((group) => ({
                     id: group.id,
                     label: group.title,
-                    icon: <FolderIcon />,
+                    icon: <FolderIcon className="size-4" />,
                   }))}
                   selectedId={newSourceGroupId}
                   onSelect={setNewSourceGroupId}

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useCookie, useFetch } from "@/hooks";
 import { AUTH_TOKEN_KEY, BACKEND_BASE_URL } from "@/config";
+import { appFetch } from "@/lib/http";
 import { AuthContext } from "@/contexts";
 import type { Token, User } from "@/interfaces";
 
@@ -14,12 +15,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const { value: currentUser, setValue: setCurrentUser } = useCookie<User | null>("user", null);
 
-  const fetchUserData = useCallback(async () => {
-    if (tokenCookie?.token) {
+  const fetchUserData = useCallback(
+    async (tokenOverride?: string) => {
+      const token = tokenOverride ?? tokenCookie?.token;
+
+      if (!token) {
+        setCurrentUser(null);
+        return;
+      }
+
       try {
-        const response = await fetch(new URL("/users/me", BACKEND_BASE_URL), {
+        const response = await appFetch(new URL("/users/me", BACKEND_BASE_URL), {
           headers: {
-            Authorization: `Bearer ${tokenCookie.token}`,
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         });
@@ -34,10 +42,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error("Error fetching user data:", err);
         setCurrentUser(null);
       }
-    } else {
-      setCurrentUser(null);
-    }
-  }, [tokenCookie?.token, setCurrentUser]);
+    },
+    [tokenCookie?.token, setCurrentUser],
+  );
 
   const setSessionToken = useCallback(
     async (token: string, expiresIn?: number) => {
@@ -46,14 +53,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         expiresIn: expiresIn ?? DEFAULT_SESSION_EXPIRY,
         createdAt: Date.now(),
       });
-      await fetchUserData();
+      await fetchUserData(token);
     },
     [setTokenCookie, fetchUserData],
   );
 
   const signOut = useCallback(() => {
     if (tokenCookie?.token) {
-      fetch(new URL("/logout", BACKEND_BASE_URL), {
+      appFetch(new URL("/logout", BACKEND_BASE_URL), {
         method: "POST",
         headers: {
           Authorization: `Bearer ${tokenCookie.token}`,

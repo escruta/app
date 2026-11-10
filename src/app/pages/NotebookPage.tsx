@@ -20,6 +20,7 @@ import {
   ConversationHistory,
 } from "@/components";
 import { OverviewPanel } from "@/components/chat/OverviewPanel";
+import { isDesktop, isMacDesktop, onCloseTabRequest } from "@/lib/desktop";
 import { getSourceIcon } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import {
@@ -684,12 +685,21 @@ export default function NotebookPage() {
   const isLeftCollapsedRef = useRef(isLeftCollapsed);
   isLeftCollapsedRef.current = isLeftCollapsed;
 
-  useEffect(() => {
-    const cleanup = window.electronAPI?.shortcuts?.onCloseTabRequest(() => {
+  useEffect(
+    () =>
+      onCloseTabRequest(() => {
+        closeTabRef.current(effectiveActiveKeyRef.current);
+      }),
+    [],
+  );
+
+  useShortcut(
+    "close-tab",
+    () => {
       closeTabRef.current(effectiveActiveKeyRef.current);
-    });
-    return cleanup;
-  }, []);
+    },
+    { global: true, enabled: isDesktop && !isMacDesktop },
+  );
 
   const openNewChatTab = useCallback(() => {
     openTab({ kind: "chat", refId: NEW_CHAT_ID, title: "New conversation" });

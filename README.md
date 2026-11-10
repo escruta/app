@@ -2,7 +2,7 @@
 
 Desktop application for the Escruta research platform. It provides an interface for source management, notebook organization, and AI-assisted document analysis.
 
-Built with React, TypeScript, Tailwind CSS, Vite, and Electron.
+Built with React, TypeScript, Tailwind CSS, Vite, and Tauri.
 
 > [!IMPORTANT]
 > This application is part of the Escruta ecosystem and requires the core service to be running for full functionality. The project is under development and may contain incomplete features or breaking changes.
@@ -10,9 +10,12 @@ Built with React, TypeScript, Tailwind CSS, Vite, and Electron.
 ## Getting Started
 
 - `pnpm install` - Install dependencies.
-- `pnpm run dev` - Launch the app in development with hot reload (Vite dev server for the renderer, electron-forge for the main process).
-- `pnpm run build` - Build and package installable desktop applications (output in `out/`).
+- `pnpm run dev` - Launch the app in development with hot reload (Vite dev server plus the Tauri shell).
+- `pnpm run build` - Build and package installable desktop applications.
 - `pnpm run check` - Run lint, format, and typecheck.
+
+> [!NOTE]
+> The desktop shell requires Rust and the [Tauri system dependencies](https://v2.tauri.app/start/prerequisites/) for your platform.
 
 ## Configuration
 

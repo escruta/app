@@ -22,3 +22,4 @@ export * from "./Spinner";
 export * from "./TextField";
 export * from "./Tooltip";
 export * from "./ViewerFrame";
+export * from "./WindowChrome";

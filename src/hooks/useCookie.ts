@@ -1,10 +1,10 @@
 import { useState, useCallback } from "react";
-import Cookies from "js-cookie";
-
-const defaultOptions: Cookies.CookieAttributes = {
-  expires: 30,
-  secure: true,
-};
+import {
+  readStoredValue,
+  writeStoredValue,
+  clearStoredValue,
+  type PersistedOptions,
+} from "@/lib/storage";
 
 interface UseCookieResult<T> {
   value: T;
@@ -14,26 +14,26 @@ interface UseCookieResult<T> {
 export function useCookie<T>(
   keyName: string,
   defaultValue: T,
-  options?: Cookies.CookieAttributes,
+  options?: PersistedOptions,
 ): UseCookieResult<T>;
 export function useCookie<T>(
   keyName: string,
   defaultValue?: T,
-  options?: Cookies.CookieAttributes,
+  options?: PersistedOptions,
 ): UseCookieResult<T | undefined>;
 export function useCookie<T>(
   keyName: string,
   defaultValue?: T,
-  options: Cookies.CookieAttributes = defaultOptions,
+  options?: PersistedOptions,
 ): UseCookieResult<T | undefined> {
   const [storedValue, setStoredValue] = useState<T | undefined>(() => {
     try {
-      const item = Cookies.get(keyName);
+      const item = readStoredValue(keyName);
       if (item) {
         return JSON.parse(item) as T;
       }
       if (defaultValue !== undefined) {
-        Cookies.set(keyName, JSON.stringify(defaultValue), options);
+        writeStoredValue(keyName, JSON.stringify(defaultValue), options);
         return defaultValue;
       }
       return undefined;
@@ -47,9 +47,9 @@ export function useCookie<T>(
     (newValue: T | undefined) => {
       try {
         if (newValue === undefined) {
-          Cookies.remove(keyName);
+          clearStoredValue(keyName);
         } else {
-          Cookies.set(keyName, JSON.stringify(newValue), options);
+          writeStoredValue(keyName, JSON.stringify(newValue), options);
         }
         setStoredValue(newValue);
       } catch (error) {

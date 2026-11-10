@@ -350,7 +350,7 @@ export function Select<T>({
         )}
       >
         {selectedOption?.icon && (
-          <span className="flex size-4 shrink-0 items-center justify-center">
+          <span className="flex size-4 shrink-0 items-center justify-center [&_svg]:size-4 [&_svg]:shrink-0">
             {selectedOption.icon}
           </span>
         )}
@@ -396,7 +396,7 @@ export function Select<T>({
       >
         <span className="flex min-w-0 items-center gap-2">
           {selectedOption?.icon && (
-            <span className="flex size-4 shrink-0 items-center justify-center">
+            <span className="flex size-4 shrink-0 items-center justify-center [&_svg]:size-4 [&_svg]:shrink-0">
               {selectedOption.icon}
             </span>
           )}
@@ -499,7 +499,7 @@ export function Select<T>({
                       )}
                     >
                       {option.icon && (
-                        <span className="flex size-4 shrink-0 items-center justify-center">
+                        <span className="flex size-4 shrink-0 items-center justify-center [&_svg]:size-4 [&_svg]:shrink-0">
                           {option.icon}
                         </span>
                       )}

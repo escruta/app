@@ -10,7 +10,10 @@ export function NotFound() {
   } as const;
 
   return (
-    <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-white px-6 text-center dark:bg-gray-950">
+    <main
+      data-tauri-drag-region
+      className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-white px-6 text-center dark:bg-gray-950"
+    >
       <title>404 - Page Not Found - Escruta</title>
 
       <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center space-y-6">
