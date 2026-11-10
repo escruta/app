@@ -23,6 +23,33 @@ fn is_app_url(url: &tauri::Url) -> bool {
     }
 }
 
+#[cfg(target_os = "linux")]
+fn intercept_previous_tab_shortcut(window: &tauri::WebviewWindow) {
+    use gtk::prelude::*;
+
+    let app = window.app_handle().clone();
+
+    let _ = window.with_webview(move |webview| {
+        let view = webview.inner();
+
+        view.connect_key_press_event(move |_, event| {
+            let state = event.state();
+            let is_ctrl_shift = state.contains(gtk::gdk::ModifierType::CONTROL_MASK)
+                && state.contains(gtk::gdk::ModifierType::SHIFT_MASK);
+            let key = event.keyval();
+            let is_tab = key == gtk::gdk::keys::constants::Tab
+                || key == gtk::gdk::keys::constants::ISO_Left_Tab;
+
+            if is_ctrl_shift && is_tab {
+                let _ = app.emit("previous-tab", ());
+                gtk::glib::Propagation::Stop
+            } else {
+                gtk::glib::Propagation::Proceed
+            }
+        });
+    });
+}
+
 fn create_main_window(app: &AppHandle) -> tauri::Result<()> {
     let version = app.package_info().version.to_string();
     let user_agent = format!("Escruta/{version} ({})", detect_operating_system());
@@ -55,7 +82,11 @@ fn create_main_window(app: &AppHandle) -> tauri::Result<()> {
     #[cfg(not(target_os = "macos"))]
     let builder = builder.decorations(false);
 
-    builder.build()?;
+    let window = builder.build()?;
+
+    #[cfg(target_os = "linux")]
+    intercept_previous_tab_shortcut(&window);
+
     Ok(())
 }
 

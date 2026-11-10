@@ -405,7 +405,7 @@ const KEY_ALIASES: Record<string, string[]> = {
   Esc: ["Escape"],
   Escape: ["Escape"],
   Enter: ["Enter"],
-  Tab: ["Tab"],
+  Tab: ["Tab", "ISO_Left_Tab", "BackTab"],
 };
 
 function keyMatches(expected: string, actual: string): boolean {

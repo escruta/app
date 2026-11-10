@@ -9,13 +9,13 @@ export const isLinuxDesktop =
   typeof navigator !== "undefined" &&
   (/Linux/i.test(navigator.platform) || /Linux/i.test(navigator.userAgent));
 
-export function onCloseTabRequest(callback: () => void): () => void {
+function onDesktopEvent(event: string, callback: () => void): () => void {
   if (!isDesktop) return () => {};
 
   let unlisten: (() => void) | undefined;
   let disposed = false;
 
-  void listen("close-tab", () => callback())
+  void listen(event, () => callback())
     .then((removeListener) => {
       if (disposed) {
         removeListener();
@@ -29,4 +29,12 @@ export function onCloseTabRequest(callback: () => void): () => void {
     disposed = true;
     unlisten?.();
   };
+}
+
+export function onCloseTabRequest(callback: () => void): () => void {
+  return onDesktopEvent("close-tab", callback);
+}
+
+export function onPreviousTabRequest(callback: () => void): () => void {
+  return onDesktopEvent("previous-tab", callback);
 }

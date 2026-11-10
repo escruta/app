@@ -984,6 +984,7 @@ dependencies = [
 name = "escruta"
 version = "0.0.1"
 dependencies = [
+ "gtk",
  "os_info",
  "tauri",
  "tauri-build",

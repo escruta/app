@@ -20,7 +20,7 @@ import {
   ConversationHistory,
 } from "@/components";
 import { OverviewPanel } from "@/components/chat/OverviewPanel";
-import { isDesktop, isMacDesktop, onCloseTabRequest } from "@/lib/desktop";
+import { isDesktop, isMacDesktop, onCloseTabRequest, onPreviousTabRequest } from "@/lib/desktop";
 import { getSourceIcon } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import {
@@ -685,13 +685,16 @@ export default function NotebookPage() {
   const isLeftCollapsedRef = useRef(isLeftCollapsed);
   isLeftCollapsedRef.current = isLeftCollapsed;
 
-  useEffect(
-    () =>
-      onCloseTabRequest(() => {
-        closeTabRef.current(effectiveActiveKeyRef.current);
-      }),
-    [],
-  );
+  const lastPreviousTabAtRef = useRef(0);
+  const previousTab = useCallback(() => {
+    const now = performance.now();
+    if (now - lastPreviousTabAtRef.current < 100) return;
+    lastPreviousTabAtRef.current = now;
+    cycleTabRef.current(-1);
+  }, []);
+
+  useEffect(() => onCloseTabRequest(() => closeTabRef.current(effectiveActiveKeyRef.current)), []);
+  useEffect(() => onPreviousTabRequest(previousTab), [previousTab]);
 
   useShortcut(
     "close-tab",
@@ -1057,6 +1060,22 @@ export default function NotebookPage() {
   useShortcuts(
     [
       {
+        id: "next-tab",
+        handler: () => cycleTabRef.current(1),
+        stopPropagation: true,
+      },
+      {
+        id: "previous-tab",
+        handler: previousTab,
+        stopPropagation: true,
+      },
+    ],
+    { global: true, capture: true, skipIfDefaultPrevented: false },
+  );
+
+  useShortcuts(
+    [
+      {
         id: "close-tab",
         handler: () => closeTabRef.current(effectiveActiveKeyRef.current),
         stopPropagation: true,
@@ -1069,16 +1088,6 @@ export default function NotebookPage() {
       {
         id: "chat-new",
         handler: () => openNewChatTab(),
-        stopPropagation: true,
-      },
-      {
-        id: "next-tab",
-        handler: () => cycleTabRef.current(1),
-        stopPropagation: true,
-      },
-      {
-        id: "previous-tab",
-        handler: () => cycleTabRef.current(-1),
         stopPropagation: true,
       },
       {
