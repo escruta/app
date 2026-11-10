@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { useCookie } from "./useCookie";
 import { AUTH_TOKEN_KEY, BACKEND_BASE_URL } from "@/config";
+import { appFetch } from "@/lib/http";
 import type { Token } from "@/interfaces";
 import type { ChatMode } from "@/interfaces";
 import type { CitedSource } from "@/components/chat/ChatMessage";
@@ -88,7 +89,7 @@ export function useChatStream(endpoint: string, callbacks: ChatStreamCallbacks) 
       };
 
       try {
-        const response = await fetch(url.toString(), {
+        const response = await appFetch(url.toString(), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

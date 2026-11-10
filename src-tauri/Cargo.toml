@@ -1,0 +1,19 @@
+[package]
+name = "escruta"
+version = "0.0.1"
+description = "Organize, analyze, and learn from your own knowledge."
+authors = ["Francisco Mesa"]
+edition = "2021"
+
+[lib]
+name = "escruta_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+os_info = "3"
+tauri = { version = "2", features = [] }
+tauri-plugin-http = "2.8.3"
+tauri-plugin-opener = "2"

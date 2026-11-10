@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { useAuth, useShortcut } from "@/hooks";
 import { Button, Divider, Spinner, TextField } from "@/components/ui";
 import { BACKEND_BASE_URL } from "@/config";
+import { appFetch } from "@/lib/http";
 
 type Step = "email" | "code" | "name";
 
@@ -45,7 +46,7 @@ export function WelcomePage() {
     setPending(true);
     setError("");
     try {
-      const response = await fetch(new URL("/auth/request-code", BACKEND_BASE_URL), {
+      const response = await appFetch(new URL("/auth/request-code", BACKEND_BASE_URL), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: targetEmail }),
@@ -88,7 +89,7 @@ export function WelcomePage() {
     setPending(true);
     setError("");
     try {
-      const response = await fetch(new URL("/auth/verify-code", BACKEND_BASE_URL), {
+      const response = await appFetch(new URL("/auth/verify-code", BACKEND_BASE_URL), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, code: trimmedCode }),
@@ -129,7 +130,7 @@ export function WelcomePage() {
     setPending(true);
     setError("");
     try {
-      const response = await fetch(new URL("/auth/complete-registration", BACKEND_BASE_URL), {
+      const response = await appFetch(new URL("/auth/complete-registration", BACKEND_BASE_URL), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, verificationToken, name: trimmedName }),
@@ -179,7 +180,10 @@ export function WelcomePage() {
   );
 
   return (
-    <div className="app-region-drag flex h-screen flex-col items-center justify-center gap-10 bg-white px-6 select-none dark:bg-gray-950">
+    <div
+      data-tauri-drag-region
+      className="app-region-drag flex h-screen flex-col items-center justify-center gap-10 bg-white px-6 select-none dark:bg-gray-950"
+    >
       <title>Welcome - Escruta</title>
 
       <div className="app-region-no-drag w-full max-w-xs text-left">

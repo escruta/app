@@ -36,7 +36,7 @@ function describeSession(userAgent: string | null): string {
     return `Escruta Desktop on ${operatingSystem}`;
   }
 
-  if (/electron\//i.test(userAgent)) {
+  if (/tauri/i.test(userAgent)) {
     return `Escruta Desktop on ${detectOperatingSystem(userAgent)}`;
   }
 

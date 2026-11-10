@@ -362,7 +362,6 @@ const DEFAULT_KEY_LABELS: Record<string, string> = {
 
 export function isMacPlatform(): boolean {
   if (typeof window === "undefined") return false;
-  if (window.electronAPI?.platform === "darwin") return true;
   return /Mac|iPhone|iPad|iPod/i.test(navigator.platform || navigator.userAgent);
 }
 

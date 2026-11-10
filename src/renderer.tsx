@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { createHashRouter, RouterProvider } from "react-router";
 import { AuthProvider, ThemeProvider, DensityProvider, RealtimeProvider } from "./providers";
+import { WindowChrome } from "./components/ui";
 
 import { WelcomePage } from "./auth/WelcomePage";
 import { AppRoutes } from "./app/AppRoutes";
@@ -37,6 +38,7 @@ createRoot(root).render(
       <ThemeProvider>
         <DensityProvider>
           <RouterProvider router={router} />
+          <WindowChrome />
         </DensityProvider>
       </ThemeProvider>
     </RealtimeProvider>

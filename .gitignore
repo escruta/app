@@ -12,9 +12,9 @@ dist
 dist-ssr
 *.local
 
-# Electron Forge
-.vite
-out
+# Tauri
+src-tauri/target
+src-tauri/gen/schemas
 release
 
 # Editor directories and files

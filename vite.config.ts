@@ -29,8 +29,11 @@ function packageName(id: string) {
   return id.match(/node_modules[\\/](@[^\\/]+[\\/][^\\/]+|[^\\/]+)/)?.[1];
 }
 
+const host = process.env.TAURI_DEV_HOST;
+
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  clearScreen: false,
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "./src"),
@@ -49,8 +52,18 @@ export default defineConfig({
     },
   },
   server: {
-    cors: {
-      origin: "*",
+    port: 1420,
+    strictPort: true,
+    host: host || false,
+    hmr: host
+      ? {
+          protocol: "ws",
+          host,
+          port: 1421,
+        }
+      : undefined,
+    watch: {
+      ignored: ["**/src-tauri/**"],
     },
   },
 });

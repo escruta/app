@@ -268,7 +268,11 @@ export function MenuItem({
       }}
       onKeyDown={handleKeyDown}
     >
-      {icon && <span className="flex size-4 shrink-0 items-center justify-center">{icon}</span>}
+      {icon && (
+        <span className="flex size-4 shrink-0 items-center justify-center [&_svg]:size-4 [&_svg]:shrink-0">
+          {icon}
+        </span>
+      )}
       <span className="flex-1 text-left font-medium">{label}</span>
     </button>
   );

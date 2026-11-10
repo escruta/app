@@ -246,7 +246,7 @@ export function SourceChip({
               options={(groups ?? []).map((group) => ({
                 id: group.id,
                 label: group.title,
-                icon: <FolderIcon />,
+                icon: <FolderIcon className="size-4" />,
               }))}
               selectedId={selectedGroupId}
               onSelect={setSelectedGroupId}

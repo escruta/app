@@ -21,14 +21,22 @@
           if (parts.length === 2) return parts.pop().split(";").shift();
         }
 
-        function initializeTheme() {
-          let themePreference;
+        function getStoredTheme() {
+          try {
+            const storedValue = window.localStorage.getItem("themePreference");
+            if (storedValue) return JSON.parse(storedValue);
+          } catch (_) {}
+
           try {
             const cookieValue = getCookie("themePreference");
-            themePreference = cookieValue ? JSON.parse(decodeURIComponent(cookieValue)) : "System";
+            return cookieValue ? JSON.parse(decodeURIComponent(cookieValue)) : "System";
           } catch (_) {
-            themePreference = "System";
+            return "System";
           }
+        }
+
+        function initializeTheme() {
+          const themePreference = getStoredTheme();
 
           document.documentElement.classList.remove("dark", "light");
 

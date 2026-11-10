@@ -303,9 +303,9 @@ export function ContextMenuItem({
     >
       {icon && (
         <span
-          className={cn("flex shrink-0 items-center justify-center", {
-            "size-3.5": compact,
-            "size-4": !compact,
+          className={cn("flex shrink-0 items-center justify-center [&_svg]:shrink-0", {
+            "size-3.5 [&_svg]:size-3.5": compact,
+            "size-4 [&_svg]:size-4": !compact,
           })}
         >
           {icon}

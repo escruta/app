@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { BACKEND_BASE_URL } from "@/config";
+import { appFetch } from "@/lib/http";
 
 export type RealtimeEventHandler = (data: any) => void;
 
@@ -48,7 +49,7 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
       abortRef.current = controller;
 
       try {
-        const response = await fetch(new URL("/api/notifications/stream", BACKEND_BASE_URL), {
+        const response = await appFetch(new URL("/api/notifications/stream", BACKEND_BASE_URL), {
           headers: {
             Authorization: `Bearer ${token}`,
             Accept: "text/event-stream",

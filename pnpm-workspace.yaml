@@ -1,19 +1,10 @@
 allowBuilds:
   "@swc/core": true
-  electron: true
-  electron-winstaller: true
   esbuild: true
 blockExoticSubdeps: false
-minimumReleaseAgeExclude:
-  - app-builder-lib@26.18.0
-  - dmg-builder@26.18.0
-  - electron-builder-squirrel-windows@26.18.0
-  - electron-forge-maker-appimage@26.18.0
 nodeLinker: hoisted
 onlyBuiltDependencies:
   - "@swc/core"
-  - electron
-  - electron-winstaller
   - esbuild
 peerDependencyRules:
   allowedVersions:

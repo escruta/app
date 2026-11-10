@@ -171,9 +171,12 @@ export function Dropdown<T>({
           )}
         >
           <span
-            className={cn("block truncate", {
-              "text-gray-500 dark:text-gray-400 font-normal": selectedOption == null,
-            })}
+            className={cn(
+              "block truncate [&_svg]:inline-block [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:align-middle",
+              {
+                "text-gray-500 dark:text-gray-400 font-normal": selectedOption == null,
+              },
+            )}
           >
             {selectedOption != null ? renderOption(selectedOption as T) : placeholder}
           </span>
@@ -246,7 +249,9 @@ export function Dropdown<T>({
                         },
                       )}
                     >
-                      <span className="flex-1 truncate pr-6">{renderOption(option)}</span>
+                      <span className="flex-1 truncate pr-6 [&_svg]:inline-block [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:align-middle">
+                        {renderOption(option)}
+                      </span>
                       {selectedOption === option && (
                         <span
                           className={cn(

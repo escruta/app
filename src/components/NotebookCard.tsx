@@ -463,7 +463,7 @@ export function NotebookCard({
             options={(folders ?? []).map((folder) => ({
               id: folder.id,
               label: folder.title,
-              icon: <FolderIcon />,
+              icon: <FolderIcon className="size-4" />,
             }))}
             selectedId={selectedFolderId}
             onSelect={setSelectedFolderId}

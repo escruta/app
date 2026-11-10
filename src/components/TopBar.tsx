@@ -1,6 +1,7 @@
 import { NavLink, useLocation, useNavigate } from "react-router";
 import { Tooltip, IconButton } from "@/components/ui";
 import { ChevronIcon } from "@/components/icons";
+import { isDesktop, isMacDesktop } from "@/lib/desktop";
 import { AppIcon } from "./AppIcon";
 import { cn } from "@/lib/utils";
 
@@ -12,20 +13,23 @@ export function TopBar({ title }: TopBarProps = {}) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isMac = window.electronAPI?.platform === "darwin";
-  const isElectron = Boolean(window.electronAPI?.isElectron);
+  const isMac = isMacDesktop;
+  const hasWindowControls = isDesktop && !isMac;
 
   return (
     <div
+      data-tauri-drag-region
       className={cn(
-        "app-region-drag z-50 flex h-14 w-full shrink-0 flex-row items-center justify-between border-b border-gray-200 bg-white pr-4 pl-4 md:pr-6 md:pl-6 dark:border-gray-800 dark:bg-gray-950",
+        "app-region-drag z-50 flex h-14 w-full shrink-0 flex-row items-center justify-between border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950",
         {
           "pl-20": isMac,
-          "pr-36": isElectron && !isMac,
+          "pl-4 md:pl-6": !isMac,
+          "pr-36": hasWindowControls,
+          "pr-4 md:pr-6": !hasWindowControls,
         },
       )}
     >
-      <div className="flex items-center gap-4">
+      <div data-tauri-drag-region className="flex items-center gap-4">
         {location.pathname !== "/" ? (
           <Tooltip text="Previous page" position="bottom" className="app-region-no-drag shrink-0">
             <IconButton
