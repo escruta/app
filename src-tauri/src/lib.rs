@@ -1,7 +1,9 @@
 #[cfg(target_os = "macos")]
 use tauri::menu::{AboutMetadata, Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri::{
-    webview::NewWindowResponse, AppHandle, Emitter, Manager, WebviewUrl, WebviewWindowBuilder,
+    webview::{NewWindowResponse, PageLoadEvent},
+    window::Color,
+    AppHandle, Emitter, Manager, WebviewUrl, WebviewWindowBuilder,
 };
 
 const MAIN_WINDOW_LABEL: &str = "main";
@@ -60,6 +62,13 @@ fn create_main_window(app: &AppHandle) -> tauri::Result<()> {
         .min_inner_size(700.0, 600.0)
         .maximized(true)
         .user_agent(&user_agent)
+        .visible(false)
+        .background_color(Color(10, 10, 10, 255))
+        .on_page_load(|window, payload| {
+            if matches!(payload.event(), PageLoadEvent::Finished) {
+                let _ = window.show();
+            }
+        })
         .on_new_window(|url, _features| {
             let _ = tauri_plugin_opener::open_url(url.as_str(), None::<&str>);
             NewWindowResponse::Deny

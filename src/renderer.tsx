@@ -1,7 +1,10 @@
+import { useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { createHashRouter, RouterProvider } from "react-router";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { AuthProvider, ThemeProvider, DensityProvider, RealtimeProvider } from "./providers";
 import { WindowChrome } from "./components/ui";
+import { isDesktop } from "./lib/desktop";
 
 import { WelcomePage } from "./auth/WelcomePage";
 import { AppRoutes } from "./app/AppRoutes";
@@ -26,6 +29,18 @@ const router = createHashRouter([
   },
 ]);
 
+function WindowRevealer() {
+  useEffect(() => {
+    if (!isDesktop) return;
+
+    void getCurrentWindow()
+      .show()
+      .catch(() => {});
+  }, []);
+
+  return null;
+}
+
 const root = document.getElementById("root");
 
 if (!root) {
@@ -39,6 +54,7 @@ createRoot(root).render(
         <DensityProvider>
           <RouterProvider router={router} />
           <WindowChrome />
+          <WindowRevealer />
         </DensityProvider>
       </ThemeProvider>
     </RealtimeProvider>
