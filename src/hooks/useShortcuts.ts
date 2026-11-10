@@ -28,6 +28,7 @@ export interface UseShortcutsOptions {
   global?: boolean;
   enabled?: boolean;
   skipIfDefaultPrevented?: boolean;
+  capture?: boolean;
 }
 
 function isEditableTarget(target: EventTarget | null): boolean {
@@ -90,13 +91,14 @@ export function useShortcuts(
   useEffect(() => {
     if (!options.global || !isActive) return;
 
+    const capture = options.capture ?? false;
     const listener = (event: KeyboardEvent) => {
       run(event, true);
     };
 
-    window.addEventListener("keydown", listener);
-    return () => window.removeEventListener("keydown", listener);
-  }, [options.global, isActive, run]);
+    window.addEventListener("keydown", listener, capture);
+    return () => window.removeEventListener("keydown", listener, capture);
+  }, [options.global, options.capture, isActive, run]);
 
   return useCallback((event: ShortcutKeyboardEvent) => run(event, false), [run]);
 }
