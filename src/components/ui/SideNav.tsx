@@ -105,6 +105,7 @@ export const SideNav = forwardRef<SideNavRef, SideNavProps>(
           >
             {items.map((tab) => {
               const active = activeTab.id === tab.id;
+              const showActive = active && !collapsed;
               return (
                 <button
                   key={tab.id}
@@ -114,7 +115,7 @@ export const SideNav = forwardRef<SideNavRef, SideNavProps>(
                   aria-label={tab.label}
                   className={cn(
                     "group relative flex w-full shrink-0 cursor-pointer flex-col items-center justify-center gap-1 rounded-xs px-1 py-1.5 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 dark:focus-visible:ring-blue-500",
-                    active
+                    showActive
                       ? "bg-blue-100 text-blue-700 ring-1 ring-blue-200 ring-inset dark:bg-blue-500/20 dark:text-blue-200 dark:ring-blue-700/60"
                       : "text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200",
                   )}
