@@ -17,7 +17,13 @@ import {
   Tooltip,
 } from "@/components/ui";
 import { useFetch, useShortcut } from "@/hooks";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
+const DRAG_PREVIEW_MAX_WIDTH = 240;
+
+function isLinuxPlatform(): boolean {
+  return /linux/i.test(`${navigator.userAgent} ${navigator.platform}`);
+}
 
 interface SourceChipProps {
   source: Source;
@@ -53,6 +59,84 @@ export function SourceChip({
 
   const [isMoveModalOpen, setIsMoveModalOpen] = useState<boolean>(false);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(source.groupId ?? null);
+  const dragPreviewRef = useRef<HTMLElement | null>(null);
+  const dragPreviewSizeRef = useRef<{ width: number; height: number } | null>(null);
+
+  useEffect(() => {
+    return () => {
+      dragPreviewRef.current?.remove();
+      dragPreviewRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isDragging || !isLinuxPlatform()) return;
+
+    const handleDragOver = (e: DragEvent) => {
+      if (e.clientX === 0 && e.clientY === 0) return;
+      moveDragPreview(e.clientX, e.clientY);
+    };
+
+    document.addEventListener("dragover", handleDragOver, true);
+
+    return () => {
+      document.removeEventListener("dragover", handleDragOver, true);
+    };
+  }, [isDragging]);
+
+  function removeDragPreview() {
+    dragPreviewRef.current?.remove();
+    dragPreviewRef.current = null;
+    dragPreviewSizeRef.current = null;
+  }
+
+  function moveDragPreview(clientX: number, clientY: number) {
+    const preview = dragPreviewRef.current;
+    const size = dragPreviewSizeRef.current;
+    if (!preview || !size) return;
+
+    preview.style.transform = `translate(${clientX - size.width / 2}px, ${clientY - size.height / 2}px)`;
+  }
+
+  function suppressSystemDragImage(e: React.DragEvent<HTMLDivElement>) {
+    const blank = document.createElement("canvas");
+    blank.width = 1;
+    blank.height = 1;
+    blank.style.cssText = "position:fixed;top:-9999px;left:-9999px;pointer-events:none;";
+    document.body.appendChild(blank);
+    window.setTimeout(() => blank.remove(), 0);
+
+    try {
+      e.dataTransfer.setDragImage(blank, 0, 0);
+    } catch {
+      blank.remove();
+    }
+  }
+
+  function createDragPreview(element: HTMLElement) {
+    removeDragPreview();
+
+    const rect = element.getBoundingClientRect();
+    const width = Math.min(rect.width, DRAG_PREVIEW_MAX_WIDTH);
+    const preview = element.cloneNode(true) as HTMLElement;
+
+    preview.querySelectorAll("[id]").forEach((node) => node.removeAttribute("id"));
+    preview.style.position = "fixed";
+    preview.style.top = "0";
+    preview.style.left = "0";
+    preview.style.width = `${width}px`;
+    preview.style.height = `${rect.height}px`;
+    preview.style.maxWidth = "none";
+    preview.style.opacity = "1";
+    preview.style.pointerEvents = "none";
+    preview.style.transition = "none";
+    preview.style.zIndex = "9999";
+    preview.setAttribute("aria-hidden", "true");
+
+    document.body.appendChild(preview);
+    dragPreviewRef.current = preview;
+    dragPreviewSizeRef.current = { width, height: rect.height };
+  }
 
   const { loading: deletingSource, refetch: deleteSource } = useFetch<Source>(
     `notebooks/${notebookId}/sources/${source.id}`,
@@ -138,9 +222,23 @@ export function SourceChip({
           if (isPending || isFailed) return;
           e.dataTransfer.effectAllowed = "move";
           e.dataTransfer.setData("text/plain", source.id);
+
+          if (isLinuxPlatform()) {
+            suppressSystemDragImage(e);
+            try {
+              createDragPreview(e.currentTarget);
+              moveDragPreview(e.clientX, e.clientY);
+            } catch {
+              removeDragPreview();
+            }
+          }
+
           onDragStart?.(source);
         }}
-        onDragEnd={() => onDragEnd?.()}
+        onDragEnd={() => {
+          removeDragPreview();
+          onDragEnd?.();
+        }}
         onClick={handleChipClick}
         onKeyDown={handleChipKeyDown}
         tabIndex={isPending || isFailed ? -1 : 0}
