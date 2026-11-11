@@ -100,7 +100,7 @@ function WindowButtons({
   isMaximized: boolean;
 }) {
   return (
-    <div className="app-region-no-drag flex h-14 items-stretch border-b border-gray-200 bg-white select-none dark:border-gray-800 dark:bg-gray-950">
+    <div className="app-region-no-drag flex h-14 items-stretch select-none">
       <button
         type="button"
         className={WINDOW_BUTTON_CLASS}
@@ -142,6 +142,7 @@ function DesktopWindowChrome() {
   return (
     <>
       {isLinuxDesktop && !isMaximized && <ResizeHandles appWindow={appWindow} />}
+      <div className="pointer-events-none fixed top-0 right-0 z-50 h-14 w-36 border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950" />
       <div className="fixed top-0 right-0 z-1000">
         <WindowButtons appWindow={appWindow} isMaximized={isMaximized} />
       </div>
