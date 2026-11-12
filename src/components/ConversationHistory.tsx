@@ -293,7 +293,11 @@ export function ConversationHistory({
           search
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder={total > 0 ? "Search your conversations..." : "No conversations yet"}
+          placeholder={
+            !isInitialLoading && total === 0
+              ? "No conversations yet"
+              : "Search your conversations..."
+          }
           onClear={() => setSearchQuery("")}
         />
       }

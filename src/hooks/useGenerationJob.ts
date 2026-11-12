@@ -23,7 +23,11 @@ export function useGenerationJob(
   const [job, setJob] = useState<GenerationJob | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const { data: existingJob, refetch: checkExistingJob } = useFetch<GenerationJob>(
+  const {
+    data: existingJob,
+    loading: isCheckingJob,
+    refetch: checkExistingJob,
+  } = useFetch<GenerationJob>(
     `/notebooks/${notebookId}/tools/jobs/latest/${toolType}`,
     { skipCache: true },
     true,
@@ -152,6 +156,7 @@ export function useGenerationJob(
 
   return {
     job,
+    isChecking: isCheckingJob,
     isLoading,
     isStarting,
     isCompleted,

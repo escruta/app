@@ -31,6 +31,8 @@ interface SelectedTool {
   startGeneration: () => void;
 }
 
+type ToolGeneration = ReturnType<typeof useGenerationJob>;
+
 export function ToolsCard({
   notebookId,
   onNodeSelect,
@@ -38,6 +40,18 @@ export function ToolsCard({
   onOpenTool,
 }: ToolsCardProps) {
   const [selectedTool, setSelectedTool] = useState<SelectedTool | null>(null);
+
+  const mindMapGeneration = useGenerationJob(notebookId, "MIND_MAP");
+  const studyGuideGeneration = useGenerationJob(notebookId, "STUDY_GUIDE");
+  const flashcardsGeneration = useGenerationJob(notebookId, "FLASHCARDS");
+  const questionnaireGeneration = useGenerationJob(notebookId, "QUESTIONNAIRE");
+
+  const generations: Record<JobType, ToolGeneration> = {
+    MIND_MAP: mindMapGeneration,
+    STUDY_GUIDE: studyGuideGeneration,
+    FLASHCARDS: flashcardsGeneration,
+    QUESTIONNAIRE: questionnaireGeneration,
+  };
 
   const tools: Tool[] = [
     {
@@ -65,6 +79,8 @@ export function ToolsCard({
       type: "QUESTIONNAIRE",
     },
   ];
+
+  const isInitialLoading = Object.values(generations).some((generation) => generation.isChecking);
 
   const handleSelectTool = (
     tool: Tool,
@@ -112,13 +128,13 @@ export function ToolsCard({
           "opacity-100 scale-100": onOpenTool || !selectedTool,
         })}
       >
-        <SidePanel title="Tools" contentClassName="p-4">
+        <SidePanel title="Tools" contentClassName="p-4" loading={isInitialLoading}>
           <PanelList className="grid grid-cols-1 gap-2">
             {tools.map((tool) => (
               <PanelListItem key={tool.type}>
                 <ToolItem
                   tool={tool}
-                  notebookId={notebookId}
+                  generation={generations[tool.type]}
                   onSelect={handleSelectTool}
                   onOpenTool={onOpenTool}
                   disabled={!hasSources}
@@ -134,7 +150,7 @@ export function ToolsCard({
 
 interface ToolItemProps {
   tool: Tool;
-  notebookId: string;
+  generation: ToolGeneration;
   onSelect: (
     tool: Tool,
     job: GenerationJob | null,
@@ -146,11 +162,8 @@ interface ToolItemProps {
   disabled?: boolean;
 }
 
-function ToolItem({ tool, notebookId, onSelect, onOpenTool, disabled }: ToolItemProps) {
-  const { job, isLoading, isCompleted, isFailed, result, startGeneration } = useGenerationJob(
-    notebookId,
-    tool.type,
-  );
+function ToolItem({ tool, generation, onSelect, onOpenTool, disabled }: ToolItemProps) {
+  const { job, isLoading, isCompleted, isFailed, result, startGeneration } = generation;
 
   function handleClick() {
     if (isFailed) {

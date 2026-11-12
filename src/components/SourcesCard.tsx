@@ -81,9 +81,11 @@ export function SourcesCard({
   );
   const [pendingMoves, setPendingMoves] = useState<Record<string, string | null>>({});
 
-  const { data: groups, refetch: refetchGroups } = useFetch<SourceGroup[]>(
-    `notebooks/${notebookId}/source-groups`,
-  );
+  const {
+    data: groups,
+    loading: groupsLoading,
+    refetch: refetchGroups,
+  } = useFetch<SourceGroup[]>(`notebooks/${notebookId}/source-groups`);
 
   const { loading: creatingGroup, refetch: createGroup } = useFetch<SourceGroup>(
     `notebooks/${notebookId}/source-groups`,
@@ -353,6 +355,7 @@ export function SourcesCard({
   }));
   const ungroupedSources = (sources ?? []).filter((s) => !getGroupId(s));
   const hasGroups = (groups ?? []).length > 0;
+  const isInitialLoading = Boolean(isLoading) || (groupsLoading && !groups);
 
   return (
     <>
@@ -412,15 +415,9 @@ export function SourcesCard({
           </>
         }
         contentClassName="px-4"
+        loading={isInitialLoading}
       >
         {(() => {
-          if (isLoading) {
-            return (
-              <div className="flex size-full items-center justify-center">
-                <Spinner />
-              </div>
-            );
-          }
           if (sources && sources.length > 0) {
             return (
               <PanelList
