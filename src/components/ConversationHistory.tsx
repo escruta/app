@@ -1,4 +1,4 @@
-import { useFetch, useRealtimeEvent, useShortcut } from "@/hooks";
+import { useFetch, useRealtimeEvent } from "@/hooks";
 import type { ChatMode, Conversation, ConversationStatus, ConversationsPage } from "@/interfaces";
 import { useMemo, useCallback, useState, useEffect, useRef } from "react";
 import { AnimatePresence } from "motion/react";
@@ -12,7 +12,8 @@ import {
   PanelList,
   PanelListItem,
 } from "@/components/ui";
-import { DeleteIcon, ChatNewIcon, ChatIcon, SearchIcon } from "@/components/icons";
+import { ChatNewIcon, ChatIcon, SearchIcon } from "@/components/icons";
+import { ConversationChip } from "./ConversationChip";
 import { cn } from "@/lib/utils";
 import type { UseFetchOptions } from "@/hooks/useFetch";
 
@@ -214,62 +215,22 @@ export function ConversationHistory({
     };
   }, []);
 
-  const [conversationToDeleteId, setConversationToDeleteId] = useState<string | null>(null);
-
-  const deleteOptions = useMemo(
-    () => ({
-      method: "DELETE" as const,
-      onSuccess: () => {
-        setConversationToDeleteId(null);
-        setConversations((prev) => prev.filter((c) => c.id !== conversationToDeleteId));
-        setTotal((prev) => prev - 1);
-      },
-      onError: (error: FetchError) => {
-        console.error("Error deleting conversation:", error.message);
-        setConversationToDeleteId(null);
-      },
-    }),
-    [conversationToDeleteId],
-  );
-
-  const { loading: isDeleting } = useFetch<void>(
-    `notebooks/${notebookId}/conversations/${conversationToDeleteId}`,
-    deleteOptions,
-    conversationToDeleteId !== null,
-  );
-
-  const handleDelete = useCallback((conversationId: string) => {
-    setConversationToDeleteId(conversationId);
-  }, []);
-
-  const handleDeleteKeyDown = useShortcut(
-    "dialog-activate",
-    (event) => {
-      const conversationId = (event.currentTarget as HTMLElement).dataset.conversationId;
-      if (conversationId) handleDelete(conversationId);
+  const handleSelectConversation = useCallback(
+    (conversation: Conversation) => {
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === conversation.id && c.hasUnseenReply ? { ...c, hasUnseenReply: false } : c,
+        ),
+      );
+      onSelectConversation(conversation.id, conversation.title);
     },
-    { stopPropagation: true },
+    [onSelectConversation],
   );
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) {
-      return date.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-    } else if (diffDays === 1) {
-      return "Yesterday";
-    } else if (diffDays < 7) {
-      return date.toLocaleDateString([], { weekday: "long" });
-    } else {
-      return date.toLocaleDateString([], { month: "short", day: "numeric" });
-    }
-  };
+  const handleDeleteConversation = useCallback((conversation: Conversation) => {
+    setConversations((prev) => prev.filter((c) => c.id !== conversation.id));
+    setTotal((prev) => prev - 1);
+  }, []);
 
   const isInitialLoading = loading && conversations.length === 0;
   const isLoadingMore = loading && conversations.length > 0;
@@ -339,102 +300,17 @@ export function ConversationHistory({
         <>
           <PanelList className="flex flex-col gap-2">
             <AnimatePresence>
-              {conversations.map((conversation) => {
-                const isGenerating = conversation.status === "GENERATING";
-                const isFailed = conversation.status === "FAILED";
-                const hasUnseen =
-                  conversation.hasUnseenReply &&
-                  !isGenerating &&
-                  conversation.id !== currentConversationId;
-
-                return (
-                  <PanelListItem
-                    key={conversation.id}
-                    className={cn(
-                      "group flex items-center justify-between rounded-xs border p-2.5 transition-colors cursor-pointer",
-                      {
-                        "bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700":
-                          conversation.id === currentConversationId,
-                        "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 hover:bg-gray-100/65 dark:hover:bg-gray-800":
-                          conversation.id !== currentConversationId,
-                      },
-                    )}
-                    onClick={() => {
-                      setConversations((prev) =>
-                        prev.map((c) =>
-                          c.id === conversation.id && c.hasUnseenReply
-                            ? { ...c, hasUnseenReply: false }
-                            : c,
-                        ),
-                      );
-                      onSelectConversation(conversation.id, conversation.title);
-                    }}
-                  >
-                    <div className="mr-2 min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="min-w-0 flex-1 truncate text-sm font-medium text-gray-900 dark:text-white">
-                          {conversation.title}
-                        </p>
-                        {isGenerating ? (
-                          <Spinner
-                            size={14}
-                            className="shrink-0 text-blue-500 dark:text-blue-400"
-                            aria-label="Generating response"
-                          />
-                        ) : hasUnseen ? (
-                          <span
-                            className="relative flex size-2 shrink-0 items-center justify-center"
-                            aria-label="New response ready"
-                          >
-                            <span className="absolute inline-flex size-full animate-ping rounded-full bg-blue-400 opacity-75 dark:bg-blue-500" />
-                            <span className="relative inline-flex size-2 rounded-full bg-blue-500 dark:bg-blue-400" />
-                          </span>
-                        ) : isFailed ? (
-                          <span
-                            className="inline-flex size-2 shrink-0 rounded-full bg-red-500 dark:bg-red-400"
-                            aria-label="Generation failed"
-                          />
-                        ) : null}
-                      </div>
-                      <p
-                        className={cn("text-xs", {
-                          "text-blue-600 dark:text-blue-400": isGenerating || hasUnseen,
-                          "text-red-600 dark:text-red-400": isFailed && !isGenerating,
-                          "text-gray-500 dark:text-gray-400":
-                            !isGenerating && !hasUnseen && !isFailed,
-                        })}
-                      >
-                        {isGenerating
-                          ? "Generating..."
-                          : hasUnseen
-                            ? "Response ready"
-                            : isFailed
-                              ? "Couldn't generate"
-                              : formatDate(conversation.updatedAt)}
-                      </p>
-                    </div>
-                    <div
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(conversation.id);
-                      }}
-                      onKeyDown={handleDeleteKeyDown}
-                      data-conversation-id={conversation.id}
-                      role="button"
-                      tabIndex={0}
-                      className="opacity-0 transition-opacity group-hover:opacity-100"
-                    >
-                      <IconButton
-                        icon={<DeleteIcon />}
-                        variant="ghost"
-                        size="sm"
-                        disabled={isDeleting && conversationToDeleteId === conversation.id}
-                        ariaLabel="Delete conversation"
-                      />
-                    </div>
-                  </PanelListItem>
-                );
-              })}
+              {conversations.map((conversation) => (
+                <PanelListItem key={conversation.id}>
+                  <ConversationChip
+                    conversation={conversation}
+                    notebookId={notebookId}
+                    isActive={conversation.id === currentConversationId}
+                    onSelect={handleSelectConversation}
+                    onDelete={handleDeleteConversation}
+                  />
+                </PanelListItem>
+              ))}
             </AnimatePresence>
           </PanelList>
           <div ref={setLoadMoreRef} className={cn("h-4", { hidden: !hasMore })} />
