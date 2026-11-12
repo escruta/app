@@ -31,7 +31,11 @@ export function SidePanel({
           <div className="flex min-w-0 flex-1 items-center justify-end gap-2">{actions}</div>
         </div>
       </div>
-      {toolbar ? <div className="shrink-0 px-4 pt-3">{toolbar}</div> : null}
+      {toolbar ? (
+        <div className="flex h-15 shrink-0 items-center border-b border-gray-200 px-4 dark:border-gray-800">
+          <div className="w-full">{toolbar}</div>
+        </div>
+      ) : null}
       <div
         aria-busy={loading || undefined}
         className={cn("min-h-0 flex-1 overflow-y-auto", contentClassName)}
