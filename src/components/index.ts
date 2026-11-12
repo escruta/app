@@ -6,6 +6,7 @@ export * from "./Logotype.tsx";
 export * from "./NotebookCard.tsx";
 export * from "./NoteChip.tsx";
 export * from "./NoteEditor.tsx";
+export * from "./NoteGroupSection.tsx";
 export * from "./NotesCard.tsx";
 export * from "./SearchSourcesModal.tsx";
 export * from "./TopBar.tsx";
