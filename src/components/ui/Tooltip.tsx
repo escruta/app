@@ -225,11 +225,10 @@ export function Tooltip({
                 left: coords.x,
                 top: coords.y,
                 zIndex: 99999,
-                filter:
-                  "drop-shadow(0 10px 15px rgba(0, 0, 0, 0.1)) drop-shadow(0 4px 6px rgba(0, 0, 0, 0.05))",
+                filter: "drop-shadow(0 4px 10px rgba(0, 0, 0, 0.08))",
               }}
               className={cn(
-                "pointer-events-auto rounded-xs shadow-md select-text",
+                "pointer-events-auto rounded-xs select-text",
                 "w-max max-w-xs md:max-w-sm",
                 "bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100",
                 "backdrop-blur-md",
