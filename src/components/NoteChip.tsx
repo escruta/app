@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { useFetch, useShortcut } from "@/hooks";
 import type { Note, NoteGroup } from "@/interfaces";
-import { DotsVerticalIcon, FolderIcon, NoteIcon } from "@/components/icons";
+import { DeleteIcon, DotsVerticalIcon, EditIcon, FolderIcon, NoteIcon } from "@/components/icons";
 import {
   Button,
   IconButton,
@@ -13,6 +13,7 @@ import {
   Modal,
   SelectList,
   Spinner,
+  TextField,
   Tooltip,
 } from "@/components/ui";
 import { useEffect, useRef, useState } from "react";
@@ -29,6 +30,8 @@ interface NoteChipProps {
   groups?: NoteGroup[];
   className?: string;
   onSelect?: (note: Note) => void;
+  onRename?: (note: Note) => void;
+  onDelete?: (note: Note) => void;
   onMove?: () => void;
   onDragStart?: (note: Note) => void;
   onDragEnd?: () => void;
@@ -41,15 +44,25 @@ export function NoteChip({
   groups,
   className,
   onSelect,
+  onRename,
+  onDelete,
   onMove,
   onDragStart,
   onDragEnd,
   isDragging = false,
 }: NoteChipProps) {
   const [isMoveModalOpen, setIsMoveModalOpen] = useState<boolean>(false);
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+  const [displayTitle, setDisplayTitle] = useState<string>(note.title);
+  const [newTitle, setNewTitle] = useState<string>(note.title);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(note.groupId ?? null);
   const dragPreviewRef = useRef<HTMLElement | null>(null);
   const dragPreviewSizeRef = useRef<{ width: number; height: number } | null>(null);
+
+  useEffect(() => {
+    setDisplayTitle(note.title);
+  }, [note.title]);
 
   useEffect(() => {
     return () => {
@@ -148,11 +161,64 @@ export function NoteChip({
     false,
   );
 
+  const { loading: renamingNote, refetch: renameNote } = useFetch<Note>(
+    "/notes",
+    {
+      method: "PUT",
+      data: {
+        id: note.id,
+        title: newTitle.trim(),
+      },
+      onSuccess: (updatedNote) => {
+        const updatedTitle = updatedNote?.title?.trim() || newTitle.trim();
+        useFetch.clearCache();
+        setDisplayTitle(updatedTitle);
+        setNewTitle(updatedTitle);
+        setIsRenameModalOpen(false);
+        onRename?.(updatedNote);
+      },
+      onError: (error) => {
+        console.error("Error renaming note:", error.message);
+      },
+    },
+    false,
+  );
+
+  const { loading: deletingNote, refetch: deleteNote } = useFetch<Note>(
+    `/notes/${note.id}`,
+    {
+      method: "DELETE",
+      onSuccess: () => {
+        useFetch.clearCache();
+        setIsDeleteModalOpen(false);
+        onDelete?.(note);
+      },
+      onError: (error) => {
+        console.error("Error deleting note:", error.message);
+      },
+    },
+    false,
+  );
+
   const handleKeyDown = useShortcut("dialog-activate", () => onSelect?.(note));
 
   function handleOpenMoveModal() {
     setSelectedGroupId(note.groupId ?? null);
     setIsMoveModalOpen(true);
+  }
+
+  function handleOpenRenameModal() {
+    setNewTitle(displayTitle);
+    setIsRenameModalOpen(true);
+  }
+
+  async function handleRenameNote() {
+    if (!newTitle.trim() || newTitle.trim() === displayTitle) {
+      setIsRenameModalOpen(false);
+      setNewTitle(displayTitle);
+      return;
+    }
+    await renameNote();
   }
 
   async function handleMoveNote() {
@@ -213,10 +279,10 @@ export function NoteChip({
           </div>
           <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
             <h2 className="line-clamp-1 text-sm font-medium text-gray-900 transition-colors duration-300 group-hover:text-blue-900 dark:text-gray-100 dark:group-hover:text-blue-100">
-              {note.title}
+              {displayTitle}
             </h2>
           </div>
-          {groups && notebookId && (
+          {(notebookId || onRename || onDelete) && (
             <div
               className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"
               onClick={(e) => e.stopPropagation()}
@@ -233,10 +299,23 @@ export function NoteChip({
                   </MenuTrigger>
                 </Tooltip>
                 <MenuContent align="right">
+                  {groups && (
+                    <MenuItem
+                      icon={<FolderIcon className="size-4" />}
+                      label="Move to group"
+                      onClick={handleOpenMoveModal}
+                    />
+                  )}
                   <MenuItem
-                    icon={<FolderIcon className="size-4" />}
-                    label="Move to group"
-                    onClick={handleOpenMoveModal}
+                    icon={<EditIcon className="size-4" />}
+                    label="Rename note"
+                    onClick={handleOpenRenameModal}
+                  />
+                  <MenuItem
+                    icon={<DeleteIcon className="size-4" />}
+                    label="Delete note"
+                    variant="danger"
+                    onClick={() => setIsDeleteModalOpen(true)}
                   />
                 </MenuContent>
               </Menu>
@@ -249,7 +328,7 @@ export function NoteChip({
         <Modal
           isOpen={isMoveModalOpen}
           onClose={() => setIsMoveModalOpen(false)}
-          title={`Move "${note.title}"`}
+          title={`Move "${displayTitle}"`}
           actions={
             <>
               <Button variant="secondary" onClick={() => setIsMoveModalOpen(false)}>
@@ -286,6 +365,79 @@ export function NoteChip({
           </div>
         </Modal>
       )}
+
+      <Modal
+        isOpen={isRenameModalOpen}
+        onClose={() => {
+          setIsRenameModalOpen(false);
+          setNewTitle(displayTitle);
+        }}
+        title="Rename note"
+        onSubmit={() => {
+          if (newTitle.trim() && !renamingNote) handleRenameNote();
+        }}
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setIsRenameModalOpen(false);
+                setNewTitle(displayTitle);
+              }}
+              disabled={renamingNote}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleRenameNote}
+              disabled={!newTitle.trim() || renamingNote || newTitle.trim() === displayTitle}
+              icon={renamingNote ? <Spinner className="size-4" /> : undefined}
+            >
+              {renamingNote ? "Saving..." : "Save"}
+            </Button>
+          </>
+        }
+      >
+        <TextField
+          id={`note-rename-${note.id}`}
+          label="Name your note"
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+          placeholder="e.g., Key ideas, Summary, To review…"
+          autoFocus
+        />
+      </Modal>
+
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Delete note"
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              onClick={() => setIsDeleteModalOpen(false)}
+              disabled={deletingNote}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={() => deleteNote()}
+              disabled={deletingNote}
+              icon={deletingNote ? <Spinner className="size-4" /> : undefined}
+            >
+              {deletingNote ? "Deleting..." : "Delete"}
+            </Button>
+          </>
+        }
+      >
+        <p className="text-gray-600 dark:text-gray-300">
+          You&apos;re about to delete <span className="font-semibold">{displayTitle}</span>. This
+          can&apos;t be undone.
+        </p>
+      </Modal>
     </>
   );
 }

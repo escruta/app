@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { Source, SourceGroup } from "@/interfaces";
 import { getSourceIcon } from "@/lib/utils/index";
-import { DeleteIcon, DotsVerticalIcon, FolderIcon } from "@/components/icons";
+import { DeleteIcon, DotsVerticalIcon, EditIcon, FolderIcon } from "@/components/icons";
 import {
   Button,
   Checkbox,
@@ -14,6 +14,7 @@ import {
   Modal,
   SelectList,
   Spinner,
+  TextField,
   Tooltip,
 } from "@/components/ui";
 import { useFetch, useShortcut } from "@/hooks";
@@ -33,6 +34,7 @@ interface SourceChipProps {
   onSourceSelect?: (source: Source) => void;
   selected?: boolean;
   onToggle?: (selected: boolean) => void;
+  onRename?: (source: Source) => void;
   onDelete?: () => void;
   onMove?: () => void;
   onDragStart?: (source: Source) => void;
@@ -48,6 +50,7 @@ export function SourceChip({
   onSourceSelect,
   selected = false,
   onToggle,
+  onRename,
   onDelete,
   onMove,
   onDragStart,
@@ -58,6 +61,9 @@ export function SourceChip({
   const isFailed = source.status === "FAILED";
 
   const [isMoveModalOpen, setIsMoveModalOpen] = useState<boolean>(false);
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+  const [newTitle, setNewTitle] = useState<string>(source.title);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(source.groupId ?? null);
   const dragPreviewRef = useRef<HTMLElement | null>(null);
   const dragPreviewSizeRef = useRef<{ width: number; height: number } | null>(null);
@@ -143,7 +149,29 @@ export function SourceChip({
     {
       method: "DELETE",
       onSuccess: () => {
-        if (onDelete) onDelete();
+        useFetch.clearCache();
+        setIsDeleteModalOpen(false);
+        onDelete?.();
+      },
+    },
+    false,
+  );
+
+  const { loading: renamingSource, refetch: renameSource } = useFetch<Source>(
+    `notebooks/${notebookId}/sources`,
+    {
+      method: "PUT",
+      data: {
+        id: source.id,
+        title: newTitle.trim(),
+      },
+      onSuccess: (updatedSource) => {
+        useFetch.clearCache();
+        setIsRenameModalOpen(false);
+        onRename?.(updatedSource);
+      },
+      onError: (error) => {
+        console.error("Error renaming source:", error.message);
       },
     },
     false,
@@ -173,6 +201,20 @@ export function SourceChip({
   function handleOpenMoveModal() {
     setSelectedGroupId(source.groupId ?? null);
     setIsMoveModalOpen(true);
+  }
+
+  function handleOpenRenameModal() {
+    setNewTitle(source.title);
+    setIsRenameModalOpen(true);
+  }
+
+  async function handleRenameSource() {
+    if (!newTitle.trim() || newTitle.trim() === source.title) {
+      setIsRenameModalOpen(false);
+      setNewTitle(source.title);
+      return;
+    }
+    await renameSource();
   }
 
   async function handleMoveSource() {
@@ -276,7 +318,7 @@ export function SourceChip({
           )}
           {!isPending && !isFailed && (
             <>
-              {groups && notebookId && (
+              {notebookId && (
                 <div
                   className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"
                   onClick={(e) => e.stopPropagation()}
@@ -293,10 +335,23 @@ export function SourceChip({
                       </MenuTrigger>
                     </Tooltip>
                     <MenuContent align="right">
+                      {groups && (
+                        <MenuItem
+                          icon={<FolderIcon className="size-4" />}
+                          label="Move to group"
+                          onClick={handleOpenMoveModal}
+                        />
+                      )}
                       <MenuItem
-                        icon={<FolderIcon className="size-4" />}
-                        label="Move to group"
-                        onClick={handleOpenMoveModal}
+                        icon={<EditIcon className="size-4" />}
+                        label="Rename source"
+                        onClick={handleOpenRenameModal}
+                      />
+                      <MenuItem
+                        icon={<DeleteIcon className="size-4" />}
+                        label="Delete source"
+                        variant="danger"
+                        onClick={() => setIsDeleteModalOpen(true)}
                       />
                     </MenuContent>
                   </Menu>
@@ -358,6 +413,79 @@ export function SourceChip({
           </div>
         </Modal>
       )}
+
+      <Modal
+        isOpen={isRenameModalOpen}
+        onClose={() => {
+          setIsRenameModalOpen(false);
+          setNewTitle(source.title);
+        }}
+        title="Rename source"
+        onSubmit={() => {
+          if (newTitle.trim() && !renamingSource) handleRenameSource();
+        }}
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setIsRenameModalOpen(false);
+                setNewTitle(source.title);
+              }}
+              disabled={renamingSource}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleRenameSource}
+              disabled={!newTitle.trim() || renamingSource || newTitle.trim() === source.title}
+              icon={renamingSource ? <Spinner className="size-4" /> : undefined}
+            >
+              {renamingSource ? "Saving..." : "Save"}
+            </Button>
+          </>
+        }
+      >
+        <TextField
+          id={`source-rename-${source.id}`}
+          label="Name your source"
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+          placeholder="Give your source a title..."
+          autoFocus
+        />
+      </Modal>
+
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Delete source"
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              onClick={() => setIsDeleteModalOpen(false)}
+              disabled={deletingSource}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={() => deleteSource()}
+              disabled={deletingSource}
+              icon={deletingSource ? <Spinner className="size-4" /> : undefined}
+            >
+              {deletingSource ? "Deleting..." : "Delete"}
+            </Button>
+          </>
+        }
+      >
+        <p className="text-gray-600 dark:text-gray-300">
+          You&apos;re about to delete <span className="font-semibold">{source.title}</span>. This
+          can&apos;t be undone.
+        </p>
+      </Modal>
     </>
   );
 }

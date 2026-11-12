@@ -6,7 +6,6 @@ import type { Note } from "@/interfaces";
 import { DeleteIcon, DotsVerticalIcon } from "@/components/icons";
 import {
   Button,
-  Divider,
   IconButton,
   Modal,
   Spinner,

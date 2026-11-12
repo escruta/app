@@ -20,10 +20,18 @@ import { useEffect, useState } from "react";
 interface NotesCardProps {
   notebookId: string;
   onNoteSelect?: (note: Note) => void;
+  onNoteRenamed?: (note: Note) => void;
+  onNoteDeleted?: (note: Note) => void;
   refreshTrigger?: number;
 }
 
-export function NotesCard({ notebookId, onNoteSelect, refreshTrigger }: NotesCardProps) {
+export function NotesCard({
+  notebookId,
+  onNoteSelect,
+  onNoteRenamed,
+  onNoteDeleted,
+  refreshTrigger,
+}: NotesCardProps) {
   const {
     data: notes,
     loading,
@@ -191,6 +199,16 @@ export function NotesCard({ notebookId, onNoteSelect, refreshTrigger }: NotesCar
     setMoveTarget({ noteId, groupId: target });
   }
 
+  function handleNoteRenamed(updatedNote: Note) {
+    refetchNotes(true, false);
+    onNoteRenamed?.(updatedNote);
+  }
+
+  function handleNoteDeleted(note: Note) {
+    refetchNotes(true, false);
+    onNoteDeleted?.(note);
+  }
+
   const renderNoteChip = (note: Note) => (
     <PanelListItem key={note.id}>
       <NoteChip
@@ -198,6 +216,8 @@ export function NotesCard({ notebookId, onNoteSelect, refreshTrigger }: NotesCar
         notebookId={notebookId}
         groups={groups ?? undefined}
         onSelect={onNoteSelect}
+        onRename={handleNoteRenamed}
+        onDelete={handleNoteDeleted}
         onMove={() => handleGroupsChanged()}
         onDragStart={(dragged) => setDraggingNoteId(dragged.id)}
         onDragEnd={handleNoteDragEnd}
@@ -299,7 +319,12 @@ export function NotesCard({ notebookId, onNoteSelect, refreshTrigger }: NotesCar
                 .sort((a, b) => a.title.localeCompare(b.title))
                 .map((note) => (
                   <PanelListItem key={note.id}>
-                    <NoteChip note={note} onSelect={onNoteSelect} />
+                    <NoteChip
+                      note={note}
+                      onSelect={onNoteSelect}
+                      onRename={handleNoteRenamed}
+                      onDelete={handleNoteDeleted}
+                    />
                   </PanelListItem>
                 ))
             )}

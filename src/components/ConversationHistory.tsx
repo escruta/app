@@ -23,6 +23,7 @@ interface ConversationHistoryProps {
   refreshTrigger?: number;
   seenConversationId?: string | null;
   onSelectConversation: (conversationId: string, title: string) => void;
+  onConversationRenamed?: (conversation: Conversation) => void;
   onNewConversation: () => void;
 }
 
@@ -34,6 +35,7 @@ export function ConversationHistory({
   refreshTrigger,
   seenConversationId,
   onSelectConversation,
+  onConversationRenamed,
   onNewConversation,
 }: ConversationHistoryProps) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -227,6 +229,20 @@ export function ConversationHistory({
     [onSelectConversation],
   );
 
+  const handleRenameConversation = useCallback(
+    (conversation: Conversation) => {
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === conversation.id
+            ? { ...c, ...conversation, updatedAt: conversation.updatedAt ?? c.updatedAt }
+            : c,
+        ),
+      );
+      onConversationRenamed?.(conversation);
+    },
+    [onConversationRenamed],
+  );
+
   const handleDeleteConversation = useCallback((conversation: Conversation) => {
     setConversations((prev) => prev.filter((c) => c.id !== conversation.id));
     setTotal((prev) => prev - 1);
@@ -307,6 +323,7 @@ export function ConversationHistory({
                     notebookId={notebookId}
                     isActive={conversation.id === currentConversationId}
                     onSelect={handleSelectConversation}
+                    onRename={handleRenameConversation}
                     onDelete={handleDeleteConversation}
                   />
                 </PanelListItem>

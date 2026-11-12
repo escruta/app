@@ -298,6 +298,9 @@ export function SourcesCard({
         onSourceSelect={onSourceSelect}
         selected={selectedSourceIds.includes(source.id)}
         onToggle={() => onToggleSource?.(source.id)}
+        onRename={() => {
+          onSourcesChange?.();
+        }}
         onDelete={() => {
           onSourcesChange?.();
         }}

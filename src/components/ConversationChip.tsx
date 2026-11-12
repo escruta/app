@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { useFetch, useShortcut } from "@/hooks";
 import type { Conversation } from "@/interfaces";
-import { DeleteIcon, DotsVerticalIcon } from "@/components/icons";
+import { DeleteIcon, DotsVerticalIcon, EditIcon } from "@/components/icons";
 import {
   Button,
   IconButton,
@@ -11,9 +11,10 @@ import {
   MenuTrigger,
   Modal,
   Spinner,
+  TextField,
   Tooltip,
 } from "@/components/ui";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function formatDate(dateString: string) {
   const date = new Date(dateString);
@@ -41,6 +42,7 @@ interface ConversationChipProps {
   isActive?: boolean;
   className?: string;
   onSelect?: (conversation: Conversation) => void;
+  onRename?: (conversation: Conversation) => void;
   onDelete?: (conversation: Conversation) => void;
 }
 
@@ -50,13 +52,43 @@ export function ConversationChip({
   isActive = false,
   className,
   onSelect,
+  onRename,
   onDelete,
 }: ConversationChipProps) {
   const isGenerating = conversation.status === "GENERATING";
   const isFailed = conversation.status === "FAILED";
   const hasUnseen = conversation.hasUnseenReply && !isGenerating && !isActive;
 
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+  const [displayTitle, setDisplayTitle] = useState<string>(conversation.title);
+  const [newTitle, setNewTitle] = useState<string>(conversation.title);
+
+  useEffect(() => {
+    setDisplayTitle(conversation.title);
+  }, [conversation.title]);
+
+  const { loading: isRenaming, refetch: renameConversation } = useFetch<Conversation>(
+    `notebooks/${notebookId}/conversations/${conversation.id}`,
+    {
+      method: "PATCH",
+      data: {
+        title: newTitle.trim(),
+      },
+      onSuccess: (updatedConversation) => {
+        const updatedTitle = updatedConversation?.title?.trim() || newTitle.trim();
+        useFetch.clearCache(`notebooks/${notebookId}/conversations`);
+        setDisplayTitle(updatedTitle);
+        setNewTitle(updatedTitle);
+        setIsRenameModalOpen(false);
+        onRename?.({ ...conversation, ...updatedConversation, title: updatedTitle });
+      },
+      onError: (error) => {
+        console.error("Error renaming conversation:", error.message);
+      },
+    },
+    false,
+  );
 
   const { loading: isDeleting, refetch: deleteConversation } = useFetch<void>(
     `notebooks/${notebookId}/conversations/${conversation.id}`,
@@ -76,6 +108,20 @@ export function ConversationChip({
   const handleSelectKeyDown = useShortcut("dialog-activate", () => onSelect?.(conversation), {
     enabled: Boolean(onSelect),
   });
+
+  function handleOpenRenameModal() {
+    setNewTitle(displayTitle);
+    setIsRenameModalOpen(true);
+  }
+
+  async function handleRenameConversation() {
+    if (!newTitle.trim() || newTitle.trim() === displayTitle) {
+      setIsRenameModalOpen(false);
+      setNewTitle(displayTitle);
+      return;
+    }
+    await renameConversation();
+  }
 
   return (
     <>
@@ -97,7 +143,7 @@ export function ConversationChip({
         <div className="mr-2 min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <p className="min-w-0 flex-1 truncate text-sm font-medium text-gray-900 dark:text-white">
-              {conversation.title}
+              {displayTitle}
             </p>
             {isGenerating ? (
               <Spinner
@@ -153,6 +199,11 @@ export function ConversationChip({
             </Tooltip>
             <MenuContent align="right">
               <MenuItem
+                icon={<EditIcon className="size-4" />}
+                label="Rename conversation"
+                onClick={handleOpenRenameModal}
+              />
+              <MenuItem
                 icon={<DeleteIcon className="size-4" />}
                 label="Delete conversation"
                 variant="danger"
@@ -162,6 +213,49 @@ export function ConversationChip({
           </Menu>
         </div>
       </div>
+
+      <Modal
+        isOpen={isRenameModalOpen}
+        onClose={() => {
+          setIsRenameModalOpen(false);
+          setNewTitle(displayTitle);
+        }}
+        title="Rename conversation"
+        onSubmit={() => {
+          if (newTitle.trim() && !isRenaming) handleRenameConversation();
+        }}
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setIsRenameModalOpen(false);
+                setNewTitle(displayTitle);
+              }}
+              disabled={isRenaming}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleRenameConversation}
+              disabled={!newTitle.trim() || isRenaming || newTitle.trim() === displayTitle}
+              icon={isRenaming ? <Spinner className="size-4" /> : undefined}
+            >
+              {isRenaming ? "Saving..." : "Save"}
+            </Button>
+          </>
+        }
+      >
+        <TextField
+          id={`conversation-rename-${conversation.id}`}
+          label="Name your conversation"
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+          placeholder="Give your conversation a title..."
+          autoFocus
+        />
+      </Modal>
 
       {isDeleteModalOpen && (
         <Modal
@@ -189,8 +283,8 @@ export function ConversationChip({
           }
         >
           <p className="text-gray-600 dark:text-gray-300">
-            You&apos;re about to delete <span className="font-semibold">{conversation.title}</span>.
-            This can&apos;t be undone.
+            You&apos;re about to delete <span className="font-semibold">{displayTitle}</span>. This
+            can&apos;t be undone.
           </p>
         </Modal>
       )}
