@@ -85,7 +85,7 @@ export const SideNav = forwardRef<SideNavRef, SideNavProps>(
 
     return (
       <div className={cn("flex h-full w-full min-w-0 flex-row overflow-hidden", className)}>
-        <div className="flex w-18 max-w-18 min-w-18 shrink-0 flex-col items-center overflow-x-hidden overflow-y-auto border-r border-gray-200 dark:border-gray-800">
+        <div className="flex w-18 max-w-18 min-w-18 shrink-0 flex-col items-center overflow-x-hidden overflow-y-auto">
           {onNewChat && (
             <div className="flex h-12 w-full shrink-0 items-center justify-center border-b border-gray-200 dark:border-gray-800">
               <Tooltip text="New conversation" position="right">
@@ -160,8 +160,8 @@ export const SideNav = forwardRef<SideNavRef, SideNavProps>(
           aria-hidden={collapsed}
           inert={collapsed || undefined}
           className={cn(
-            "flex h-full min-h-0 min-w-76 flex-1 flex-col overflow-hidden",
-            collapsed && "pointer-events-none invisible",
+            "flex h-full min-h-0 min-w-76 flex-1 flex-col overflow-hidden border-l border-gray-200 dark:border-gray-800",
+            collapsed && "pointer-events-none",
           )}
         >
           <motion.div
@@ -169,7 +169,10 @@ export const SideNav = forwardRef<SideNavRef, SideNavProps>(
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={panelSwitchTransition}
-            className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden"
+            className={cn(
+              "flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden",
+              collapsed && "invisible",
+            )}
           >
             {activeTab.content}
           </motion.div>
