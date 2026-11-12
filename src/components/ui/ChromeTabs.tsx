@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { CloseIcon } from "@/components/icons";
 import { IconButton } from "./IconButton";
 import { ContextMenu, ContextMenuTrigger, ContextMenuContent } from "./ContextMenu";
+import { Tooltip } from "./Tooltip";
 
 interface ChromeTabItem {
   id: string;
@@ -68,7 +69,6 @@ export function ChromeTabs({
               role="tab"
               tabIndex={0}
               aria-selected={active}
-              title={tab.label || "Untitled"}
               onPointerDown={(e) => onTabPointerDown?.(e, tab.id)}
               onClick={() => onSelect(tab.id)}
               onMouseDown={(e: MouseEvent<HTMLDivElement>) => {
@@ -112,15 +112,22 @@ export function ChromeTabs({
                   )}
                 />
               )}
-              {tab.icon && (
-                <span className="flex shrink-0 items-center [&>svg]:size-3.5 [&>svg]:shrink-0">
-                  {tab.icon}
+              <Tooltip
+                text={tab.label || "Untitled"}
+                position="bottom"
+                as="span"
+                className="flex min-w-0 flex-1 items-center gap-2"
+              >
+                {tab.icon && (
+                  <span className="flex shrink-0 items-center [&>svg]:size-3.5 [&>svg]:shrink-0">
+                    {tab.icon}
+                  </span>
+                )}
+                <span className="min-w-0 flex-1 truncate whitespace-nowrap">
+                  {tab.label || "Untitled"}
                 </span>
-              )}
-              <span className="min-w-0 flex-1 truncate whitespace-nowrap">
-                {tab.label || "Untitled"}
-              </span>
-              {tab.indicator && <span className="shrink-0">{tab.indicator}</span>}
+                {tab.indicator && <span className="shrink-0">{tab.indicator}</span>}
+              </Tooltip>
               {closable && (
                 <span
                   className="shrink-0"
