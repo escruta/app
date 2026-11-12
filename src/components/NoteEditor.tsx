@@ -202,8 +202,6 @@ export function NoteEditor({
           </div>
         </div>
 
-        <Divider className="my-0" />
-
         {loading && (
           <div className="flex size-full items-center justify-center">
             <Spinner />
