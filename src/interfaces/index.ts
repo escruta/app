@@ -4,6 +4,7 @@ export type * from "./Folder";
 export type * from "./GenerationJob";
 export type * from "./MindMapResponse";
 export type * from "./Note";
+export type * from "./NoteGroup";
 export type * from "./Notebook";
 export type * from "./NotebookContent";
 export type * from "./QuestionnaireResponse";
