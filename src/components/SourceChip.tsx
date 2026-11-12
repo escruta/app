@@ -282,13 +282,13 @@ export function SourceChip({
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Menu>
-                    <Tooltip text="Move to group" position="top">
+                    <Tooltip text="More options" position="top">
                       <MenuTrigger>
                         <IconButton
                           icon={<DotsVerticalIcon className="size-3.5" />}
                           variant="ghost"
                           size="sm"
-                          ariaLabel="Move to group"
+                          ariaLabel="More options"
                         />
                       </MenuTrigger>
                     </Tooltip>
