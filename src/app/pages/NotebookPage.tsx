@@ -7,6 +7,7 @@ import type {
   Notebook,
   NotebookContent,
   JobType,
+  Conversation,
   ConversationStatus,
 } from "@/interfaces";
 import {
@@ -928,6 +929,36 @@ export default function NotebookPage() {
     [closeTab],
   );
 
+  const handleNoteRenamedFromList = useCallback((updatedNote: Note) => {
+    setTabs((prev) =>
+      prev.map((t) =>
+        t.kind === "note" && t.refId === updatedNote.id
+          ? {
+              ...t,
+              title: updatedNote.title,
+              note: t.note ? { ...t.note, ...updatedNote } : updatedNote,
+            }
+          : t,
+      ),
+    );
+  }, []);
+
+  const handleNoteDeletedFromList = useCallback(
+    (note: Note) => {
+      const noteTab = tabs.find((t) => t.kind === "note" && t.refId === note.id);
+      if (noteTab) closeTab(tabKey(noteTab));
+    },
+    [tabs, closeTab],
+  );
+
+  const handleConversationRenamed = useCallback((conversation: Conversation) => {
+    setTabs((prev) =>
+      prev.map((t) =>
+        t.kind === "chat" && t.refId === conversation.id ? { ...t, title: conversation.title } : t,
+      ),
+    );
+  }, []);
+
   useEffect(() => {
     if (notebook?.title) {
       setNewTitle(notebook.title);
@@ -1317,6 +1348,8 @@ export default function NotebookPage() {
       onNoteSelect={(note: Note) =>
         openTab({ kind: "note", refId: note.id, title: note.title, note })
       }
+      onNoteRenamed={handleNoteRenamedFromList}
+      onNoteDeleted={handleNoteDeletedFromList}
       refreshTrigger={notesRefreshKey}
     />
   );
@@ -1650,6 +1683,7 @@ export default function NotebookPage() {
                         onSelectConversation={(id, title) =>
                           openTab({ kind: "chat", refId: id, title })
                         }
+                        onConversationRenamed={handleConversationRenamed}
                         onNewConversation={openNewChatTab}
                       />
                     ),
