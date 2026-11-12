@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { Spinner } from "./Spinner";
 
 type SidePanelProps = {
   title: string;
@@ -8,6 +9,8 @@ type SidePanelProps = {
   children: ReactNode;
   className?: string;
   contentClassName?: string;
+  loading?: boolean;
+  loadingFallback?: ReactNode;
 };
 
 export function SidePanel({
@@ -17,6 +20,8 @@ export function SidePanel({
   children,
   className,
   contentClassName,
+  loading = false,
+  loadingFallback,
 }: SidePanelProps) {
   return (
     <div className={cn("flex h-full w-full flex-col overflow-hidden", className)}>
@@ -27,7 +32,18 @@ export function SidePanel({
         </div>
       </div>
       {toolbar ? <div className="shrink-0 px-4 pt-3">{toolbar}</div> : null}
-      <div className={cn("min-h-0 flex-1 overflow-y-auto", contentClassName)}>{children}</div>
+      <div
+        aria-busy={loading || undefined}
+        className={cn("min-h-0 flex-1 overflow-y-auto", contentClassName)}
+      >
+        {loading
+          ? (loadingFallback ?? (
+              <div className="flex size-full items-center justify-center">
+                <Spinner />
+              </div>
+            ))
+          : children}
+      </div>
     </div>
   );
 }

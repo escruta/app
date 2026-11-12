@@ -47,9 +47,11 @@ export function NotesCard({ notebookId, onNoteSelect, refreshTrigger }: NotesCar
     }
   }, [refreshTrigger]);
 
-  const { data: groups, refetch: refetchGroups } = useFetch<NoteGroup[]>(
-    `notebooks/${notebookId}/note-groups`,
-  );
+  const {
+    data: groups,
+    loading: groupsLoading,
+    refetch: refetchGroups,
+  } = useFetch<NoteGroup[]>(`notebooks/${notebookId}/note-groups`);
 
   const { loading: creatingGroup, refetch: createGroup } = useFetch<NoteGroup>(
     `notebooks/${notebookId}/note-groups`,
@@ -210,6 +212,7 @@ export function NotesCard({ notebookId, onNoteSelect, refreshTrigger }: NotesCar
   }));
   const ungroupedNotes = (notes ?? []).filter((note) => !getGroupId(note));
   const hasGroups = (groups ?? []).length > 0;
+  const isInitialLoading = (loading && !notes) || (groupsLoading && !groups);
 
   return (
     <>
@@ -238,12 +241,9 @@ export function NotesCard({ notebookId, onNoteSelect, refreshTrigger }: NotesCar
           </>
         }
         contentClassName="px-4"
+        loading={isInitialLoading}
       >
-        {loading ? (
-          <div className="flex size-full items-center justify-center">
-            <Spinner />
-          </div>
-        ) : error ? (
+        {error ? (
           <div className="text-sm text-red-500">We couldn't load your notes: {error.message}</div>
         ) : notes && notes.length > 0 ? (
           <PanelList
