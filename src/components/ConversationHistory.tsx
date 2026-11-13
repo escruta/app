@@ -1,4 +1,4 @@
-import { useFetch, useRealtimeEvent } from "@/hooks";
+import { useCookie, useFetch, useRealtimeEvent } from "@/hooks";
 import type { ChatMode, Conversation, ConversationStatus, ConversationsPage } from "@/interfaces";
 import { useMemo, useCallback, useState, useEffect, useRef } from "react";
 import { AnimatePresence } from "motion/react";
@@ -11,10 +11,12 @@ import {
   SidePanel,
   PanelList,
   PanelListItem,
+  SortMenu,
 } from "@/components/ui";
 import { ChatNewIcon, ChatIcon, SearchIcon } from "@/components/icons";
 import { ConversationChip } from "./ConversationChip";
 import { cn } from "@/lib/utils";
+import { getSortedItems, type SortOption } from "@/components/settings/lib/sort";
 import type { UseFetchOptions } from "@/hooks/useFetch";
 
 interface ConversationHistoryProps {
@@ -40,10 +42,16 @@ export function ConversationHistory({
 }: ConversationHistoryProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const { value: sortPreference, setValue: setSortPreference } = useCookie<SortOption>(
+    "conversationsSortPreference",
+    "Newest",
+  );
+  const sortBy = sortPreference ?? "Newest";
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [offset, setOffset] = useState<number>(0);
   const [hasMore, setHasMore] = useState<boolean>(false);
   const [total, setTotal] = useState<number>(0);
+  const [isSortChanging, setIsSortChanging] = useState<boolean>(false);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLElement | null>(null);
 
@@ -150,6 +158,7 @@ export function ConversationHistory({
       params: {
         limit: CONVERSATIONS_PER_PAGE.toString(),
         offset: offset.toString(),
+        sort: sortBy,
         ...(debouncedSearch ? { search: debouncedSearch } : {}),
       },
       onSuccess: (data: ConversationsPage) => {
@@ -160,9 +169,13 @@ export function ConversationHistory({
         }
         setHasMore(data.hasMore);
         setTotal(data.total);
+        setIsSortChanging(false);
+      },
+      onError: () => {
+        setIsSortChanging(false);
       },
     }),
-    [debouncedSearch, offset],
+    [debouncedSearch, offset, sortBy],
   );
 
   const { loading, refetch } = useFetch<ConversationsPage>(
@@ -248,26 +261,45 @@ export function ConversationHistory({
     setTotal((prev) => prev - 1);
   }, []);
 
+  const handleSortChange = useCallback(
+    (nextSort: SortOption) => {
+      if (nextSort === sortBy) return;
+      setIsSortChanging(true);
+      setSortPreference(nextSort);
+      setOffset(0);
+      setConversations([]);
+    },
+    [setSortPreference, sortBy],
+  );
+
+  const sortedConversations = useMemo(
+    () => getSortedItems(conversations, sortBy, (conversation) => conversation.updatedAt),
+    [conversations, sortBy],
+  );
+
   const isInitialLoading = loading && conversations.length === 0;
   const isLoadingMore = loading && conversations.length > 0;
   const isSearchPending = searchQuery !== debouncedSearch;
   const isSearchLoading =
     (isSearchPending || (loading && offset === 0)) &&
     Boolean(searchQuery.trim() || debouncedSearch.trim());
-  const showSkeleton = isInitialLoading || isSearchLoading;
+  const showSkeleton = isInitialLoading || isSearchLoading || isSortChanging;
 
   return (
     <SidePanel
       title="Conversations"
       actions={
-        <Tooltip text="New conversation" position="bottom">
-          <IconButton
-            icon={<ChatNewIcon className="size-3.5" />}
-            variant="primary"
-            size="sm"
-            onClick={onNewConversation}
-          />
-        </Tooltip>
+        <>
+          <SortMenu value={sortBy} onChange={handleSortChange} label="conversations" />
+          <Tooltip text="New conversation" position="bottom">
+            <IconButton
+              icon={<ChatNewIcon className="size-3.5" />}
+              variant="primary"
+              size="sm"
+              onClick={onNewConversation}
+            />
+          </Tooltip>
+        </>
       }
       toolbar={
         <TextField
@@ -319,7 +351,7 @@ export function ConversationHistory({
         <>
           <PanelList className="flex flex-col gap-2">
             <AnimatePresence>
-              {conversations.map((conversation) => (
+              {sortedConversations.map((conversation) => (
                 <PanelListItem key={conversation.id}>
                   <ConversationChip
                     conversation={conversation}

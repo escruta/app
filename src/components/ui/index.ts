@@ -18,6 +18,7 @@ export * from "./SelectList";
 export * from "./SideNav";
 export * from "./SidePanel";
 export * from "./Skeleton";
+export * from "./SortMenu";
 export * from "./Spinner";
 export * from "./TextField";
 export * from "./Tooltip";
