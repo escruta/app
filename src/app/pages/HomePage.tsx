@@ -7,6 +7,8 @@ import {
   CardSkeleton,
   IconButton,
   Modal,
+  Select,
+  type SelectOption,
   Spinner,
   TextField,
   Tooltip,
@@ -19,16 +21,43 @@ import {
   NotebookIcon,
   SearchIcon,
   SettingsIcon,
+  SortAlphabetAscIcon,
+  SortAlphabetDescIcon,
+  SortIcon,
 } from "@/components/icons";
 import type { Folder, Notebook, NotebooksPageResponse } from "@/interfaces";
 import {
   getSortedItems,
+  SORT_LABELS,
   type SortOption,
   type ViewMode,
   VIEW_MODE_COOKIE_KEY,
 } from "@/components/settings";
 
 const SEARCH_PAGE_SIZE = 20;
+
+const SORT_SELECT_OPTIONS: SelectOption<SortOption>[] = [
+  {
+    value: "Newest",
+    label: SORT_LABELS.Newest,
+    icon: <SortIcon className="size-4" />,
+  },
+  {
+    value: "Oldest",
+    label: SORT_LABELS.Oldest,
+    icon: <SortIcon className="size-4 rotate-180" />,
+  },
+  {
+    value: "Alphabetical",
+    label: SORT_LABELS.Alphabetical,
+    icon: <SortAlphabetAscIcon className="size-4" />,
+  },
+  {
+    value: "Reverse Alphabetical",
+    label: SORT_LABELS["Reverse Alphabetical"],
+    icon: <SortAlphabetDescIcon className="size-4" />,
+  },
+];
 
 type ActiveFilter = "all" | string;
 
@@ -49,7 +78,10 @@ export default function HomePage() {
   } = useFetch<Folder[]>("/folders");
   const { greeting, subtitle } = useGreeting();
 
-  const { value: globalSort } = useCookie<SortOption>("globalSortPreference", "Newest");
+  const { value: globalSort, setValue: setGlobalSort } = useCookie<SortOption>(
+    "globalSortPreference",
+    "Newest",
+  );
   const { value: globalNotebookViewMode } = useCookie<ViewMode>(VIEW_MODE_COOKIE_KEY, "grid");
 
   const [isCreateNotebookOpen, setIsCreateNotebookOpen] = useState(false);
@@ -270,6 +302,19 @@ export default function HomePage() {
     setActiveFilter((prev) => (prev === folderId ? "all" : folderId));
   };
 
+  const handleSortChange = useCallback(
+    (nextSort: SortOption) => {
+      if (nextSort === sortBy) return;
+      setGlobalSort(nextSort);
+      if (debouncedQuery) {
+        setSearchPage(0);
+        setSearchItems([]);
+        searchHasMoreRef.current = true;
+      }
+    },
+    [sortBy, setGlobalSort, debouncedQuery],
+  );
+
   const handleSaveFolder = () => {
     if (editingFolderId) {
       updateFolder();
@@ -339,18 +384,30 @@ export default function HomePage() {
 
           {isSearchActive ? (
             <section>
-              <h3 className="mb-3 flex items-center justify-between gap-2 text-base font-semibold tracking-tight text-gray-900 dark:text-gray-100">
-                <span className="flex items-center gap-1.5">
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <h3 className="flex items-center gap-1.5 text-base font-semibold tracking-tight text-gray-900 dark:text-gray-100">
                   <SearchIcon className="size-3.5 text-blue-500 dark:text-blue-400" />
-                  Search results
-                </span>
-                {!isSearching && !searchLoading && searchItems.length > 0 && (
-                  <span className="text-xs font-normal text-gray-500 dark:text-gray-400">
-                    {searchItems.length}
-                    {searchHasMore ? "+" : ""} found
-                  </span>
-                )}
-              </h3>
+                  <span>Search results</span>
+                </h3>
+                <div className="flex items-center gap-2">
+                  {!isSearching && !searchLoading && searchItems.length > 0 && (
+                    <span className="text-xs font-normal text-gray-500 dark:text-gray-400">
+                      {searchItems.length}
+                      {searchHasMore ? "+" : ""} found
+                    </span>
+                  )}
+                  <Select
+                    variant="compact"
+                    size="sm"
+                    options={SORT_SELECT_OPTIONS}
+                    value={sortBy}
+                    onChange={handleSortChange}
+                    heading="Sort by"
+                    ariaLabel={`Sort notebooks: ${SORT_LABELS[sortBy]}`}
+                    align="right"
+                  />
+                </div>
+              </div>
 
               {isSearching || (searchLoading && searchItems.length === 0) ? (
                 <div className={notebookGridClassName}>
@@ -409,6 +466,16 @@ export default function HomePage() {
                   <span>Notebooks</span>
                 </h3>
                 <div className="flex items-center gap-2">
+                  <Select
+                    variant="compact"
+                    size="sm"
+                    options={SORT_SELECT_OPTIONS}
+                    value={sortBy}
+                    onChange={handleSortChange}
+                    heading="Sort by"
+                    ariaLabel={`Sort notebooks: ${SORT_LABELS[sortBy]}`}
+                    align="right"
+                  />
                   <Button
                     icon={<FolderAddIcon className="size-4" />}
                     variant="secondary"
