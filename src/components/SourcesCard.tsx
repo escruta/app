@@ -30,10 +30,12 @@ import {
   SidePanel,
   PanelList,
   PanelListItem,
+  SortMenu,
 } from "@/components/ui";
-import { useState, useEffect } from "react";
-import { useFetch } from "@/hooks";
+import { useState, useEffect, useMemo } from "react";
+import { useCookie, useFetch } from "@/hooks";
 import { cn } from "@/lib/utils";
+import { getSortedItems, type SortOption } from "@/components/settings/lib/sort";
 import type { SourceType } from "@/interfaces";
 
 interface SourcesCardProps {
@@ -80,6 +82,11 @@ export function SourcesCard({
     null,
   );
   const [pendingMoves, setPendingMoves] = useState<Record<string, string | null>>({});
+  const { value: sortPreference, setValue: setSortPreference } = useCookie<SortOption>(
+    "sourcesSortPreference",
+    "Newest",
+  );
+  const sortBy = sortPreference ?? "Newest";
 
   const {
     data: groups,
@@ -352,11 +359,12 @@ export function SourcesCard({
     setMoveTarget({ sourceId, groupId: target });
   }
 
+  const sortedSources = useMemo(() => getSortedItems(sources ?? [], sortBy), [sources, sortBy]);
   const groupedSources = (groups ?? []).map((group) => ({
     group,
-    sources: (sources ?? []).filter((s) => getGroupId(s) === group.id),
+    sources: sortedSources.filter((s) => getGroupId(s) === group.id),
   }));
-  const ungroupedSources = (sources ?? []).filter((s) => !getGroupId(s));
+  const ungroupedSources = sortedSources.filter((s) => !getGroupId(s));
   const hasGroups = (groups ?? []).length > 0;
   const isInitialLoading = Boolean(isLoading) || (groupsLoading && !groups);
 
@@ -395,6 +403,7 @@ export function SourcesCard({
                 />
               </MenuContent>
             </Menu>
+            <SortMenu value={sortBy} onChange={setSortPreference} label="sources" />
             <Tooltip text="New group" position="bottom">
               <IconButton
                 icon={<FolderAddIcon />}
@@ -477,7 +486,7 @@ export function SourcesCard({
                     )}
                   </>
                 ) : (
-                  sources.map(renderSourceChip)
+                  sortedSources.map(renderSourceChip)
                 )}
               </PanelList>
             );

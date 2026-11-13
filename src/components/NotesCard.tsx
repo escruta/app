@@ -12,10 +12,12 @@ import {
   SidePanel,
   PanelList,
   PanelListItem,
+  SortMenu,
 } from "@/components/ui";
-import { useFetch } from "@/hooks";
+import { useCookie, useFetch } from "@/hooks";
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { getSortedItems, type SortOption } from "@/components/settings/lib/sort";
+import { useEffect, useMemo, useState } from "react";
 
 interface NotesCardProps {
   notebookId: string;
@@ -48,6 +50,11 @@ export function NotesCard({
     null,
   );
   const [pendingMoves, setPendingMoves] = useState<Record<string, string | null>>({});
+  const { value: sortPreference, setValue: setSortPreference } = useCookie<SortOption>(
+    "notesSortPreference",
+    "Alphabetical",
+  );
+  const sortBy = sortPreference ?? "Alphabetical";
 
   useEffect(() => {
     if (refreshTrigger !== undefined) {
@@ -226,11 +233,12 @@ export function NotesCard({
     </PanelListItem>
   );
 
+  const sortedNotes = useMemo(() => getSortedItems(notes ?? [], sortBy), [notes, sortBy]);
   const groupedNotes = (groups ?? []).map((group) => ({
     group,
-    notes: (notes ?? []).filter((note) => getGroupId(note) === group.id),
+    notes: sortedNotes.filter((note) => getGroupId(note) === group.id),
   }));
-  const ungroupedNotes = (notes ?? []).filter((note) => !getGroupId(note));
+  const ungroupedNotes = sortedNotes.filter((note) => !getGroupId(note));
   const hasGroups = (groups ?? []).length > 0;
   const isInitialLoading = (loading && !notes) || (groupsLoading && !groups);
 
@@ -249,6 +257,7 @@ export function NotesCard({
                 disabled={addingNote}
               />
             </Tooltip>
+            <SortMenu value={sortBy} onChange={setSortPreference} label="notes" />
             <Tooltip text="New group" position="bottom">
               <IconButton
                 icon={<FolderAddIcon />}
@@ -315,18 +324,16 @@ export function NotesCard({
                 )}
               </>
             ) : (
-              [...notes]
-                .sort((a, b) => a.title.localeCompare(b.title))
-                .map((note) => (
-                  <PanelListItem key={note.id}>
-                    <NoteChip
-                      note={note}
-                      onSelect={onNoteSelect}
-                      onRename={handleNoteRenamed}
-                      onDelete={handleNoteDeleted}
-                    />
-                  </PanelListItem>
-                ))
+              sortedNotes.map((note) => (
+                <PanelListItem key={note.id}>
+                  <NoteChip
+                    note={note}
+                    onSelect={onNoteSelect}
+                    onRename={handleNoteRenamed}
+                    onDelete={handleNoteDeleted}
+                  />
+                </PanelListItem>
+              ))
             )}
           </PanelList>
         ) : (

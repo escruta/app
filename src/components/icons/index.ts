@@ -50,6 +50,7 @@ export * from "./RestoreIcon";
 export * from "./SearchIcon";
 export * from "./SendIcon";
 export * from "./SettingsIcon";
+export * from "./SortIcon";
 export * from "./SplitIcon";
 export * from "./StackIcon";
 export * from "./StarsIcon";
