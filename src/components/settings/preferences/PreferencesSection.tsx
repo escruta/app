@@ -2,7 +2,6 @@ import { Divider } from "@/components/ui";
 import { SettingsSection } from "../shared/SettingsSection";
 import { DensitySettings } from "./DensitySection";
 import { DisplaySettings } from "./DisplaySection";
-import { SortSettings } from "./SortSection";
 import { ThemeSettings } from "./ThemeSection";
 
 export function PreferencesSection() {
@@ -17,8 +16,6 @@ export function PreferencesSection() {
       <DisplaySettings />
       <Divider className="my-0" />
       <DensitySettings />
-      <Divider className="my-0" />
-      <SortSettings />
     </SettingsSection>
   );
 }
