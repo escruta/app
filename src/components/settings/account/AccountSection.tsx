@@ -1,8 +1,9 @@
 import { useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { Alert, Button, Divider, Modal, Spinner, TextField } from "@/components/ui";
 import { useAuth, useFetch } from "@/hooks";
-import { CheckIcon } from "@/components/icons";
-import { SettingsSection } from "../shared/SettingsSection";
+import { CheckIcon, ChevronIcon } from "@/components/icons";
+import { SettingsGroup, SettingsSection } from "../shared/SettingsSection";
 import { SignOutModal } from "./SignOutModal";
 
 export function AccountSection() {
@@ -12,6 +13,7 @@ export function AccountSection() {
   const [newName, setNewName] = useState(user?.name || "");
   const [errorNameMessage, setErrorNameMessage] = useState("");
   const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false);
+  const [isDangerZoneOpen, setIsDangerZoneOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [errorDeleteMessage, setErrorDeleteMessage] = useState("");
@@ -69,41 +71,95 @@ export function AccountSection() {
       description="Manage your profile and account information."
       className="gap-6"
     >
-      {user && (
-        <div className="rounded-xs border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-900/50">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Name</p>
-              <p className="font-medium">{user.name}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
-              <p className="font-medium">{user.email}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Member since</p>
-              <p className="font-medium">{new Date(user.createdAt).toLocaleString()}</p>
+      <SettingsGroup
+        title="Profile"
+        description="Your personal information associated with this account."
+      >
+        {user && (
+          <div className="rounded-xs border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-900/50">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Name</p>
+                <p className="font-medium">{user.name}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
+                <p className="font-medium">{user.email}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Member since</p>
+                <p className="font-medium">
+                  {new Date(user.createdAt).toLocaleDateString(undefined, { dateStyle: "medium" })}
+                </p>
+              </div>
             </div>
           </div>
+        )}
+        <div>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setNewName(user?.name || "");
+              setErrorNameMessage("");
+              setIsNameModalOpen(true);
+            }}
+          >
+            Change name
+          </Button>
         </div>
-      )}
-      <div className="flex flex-wrap gap-3">
-        <Button variant="secondary" onClick={() => setIsNameModalOpen(true)}>
-          Change name
-        </Button>
-        <Button variant="secondary" onClick={() => setIsSignOutModalOpen(true)}>
-          Sign out
-        </Button>
-      </div>
-      <Divider />
-      <div className="mt-2 rounded-xs border border-red-200 bg-red-50/60 p-4 dark:border-red-900/60 dark:bg-red-950/30">
-        <h3 className="mb-1 text-sm font-semibold text-red-600 dark:text-red-400">Danger Zone</h3>
-        <p className="mb-4 text-sm text-gray-600 dark:text-gray-400">
-          Once you delete your account, there is no going back. Please be certain.
-        </p>
-        <Button variant="danger" onClick={() => setIsDeleteModalOpen(true)}>
-          Delete account
-        </Button>
+      </SettingsGroup>
+
+      <Divider className="my-0" />
+
+      <SettingsGroup title="Session" description="End your current session on this device.">
+        <div>
+          <Button variant="secondary" onClick={() => setIsSignOutModalOpen(true)}>
+            Sign out
+          </Button>
+        </div>
+      </SettingsGroup>
+
+      <Divider className="my-0" />
+
+      <div className="overflow-hidden rounded-xs border border-gray-200 dark:border-gray-800">
+        <button
+          type="button"
+          onClick={() => setIsDangerZoneOpen((prev) => !prev)}
+          aria-expanded={isDangerZoneOpen}
+          className="flex w-full cursor-pointer items-center justify-between gap-4 px-4 py-3 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-900/50"
+        >
+          <div className="min-w-0">
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Danger zone</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Permanently delete your account and all associated data.
+            </p>
+          </div>
+          <ChevronIcon
+            direction={isDangerZoneOpen ? "up" : "down"}
+            className="size-4 shrink-0 text-gray-400 transition-transform duration-200 dark:text-gray-500"
+          />
+        </button>
+
+        <AnimatePresence initial={false}>
+          {isDangerZoneOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="overflow-hidden"
+            >
+              <div className="border-t border-red-200 bg-red-50/60 p-4 dark:border-red-900/60 dark:bg-red-950/30">
+                <p className="mb-3 text-sm text-gray-600 dark:text-gray-400">
+                  Once you delete your account, there is no going back. Please be certain.
+                </p>
+                <Button variant="danger" onClick={() => setIsDeleteModalOpen(true)}>
+                  Delete account
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <Modal
