@@ -2,6 +2,7 @@ import { useRef, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { SearchIcon, CloseIcon } from "@/components/icons";
 import { IconButton } from "./IconButton";
+import { Tooltip } from "./Tooltip";
 
 interface TextFieldBaseProps {
   id: string;
@@ -91,7 +92,8 @@ export function TextField({
     {
       "hover:border-blue-400 dark:hover:border-blue-500 hover:ring-1 hover:ring-blue-300 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-gray-900":
         !disabled,
-      "pl-10 pr-10": search,
+      "pl-10": search,
+      "pr-10": Boolean(value && onClear),
     },
   );
 
@@ -135,14 +137,19 @@ export function TextField({
           autoComplete={autoComplete}
         />
         {value && onClear && (
-          <IconButton
-            icon={<CloseIcon />}
-            onClick={onClear}
-            size="xs"
-            variant="ghost"
+          <Tooltip
+            text="Clear input"
+            position="top"
             className="absolute top-1/2 right-3 -translate-y-1/2"
-            aria-label="Clear input"
-          />
+          >
+            <IconButton
+              icon={<CloseIcon />}
+              onClick={onClear}
+              size="xs"
+              variant="ghost"
+              aria-label="Clear input"
+            />
+          </Tooltip>
         )}
       </div>
     );
@@ -204,14 +211,19 @@ export function TextField({
             autoComplete={autoComplete}
           />
           {value && onClear && (
-            <IconButton
-              icon={<CloseIcon />}
-              onClick={onClear}
-              size="xs"
-              variant="ghost"
+            <Tooltip
+              text="Clear input"
+              position="top"
               className="absolute top-1/2 right-3 -translate-y-1/2"
-              aria-label="Clear input"
-            />
+            >
+              <IconButton
+                icon={<CloseIcon />}
+                onClick={onClear}
+                size="xs"
+                variant="ghost"
+                aria-label="Clear input"
+              />
+            </Tooltip>
           )}
         </div>
       )}
