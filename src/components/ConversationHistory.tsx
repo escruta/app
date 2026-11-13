@@ -250,6 +250,11 @@ export function ConversationHistory({
 
   const isInitialLoading = loading && conversations.length === 0;
   const isLoadingMore = loading && conversations.length > 0;
+  const isSearchPending = searchQuery !== debouncedSearch;
+  const isSearchLoading =
+    (isSearchPending || (loading && offset === 0)) &&
+    Boolean(searchQuery.trim() || debouncedSearch.trim());
+  const showSkeleton = isInitialLoading || isSearchLoading;
 
   return (
     <SidePanel
@@ -271,16 +276,14 @@ export function ConversationHistory({
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder={
-            !isInitialLoading && total === 0
-              ? "No conversations yet"
-              : "Search your conversations..."
+            !showSkeleton && total === 0 ? "No conversations yet" : "Search your conversations..."
           }
           onClear={() => setSearchQuery("")}
         />
       }
       contentClassName="space-y-2 px-4 py-3"
     >
-      {isInitialLoading ? (
+      {showSkeleton ? (
         <>
           <Skeleton variant="rectangle" height={48} />
           <Skeleton variant="rectangle" height={48} />
