@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { useShortcuts } from "@/hooks";
+import { useShortcuts, useAccessibility } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { IconButton, Tooltip, Button } from "@/components/ui";
 import { ChevronIcon, CheckIcon, RestartIcon } from "@/components/icons";
@@ -27,6 +27,7 @@ const slideVariants = {
 };
 
 export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
+  const { effectiveReducedMotion } = useAccessibility();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [direction, setDirection] = useState(0);
@@ -149,13 +150,17 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
             className="absolute inset-y-0 left-0 bg-blue-500"
             initial={false}
             animate={{ width: `${progressPercentage}%` }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+            transition={
+              effectiveReducedMotion ? { duration: 0 } : { duration: 0.3, ease: "easeOut" }
+            }
           />
           <motion.div
             className="absolute inset-y-0 left-0 bg-green-500"
             initial={false}
             animate={{ width: `${knownPercentage}%` }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+            transition={
+              effectiveReducedMotion ? { duration: 0 } : { duration: 0.3, ease: "easeOut" }
+            }
           />
         </div>
       </div>
@@ -166,21 +171,27 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
             <motion.div
               key={currentIndex}
               custom={direction}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{
-                x: { duration: 0.2, ease: "easeOut" },
-                opacity: { duration: 0.15 },
-              }}
+              variants={effectiveReducedMotion ? undefined : slideVariants}
+              initial={effectiveReducedMotion ? false : "enter"}
+              animate={effectiveReducedMotion ? { opacity: 1, x: 0 } : "center"}
+              exit={effectiveReducedMotion ? undefined : "exit"}
+              transition={
+                effectiveReducedMotion
+                  ? { duration: 0 }
+                  : {
+                      x: { duration: 0.2, ease: "easeOut" },
+                      opacity: { duration: 0.15 },
+                    }
+              }
               className="cursor-pointer perspective-[1000px]"
               onClick={handleFlip}
             >
               <motion.div
                 initial={false}
                 animate={{ rotateY: isFlipped ? 180 : 0 }}
-                transition={{ duration: 0.25, ease: "easeInOut" }}
+                transition={
+                  effectiveReducedMotion ? { duration: 0 } : { duration: 0.25, ease: "easeInOut" }
+                }
                 style={{ transformStyle: "preserve-3d" }}
                 className="relative h-56 w-full"
               >
@@ -200,9 +211,13 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
                     </span>
                     {knownCards.has(currentIndex) && (
                       <motion.span
-                        initial={{ opacity: 0, scale: 0.8 }}
+                        initial={effectiveReducedMotion ? false : { opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        transition={
+                          effectiveReducedMotion
+                            ? { duration: 0 }
+                            : { duration: 0.2, ease: "easeOut" }
+                        }
                         className="flex items-center gap-1 rounded-xs bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-600 dark:bg-green-900/50 dark:text-green-300"
                       >
                         <CheckIcon className="size-3" />

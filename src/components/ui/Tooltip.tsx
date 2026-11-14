@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useRef, useLayoutEffect, useEffect, isValidElement } from "react";
+import { useAccessibility } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { createPortal } from "react-dom";
 
@@ -24,6 +25,7 @@ export function Tooltip({
   delay = 300,
   as = "div",
 }: TooltipProps) {
+  const { effectiveReducedMotion } = useAccessibility();
   const [isVisible, setIsVisible] = useState(false);
   const [coords, setCoords] = useState({ x: 0, y: 0 });
   const [arrowOffset, setArrowOffset] = useState({ x: 0, y: 0 });
@@ -214,10 +216,12 @@ export function Tooltip({
             <motion.div
               ref={tooltipRef}
               key="tooltip"
-              initial={animationProps.initial}
+              initial={effectiveReducedMotion ? false : animationProps.initial}
               animate={animationProps.animate}
-              exit={animationProps.exit}
-              transition={{ duration: 0.15, ease: "easeOut" }}
+              exit={effectiveReducedMotion ? undefined : animationProps.exit}
+              transition={
+                effectiveReducedMotion ? { duration: 0 } : { duration: 0.15, ease: "easeOut" }
+              }
               onMouseEnter={showTooltip}
               onMouseLeave={hideTooltip}
               style={{

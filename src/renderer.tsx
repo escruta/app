@@ -2,7 +2,13 @@ import { useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { createHashRouter, RouterProvider } from "react-router";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { AuthProvider, ThemeProvider, DensityProvider, RealtimeProvider } from "./providers";
+import {
+  AccessibilityProvider,
+  AuthProvider,
+  ThemeProvider,
+  DensityProvider,
+  RealtimeProvider,
+} from "./providers";
 import { WindowChrome } from "./components/ui";
 import { isDesktop } from "./lib/desktop";
 
@@ -52,9 +58,11 @@ createRoot(root).render(
     <RealtimeProvider>
       <ThemeProvider>
         <DensityProvider>
-          <RouterProvider router={router} />
-          <WindowChrome />
-          <WindowRevealer />
+          <AccessibilityProvider>
+            <RouterProvider router={router} />
+            <WindowChrome />
+            <WindowRevealer />
+          </AccessibilityProvider>
         </DensityProvider>
       </ThemeProvider>
     </RealtimeProvider>

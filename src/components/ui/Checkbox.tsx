@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { CheckIcon } from "@/components/icons";
+import { useAccessibility } from "@/hooks";
 import { motion, AnimatePresence } from "motion/react";
 
 interface CheckboxProps {
@@ -19,6 +20,8 @@ export function Checkbox({
   id,
   label,
 }: CheckboxProps) {
+  const { effectiveReducedMotion } = useAccessibility();
+
   return (
     <div className={cn("inline-flex items-center gap-2", className)}>
       <label
@@ -46,10 +49,10 @@ export function Checkbox({
           <AnimatePresence>
             {checked && (
               <motion.div
-                initial={{ scale: 0, opacity: 0 }}
+                initial={effectiveReducedMotion ? false : { scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0, opacity: 0 }}
-                transition={{ duration: 0.1 }}
+                exit={effectiveReducedMotion ? undefined : { scale: 0, opacity: 0 }}
+                transition={effectiveReducedMotion ? { duration: 0 } : { duration: 0.1 }}
                 className="size-3.5 text-white"
               >
                 <CheckIcon />

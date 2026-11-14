@@ -1,5 +1,6 @@
 import { useState, useImperativeHandle, forwardRef } from "react";
 import { motion } from "motion/react";
+import { useAccessibility } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { panelSwitchTransition } from "@/lib/motion";
 import { IconButton } from "./IconButton";
@@ -43,6 +44,7 @@ export const SideNav = forwardRef<SideNavRef, SideNavProps>(
     },
     ref,
   ) => {
+    const { effectiveReducedMotion } = useAccessibility();
     const [activeTabId, setActiveTabId] = useState<string>(
       defaultActiveTab || (items.length > 0 ? items[0].id : ""),
     );
@@ -166,9 +168,9 @@ export const SideNav = forwardRef<SideNavRef, SideNavProps>(
         >
           <motion.div
             key={activeTab.id}
-            initial={{ opacity: 0 }}
+            initial={effectiveReducedMotion ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={panelSwitchTransition}
+            transition={effectiveReducedMotion ? { duration: 0 } : panelSwitchTransition}
             className={cn(
               "flex h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden",
               collapsed && "invisible",

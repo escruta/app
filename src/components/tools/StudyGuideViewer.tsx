@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useAccessibility } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { ChevronIcon } from "@/components/icons";
 import type { StudyGuideResponse } from "@/interfaces";
@@ -22,6 +23,7 @@ function CollapsibleSection({
   defaultOpen = true,
   badge,
 }: CollapsibleSectionProps) {
+  const { effectiveReducedMotion } = useAccessibility();
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
@@ -48,10 +50,12 @@ function CollapsibleSection({
       <AnimatePresence initial={false}>
         {isOpen && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
+            initial={effectiveReducedMotion ? false : { height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
+            exit={effectiveReducedMotion ? undefined : { height: 0, opacity: 0 }}
+            transition={
+              effectiveReducedMotion ? { duration: 0 } : { duration: 0.25, ease: "easeOut" }
+            }
             className="overflow-hidden"
           >
             <div className="bg-white p-4 dark:bg-gray-900">{children}</div>

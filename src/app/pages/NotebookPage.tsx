@@ -21,6 +21,15 @@ import {
   ConversationHistory,
 } from "@/components";
 import { OverviewPanel } from "@/components/chat/OverviewPanel";
+import {
+  DEFAULT_WORKSPACE_SETTINGS,
+  WORKSPACE_AUTO_SPLIT_COOKIE_KEY,
+  WORKSPACE_DEFAULT_SIDEBAR_TAB_COOKIE_KEY,
+  WORKSPACE_RESTORE_TABS_COOKIE_KEY,
+  WORKSPACE_SIDEBAR_BEHAVIOR_COOKIE_KEY,
+  type SidebarBehavior,
+  type SidebarTabId,
+} from "@/components/settings";
 import { isDesktop, isMacDesktop, onCloseTabRequest, onPreviousTabRequest } from "@/lib/desktop";
 import { getSourceIcon } from "@/lib/utils";
 import { cn } from "@/lib/utils";
@@ -306,13 +315,47 @@ export default function NotebookPage() {
   const [conversationStates, setConversationStates] = useState<
     Record<string, { status: ConversationStatus; hasUnseenReply: boolean }>
   >({});
+  const { value: restoreOpenTabs } = useCookie<boolean>(
+    WORKSPACE_RESTORE_TABS_COOKIE_KEY,
+    DEFAULT_WORKSPACE_SETTINGS.restoreOpenTabs,
+  );
+  const { value: sidebarBehavior } = useCookie<SidebarBehavior>(
+    WORKSPACE_SIDEBAR_BEHAVIOR_COOKIE_KEY,
+    DEFAULT_WORKSPACE_SETTINGS.sidebarBehavior,
+  );
+  const { value: defaultSidebarTab } = useCookie<SidebarTabId>(
+    WORKSPACE_DEFAULT_SIDEBAR_TAB_COOKIE_KEY,
+    DEFAULT_WORKSPACE_SETTINGS.defaultSidebarTab,
+  );
+  const { value: autoSplitContent } = useCookie<boolean>(
+    WORKSPACE_AUTO_SPLIT_COOKIE_KEY,
+    DEFAULT_WORKSPACE_SETTINGS.autoSplitContent,
+  );
+
   const { value: leftPanelWidth, setValue: setLeftPanelWidth } = useCookie<number>(
     "notebookLeftPanelWidth",
     DEFAULT_SIDE_PANEL_PX,
   );
-  const { value: isLeftCollapsed, setValue: setIsLeftCollapsed } = useCookie<boolean>(
+  const { value: persistedLeftCollapsed, setValue: setPersistedLeftCollapsed } = useCookie<boolean>(
     "notebookLeftCollapsed",
     false,
+  );
+  const [sessionLeftCollapsed, setSessionLeftCollapsed] = useState<boolean>(() => {
+    if (sidebarBehavior === "expanded") return false;
+    if (sidebarBehavior === "collapsed") return true;
+    return persistedLeftCollapsed;
+  });
+  const isLeftCollapsed =
+    sidebarBehavior === "remember" ? persistedLeftCollapsed : sessionLeftCollapsed;
+  const setIsLeftCollapsed = useCallback(
+    (next: boolean) => {
+      if (sidebarBehavior === "remember") {
+        setPersistedLeftCollapsed(next);
+      } else {
+        setSessionLeftCollapsed(next);
+      }
+    },
+    [sidebarBehavior, setPersistedLeftCollapsed],
   );
   const normalizedLeftPanelWidth = normalizeSidePanelWidth(leftPanelWidth);
   const leftDragStartWidthRef = useRef<number>(normalizedLeftPanelWidth);
@@ -325,9 +368,21 @@ export default function NotebookPage() {
     "notebookSplitRatio",
     50,
   );
-  const { value: splitState, setValue: setSplitState } = useCookie<SplitState | null>(
-    `notebookSplit-${notebookId}`,
-    null,
+  const { value: persistedSplitState, setValue: setPersistedSplitState } =
+    useCookie<SplitState | null>(`notebookSplit-${notebookId}`, null);
+  const [sessionSplitState, setSessionSplitState] = useState<SplitState | null>(() =>
+    restoreOpenTabs ? persistedSplitState : null,
+  );
+  const splitState = restoreOpenTabs ? persistedSplitState : sessionSplitState;
+  const setSplitState = useCallback(
+    (next: SplitState | null) => {
+      if (restoreOpenTabs) {
+        setPersistedSplitState(next);
+      } else {
+        setSessionSplitState(next);
+      }
+    },
+    [restoreOpenTabs, setPersistedSplitState],
   );
 
   type TabDragState = { id: string; x: number; y: number; side: "left" | "right" | null };
@@ -345,14 +400,29 @@ export default function NotebookPage() {
     `notebookActiveTab-${notebookId}`,
     null,
   );
+  const persistActiveKey = useCallback(
+    (key: string) => {
+      if (restoreOpenTabs) {
+        setPersistedActiveKey(key);
+      }
+    },
+    [restoreOpenTabs, setPersistedActiveKey],
+  );
   const [tabs, setTabs] = useState<TabDescriptor[]>(() => {
-    if (persistedTabs && persistedTabs.length > 0) return persistedTabs;
+    if (restoreOpenTabs && persistedTabs && persistedTabs.length > 0) return persistedTabs;
     return [{ kind: "chat", refId: NEW_CHAT_ID, seq: 0, title: "New conversation" }];
   });
   const [activeTabKey, setActiveTabKey] = useState<string>(() => {
-    if (persistedActiveKey && persistedTabs?.some((t) => tabKey(t) === persistedActiveKey))
+    if (
+      restoreOpenTabs &&
+      persistedActiveKey &&
+      persistedTabs?.some((t) => tabKey(t) === persistedActiveKey)
+    ) {
       return persistedActiveKey;
-    if (persistedTabs && persistedTabs.length > 0) return tabKey(persistedTabs[0]);
+    }
+    if (restoreOpenTabs && persistedTabs && persistedTabs.length > 0) {
+      return tabKey(persistedTabs[0]);
+    }
     return tabKey({
       kind: "chat",
       refId: NEW_CHAT_ID,
@@ -361,7 +431,7 @@ export default function NotebookPage() {
     });
   });
   const tabSeqRef = useRef<number>(
-    Math.max(0, ...(persistedTabs ?? []).map((t) => t.seq ?? 0)) + 1,
+    restoreOpenTabs ? Math.max(0, ...(persistedTabs ?? []).map((t) => t.seq ?? 0)) + 1 : 1,
   );
   const mountedTabKeysRef = useRef<Set<string>>(new Set());
 
@@ -504,9 +574,9 @@ export default function NotebookPage() {
         }
       }
       setActiveTabKey(key);
-      setPersistedActiveKey(key);
+      persistActiveKey(key);
     },
-    [effectiveSplitState, tabs, effectiveActiveKey, setSplitState, setPersistedActiveKey],
+    [effectiveSplitState, tabs, effectiveActiveKey, setSplitState, persistActiveKey],
   );
 
   const openTab = useCallback(
@@ -535,8 +605,10 @@ export default function NotebookPage() {
         return false;
       });
 
+      const shouldAutoSplit = autoSplitContent && descriptor.kind !== "chat";
+
       if (existingIndex >= 0) {
-        selectTab(tabKey(tabs[existingIndex]));
+        const existingKey = tabKey(tabs[existingIndex]);
         setTabs((prev) => {
           const updated = [...prev];
           updated[existingIndex] = {
@@ -547,13 +619,51 @@ export default function NotebookPage() {
           };
           return updated;
         });
+
+        if (shouldAutoSplit && !effectiveSplitState && existingKey !== effectiveActiveKey) {
+          setSplitState({
+            leftKey: effectiveActiveKey,
+            rightKey: existingKey,
+            rightGroup: [existingKey],
+          });
+          setActiveTabKey(existingKey);
+          persistActiveKey(existingKey);
+        } else {
+          selectTab(existingKey);
+        }
         return;
       }
 
       setTabs((prev) => [...prev, candidate]);
+      if (shouldAutoSplit) {
+        if (!effectiveSplitState) {
+          setSplitState({
+            leftKey: effectiveActiveKey,
+            rightKey: candidateKey,
+            rightGroup: [candidateKey],
+          });
+        } else {
+          setSplitState({
+            ...effectiveSplitState,
+            rightGroup: [...effectiveSplitState.rightGroup, candidateKey],
+            rightKey: candidateKey,
+          });
+        }
+        setActiveTabKey(candidateKey);
+        persistActiveKey(candidateKey);
+        return;
+      }
       selectTab(candidateKey);
     },
-    [tabs, selectTab],
+    [
+      tabs,
+      selectTab,
+      autoSplitContent,
+      effectiveSplitState,
+      effectiveActiveKey,
+      setSplitState,
+      persistActiveKey,
+    ],
   );
 
   const closeTab = useCallback(
@@ -575,7 +685,7 @@ export default function NotebookPage() {
         setTabs([fresh]);
         setSplitState(null);
         setActiveTabKey(freshKey);
-        setPersistedActiveKey(freshKey);
+        persistActiveKey(freshKey);
         return;
       }
 
@@ -595,7 +705,7 @@ export default function NotebookPage() {
           setTabs(next);
           setSplitState(null);
           setActiveTabKey(fallbackKey);
-          setPersistedActiveKey(fallbackKey);
+          persistActiveKey(fallbackKey);
           return;
         }
 
@@ -626,7 +736,7 @@ export default function NotebookPage() {
         });
         if (nextActiveKey !== activeTabKey) {
           setActiveTabKey(nextActiveKey);
-          setPersistedActiveKey(nextActiveKey);
+          persistActiveKey(nextActiveKey);
         }
         return;
       }
@@ -636,17 +746,10 @@ export default function NotebookPage() {
         const neighbour = next[Math.min(idx, next.length - 1)];
         const neighbourKey = tabKey(neighbour);
         setActiveTabKey(neighbourKey);
-        setPersistedActiveKey(neighbourKey);
+        persistActiveKey(neighbourKey);
       }
     },
-    [
-      tabs,
-      effectiveSplitState,
-      effectiveActiveKey,
-      activeTabKey,
-      setSplitState,
-      setPersistedActiveKey,
-    ],
+    [tabs, effectiveSplitState, effectiveActiveKey, activeTabKey, setSplitState, persistActiveKey],
   );
 
   const cycleTab = useCallback(
@@ -763,15 +866,17 @@ export default function NotebookPage() {
         }
       }
       setActiveTabKey(id);
-      setPersistedActiveKey(id);
+      persistActiveKey(id);
     },
-    [tabs, effectiveSplitState, createChatTabSilent, setSplitState, setPersistedActiveKey],
+    [tabs, effectiveSplitState, createChatTabSilent, setSplitState, persistActiveKey],
   );
   placeTabRef.current = placeTab;
 
   useEffect(() => {
-    setPersistedTabs(sanitizeTabsForCookie(tabs));
-  }, [tabs, setPersistedTabs]);
+    if (restoreOpenTabs) {
+      setPersistedTabs(sanitizeTabsForCookie(tabs));
+    }
+  }, [restoreOpenTabs, tabs, setPersistedTabs]);
 
   useEffect(() => {
     if (!notebook?.sources) return;
@@ -1136,7 +1241,7 @@ export default function NotebookPage() {
     const key = side === "left" ? effectiveSplitState.leftKey : effectiveSplitState.rightKey;
     if (key && key !== activeTabKey) {
       setActiveTabKey(key);
-      setPersistedActiveKey(key);
+      persistActiveKey(key);
     }
   };
 
@@ -1707,7 +1812,7 @@ export default function NotebookPage() {
                     content: toolsListContent,
                   },
                 ]}
-                defaultActiveTab="overview"
+                defaultActiveTab={defaultSidebarTab}
               />
             </div>
           </div>

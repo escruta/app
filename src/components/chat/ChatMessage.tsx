@@ -2,6 +2,7 @@ import { lazy, type ReactNode } from "react";
 import { Alert, Button, Chip } from "@/components/ui";
 import { FileIcon, RestartIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
+import { useAccessibility } from "@/hooks";
 import { motion } from "motion/react";
 
 const Markdown = lazy(() => import("../Markdown").then((module) => ({ default: module.Markdown })));
@@ -117,24 +118,29 @@ interface ChatMessageProps {
 }
 
 export function ChatMessage({ message, index, onRetryFromError, onSourceClick }: ChatMessageProps) {
+  const { effectiveReducedMotion } = useAccessibility();
   const isAI = message.sender === "ai";
 
   return (
     <motion.div
       data-sender={message.sender}
       initial={
-        isAI
-          ? { opacity: 0, y: -5, clipPath: "inset(0 0 100% 0)" }
-          : { opacity: 0, y: 15, scale: 0.98 }
+        effectiveReducedMotion
+          ? false
+          : isAI
+            ? { opacity: 0, y: -5, clipPath: "inset(0 0 100% 0)" }
+            : { opacity: 0, y: 15, scale: 0.98 }
       }
       animate={
         isAI ? { opacity: 1, y: 0, clipPath: "inset(0 0 0% 0)" } : { opacity: 1, y: 0, scale: 1 }
       }
-      exit={{ opacity: 0, y: -10, scale: 0.98 }}
+      exit={effectiveReducedMotion ? undefined : { opacity: 0, y: -10, scale: 0.98 }}
       transition={
-        isAI
-          ? { duration: 0.7, ease: [0.2, 0.65, 0.3, 0.9] }
-          : { type: "spring", stiffness: 250, damping: 25 }
+        effectiveReducedMotion
+          ? { duration: 0 }
+          : isAI
+            ? { duration: 0.7, ease: [0.2, 0.65, 0.3, 0.9] }
+            : { type: "spring", stiffness: 250, damping: 25 }
       }
       className={cn("message-item scroll-mt-4 flex flex-col mb-4", {
         "justify-end items-end": message.sender === "user",

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useAccessibility } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { Button, IconButton, Tooltip } from "@/components/ui";
 import { CheckIcon, CloseIcon, ChevronIcon, RestartIcon } from "@/components/icons";
@@ -37,6 +38,7 @@ const slideVariants = {
 export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProps) {
   const { questions } = data;
 
+  const { effectiveReducedMotion } = useAccessibility();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const [showResults, setShowResults] = useState(false);
@@ -193,13 +195,17 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
             className="absolute inset-y-0 left-0 bg-blue-500"
             initial={false}
             animate={{ width: `${progressPercentage}%` }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+            transition={
+              effectiveReducedMotion ? { duration: 0 } : { duration: 0.3, ease: "easeOut" }
+            }
           />
           <motion.div
             className="absolute inset-y-0 left-0 bg-green-500"
             initial={false}
             animate={{ width: `${correctPercentage}%` }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+            transition={
+              effectiveReducedMotion ? { duration: 0 } : { duration: 0.3, ease: "easeOut" }
+            }
           />
         </div>
       </div>
@@ -210,10 +216,12 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
             {showResults ? (
               <motion.div
                 key="results"
-                initial={{ opacity: 0, y: 12 }}
+                initial={effectiveReducedMotion ? false : { opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
+                exit={effectiveReducedMotion ? undefined : { opacity: 0, y: -12 }}
+                transition={
+                  effectiveReducedMotion ? { duration: 0 } : { duration: 0.25, ease: "easeOut" }
+                }
                 className="flex flex-col gap-4"
               >
                 <div className="rounded-xs border border-gray-200 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-800">
@@ -229,15 +237,19 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
                   <div className="relative mb-3 h-2 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                     <motion.div
                       className="absolute inset-y-0 left-0 rounded-full bg-green-500"
-                      initial={{ width: 0 }}
+                      initial={effectiveReducedMotion ? false : { width: 0 }}
                       animate={{
                         width: `${(score.correct / score.total) * 100}%`,
                       }}
-                      transition={{
-                        duration: 0.6,
-                        ease: "easeOut",
-                        delay: 0.2,
-                      }}
+                      transition={
+                        effectiveReducedMotion
+                          ? { duration: 0 }
+                          : {
+                              duration: 0.6,
+                              ease: "easeOut",
+                              delay: 0.2,
+                            }
+                      }
                     />
                   </div>
 
@@ -268,14 +280,18 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
                 <motion.div
                   key={currentIndex}
                   custom={direction}
-                  variants={slideVariants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  transition={{
-                    x: { duration: 0.2, ease: "easeOut" },
-                    opacity: { duration: 0.15 },
-                  }}
+                  variants={effectiveReducedMotion ? undefined : slideVariants}
+                  initial={effectiveReducedMotion ? false : "enter"}
+                  animate={effectiveReducedMotion ? { opacity: 1, x: 0 } : "center"}
+                  exit={effectiveReducedMotion ? undefined : "exit"}
+                  transition={
+                    effectiveReducedMotion
+                      ? { duration: 0 }
+                      : {
+                          x: { duration: 0.2, ease: "easeOut" },
+                          opacity: { duration: 0.15 },
+                        }
+                  }
                 >
                   <QuestionContent
                     question={questions[currentIndex]}
@@ -349,9 +365,11 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
             <div className="flex justify-end">
               {currentState.answered ? (
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
+                  initial={effectiveReducedMotion ? false : { opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  transition={
+                    effectiveReducedMotion ? { duration: 0 } : { duration: 0.2, ease: "easeOut" }
+                  }
                 >
                   {score.answered === score.total ? (
                     <Button variant="primary" size="sm" onClick={() => setShowResults(true)}>
@@ -404,6 +422,7 @@ function QuestionContent({
   onShortAnswerSubmit,
   onTextChange,
 }: QuestionContentProps) {
+  const { effectiveReducedMotion } = useAccessibility();
   const typeLabel = {
     multiple_choice: "Multiple Choice",
     true_false: "True/False",
@@ -592,9 +611,11 @@ function QuestionContent({
             <AnimatePresence>
               {state.answered && question.sampleAnswer && (
                 <motion.div
-                  initial={{ opacity: 0, height: 0 }}
+                  initial={effectiveReducedMotion ? false : { opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
-                  transition={{ duration: 0.25, ease: "easeOut" }}
+                  transition={
+                    effectiveReducedMotion ? { duration: 0 } : { duration: 0.25, ease: "easeOut" }
+                  }
                   className="overflow-hidden"
                 >
                   <div className="mt-3 rounded-xs border border-blue-200 bg-blue-50 p-3 dark:border-blue-700 dark:bg-blue-900/20">
@@ -615,9 +636,11 @@ function QuestionContent({
       <AnimatePresence>
         {state.showExplanation && question.explanation && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
+            initial={effectiveReducedMotion ? false : { opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
+            transition={
+              effectiveReducedMotion ? { duration: 0 } : { duration: 0.25, ease: "easeOut" }
+            }
             className="overflow-hidden"
           >
             <div className="rounded-xs border border-blue-200 bg-blue-50 p-3 dark:border-blue-700 dark:bg-blue-900/20">

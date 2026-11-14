@@ -1,8 +1,10 @@
 import { Link } from "react-router";
 import { Button } from "@/components/ui";
+import { useAccessibility } from "@/hooks";
 import { motion } from "motion/react";
 
 export function NotFound() {
+  const { effectiveReducedMotion } = useAccessibility();
   const fadeInSlight = {
     initial: { opacity: 0, y: 10 },
     animate: { opacity: 1, y: 0 },
@@ -18,9 +20,9 @@ export function NotFound() {
 
       <div className="relative z-10 mx-auto flex max-w-2xl flex-col items-center space-y-6">
         <motion.div
-          initial={{ opacity: 0 }}
+          initial={effectiveReducedMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
+          transition={effectiveReducedMotion ? { duration: 0 } : { duration: 0.5 }}
           className="space-y-2"
         >
           <h1 className="text-6xl font-extrabold tracking-tight text-gray-900 md:text-7xl dark:text-white">
@@ -29,9 +31,11 @@ export function NotFound() {
         </motion.div>
 
         <motion.div
-          initial={fadeInSlight.initial}
+          initial={effectiveReducedMotion ? false : fadeInSlight.initial}
           animate={fadeInSlight.animate}
-          transition={{ ...fadeInSlight.transition, delay: 0.1 }}
+          transition={
+            effectiveReducedMotion ? { duration: 0 } : { ...fadeInSlight.transition, delay: 0.1 }
+          }
           className="space-y-4"
         >
           <h2 className="text-2xl font-semibold text-gray-800 md:text-3xl dark:text-gray-100">
@@ -43,9 +47,11 @@ export function NotFound() {
         </motion.div>
 
         <motion.div
-          initial={fadeInSlight.initial}
+          initial={effectiveReducedMotion ? false : fadeInSlight.initial}
           animate={fadeInSlight.animate}
-          transition={{ ...fadeInSlight.transition, delay: 0.2 }}
+          transition={
+            effectiveReducedMotion ? { duration: 0 } : { ...fadeInSlight.transition, delay: 0.2 }
+          }
           className="pt-2"
         >
           <Link to="/">

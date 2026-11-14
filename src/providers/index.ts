@@ -1,3 +1,4 @@
+export * from "./AccessibilityProvider";
 export * from "./AuthProvider";
 export * from "./ThemeProvider";
 export * from "./DensityProvider";

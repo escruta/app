@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "motion/react";
 import { Alert, Button, Skeleton } from "@/components/ui";
 import { RestartIcon, StarsIcon } from "@/components/icons";
+import { useAccessibility } from "@/hooks";
 import { getHttpErrorMessage } from "@/lib/utils";
 
 interface ExampleQuestionsProps {
@@ -24,6 +25,7 @@ export function ExampleQuestions({
   refetchExampleQuestions,
   onQuestionSelect,
 }: ExampleQuestionsProps) {
+  const { effectiveReducedMotion } = useAccessibility();
   const showPlaceholder =
     isExampleQuestionsLoading ||
     isAutoRegenerating ||
@@ -51,10 +53,12 @@ export function ExampleQuestions({
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={showPlaceholder ? "loading" : "questions"}
-            initial={{ opacity: 0, y: 4 }}
+            initial={effectiveReducedMotion ? false : { opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 4 }}
-            transition={{ duration: 0.15, ease: "easeInOut" }}
+            exit={effectiveReducedMotion ? undefined : { opacity: 0, y: 4 }}
+            transition={
+              effectiveReducedMotion ? { duration: 0 } : { duration: 0.15, ease: "easeInOut" }
+            }
             className="flex flex-col"
           >
             {showPlaceholder ? (

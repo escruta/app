@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
+import { useAccessibility } from "@/hooks";
 import { CheckIcon } from "@/components/icons";
 
 interface SelectListOption {
@@ -23,6 +24,8 @@ export function SelectList({
   className,
   emptyText = "No options to choose from",
 }: SelectListProps) {
+  const { effectiveReducedMotion } = useAccessibility();
+
   return (
     <div
       className={cn(
@@ -69,10 +72,14 @@ export function SelectList({
                   {isSelected && (
                     <motion.span
                       key="check"
-                      initial={{ scale: 0, opacity: 0 }}
+                      initial={effectiveReducedMotion ? false : { scale: 0, opacity: 0 }}
                       animate={{ scale: 1, opacity: 1 }}
-                      exit={{ scale: 0, opacity: 0 }}
-                      transition={{ duration: 0.12, ease: "easeOut" }}
+                      exit={effectiveReducedMotion ? undefined : { scale: 0, opacity: 0 }}
+                      transition={
+                        effectiveReducedMotion
+                          ? { duration: 0 }
+                          : { duration: 0.12, ease: "easeOut" }
+                      }
                       className="text-blue-600 dark:text-blue-400"
                     >
                       <CheckIcon className="size-4" />

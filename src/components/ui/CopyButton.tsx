@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { IconButton } from "./IconButton";
 import { CopyIcon, CheckIcon } from "@/components/icons";
+import { useAccessibility } from "@/hooks";
 import { motion, AnimatePresence } from "motion/react";
 
 interface CopyButtonProps {
@@ -16,6 +17,7 @@ export function CopyButton({
   className,
   disabled,
 }: CopyButtonProps) {
+  const { effectiveReducedMotion } = useAccessibility();
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -36,10 +38,10 @@ export function CopyButton({
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={copied ? "check" : "copy"}
-            initial={{ opacity: 0, scale: 0.8 }}
+            initial={effectiveReducedMotion ? false : { opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ duration: 0.15 }}
+            exit={effectiveReducedMotion ? undefined : { opacity: 0, scale: 0.8 }}
+            transition={effectiveReducedMotion ? { duration: 0 } : { duration: 0.15 }}
             className="flex size-full items-center justify-center [&>svg]:size-full"
           >
             {copied ? <CheckIcon className="text-green-500" /> : <CopyIcon />}
