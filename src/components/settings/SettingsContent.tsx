@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { DevicesIcon, KeyboardIcon, PaletteIcon, UserIcon } from "@/components/icons";
+import { DevicesIcon, KeyboardIcon, PaletteIcon, StarsIcon, UserIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { AccountSection } from "./account/AccountSection";
+import { AISection } from "./ai/AISection";
 import { PreferencesSection } from "./preferences/PreferencesSection";
 import { SessionsSection } from "./sessions/SessionsSection";
 import { ShortcutsSection } from "./shortcuts/ShortcutsSection";
 
-type SectionId = "preferences" | "shortcuts" | "account" | "sessions";
+type SectionId = "preferences" | "ai" | "shortcuts" | "account" | "sessions";
 
 interface SectionItem {
   id: SectionId;
@@ -20,6 +21,7 @@ const SECTION_GROUPS: { id: string; label: string; items: SectionItem[] }[] = [
     label: "General",
     items: [
       { id: "preferences", label: "Preferences", icon: <PaletteIcon className="size-4" /> },
+      { id: "ai", label: "AI", icon: <StarsIcon className="size-4" /> },
       { id: "shortcuts", label: "Shortcuts", icon: <KeyboardIcon className="size-4" /> },
     ],
   },
@@ -83,6 +85,7 @@ export function SettingsContent() {
 
         <div className="min-w-0 flex-1 p-4 md:border-l md:border-gray-200 md:p-6 dark:border-gray-800">
           {activeSection === "preferences" && <PreferencesSection />}
+          {activeSection === "ai" && <AISection />}
           {activeSection === "shortcuts" && <ShortcutsSection />}
           {activeSection === "account" && <AccountSection />}
           {activeSection === "sessions" && <SessionsSection />}

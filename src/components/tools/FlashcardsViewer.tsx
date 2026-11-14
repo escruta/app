@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { useShortcuts, useAccessibility } from "@/hooks";
+import { useShortcuts, useAccessibility, useCookie } from "@/hooks";
+import {
+  AI_AUTO_ADVANCE_FLASHCARDS_COOKIE_KEY,
+  DEFAULT_AI_SETTINGS,
+} from "@/components/settings/lib/ai";
 import { cn } from "@/lib/utils";
 import { IconButton, Tooltip, Button } from "@/components/ui";
 import { ChevronIcon, CheckIcon, RestartIcon } from "@/components/icons";
@@ -28,6 +32,10 @@ const slideVariants = {
 
 export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
   const { effectiveReducedMotion } = useAccessibility();
+  const { value: autoAdvanceFlashcards } = useCookie<boolean>(
+    AI_AUTO_ADVANCE_FLASHCARDS_COOKIE_KEY,
+    DEFAULT_AI_SETTINGS.autoAdvanceFlashcards,
+  );
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [direction, setDirection] = useState(0);
@@ -64,15 +72,21 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
   }
 
   function handleMarkKnown() {
+    const isCurrentlyKnown = knownCards.has(currentIndex);
     setKnownCards((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(currentIndex)) {
+      if (isCurrentlyKnown) {
         newSet.delete(currentIndex);
       } else {
         newSet.add(currentIndex);
       }
       return newSet;
     });
+    if (!isCurrentlyKnown && autoAdvanceFlashcards && currentIndex < totalCards - 1) {
+      setDirection(1);
+      setCurrentIndex((prev) => prev + 1);
+      setIsFlipped(false);
+    }
   }
 
   function handleRestart() {

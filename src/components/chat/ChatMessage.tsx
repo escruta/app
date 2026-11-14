@@ -30,6 +30,7 @@ export interface Message {
 
 function processMessage(
   message: Message,
+  showCitedSources: boolean,
   onRetry?: () => void,
   onSourceClick?: (sourceId: string) => void,
 ): ReactNode {
@@ -100,8 +101,12 @@ function processMessage(
     return (
       <div key={index}>
         <Markdown
-          text={part.content.replace(/\[source_([a-fA-F0-9-]+)\]/g, "[cite](#cite-$1)")}
-          citedSources={message.citedSources}
+          text={
+            showCitedSources
+              ? part.content.replace(/\[source_([a-fA-F0-9-]+)\]/g, "[cite](#cite-$1)")
+              : part.content.replace(/\s*\[source_([a-fA-F0-9-]+)\]/g, "")
+          }
+          citedSources={showCitedSources ? message.citedSources : undefined}
           onSourceClick={onSourceClick}
           showLinks={false}
         />
@@ -113,11 +118,18 @@ function processMessage(
 interface ChatMessageProps {
   message: Message;
   index: number;
+  showCitedSources?: boolean;
   onRetryFromError: (index: number) => void;
   onSourceClick: (sourceId: string) => void;
 }
 
-export function ChatMessage({ message, index, onRetryFromError, onSourceClick }: ChatMessageProps) {
+export function ChatMessage({
+  message,
+  index,
+  showCitedSources = true,
+  onRetryFromError,
+  onSourceClick,
+}: ChatMessageProps) {
   const { effectiveReducedMotion } = useAccessibility();
   const isAI = message.sender === "ai";
 
@@ -164,41 +176,45 @@ export function ChatMessage({ message, index, onRetryFromError, onSourceClick }:
         >
           {processMessage(
             message,
+            showCitedSources,
             message.error ? () => onRetryFromError(index) : undefined,
             onSourceClick,
           )}
         </div>
 
-        {message.sender === "ai" && message.citedSources && message.citedSources.length > 0 && (
-          <div className="border-t border-gray-200/65 pt-4 dark:border-gray-800/65">
-            <div className="mb-3 text-xs font-bold tracking-widest text-gray-500 uppercase select-none dark:text-gray-400">
-              Cited sources
+        {showCitedSources &&
+          message.sender === "ai" &&
+          message.citedSources &&
+          message.citedSources.length > 0 && (
+            <div className="border-t border-gray-200/65 pt-4 dark:border-gray-800/65">
+              <div className="mb-3 text-xs font-bold tracking-widest text-gray-500 uppercase select-none dark:text-gray-400">
+                Cited sources
+              </div>
+              <div className="flex flex-wrap gap-2 px-1">
+                {Object.values(
+                  message.citedSources.reduce(
+                    (acc, source) => {
+                      if (!acc[source.documentId]) {
+                        acc[source.documentId] = source;
+                      }
+                      return acc;
+                    },
+                    {} as Record<string, CitedSource>,
+                  ),
+                ).map((source, idx) => (
+                  <Chip
+                    key={source.documentId}
+                    onClick={() => onSourceClick(source.documentId)}
+                    title={source.title}
+                    size="sm"
+                    className="max-w-full"
+                  >
+                    <span className="max-w-44 truncate">{source.title || `Source ${idx + 1}`}</span>
+                  </Chip>
+                ))}
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2 px-1">
-              {Object.values(
-                message.citedSources.reduce(
-                  (acc, source) => {
-                    if (!acc[source.documentId]) {
-                      acc[source.documentId] = source;
-                    }
-                    return acc;
-                  },
-                  {} as Record<string, CitedSource>,
-                ),
-              ).map((source, idx) => (
-                <Chip
-                  key={source.documentId}
-                  onClick={() => onSourceClick(source.documentId)}
-                  title={source.title}
-                  size="sm"
-                  className="max-w-full"
-                >
-                  <span className="max-w-44 truncate">{source.title || `Source ${idx + 1}`}</span>
-                </Chip>
-              ))}
-            </div>
-          </div>
-        )}
+          )}
       </div>
 
       {message.sender === "user" &&
