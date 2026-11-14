@@ -4,7 +4,7 @@ import { motion, AnimatePresence, useAnimate } from "motion/react";
 import { IconButton } from "./IconButton";
 import { CloseIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
-import { useIsMobile, useVisualViewportHeight, useShortcut } from "@/hooks";
+import { useIsMobile, useVisualViewportHeight, useShortcut, useAccessibility } from "@/hooks";
 import { Tooltip } from "./Tooltip";
 
 const modalListeners = new Set<() => void>();
@@ -74,6 +74,7 @@ export function Modal({
   onSubmit,
 }: ModalProps) {
   const isMobile = useIsMobile();
+  const { effectiveReducedMotion } = useAccessibility();
   const viewportHeight = useVisualViewportHeight();
   const [scope, animate] = useAnimate();
   const { index } = useModalStack(isOpen);
@@ -86,7 +87,7 @@ export function Modal({
   const canDismiss = closeOnOutsideClick && closeOnEscape;
 
   const handleClose = async () => {
-    if (isMobile && scope.current) {
+    if (isMobile && scope.current && !effectiveReducedMotion) {
       await animate(scope.current, { y: "100%" }, { duration: 0.15, ease: "easeOut" });
     }
     onClose();
@@ -121,10 +122,10 @@ export function Modal({
         key="modal-backdrop"
         className="fixed inset-0 bg-gray-950/30 backdrop-blur-[1px] dark:bg-gray-950/60"
         style={{ zIndex: zIndexBackdrop }}
-        initial={{ opacity: 0 }}
+        initial={effectiveReducedMotion ? false : { opacity: 0 }}
         animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.15, ease: "easeOut" }}
+        exit={effectiveReducedMotion ? undefined : { opacity: 0 }}
+        transition={effectiveReducedMotion ? { duration: 0 } : { duration: 0.15, ease: "easeOut" }}
         onClick={closeOnOutsideClick ? handleClose : undefined}
       />
 
@@ -141,16 +142,20 @@ export function Modal({
             role="dialog"
             aria-modal="true"
             aria-labelledby="modal-title"
-            initial={{ y: "100%" }}
+            initial={effectiveReducedMotion ? false : { y: "100%" }}
             animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ duration: 0.15, ease: "easeOut" }}
+            exit={effectiveReducedMotion ? undefined : { y: "100%" }}
+            transition={
+              effectiveReducedMotion ? { duration: 0 } : { duration: 0.15, ease: "easeOut" }
+            }
             drag={canDismiss ? "y" : false}
             dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={{ top: 0, bottom: 0.5 }}
             onDragEnd={async (_, info) => {
               if (info.offset.y > 100 || info.velocity.y > 500) {
-                await animate(scope.current, { y: "100%" }, { duration: 0.1, ease: "easeOut" });
+                if (!effectiveReducedMotion) {
+                  await animate(scope.current, { y: "100%" }, { duration: 0.1, ease: "easeOut" });
+                }
                 onClose();
               }
             }}
@@ -226,10 +231,10 @@ export function Modal({
             role="dialog"
             aria-modal="true"
             aria-labelledby="modal-title"
-            initial={{ opacity: 0, y: -10 }}
+            initial={effectiveReducedMotion ? false : { opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.15 }}
+            exit={effectiveReducedMotion ? undefined : { opacity: 0, y: -10 }}
+            transition={effectiveReducedMotion ? { duration: 0 } : { duration: 0.15 }}
           >
             <div className="flex items-center justify-between gap-4 border-b border-gray-200 p-4 dark:border-gray-700">
               <div className="flex flex-col gap-0.5">

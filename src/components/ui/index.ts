@@ -20,6 +20,7 @@ export * from "./SidePanel";
 export * from "./Skeleton";
 export * from "./SortMenu";
 export * from "./Spinner";
+export * from "./Switch";
 export * from "./TextField";
 export * from "./Tooltip";
 export * from "./ViewerFrame";

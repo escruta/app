@@ -1,4 +1,11 @@
-import { useFetch, useCookie, useChatStream, useRealtimeEvent, useShortcut } from "@/hooks";
+import {
+  useFetch,
+  useCookie,
+  useChatStream,
+  useRealtimeEvent,
+  useShortcut,
+  useAccessibility,
+} from "@/hooks";
 import { FileIcon, SendIcon } from "@/components/icons";
 import { Divider, TextField, IconButton, Tooltip, Spinner } from "@/components/ui";
 import type { ConversationMessages, ConversationStatus, Source } from "@/interfaces";
@@ -49,6 +56,7 @@ export function ChatCard({
   onConversationSeen,
   onConversationStateChange,
 }: ChatCardProps) {
+  const { effectiveReducedMotion } = useAccessibility();
   const sourcesCount = sources.length;
   const readySourcesCount = sources.filter((s) => s.status === "READY").length;
 
@@ -630,10 +638,10 @@ export function ChatCard({
                 isLoadingConversation ||
                 (isBackendGenerating && !isChatLoading)) && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={effectiveReducedMotion ? false : { opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.2 }}
+                  exit={effectiveReducedMotion ? undefined : { opacity: 0, scale: 0.9 }}
+                  transition={effectiveReducedMotion ? { duration: 0 } : { duration: 0.2 }}
                   className="flex justify-start"
                 >
                   <Spinner />

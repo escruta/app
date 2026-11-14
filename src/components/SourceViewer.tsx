@@ -1,6 +1,6 @@
 import { memo, useEffect, useMemo, useRef, useState, useTransition, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { useFetch, useRealtimeEvent } from "@/hooks";
+import { useFetch, useRealtimeEvent, useAccessibility } from "@/hooks";
 import type { Source } from "@/interfaces";
 import {
   DeleteIcon,
@@ -117,6 +117,7 @@ export const SourceViewer = memo(function SourceViewer({
     refetch: refetchSource,
   } = useFetch<Source>(`notebooks/${notebookId}/sources/${source.id}`);
 
+  const { effectiveReducedMotion } = useAccessibility();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [_, startTransition] = useTransition();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -411,10 +412,14 @@ export const SourceViewer = memo(function SourceViewer({
                               ? "summary"
                               : "empty"
                       }
-                      initial={{ opacity: 0 }}
+                      initial={effectiveReducedMotion ? false : { opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.15, ease: "easeInOut" }}
+                      exit={effectiveReducedMotion ? undefined : { opacity: 0 }}
+                      transition={
+                        effectiveReducedMotion
+                          ? { duration: 0 }
+                          : { duration: 0.15, ease: "easeInOut" }
+                      }
                     >
                       {isSummaryLoading || isRegeneratingSummary || isSummaryGenerating ? (
                         <Skeleton lines={6} />

@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Alert, Button, Divider, Modal, Spinner, TextField } from "@/components/ui";
-import { useAuth, useFetch } from "@/hooks";
+import { useAuth, useFetch, useAccessibility } from "@/hooks";
 import { CheckIcon, ChevronIcon } from "@/components/icons";
 import { SettingsGroup, SettingsSection } from "../shared/SettingsSection";
 import { SignOutModal } from "./SignOutModal";
 
 export function AccountSection() {
   const { signOut, currentUser: user, fetchUserData } = useAuth();
+  const { effectiveReducedMotion } = useAccessibility();
 
   const [isNameModalOpen, setIsNameModalOpen] = useState(false);
   const [newName, setNewName] = useState(user?.name || "");
@@ -143,10 +144,12 @@ export function AccountSection() {
         <AnimatePresence initial={false}>
           {isDangerZoneOpen && (
             <motion.div
-              initial={{ height: 0, opacity: 0 }}
+              initial={effectiveReducedMotion ? false : { height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
+              exit={effectiveReducedMotion ? undefined : { height: 0, opacity: 0 }}
+              transition={
+                effectiveReducedMotion ? { duration: 0 } : { duration: 0.2, ease: "easeOut" }
+              }
               className="overflow-hidden"
             >
               <div className="border-t border-red-200 bg-red-50/60 p-4 dark:border-red-900/60 dark:bg-red-950/30">

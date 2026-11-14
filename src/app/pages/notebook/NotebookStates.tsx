@@ -1,20 +1,23 @@
 import { motion } from "motion/react";
 import { NotebookIcon, FireIcon } from "@/components/icons";
+import { useAccessibility } from "@/hooks";
 
 interface ErrorProps {
   error: any;
 }
 
 export function NotebookErrorState({ error }: ErrorProps) {
+  const { effectiveReducedMotion } = useAccessibility();
+
   if (error.status === 404) {
     return (
       <div className="flex h-screen w-full flex-col justify-center">
         <div className="border-y border-gray-200 bg-gray-50 px-6 py-5 dark:border-gray-700 dark:bg-gray-950">
           <motion.div
             className="flex items-center justify-center py-12"
-            initial={{ opacity: 0, y: 20 }}
+            initial={effectiveReducedMotion ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={effectiveReducedMotion ? { duration: 0 } : { duration: 0.3 }}
           >
             <div className="text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-xs bg-gray-100 dark:bg-gray-800">
@@ -41,9 +44,9 @@ export function NotebookErrorState({ error }: ErrorProps) {
         <div className="border-y border-gray-200 bg-gray-50 px-6 py-5 dark:border-gray-700 dark:bg-gray-950">
           <motion.div
             className="flex items-center justify-center py-12"
-            initial={{ opacity: 0, y: 20 }}
+            initial={effectiveReducedMotion ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={effectiveReducedMotion ? { duration: 0 } : { duration: 0.3 }}
           >
             <div className="text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-xs bg-yellow-50 dark:bg-yellow-950">
@@ -69,9 +72,9 @@ export function NotebookErrorState({ error }: ErrorProps) {
       <div className="border-y border-gray-200 bg-gray-50 px-6 py-5 dark:border-gray-700 dark:bg-gray-950">
         <motion.div
           className="flex items-center justify-center py-12"
-          initial={{ opacity: 0, y: 20 }}
+          initial={effectiveReducedMotion ? false : { opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
+          transition={effectiveReducedMotion ? { duration: 0 } : { duration: 0.3 }}
         >
           <div className="max-w-md text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-xs bg-red-50 dark:bg-red-950">

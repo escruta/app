@@ -364,3 +364,45 @@ body.tab-dragging * {
   visibility: hidden;
   z-index: -1;
 }
+
+html[data-motion="reduced"] body {
+  scroll-behavior: auto;
+}
+
+html[data-motion="reduced"] *,
+html[data-motion="reduced"] *::before,
+html[data-motion="reduced"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+  scroll-behavior: auto !important;
+}
+
+html[data-motion="reduced"] .animate-ping,
+html[data-motion="reduced"] .animate-shimmer {
+  animation: none !important;
+}
+
+html[data-motion="reduced"] input:-webkit-autofill,
+html[data-motion="reduced"] input:-webkit-autofill:focus,
+html[data-motion="reduced"] input:-webkit-autofill:hover,
+html[data-motion="reduced"] input:-webkit-autofill:active {
+  transition: background-color 5000s ease-in-out 0s !important;
+}
+
+html[data-reduce-transparency="true"] *,
+html[data-reduce-transparency="true"] *::before,
+html[data-reduce-transparency="true"] *::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html[data-enhanced-focus="true"] :focus-visible {
+  outline: 2px solid var(--color-blue-500) !important;
+  outline-offset: 2px !important;
+}
+
+html.dark[data-enhanced-focus="true"] :focus-visible {
+  outline-color: var(--color-blue-400) !important;
+}

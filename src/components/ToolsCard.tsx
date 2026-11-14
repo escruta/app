@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { panelSwitchTransition } from "@/lib/motion";
 import { ToolCard } from "./ToolCard";
 import { ToolResultViewer } from "./ToolResultViewer";
-import { useGenerationJob } from "@/hooks";
+import { useGenerationJob, useAccessibility } from "@/hooks";
 import type { JobType, GenerationJob } from "@/interfaces";
 
 interface Tool {
@@ -39,6 +39,7 @@ export function ToolsCard({
   hasSources = true,
   onOpenTool,
 }: ToolsCardProps) {
+  const { effectiveReducedMotion } = useAccessibility();
   const [selectedTool, setSelectedTool] = useState<SelectedTool | null>(null);
 
   const mindMapGeneration = useGenerationJob(notebookId, "MIND_MAP");
@@ -102,10 +103,10 @@ export function ToolsCard({
         {!onOpenTool && selectedTool ? (
           <motion.div
             key={selectedTool.tool.type}
-            initial={{ opacity: 0 }}
+            initial={effectiveReducedMotion ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={panelSwitchTransition}
+            exit={effectiveReducedMotion ? undefined : { opacity: 0 }}
+            transition={effectiveReducedMotion ? { duration: 0 } : panelSwitchTransition}
             className="absolute inset-0 z-10 h-[96%] self-end"
           >
             <ToolResultViewer

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback, type ReactNode } from "react";
 import { motion } from "motion/react";
 import { Markdown } from "../Markdown";
-import { useFetch, useRealtimeEvent } from "@/hooks";
+import { useFetch, useRealtimeEvent, useAccessibility } from "@/hooks";
 import {
   Alert,
   Button,
@@ -56,6 +56,7 @@ export function OverviewPanel({
   onOpenSource,
   onOpenNote,
 }: OverviewPanelProps) {
+  const { effectiveReducedMotion } = useAccessibility();
   const [summaryGenerateError, setSummaryGenerateError] = useState<FetchError | null>(null);
   const [isSummaryGenerating, setIsSummaryGenerating] = useState(false);
   const [isAutoRegenerating, setIsAutoRegenerating] = useState(false);
@@ -221,9 +222,9 @@ export function OverviewPanel({
                 ? "summary"
                 : "empty"
         }
-        initial={{ opacity: 0 }}
+        initial={effectiveReducedMotion ? false : { opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={panelSwitchTransition}
+        transition={effectiveReducedMotion ? { duration: 0 } : panelSwitchTransition}
         className="max-w-none"
       >
         {isLoading ? (

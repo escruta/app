@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
-import { useShortcuts } from "@/hooks";
+import { useShortcuts, useAccessibility } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { CheckIcon, ChevronIcon } from "@/components/icons";
@@ -34,6 +34,7 @@ export function Dropdown<T>({
   align = "left",
   renderOption = (opt) => String(opt),
 }: DropdownProps<T>) {
+  const { effectiveReducedMotion } = useAccessibility();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -202,13 +203,17 @@ export function Dropdown<T>({
             {isOpen && !disabled && (
               <motion.div
                 ref={menuRef}
-                initial={{ opacity: 0, y: up ? 10 : -10 }}
+                initial={effectiveReducedMotion ? false : { opacity: 0, y: up ? 10 : -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: up ? 10 : -10 }}
-                transition={{
-                  duration: 0.2,
-                  ease: "easeOut",
-                }}
+                exit={effectiveReducedMotion ? undefined : { opacity: 0, y: up ? 10 : -10 }}
+                transition={
+                  effectiveReducedMotion
+                    ? { duration: 0 }
+                    : {
+                        duration: 0.2,
+                        ease: "easeOut",
+                      }
+                }
                 style={{
                   position: "fixed",
                   zIndex: 1000,
@@ -227,13 +232,17 @@ export function Dropdown<T>({
                     <motion.button
                       key={String(option)}
                       type="button"
-                      initial={{ opacity: 0 }}
+                      initial={effectiveReducedMotion ? false : { opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      transition={{
-                        duration: 0.05,
-                        delay: index * 0.015,
-                        ease: "easeOut",
-                      }}
+                      transition={
+                        effectiveReducedMotion
+                          ? { duration: 0 }
+                          : {
+                              duration: 0.05,
+                              delay: index * 0.015,
+                              ease: "easeOut",
+                            }
+                      }
                       onClick={() => handleSelect(option)}
                       className={cn(
                         "relative flex w-full items-center text-left font-medium",

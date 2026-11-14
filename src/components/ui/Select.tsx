@@ -2,7 +2,7 @@ import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { CheckIcon, ChevronIcon } from "@/components/icons";
-import { useShortcut } from "@/hooks";
+import { useShortcut, useAccessibility } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { IconButton } from "./IconButton";
 
@@ -45,6 +45,7 @@ export function Select<T>({
   ariaLabel,
   onOpenChange,
 }: SelectProps<T>) {
+  const { effectiveReducedMotion } = useAccessibility();
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -446,10 +447,12 @@ export function Select<T>({
               role="listbox"
               aria-label={ariaLabel ?? heading ?? label}
               aria-activedescendant={activeIndex >= 0 ? optionId(activeIndex) : undefined}
-              initial={{ opacity: 0, y: up ? 10 : -10 }}
+              initial={effectiveReducedMotion ? false : { opacity: 0, y: up ? 10 : -10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: up ? 10 : -10 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
+              exit={effectiveReducedMotion ? undefined : { opacity: 0, y: up ? 10 : -10 }}
+              transition={
+                effectiveReducedMotion ? { duration: 0 } : { duration: 0.2, ease: "easeOut" }
+              }
               style={{
                 position: "fixed",
                 zIndex: 1000,

@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { useShortcut } from "@/hooks";
+import { useShortcut, useAccessibility } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { ChevronIcon } from "@/components/icons";
 import type { MindMapResponse, Branch } from "@/interfaces";
@@ -88,6 +88,7 @@ function BranchNode({
   collapseTrigger,
   onNodeSelect,
 }: BranchNodeProps) {
+  const { effectiveReducedMotion } = useAccessibility();
   const [isExpanded, setIsExpanded] = useState(false);
   const hasChildren = branch.children && branch.children.length > 0;
   const isLeaf = !hasChildren;
@@ -164,10 +165,12 @@ function BranchNode({
         <AnimatePresence>
           {hasChildren && isExpanded && (
             <motion.div
-              initial={{ opacity: 0, width: 0 }}
+              initial={effectiveReducedMotion ? false : { opacity: 0, width: 0 }}
               animate={{ opacity: 1, width: 24 }}
-              exit={{ opacity: 0, width: 0 }}
-              transition={{ duration: 0.2, ease: "easeInOut" }}
+              exit={effectiveReducedMotion ? undefined : { opacity: 0, width: 0 }}
+              transition={
+                effectiveReducedMotion ? { duration: 0 } : { duration: 0.2, ease: "easeInOut" }
+              }
               className={cn("h-px shrink-0", getLineColor(level))}
             />
           )}
@@ -176,10 +179,12 @@ function BranchNode({
         <AnimatePresence>
           {hasChildren && isExpanded && (
             <motion.div
-              initial={{ opacity: 0, width: 0 }}
+              initial={effectiveReducedMotion ? false : { opacity: 0, width: 0 }}
               animate={{ opacity: 1, width: "auto" }}
-              exit={{ opacity: 0, width: 0 }}
-              transition={{ duration: 0.2, ease: "easeInOut" }}
+              exit={effectiveReducedMotion ? undefined : { opacity: 0, width: 0 }}
+              transition={
+                effectiveReducedMotion ? { duration: 0 } : { duration: 0.2, ease: "easeInOut" }
+              }
               className="flex flex-col justify-center overflow-hidden"
             >
               {branch.children.map((child, index) => (
@@ -228,6 +233,7 @@ function MainBranch({
   collapseTrigger: number;
   onNodeSelect?: (question: string) => void;
 }) {
+  const { effectiveReducedMotion } = useAccessibility();
   const [isExpanded, setIsExpanded] = useState(false);
   const hasChildren = branch.children && branch.children.length > 0;
 
@@ -301,10 +307,12 @@ function MainBranch({
         <AnimatePresence>
           {hasChildren && isExpanded && (
             <motion.div
-              initial={{ opacity: 0, width: 0 }}
+              initial={effectiveReducedMotion ? false : { opacity: 0, width: 0 }}
               animate={{ opacity: 1, width: 32 }}
-              exit={{ opacity: 0, width: 0 }}
-              transition={{ duration: 0.2, ease: "easeInOut" }}
+              exit={effectiveReducedMotion ? undefined : { opacity: 0, width: 0 }}
+              transition={
+                effectiveReducedMotion ? { duration: 0 } : { duration: 0.2, ease: "easeInOut" }
+              }
               className={cn("h-px shrink-0", getLineColor(1))}
             />
           )}
@@ -313,10 +321,12 @@ function MainBranch({
         <AnimatePresence>
           {hasChildren && isExpanded && (
             <motion.div
-              initial={{ opacity: 0, width: 0 }}
+              initial={effectiveReducedMotion ? false : { opacity: 0, width: 0 }}
               animate={{ opacity: 1, width: "auto" }}
-              exit={{ opacity: 0, width: 0 }}
-              transition={{ duration: 0.2, ease: "easeInOut" }}
+              exit={effectiveReducedMotion ? undefined : { opacity: 0, width: 0 }}
+              transition={
+                effectiveReducedMotion ? { duration: 0 } : { duration: 0.2, ease: "easeInOut" }
+              }
               className="flex flex-col justify-center overflow-hidden"
             >
               {branch.children.map((child, index) => (

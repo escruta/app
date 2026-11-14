@@ -11,7 +11,7 @@ import {
   type HTMLAttributes,
 } from "react";
 import { createPortal } from "react-dom";
-import { useShortcut } from "@/hooks";
+import { useShortcut, useAccessibility } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { CopyIcon, CutIcon, PasteIcon } from "@/components/icons";
@@ -202,6 +202,7 @@ export function ContextMenuContent({
     };
   }, [context?.state.isOpen, calculatePosition]);
 
+  const { effectiveReducedMotion } = useAccessibility();
   const setContentRef = useCallback(
     (node: HTMLDivElement | null) => {
       localRef.current = node;
@@ -222,10 +223,12 @@ export function ContextMenuContent({
         <motion.div
           ref={setContentRef}
           role="menu"
-          initial={{ opacity: 0, scale: 0.96 }}
+          initial={effectiveReducedMotion ? false : { opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.96 }}
-          transition={{ duration: 0.12, ease: "easeOut" }}
+          exit={effectiveReducedMotion ? undefined : { opacity: 0, scale: 0.96 }}
+          transition={
+            effectiveReducedMotion ? { duration: 0 } : { duration: 0.12, ease: "easeOut" }
+          }
           style={{
             position: "fixed",
             ...adjustedPosition,

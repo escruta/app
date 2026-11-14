@@ -13,7 +13,7 @@ import {
   type HTMLAttributes,
 } from "react";
 import { createPortal } from "react-dom";
-import { useShortcut } from "@/hooks";
+import { useShortcut, useAccessibility } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 
@@ -165,6 +165,7 @@ export function MenuContent({
     };
   }, [context?.isOpen, calculatePosition]);
 
+  const { effectiveReducedMotion } = useAccessibility();
   const setContentRef = useCallback(
     (node: HTMLDivElement | null) => {
       if (node && context) {
@@ -182,10 +183,12 @@ export function MenuContent({
         <motion.div
           ref={setContentRef}
           role="menu"
-          initial={{ opacity: 0, y: -4 }}
+          initial={effectiveReducedMotion ? false : { opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -4 }}
-          transition={{ duration: 0.15, ease: "easeOut" }}
+          exit={effectiveReducedMotion ? undefined : { opacity: 0, y: -4 }}
+          transition={
+            effectiveReducedMotion ? { duration: 0 } : { duration: 0.15, ease: "easeOut" }
+          }
           style={{
             position: "fixed",
             ...position,

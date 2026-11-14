@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import { CheckIcon } from "@/components/icons";
+import { useAccessibility } from "@/hooks";
 import { cn } from "@/lib/utils";
 
 interface SelectionIndicatorProps {
@@ -8,6 +9,8 @@ interface SelectionIndicatorProps {
 }
 
 export function SelectionIndicator({ selected, className }: SelectionIndicatorProps) {
+  const { effectiveReducedMotion } = useAccessibility();
+
   return (
     <span
       aria-hidden="true"
@@ -23,10 +26,12 @@ export function SelectionIndicator({ selected, className }: SelectionIndicatorPr
         {selected && (
           <motion.span
             key="check"
-            initial={{ scale: 0, opacity: 0 }}
+            initial={effectiveReducedMotion ? false : { scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            transition={{ duration: 0.12, ease: "easeOut" }}
+            exit={effectiveReducedMotion ? undefined : { scale: 0, opacity: 0 }}
+            transition={
+              effectiveReducedMotion ? { duration: 0 } : { duration: 0.12, ease: "easeOut" }
+            }
             className="flex items-center justify-center"
           >
             <CheckIcon className="size-3" />

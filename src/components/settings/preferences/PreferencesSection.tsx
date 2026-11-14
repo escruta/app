@@ -1,8 +1,10 @@
 import { Divider } from "@/components/ui";
 import { SettingsSection } from "../shared/SettingsSection";
+import { AccessibilitySettings } from "./AccessibilitySection";
 import { DensitySettings } from "./DensitySection";
 import { DisplaySettings } from "./DisplaySection";
 import { ThemeSettings } from "./ThemeSection";
+import { WorkspaceSettings } from "./WorkspaceSection";
 
 export function PreferencesSection() {
   return (
@@ -16,6 +18,10 @@ export function PreferencesSection() {
       <DisplaySettings />
       <Divider className="my-0" />
       <DensitySettings />
+      <Divider className="my-0" />
+      <WorkspaceSettings />
+      <Divider className="my-0" />
+      <AccessibilitySettings />
     </SettingsSection>
   );
 }
