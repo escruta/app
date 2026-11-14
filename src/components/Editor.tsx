@@ -14,6 +14,7 @@ import TaskItem from "@tiptap/extension-task-item";
 import Code from "@tiptap/extension-code";
 import { Markdown } from "@tiptap/markdown";
 import { cn } from "@/lib/utils";
+import { readClipboardText, writeClipboardText } from "@/lib/clipboard";
 import { useShortcut } from "@/hooks";
 import { toTiptapShortcut } from "@/lib/shortcuts";
 import { EditorCodeBlock } from "./EditorCodeBlock";
@@ -291,10 +292,10 @@ export function Editor({
         type: "doc",
         content: slice.content.toJSON(),
       });
-      navigator.clipboard?.writeText(markdown);
+      void writeClipboardText(markdown).catch((e) => console.warn("Clipboard write failed:", e));
     } else {
       const text = editor.state.doc.textBetween(from, to, "\n");
-      navigator.clipboard?.writeText(text);
+      void writeClipboardText(text).catch((e) => console.warn("Clipboard write failed:", e));
     }
   };
 
@@ -309,30 +310,54 @@ export function Editor({
         type: "doc",
         content: slice.content.toJSON(),
       });
-      navigator.clipboard?.writeText(markdown);
+      void writeClipboardText(markdown).catch((e) => console.warn("Clipboard write failed:", e));
       editor.chain().focus().deleteRange({ from, to }).run();
     } else {
       const text = editor.state.doc.textBetween(from, to, "\n");
-      navigator.clipboard?.writeText(text);
+      void writeClipboardText(text).catch((e) => console.warn("Clipboard write failed:", e));
       editor.chain().focus().deleteRange({ from, to }).run();
     }
   };
 
   const handlePaste = async () => {
-    if (!editor || editor.isActive("codeBlock")) return;
-    const { from } = editor.state.selection;
+    if (!editor) return;
     let text: string | null = null;
     try {
-      text = await navigator.clipboard.readText();
+      text = await readClipboardText();
     } catch {
-      document.execCommand("paste");
+      if (!document.execCommand("paste")) {
+        editor.commands.focus();
+      }
       return;
     }
-    const trimmed = text?.trim();
-    if (!trimmed) return;
+    if (!text) {
+      editor.commands.focus();
+      return;
+    }
+    if (editor.isActive("codeBlock")) {
+      editor
+        .chain()
+        .focus()
+        .command(({ tr }) => {
+          tr.insertText(text);
+          return true;
+        })
+        .run();
+      return;
+    }
+    const trimmed = text.trim();
+    if (!trimmed) {
+      editor.chain().focus().insertContent(text).run();
+      return;
+    }
     if (trimmed.includes("\n") || /^[-*#>`*~_[$]/.test(trimmed)) {
+      const { from, to } = editor.state.selection;
       try {
-        editor.chain().focus().insertContentAt(from, trimmed, { contentType: "markdown" }).run();
+        editor
+          .chain()
+          .focus()
+          .insertContentAt({ from, to }, trimmed, { contentType: "markdown" })
+          .run();
         return;
       } catch (e) {
         console.warn("Markdown paste failed, falling back to plain text:", e);
