@@ -53,7 +53,7 @@ export function TopBar({ title }: TopBarProps = {}) {
         {title && (
           <>
             <div className="h-full w-px shrink-0 bg-gray-200 dark:bg-gray-800" />
-            <div className="app-region-no-drag ml-2 flex min-w-0 items-center">
+            <div className="app-region-no-drag ml-5 flex min-w-0 items-center">
               <h1 className="truncate text-lg font-bold text-gray-900 dark:text-white">{title}</h1>
             </div>
           </>
