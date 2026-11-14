@@ -11,6 +11,8 @@ export interface ChatStreamData {
   conversationId: string | null;
   selectedSourceIds: string[];
   mode: ChatMode;
+  responseDetail?: string;
+  customInstructions?: string;
 }
 
 export interface ChatStreamCallbacks {

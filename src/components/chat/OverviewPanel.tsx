@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, useCallback, type ReactNode } from "react";
 import { motion } from "motion/react";
 import { Markdown } from "../Markdown";
-import { useFetch, useRealtimeEvent, useAccessibility } from "@/hooks";
+import { useFetch, useRealtimeEvent, useAccessibility, useCookie } from "@/hooks";
 import {
   Alert,
   Button,
@@ -18,6 +18,7 @@ import {
 import { NoteIcon, RestartIcon, StarsIcon } from "@/components/icons";
 import { getHttpErrorMessage, getSourceIcon, timeAgo } from "@/lib/utils";
 import { panelSwitchTransition } from "@/lib/motion";
+import { AI_AUTO_OVERVIEW_COOKIE_KEY, DEFAULT_AI_SETTINGS } from "@/components/settings/lib/ai";
 import type { Note, Source } from "@/interfaces";
 
 interface OverviewPanelProps {
@@ -57,6 +58,10 @@ export function OverviewPanel({
   onOpenNote,
 }: OverviewPanelProps) {
   const { effectiveReducedMotion } = useAccessibility();
+  const { value: autoGenerateOverview } = useCookie<boolean>(
+    AI_AUTO_OVERVIEW_COOKIE_KEY,
+    DEFAULT_AI_SETTINGS.autoGenerateOverview,
+  );
   const [summaryGenerateError, setSummaryGenerateError] = useState<FetchError | null>(null);
   const [isSummaryGenerating, setIsSummaryGenerating] = useState(false);
   const [isAutoRegenerating, setIsAutoRegenerating] = useState(false);
@@ -122,6 +127,11 @@ export function OverviewPanel({
     const prevCount = prevReadySourcesCountRef.current;
     const currentCount = readySourcesCount;
 
+    if (!autoGenerateOverview) {
+      prevReadySourcesCountRef.current = currentCount;
+      return;
+    }
+
     if (currentCount > 0 && prevCount !== currentCount) {
       setIsAutoRegenerating(true);
       setSummaryGenerateError(null);
@@ -143,7 +153,7 @@ export function OverviewPanel({
     }
 
     prevReadySourcesCountRef.current = currentCount;
-  }, [readySourcesCount, notebookId, regenerateSummary]);
+  }, [readySourcesCount, notebookId, regenerateSummary, autoGenerateOverview]);
 
   const notebookSummary = notebookSummaryData?.summary;
   const isLoading =

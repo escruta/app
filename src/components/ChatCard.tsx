@@ -17,6 +17,15 @@ import { getHttpErrorMessage } from "@/lib/utils";
 import { ChatMessage, type Message } from "./chat/ChatMessage";
 import { ExampleQuestions } from "./chat/ExampleQuestions";
 import { ChatModeToggle } from "./chat/ChatModeToggle";
+import {
+  AI_CUSTOM_INSTRUCTIONS_COOKIE_KEY,
+  AI_DEFAULT_CHAT_MODE_COOKIE_KEY,
+  AI_RESPONSE_DETAIL_COOKIE_KEY,
+  AI_SHOW_CITED_SOURCES_COOKIE_KEY,
+  AI_SHOW_EXAMPLE_QUESTIONS_COOKIE_KEY,
+  DEFAULT_AI_SETTINGS,
+  type ResponseDetail,
+} from "./settings/lib/ai";
 
 type Sender = "user" | "ai";
 
@@ -57,6 +66,27 @@ export function ChatCard({
   onConversationStateChange,
 }: ChatCardProps) {
   const { effectiveReducedMotion } = useAccessibility();
+  const { value: defaultChatMode } = useCookie<ChatMode>(
+    AI_DEFAULT_CHAT_MODE_COOKIE_KEY,
+    DEFAULT_AI_SETTINGS.defaultChatMode,
+  );
+  const { value: responseDetail } = useCookie<ResponseDetail>(
+    AI_RESPONSE_DETAIL_COOKIE_KEY,
+    DEFAULT_AI_SETTINGS.responseDetail,
+  );
+  const { value: customInstructions } = useCookie<string>(
+    AI_CUSTOM_INSTRUCTIONS_COOKIE_KEY,
+    DEFAULT_AI_SETTINGS.customInstructions,
+  );
+  const { value: showExampleQuestions } = useCookie<boolean>(
+    AI_SHOW_EXAMPLE_QUESTIONS_COOKIE_KEY,
+    DEFAULT_AI_SETTINGS.showExampleQuestions,
+  );
+  const { value: showCitedSources } = useCookie<boolean>(
+    AI_SHOW_CITED_SOURCES_COOKIE_KEY,
+    DEFAULT_AI_SETTINGS.showCitedSources,
+  );
+
   const sourcesCount = sources.length;
   const readySourcesCount = sources.filter((s) => s.status === "READY").length;
 
@@ -88,7 +118,8 @@ export function ChatCard({
   }>(
     `notebooks/${notebookId}/example-questions`,
     exampleQuestionsOptions,
-    readySourcesCount > 0 &&
+    showExampleQuestions &&
+      readySourcesCount > 0 &&
       (!cachedExampleQuestions || cachedExampleQuestions.count !== readySourcesCount),
   );
 
@@ -102,16 +133,18 @@ export function ChatCard({
       if (event?.notebookId !== notebookId) return;
       setCachedExampleQuestions(undefined);
       useFetch.clearCache(`notebooks/${notebookId}/example-questions`);
-      refetchExampleQuestions(true);
+      if (showExampleQuestions) {
+        refetchExampleQuestions(true);
+      }
     },
-    [notebookId, refetchExampleQuestions, setCachedExampleQuestions],
+    [notebookId, refetchExampleQuestions, setCachedExampleQuestions, showExampleQuestions],
   );
 
   useRealtimeEvent("summary.updated", handleSummaryUpdated);
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
-  const [mode, setMode] = useState<ChatMode>("NORMAL");
+  const [mode, setMode] = useState<ChatMode>(defaultChatMode ?? "NORMAL");
   const [conversationId, setConversationId] = useState<string | null>(
     initialConversationId ?? null,
   );
@@ -227,7 +260,7 @@ export function ChatCard({
         if (pendingConversationTitle) {
           setConversationTitle(pendingConversationTitle);
         }
-        setMode(data.mode ?? "NORMAL");
+        setMode(data.mode ?? defaultChatMode ?? "NORMAL");
         setIsBackendGenerating(data.status === "GENERATING");
         if (conversationToLoadId) {
           onConversationStateChange?.(conversationToLoadId, {
@@ -437,9 +470,11 @@ export function ChatCard({
         conversationId: overrideConversationId,
         selectedSourceIds,
         mode,
+        responseDetail: responseDetail !== "balanced" ? responseDetail : undefined,
+        customInstructions: customInstructions?.trim() ? customInstructions.trim() : undefined,
       });
     },
-    [conversationId, selectedSourceIds, streamChat, mode],
+    [conversationId, selectedSourceIds, streamChat, mode, responseDetail, customInstructions],
   );
 
   const handleSendMessage = async () => {
@@ -546,7 +581,7 @@ export function ChatCard({
       ref={inputContainerRef}
       className="pointer-events-auto relative mx-auto my-6 flex w-[calc(100%-2rem)] max-w-2xl flex-col"
     >
-      {!isBusy && sourcesCount > 0 && messages.length === 0 && (
+      {showExampleQuestions && !isBusy && sourcesCount > 0 && messages.length === 0 && (
         <ExampleQuestions
           exampleQuestionsError={exampleQuestionsError}
           skipExampleQuestionsFetch={false}
@@ -629,6 +664,7 @@ export function ChatCard({
                     key={message.id}
                     message={message}
                     index={index}
+                    showCitedSources={showCitedSources}
                     onRetryFromError={handleRetryFromError}
                     onSourceClick={handleSourceClick}
                   />
