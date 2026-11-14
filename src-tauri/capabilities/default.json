@@ -11,6 +11,8 @@
     "core:window:allow-toggle-maximize",
     "core:window:allow-start-dragging",
     "core:window:allow-start-resize-dragging",
+    "clipboard-manager:allow-read-text",
+    "clipboard-manager:allow-write-text",
     {
       "identifier": "http:default",
       "allow": [{ "url": "http://localhost:8080" }, { "url": "http://127.0.0.1:8080" }]

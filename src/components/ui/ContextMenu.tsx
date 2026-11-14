@@ -12,6 +12,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { useShortcut, useAccessibility } from "@/hooks";
+import { readClipboardText, writeClipboardText } from "@/lib/clipboard";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { CopyIcon, CutIcon, PasteIcon } from "@/components/icons";
@@ -233,8 +234,9 @@ export function ContextMenuContent({
             position: "fixed",
             ...adjustedPosition,
           }}
+          onMouseDown={(e) => e.preventDefault()}
           className={cn(
-            "z-50 rounded-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 shadow-lg shadow-gray-500/10 dark:shadow-black/20 ring-1 ring-gray-500/5 dark:ring-gray-500/10",
+            "z-100 rounded-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 shadow-lg shadow-gray-500/10 dark:shadow-black/20 ring-1 ring-gray-500/5 dark:ring-gray-500/10",
             {
               "min-w-32 p-1": compact,
               "min-w-40 p-1.5": !compact,
@@ -297,6 +299,7 @@ export function ContextMenuItem({
       role="menuitem"
       disabled={disabled}
       className={cn(baseStyles, variantStyles[variant], className)}
+      onMouseDown={(e) => e.preventDefault()}
       onClick={() => {
         if (disabled) return;
         onClick();
@@ -346,7 +349,9 @@ function ContextMenuCopy({
     const sel = window.getSelection();
     const text = sel?.toString() ?? "";
     if (!text) return;
-    navigator.clipboard?.writeText(text);
+    void writeClipboardText(text).catch((e) => {
+      console.warn("Clipboard write failed:", e);
+    });
     onCopied?.(text);
   };
 
@@ -373,7 +378,7 @@ function TextFieldContextMenuItems() {
   const handleCopy = useCallback(async () => {
     if (!target || !hasSelection) return;
     try {
-      await navigator.clipboard.writeText(text);
+      await writeClipboardText(text);
     } catch (e) {
       console.warn("Clipboard write failed:", e);
     }
@@ -388,11 +393,15 @@ function TextFieldContextMenuItems() {
   const handlePaste = useCallback(async () => {
     if (!target || !isEditable) return;
     try {
-      const clipboardText = await navigator.clipboard.readText();
-      if (!clipboardText) return;
+      const clipboardText = await readClipboardText();
+      if (!clipboardText) {
+        target.focus();
+        return;
+      }
       replaceRange(target, start, end, clipboardText);
     } catch (e) {
       console.warn("Clipboard read failed:", e);
+      target.focus();
     }
   }, [target, isEditable, start, end]);
 
@@ -435,6 +444,9 @@ function SyntheticTrigger() {
 
       if (isTextField(target)) {
         e.preventDefault();
+        if (!target.disabled && document.activeElement !== target) {
+          target.focus({ preventScroll: true });
+        }
         context.setState({
           isOpen: true,
           position: { x: e.clientX, y: e.clientY },
