@@ -8,7 +8,7 @@ import {
 } from "@/hooks";
 import { FileIcon, SendIcon } from "@/components/icons";
 import { Divider, TextField, IconButton, Tooltip, Spinner } from "@/components/ui";
-import type { ConversationMessages, ConversationStatus, Source } from "@/interfaces";
+import type { AgentStep, ConversationMessages, ConversationStatus, Source } from "@/interfaces";
 import type { ChatMode } from "@/interfaces";
 import { useEffect, useState, useRef, useMemo, useCallback, useLayoutEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
@@ -23,6 +23,8 @@ import {
   AI_RESPONSE_DETAIL_COOKIE_KEY,
   AI_SHOW_CITED_SOURCES_COOKIE_KEY,
   AI_SHOW_EXAMPLE_QUESTIONS_COOKIE_KEY,
+  AI_SHOW_THINKING_COOKIE_KEY,
+  AI_AUTO_EXPAND_THINKING_COOKIE_KEY,
   DEFAULT_AI_SETTINGS,
   type ResponseDetail,
 } from "./settings/lib/ai";
@@ -81,6 +83,14 @@ export function ChatCard({
   const { value: showCitedSources } = useCookie<boolean>(
     AI_SHOW_CITED_SOURCES_COOKIE_KEY,
     DEFAULT_AI_SETTINGS.showCitedSources,
+  );
+  const { value: showThinking } = useCookie<boolean>(
+    AI_SHOW_THINKING_COOKIE_KEY,
+    DEFAULT_AI_SETTINGS.showThinking,
+  );
+  const { value: autoExpandThinking } = useCookie<boolean>(
+    AI_AUTO_EXPAND_THINKING_COOKIE_KEY,
+    DEFAULT_AI_SETTINGS.autoExpandThinking,
   );
 
   const sourcesCount = sources.length;
@@ -245,6 +255,8 @@ export function ChatCard({
             sender: m.type === "USER" ? ("user" as Sender) : ("ai" as Sender),
             citedSources: m.citedSources?.length ? m.citedSources : undefined,
             selectedSourcesCount: m.selectedSourcesCount ?? undefined,
+            thinkingSteps: m.thinkingSteps?.length ? m.thinkingSteps : undefined,
+            thinkingDurationMs: m.thinkingDurationMs ?? undefined,
           }));
 
         setExtraBottomSpacer(0);
@@ -314,57 +326,161 @@ export function ChatCard({
   };
 
   const streamingMessageIdRef = useRef<string | null>(null);
-  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
 
-  const { stream: streamChat, isStreaming: isChatLoading } = useChatStream(
-    `notebooks/${notebookId}/chat/stream`,
-    {
-      onConversation: (id) => {
-        if (!conversationId) {
-          setConversationId(id);
-        }
-        onConversationCreated?.(id);
-      },
-      onToken: (chunk) => {
-        const id = streamingMessageIdRef.current;
-        if (!id) return;
-        setIsWaitingForResponse(false);
-        setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, text: m.text + chunk } : m)));
-      },
-      onSources: (sources) => {
-        const id = streamingMessageIdRef.current;
-        if (!id) return;
-        setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, citedSources: sources } : m)));
-      },
-      onTitle: (title) => {
-        if (!conversationTitle) {
-          setConversationTitle(title);
-        }
-        onTitleChange?.(title);
-      },
-      onDone: () => {
-        pendingMessageRef.current = null;
-        streamingMessageIdRef.current = null;
-        setIsWaitingForResponse(false);
-        setIsBackendGenerating(false);
-        onConversationCompleted?.();
-      },
-      onError: (status, message) => {
-        console.error("Error streaming chat:", status, message);
-        const id = streamingMessageIdRef.current;
-        if (id) {
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.id === id ? { ...m, text: getHttpErrorMessage(status) || message, error: true } : m,
-            ),
-          );
-        }
-        streamingMessageIdRef.current = null;
-        setIsWaitingForResponse(false);
-        setIsBackendGenerating(false);
-      },
+  const {
+    stream: streamChat,
+    isStreaming: isChatLoading,
+    abort: abortChatStream,
+  } = useChatStream(`notebooks/${notebookId}/chat/stream`, {
+    onConversation: (id) => {
+      if (!conversationId) {
+        setConversationId(id);
+      }
+      onConversationCreated?.(id);
     },
-  );
+    onStep: (step) => {
+      const id = streamingMessageIdRef.current;
+      if (!id) return;
+      setMessages((prev) =>
+        prev.map((m) => {
+          if (m.id !== id) return m;
+          const existing = (m.thinkingSteps ?? []).map((s) =>
+            s.type === "text" && s.status === "running" && step.status === "running"
+              ? { ...s, status: "done" as const }
+              : s,
+          );
+          const idx = existing.findIndex((s) => s.id === step.id);
+          let nextSteps: AgentStep[];
+          if (idx >= 0) {
+            const prevStep = existing[idx];
+            const mergedDetail =
+              step.type === "thought" && !step.detail && prevStep.detail
+                ? prevStep.detail
+                : step.detail;
+            nextSteps = existing.map((s, i) => (i === idx ? { ...step, detail: mergedDetail } : s));
+          } else {
+            nextSteps = [...existing, step];
+          }
+          return { ...m, thinkingSteps: nextSteps };
+        }),
+      );
+    },
+    onThought: (stepId, delta) => {
+      const id = streamingMessageIdRef.current;
+      if (!id) return;
+      setMessages((prev) =>
+        prev.map((m) => {
+          if (m.id !== id) return m;
+          const existing = (m.thinkingSteps ?? []).map((s) =>
+            s.type === "text" && s.status === "running" ? { ...s, status: "done" as const } : s,
+          );
+          const idx = existing.findIndex((s) => s.id === stepId);
+          if (idx >= 0) {
+            const nextSteps = existing.map((s, i) =>
+              i === idx
+                ? { ...s, detail: `${s.detail ?? ""}${delta}`, status: "running" as const }
+                : s,
+            );
+            return { ...m, thinkingSteps: nextSteps };
+          }
+          const newStep: AgentStep = {
+            id: stepId,
+            type: "thought",
+            title: "Thought",
+            detail: delta,
+            status: "running",
+          };
+          return { ...m, thinkingSteps: [...existing, newStep] };
+        }),
+      );
+    },
+    onToken: (chunk) => {
+      const id = streamingMessageIdRef.current;
+      if (!id) return;
+      setMessages((prev) =>
+        prev.map((m) => {
+          if (m.id !== id) return m;
+          const existing = (m.thinkingSteps ?? []).map((s) =>
+            s.type === "thought" && s.status === "running" ? { ...s, status: "done" as const } : s,
+          );
+          const last = existing[existing.length - 1];
+          let nextSteps: AgentStep[];
+          if (last && last.type === "text") {
+            nextSteps = [
+              ...existing.slice(0, -1),
+              { ...last, detail: `${last.detail ?? ""}${chunk}`, status: "running" as const },
+            ];
+          } else {
+            nextSteps = [
+              ...existing,
+              {
+                id: `text-${existing.length + 1}`,
+                type: "text",
+                title: "",
+                detail: chunk,
+                status: "running",
+              },
+            ];
+          }
+          return { ...m, text: m.text + chunk, thinkingSteps: nextSteps };
+        }),
+      );
+    },
+    onSources: (sources) => {
+      const id = streamingMessageIdRef.current;
+      if (!id) return;
+      setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, citedSources: sources } : m)));
+    },
+    onTitle: (title) => {
+      if (!conversationTitle) {
+        setConversationTitle(title);
+      }
+      onTitleChange?.(title);
+    },
+    onDone: (durationMs) => {
+      const id = streamingMessageIdRef.current;
+      if (id) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === id
+              ? {
+                  ...m,
+                  isStreaming: false,
+                  thinkingDurationMs: durationMs ?? m.thinkingDurationMs,
+                  thinkingSteps: m.thinkingSteps?.map((s) =>
+                    s.status === "running" ? { ...s, status: "done" } : s,
+                  ),
+                }
+              : m,
+          ),
+        );
+      }
+      pendingMessageRef.current = null;
+      streamingMessageIdRef.current = null;
+      setIsBackendGenerating(false);
+      onConversationCompleted?.();
+    },
+    onError: (status, message) => {
+      console.error("Error streaming chat:", status, message);
+      const id = streamingMessageIdRef.current;
+      if (id) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === id
+              ? {
+                  ...m,
+                  text: getHttpErrorMessage(status) || message,
+                  error: true,
+                  isStreaming: false,
+                }
+              : m,
+          ),
+        );
+      }
+      streamingMessageIdRef.current = null;
+      setIsBackendGenerating(false);
+    },
+  });
 
   const isBusy = isChatLoading || isBackendGenerating;
 
@@ -449,9 +565,14 @@ export function ChatCard({
     async (overrideConversationId: string | null = conversationId) => {
       const aiMessageId = (Date.now() + 1).toString();
       streamingMessageIdRef.current = aiMessageId;
-      const aiMessage: Message = { id: aiMessageId, text: "", sender: "ai" };
+      const aiMessage: Message = {
+        id: aiMessageId,
+        text: "",
+        sender: "ai",
+        isStreaming: true,
+        thinkingSteps: [],
+      };
       setMessages((prev) => [...prev, aiMessage]);
-      setIsWaitingForResponse(true);
 
       await streamChat({
         userInput: pendingMessageRef.current || "",
@@ -464,6 +585,28 @@ export function ChatCard({
     },
     [conversationId, selectedSourceIds, streamChat, mode, responseDetail, customInstructions],
   );
+
+  const handleStopStream = useCallback(() => {
+    abortChatStream();
+    const id = streamingMessageIdRef.current;
+    if (id) {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === id
+            ? {
+                ...m,
+                isStreaming: false,
+                thinkingSteps: m.thinkingSteps?.map((s) =>
+                  s.status === "running" ? { ...s, status: "done" } : s,
+                ),
+              }
+            : m,
+        ),
+      );
+    }
+    streamingMessageIdRef.current = null;
+    setIsBackendGenerating(false);
+  }, [abortChatStream]);
 
   const handleSendMessage = async () => {
     if (!input.trim()) return;
@@ -604,16 +747,32 @@ export function ChatCard({
           maxRows={8}
           multiline
         />
-        <Tooltip text="Send your question" position="top">
-          <IconButton
-            icon={<SendIcon />}
-            onClick={handleSendMessage}
-            disabled={isBusy || !input.trim() || selectedSourceIds.length === 0}
-            ariaLabel="Send your question"
-            size="sm"
-            variant="primary"
-          />
-        </Tooltip>
+        {isChatLoading ? (
+          <Tooltip text="Stop generating" position="top">
+            <IconButton
+              icon={
+                <svg viewBox="0 0 24 24" fill="currentColor" className="size-4">
+                  <rect x="6" y="6" width="12" height="12" rx="1.5" />
+                </svg>
+              }
+              onClick={handleStopStream}
+              ariaLabel="Stop generating"
+              size="sm"
+              variant="secondary"
+            />
+          </Tooltip>
+        ) : (
+          <Tooltip text="Send your question" position="top">
+            <IconButton
+              icon={<SendIcon />}
+              onClick={handleSendMessage}
+              disabled={isBusy || !input.trim() || selectedSourceIds.length === 0}
+              ariaLabel="Send your question"
+              size="sm"
+              variant="primary"
+            />
+          </Tooltip>
+        )}
       </div>
     </div>
   );
@@ -653,14 +812,14 @@ export function ChatCard({
                     message={message}
                     index={index}
                     showCitedSources={showCitedSources}
+                    showThinking={showThinking}
+                    autoExpandThinking={autoExpandThinking}
                     onRetryFromError={handleRetryFromError}
                     onSourceClick={handleSourceClick}
                   />
                 ))}
               </AnimatePresence>
-              {(isWaitingForResponse ||
-                isLoadingConversation ||
-                (isBackendGenerating && !isChatLoading)) && (
+              {(isLoadingConversation || (isBackendGenerating && !isChatLoading)) && (
                 <motion.div
                   initial={effectiveReducedMotion ? false : { opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
