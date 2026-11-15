@@ -20,8 +20,10 @@ type SelectProps<T> = {
   heading?: string;
   placeholder?: string;
   variant?: "field" | "icon" | "compact";
+  iconVariant?: "primary" | "secondary" | "danger" | "ghost";
   size?: "sm" | "md";
   className?: string;
+  triggerClassName?: string;
   disabled?: boolean;
   align?: "left" | "right";
   up?: boolean;
@@ -37,8 +39,10 @@ export function Select<T>({
   heading,
   placeholder = "Choose an option",
   variant = "field",
+  iconVariant = "ghost",
   size = "md",
   className = "",
+  triggerClassName = "",
   disabled = false,
   align = "left",
   up = false,
@@ -316,12 +320,21 @@ export function Select<T>({
       <IconButton
         ref={triggerRef}
         icon={selectedOption?.icon ?? chevron}
-        variant="ghost"
+        variant={iconVariant}
         size={size}
         ariaLabel={ariaLabel ?? (selectedOption ? `Select: ${selectedOption.label}` : placeholder)}
         disabled={disabled}
         onClick={toggle}
         onKeyDown={handleTriggerKeyDown}
+        className={cn(
+          size === "sm" ? "[&_svg]:size-4 [&_svg]:shrink-0" : "[&_svg]:size-5 [&_svg]:shrink-0",
+          isOpen &&
+            !disabled &&
+            (iconVariant === "secondary"
+              ? "border-blue-400 bg-blue-50 text-blue-600 dark:border-blue-500 dark:bg-gray-800 dark:text-blue-400"
+              : "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100"),
+          triggerClassName,
+        )}
         {...triggerAria}
       />
     ) : variant === "compact" ? (
@@ -348,6 +361,7 @@ export function Select<T>({
             "border-blue-500 bg-blue-50 ring-1 ring-blue-500 dark:border-blue-400 dark:bg-gray-800":
               isOpen && !disabled,
           },
+          triggerClassName,
         )}
       >
         {selectedOption?.icon && (
@@ -393,6 +407,7 @@ export function Select<T>({
             "ring-2 ring-blue-500 dark:ring-blue-400 border-blue-500 dark:border-blue-400 ring-offset-2 ring-offset-white dark:ring-offset-gray-900":
               isOpen && !disabled,
           },
+          triggerClassName,
         )}
       >
         <span className="flex min-w-0 items-center gap-2">

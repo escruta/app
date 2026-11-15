@@ -1,16 +1,17 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence } from "motion/react";
-import { AddIcon, CheckIcon, FilterIcon, SearchIcon, ToolsIcon } from "@/components/icons";
+import { AddIcon, FilterIcon, SearchIcon, ToolsIcon } from "@/components/icons";
 import {
   Alert,
   IconButton,
   Menu,
   MenuContent,
   MenuItem,
-  MenuLabel,
   MenuTrigger,
   PanelList,
   PanelListItem,
+  Select,
+  type SelectOption,
   SidePanel,
   Skeleton,
   SortMenu,
@@ -43,11 +44,12 @@ interface ToolsCardProps {
 
 type TypeFilter = "ALL" | JobType;
 
-const FILTER_OPTIONS: { value: TypeFilter; label: string }[] = [
-  { value: "ALL", label: "All tools" },
+const FILTER_OPTIONS: SelectOption<TypeFilter>[] = [
+  { value: "ALL", label: "All tools", icon: <FilterIcon className="size-4" /> },
   ...TOOL_LIST.map((tool) => ({
     value: tool.type as TypeFilter,
     label: tool.title,
+    icon: tool.icon,
   })),
 ];
 
@@ -170,43 +172,27 @@ export function ToolsCard({
         title="Tools"
         actions={
           <>
-            <Menu>
-              <Tooltip text={`Filter tools: ${activeFilterLabel}`} position="bottom">
-                <MenuTrigger>
-                  <IconButton
-                    icon={<FilterIcon />}
-                    variant="secondary"
-                    size="sm"
-                    ariaLabel="Filter tools"
-                    className={cn(
-                      typeFilter !== "ALL" &&
-                        "border-blue-400 bg-blue-50 text-blue-600 dark:border-blue-500 dark:bg-blue-950/40 dark:text-blue-400",
-                    )}
-                  />
-                </MenuTrigger>
-              </Tooltip>
-              <MenuContent align="right">
-                <MenuLabel>Filter by</MenuLabel>
-                {FILTER_OPTIONS.map((option) => {
-                  const selected = option.value === typeFilter;
-                  return (
-                    <MenuItem
-                      key={option.value}
-                      label={option.label}
-                      icon={
-                        selected ? (
-                          <CheckIcon className="size-4" />
-                        ) : (
-                          <span className="block size-4" />
-                        )
-                      }
-                      className={cn({ "text-blue-600 dark:text-blue-400": selected })}
-                      onClick={() => setTypeFilter(option.value)}
-                    />
-                  );
-                })}
-              </MenuContent>
-            </Menu>
+            <Tooltip
+              text={`Filter tools: ${activeFilterLabel}`}
+              position="bottom"
+              className="inline-flex"
+            >
+              <Select
+                variant="icon"
+                iconVariant="secondary"
+                size="sm"
+                options={FILTER_OPTIONS}
+                value={typeFilter}
+                onChange={setTypeFilter}
+                heading="Filter by"
+                ariaLabel={`Filter tools: ${activeFilterLabel}`}
+                align="right"
+                triggerClassName={cn(
+                  typeFilter !== "ALL" &&
+                    "border-blue-400 bg-blue-50 text-blue-600 dark:border-blue-500 dark:bg-blue-950/40 dark:text-blue-400",
+                )}
+              />
+            </Tooltip>
 
             <SortMenu value={sortBy} onChange={setSortPreference} label="generations" />
 
