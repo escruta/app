@@ -374,6 +374,16 @@ export function SourcesCard({
         title="Sources"
         actions={
           <>
+            <SortMenu value={sortBy} onChange={setSortPreference} label="sources" />
+            <Tooltip text="New group" position="bottom">
+              <IconButton
+                icon={<FolderAddIcon />}
+                onClick={() => setIsNewGroupModalOpen(true)}
+                variant="secondary"
+                size="sm"
+                ariaLabel="New group"
+              />
+            </Tooltip>
             <Menu>
               <Tooltip text="Add source" position="bottom">
                 <MenuTrigger>
@@ -403,16 +413,6 @@ export function SourcesCard({
                 />
               </MenuContent>
             </Menu>
-            <SortMenu value={sortBy} onChange={setSortPreference} label="sources" />
-            <Tooltip text="New group" position="bottom">
-              <IconButton
-                icon={<FolderAddIcon />}
-                onClick={() => setIsNewGroupModalOpen(true)}
-                variant="secondary"
-                size="sm"
-                ariaLabel="New group"
-              />
-            </Tooltip>
             {onToggleCollapse && (
               <Tooltip text="Collapse panel" position="bottom">
                 <IconButton
