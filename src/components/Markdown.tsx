@@ -25,7 +25,7 @@ const STATIC_COMPONENTS: Partial<Components> = {
   h4: ({ children }) => <h4 className="my-4 text-base leading-normal font-semibold">{children}</h4>,
   h5: ({ children }) => <h5 className="my-4 text-base leading-normal font-semibold">{children}</h5>,
   h6: ({ children }) => <h6 className="my-4 text-base leading-normal font-semibold">{children}</h6>,
-  p: ({ children }) => <p>{children}</p>,
+  p: ({ children }) => <p className="my-2.5 first:mt-0 last:mb-0">{children}</p>,
   ul: ({ className, children }) => (
     <ul
       className={cn(
