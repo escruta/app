@@ -2,6 +2,7 @@ import {
   useState,
   useRef,
   useEffect,
+  useLayoutEffect,
   useCallback,
   createContext,
   useContext,
@@ -54,12 +55,20 @@ function replaceRange(
 interface ContextMenuContextType {
   state: ContextMenuState;
   setState: (s: ContextMenuState) => void;
+  close: () => void;
   contentRef: React.RefObject<HTMLElement | null>;
 }
 
 const ContextMenuContext = createContext<ContextMenuContextType | null>(null);
 
 const CompactContext = createContext<boolean>(false);
+
+function getEnabledMenuItems(container: HTMLElement | null): HTMLButtonElement[] {
+  if (!container) return [];
+  return Array.from(
+    container.querySelectorAll<HTMLButtonElement>('[role="menuitem"]:not([disabled])'),
+  );
+}
 
 export function ContextMenu({ children }: { children: ReactNode }) {
   const [state, setState] = useState<ContextMenuState>({
@@ -68,11 +77,11 @@ export function ContextMenu({ children }: { children: ReactNode }) {
   });
   const contentRef = useRef<HTMLElement>(null);
 
-  const handleClose = useCallback(() => {
+  const close = useCallback(() => {
     setState({ isOpen: false, position: { x: 0, y: 0 } });
   }, []);
 
-  useShortcut("dialog-close", handleClose, {
+  useShortcut("dialog-close", close, {
     global: true,
     enabled: state.isOpen,
     preventDefault: false,
@@ -84,7 +93,7 @@ export function ContextMenu({ children }: { children: ReactNode }) {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as Node;
       if (!contentRef.current?.contains(target)) {
-        setState({ isOpen: false, position: { x: 0, y: 0 } });
+        close();
       }
     };
 
@@ -92,10 +101,10 @@ export function ContextMenu({ children }: { children: ReactNode }) {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [state.isOpen]);
+  }, [state.isOpen, close]);
 
   return (
-    <ContextMenuContext.Provider value={{ state, setState, contentRef }}>
+    <ContextMenuContext.Provider value={{ state, setState, close, contentRef }}>
       {children}
     </ContextMenuContext.Provider>
   );
@@ -140,6 +149,8 @@ export function ContextMenuContent({
   compact?: boolean;
 }) {
   const context = useContext(ContextMenuContext);
+  const { effectiveReducedMotion } = useAccessibility();
+  const [placedUp, setPlacedUp] = useState(false);
   const [adjustedPosition, setAdjustedPosition] = useState<{
     top?: number;
     left?: number;
@@ -147,40 +158,63 @@ export function ContextMenuContent({
     right?: number;
   }>({});
   const localRef = useRef<HTMLDivElement>(null);
-  const hasMeasured = useRef(false);
 
   const calculatePosition = useCallback(() => {
-    if (!localRef.current) return;
+    if (!localRef.current || !context?.state.isOpen) return;
     const menuRect = localRef.current.getBoundingClientRect();
-    const { x, y } = context?.state.position ?? { x: 0, y: 0 };
-    const gap = 8;
+    const { x, y } = context.state.position;
+    const gap = 6;
+    const viewportPadding = 8;
 
     const pos: typeof adjustedPosition = {};
     const spaceBelow = window.innerHeight - y - gap;
+    const spaceAbove = y - gap;
     const spaceRight = window.innerWidth - x - gap;
 
-    if (spaceBelow >= menuRect.height || spaceBelow >= y) {
-      pos.top = y + gap;
+    let resolvedUp = false;
+    if (spaceBelow >= menuRect.height || spaceBelow >= spaceAbove) {
+      pos.top = Math.max(
+        viewportPadding,
+        Math.min(y + gap, window.innerHeight - menuRect.height - viewportPadding),
+      );
     } else {
-      pos.bottom = window.innerHeight - y + gap;
+      pos.bottom = Math.max(
+        viewportPadding,
+        Math.min(
+          window.innerHeight - y + gap,
+          window.innerHeight - menuRect.height - viewportPadding,
+        ),
+      );
+      resolvedUp = true;
     }
 
-    if (spaceRight >= menuRect.width) {
-      pos.left = x + gap;
+    if (spaceRight >= menuRect.width || spaceRight >= x - gap) {
+      pos.left = Math.max(
+        viewportPadding,
+        Math.min(x + gap, window.innerWidth - menuRect.width - viewportPadding),
+      );
     } else {
-      pos.right = window.innerWidth - x + gap;
+      pos.right = Math.max(
+        viewportPadding,
+        Math.min(window.innerWidth - x + gap, window.innerWidth - menuRect.width - viewportPadding),
+      );
     }
 
+    setPlacedUp(resolvedUp);
     setAdjustedPosition(pos);
-  }, [context?.state.position]);
+  }, [context?.state.isOpen, context?.state.position]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (context?.state.isOpen) {
-      hasMeasured.current = false;
+      calculatePosition();
+    } else {
+      setAdjustedPosition({});
+      setPlacedUp(false);
     }
-  }, [context?.state.isOpen]);
+  }, [context?.state.isOpen, context?.state.position, calculatePosition]);
 
   useEffect(() => {
+    if (!context?.state.isOpen) return;
     const el = localRef.current;
     if (!el) return;
     const observer = new ResizeObserver(() => {
@@ -188,7 +222,7 @@ export function ContextMenuContent({
     });
     observer.observe(el);
     return () => observer.disconnect();
-  }, [calculatePosition]);
+  }, [context?.state.isOpen, calculatePosition]);
 
   useEffect(() => {
     if (!context?.state.isOpen) return;
@@ -203,48 +237,93 @@ export function ContextMenuContent({
     };
   }, [context?.state.isOpen, calculatePosition]);
 
-  const { effectiveReducedMotion } = useAccessibility();
+  useEffect(() => {
+    if (!context?.state.isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const items = getEnabledMenuItems(localRef.current);
+      if (items.length === 0) return;
+
+      const currentIndex = items.indexOf(document.activeElement as HTMLButtonElement);
+
+      switch (e.key) {
+        case "ArrowDown": {
+          e.preventDefault();
+          const nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % items.length;
+          items[nextIndex]?.focus();
+          break;
+        }
+        case "ArrowUp": {
+          e.preventDefault();
+          const prevIndex =
+            currentIndex < 0 ? items.length - 1 : (currentIndex - 1 + items.length) % items.length;
+          items[prevIndex]?.focus();
+          break;
+        }
+        case "Home":
+          e.preventDefault();
+          items[0]?.focus();
+          break;
+        case "End":
+          e.preventDefault();
+          items[items.length - 1]?.focus();
+          break;
+        case "Tab":
+          context.close();
+          break;
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [context]);
+
   const setContentRef = useCallback(
     (node: HTMLDivElement | null) => {
       localRef.current = node;
-      if (node && context) {
+      if (context) {
         (context.contentRef as React.MutableRefObject<HTMLElement | null>).current = node;
-        if (!hasMeasured.current) {
-          hasMeasured.current = true;
-          requestAnimationFrame(() => calculatePosition());
-        }
       }
     },
-    [context, calculatePosition],
+    [context],
   );
+
+  if (!context) return null;
+
+  const fallbackPos = {
+    top: context.state.position.y + 6,
+    left: context.state.position.x + 6,
+  };
 
   const menu = (
     <AnimatePresence>
-      {context?.state.isOpen && (
+      {context.state.isOpen && (
         <motion.div
           ref={setContentRef}
           role="menu"
-          initial={effectiveReducedMotion ? false : { opacity: 0, scale: 0.96 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={effectiveReducedMotion ? undefined : { opacity: 0, scale: 0.96 }}
-          transition={
-            effectiveReducedMotion ? { duration: 0 } : { duration: 0.12, ease: "easeOut" }
-          }
+          initial={effectiveReducedMotion ? false : { opacity: 0, y: placedUp ? 10 : -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={effectiveReducedMotion ? undefined : { opacity: 0, y: placedUp ? 10 : -10 }}
+          transition={effectiveReducedMotion ? { duration: 0 } : { duration: 0.2, ease: "easeOut" }}
           style={{
             position: "fixed",
-            ...adjustedPosition,
+            zIndex: 1000,
+            ...(Object.keys(adjustedPosition).length > 0 ? adjustedPosition : fallbackPos),
           }}
           onMouseDown={(e) => e.preventDefault()}
           className={cn(
-            "z-100 rounded-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 shadow-lg shadow-gray-500/10 dark:shadow-black/20 ring-1 ring-gray-500/5 dark:ring-gray-500/10",
-            {
-              "min-w-32 p-1": compact,
-              "min-w-40 p-1.5": !compact,
-            },
+            "w-max",
+            "bg-white dark:bg-gray-900",
+            "border border-gray-300 dark:border-gray-600",
+            "rounded-xs shadow-lg shadow-gray-500/10 dark:shadow-black/20 ring-1 ring-gray-500/5 dark:ring-gray-500/10",
+            "max-h-60 overflow-auto max-w-xs sm:max-w-sm",
+            compact ? "min-w-32" : "min-w-40",
             className,
           )}
         >
-          <CompactContext.Provider value={compact}>{children}</CompactContext.Provider>
+          <CompactContext.Provider value={compact}>
+            <div className={cn("flex flex-col gap-0.5", compact ? "p-1" : "p-1.5")}>{children}</div>
+          </CompactContext.Provider>
         </motion.div>
       )}
     </AnimatePresence>
@@ -275,7 +354,7 @@ export function ContextMenuItem({
     "dialog-activate",
     () => {
       onClick();
-      context?.setState({ isOpen: false, position: { x: 0, y: 0 } });
+      context?.close();
     },
     {
       enabled: !disabled,
@@ -283,14 +362,14 @@ export function ContextMenuItem({
   );
 
   const baseStyles = compact
-    ? "flex w-full items-center gap-1.5 rounded-xs px-2 py-1 text-xs transition-all duration-200 outline-none select-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-1 focus:ring-offset-white dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
-    : "flex w-full items-center gap-2 rounded-xs px-3 py-2 text-sm transition-all duration-200 outline-none select-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none";
+    ? "relative flex w-full items-center gap-1.5 rounded-xs px-2 py-1 text-left text-xs font-medium transition-all duration-200 outline-none select-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
+    : "relative flex w-full items-center gap-2 rounded-xs px-3 py-2 text-left text-sm font-medium transition-all duration-200 outline-none select-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none";
 
   const variantStyles = {
     default:
-      "text-gray-700 dark:text-gray-200 hover:bg-blue-50 hover:ring-1 hover:ring-blue-300 focus:bg-blue-50 dark:hover:bg-gray-800 dark:focus:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 active:bg-blue-100 dark:active:bg-gray-700",
+      "text-gray-700 dark:text-gray-200 hover:bg-blue-50 hover:text-blue-600 hover:ring-1 hover:ring-blue-300 focus-visible:bg-blue-50 focus-visible:text-blue-600 focus-visible:ring-1 focus-visible:ring-blue-300 dark:hover:bg-gray-700 dark:hover:text-blue-400 dark:focus-visible:bg-gray-700 dark:focus-visible:text-blue-400 active:bg-blue-100 dark:active:bg-gray-600",
     danger:
-      "text-red-600 dark:text-red-400 hover:bg-red-50 hover:ring-1 hover:ring-red-300 dark:hover:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/30 focus:ring-red-500 dark:focus:ring-red-400",
+      "text-red-600 dark:text-red-400 hover:bg-red-50 hover:ring-1 hover:ring-red-300 focus-visible:bg-red-50 focus-visible:ring-1 focus-visible:ring-red-300 dark:hover:bg-red-900/20 dark:focus-visible:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/30",
   };
 
   return (
@@ -299,11 +378,21 @@ export function ContextMenuItem({
       role="menuitem"
       disabled={disabled}
       className={cn(baseStyles, variantStyles[variant], className)}
+      onMouseEnter={() => {
+        const active = document.activeElement;
+        if (
+          active instanceof HTMLElement &&
+          context?.contentRef.current?.contains(active) &&
+          active.getAttribute("role") === "menuitem"
+        ) {
+          active.blur();
+        }
+      }}
       onMouseDown={(e) => e.preventDefault()}
       onClick={() => {
         if (disabled) return;
         onClick();
-        context?.setState({ isOpen: false, position: { x: 0, y: 0 } });
+        context?.close();
       }}
       onKeyDown={handleKeyDown}
     >
@@ -317,7 +406,7 @@ export function ContextMenuItem({
           {icon}
         </span>
       )}
-      <span className="flex-1 text-left font-medium">{label}</span>
+      <span className="flex-1 truncate text-left">{label}</span>
     </button>
   );
 }
@@ -438,7 +527,7 @@ function SyntheticTrigger() {
       const target = e.target as HTMLElement | null;
 
       if (target?.closest("[data-context-menu-trigger], .ProseMirror")) {
-        context.setState({ isOpen: false, position: { x: 0, y: 0 } });
+        context.close();
         return;
       }
 
@@ -456,7 +545,7 @@ function SyntheticTrigger() {
       }
 
       if (target?.closest("input, textarea, [contenteditable='true']")) {
-        context.setState({ isOpen: false, position: { x: 0, y: 0 } });
+        context.close();
         return;
       }
 

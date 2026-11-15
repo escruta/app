@@ -58,6 +58,7 @@ export function Select<T>({
   const typeaheadTimeoutRef = useRef<number | null>(null);
   const listboxId = `select-${useId().replace(/:/g, "")}-listbox`;
   const optionId = (index: number) => `${listboxId}-option-${index}`;
+  const [placedUp, setPlacedUp] = useState(up);
   const [position, setPosition] = useState<{
     top?: number;
     bottom?: number;
@@ -127,9 +128,11 @@ export function Select<T>({
     const spaceBelow = window.innerHeight - rect.bottom - gap;
     const spaceAbove = rect.top - gap;
 
+    let resolvedUp = false;
     if (up) {
       if (spaceAbove >= estimatedListHeight || spaceAbove >= spaceBelow) {
         pos.bottom = window.innerHeight - rect.top + gap;
+        resolvedUp = true;
       } else {
         pos.top = rect.bottom + gap;
       }
@@ -138,6 +141,7 @@ export function Select<T>({
         pos.top = rect.bottom + gap;
       } else {
         pos.bottom = window.innerHeight - rect.top + gap;
+        resolvedUp = true;
       }
     }
 
@@ -147,6 +151,7 @@ export function Select<T>({
       pos.left = Math.max(0, rect.left);
     }
 
+    setPlacedUp(resolvedUp);
     setPosition(pos);
   }, [align, up, variant]);
 
@@ -462,9 +467,9 @@ export function Select<T>({
               role="listbox"
               aria-label={ariaLabel ?? heading ?? label}
               aria-activedescendant={activeIndex >= 0 ? optionId(activeIndex) : undefined}
-              initial={effectiveReducedMotion ? false : { opacity: 0, y: up ? 10 : -10 }}
+              initial={effectiveReducedMotion ? false : { opacity: 0, y: placedUp ? 10 : -10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={effectiveReducedMotion ? undefined : { opacity: 0, y: up ? 10 : -10 }}
+              exit={effectiveReducedMotion ? undefined : { opacity: 0, y: placedUp ? 10 : -10 }}
               transition={
                 effectiveReducedMotion ? { duration: 0 } : { duration: 0.2, ease: "easeOut" }
               }
