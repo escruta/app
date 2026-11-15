@@ -8,7 +8,7 @@ import {
   IconButton,
   Modal,
   Select,
-  type SelectOption,
+  SORT_SELECT_OPTIONS,
   Spinner,
   TextField,
   Tooltip,
@@ -21,9 +21,6 @@ import {
   NotebookIcon,
   SearchIcon,
   SettingsIcon,
-  SortAlphabetAscIcon,
-  SortAlphabetDescIcon,
-  SortIcon,
 } from "@/components/icons";
 import type { Folder, Notebook, NotebooksPageResponse } from "@/interfaces";
 import {
@@ -35,29 +32,6 @@ import {
 } from "@/components/settings";
 
 const SEARCH_PAGE_SIZE = 20;
-
-const SORT_SELECT_OPTIONS: SelectOption<SortOption>[] = [
-  {
-    value: "Newest",
-    label: SORT_LABELS.Newest,
-    icon: <SortIcon className="size-4" />,
-  },
-  {
-    value: "Oldest",
-    label: SORT_LABELS.Oldest,
-    icon: <SortIcon className="size-4 rotate-180" />,
-  },
-  {
-    value: "Alphabetical",
-    label: SORT_LABELS.Alphabetical,
-    icon: <SortAlphabetAscIcon className="size-4" />,
-  },
-  {
-    value: "Reverse Alphabetical",
-    label: SORT_LABELS["Reverse Alphabetical"],
-    icon: <SortAlphabetDescIcon className="size-4" />,
-  },
-];
 
 type ActiveFilter = "all" | string;
 
