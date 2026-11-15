@@ -4,6 +4,7 @@ interface KeyConcept {
 }
 
 export interface StudyGuideResponse {
+  title?: string;
   overview: string;
   keyConcepts: KeyConcept[];
   importantDetails: string[];

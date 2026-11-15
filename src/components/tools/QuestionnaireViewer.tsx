@@ -36,7 +36,7 @@ const slideVariants = {
 };
 
 export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProps) {
-  const { questions } = data;
+  const { questions = [] } = data;
 
   const { effectiveReducedMotion } = useAccessibility();
   const [currentIndex, setCurrentIndex] = useState(0);

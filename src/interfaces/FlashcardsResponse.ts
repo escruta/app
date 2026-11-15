@@ -4,5 +4,6 @@ interface Flashcard {
 }
 
 export interface FlashcardsResponse {
+  title?: string;
   flashcards: Flashcard[];
 }

@@ -34,8 +34,6 @@ interface ChatCardProps {
   sources: Source[];
   selectedSourceIds?: string[];
   onSourceSelect?: (sourceId: string) => void;
-  externalQuestion?: string | null;
-  onExternalQuestionHandled?: () => void;
   autoFocus?: boolean;
   initialConversationId?: string | null;
   initialConversationTitle?: string | null;
@@ -54,8 +52,6 @@ export function ChatCard({
   sources,
   selectedSourceIds = [],
   onSourceSelect,
-  externalQuestion,
-  onExternalQuestionHandled,
   autoFocus = true,
   initialConversationId,
   initialConversationTitle,
@@ -308,14 +304,6 @@ export function ChatCard({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    if (externalQuestion) {
-      setInput(externalQuestion);
-      focusInputAfterRender();
-      onExternalQuestionHandled?.();
-    }
-  }, [externalQuestion, onExternalQuestionHandled, focusInputAfterRender]);
 
   const handleSourceClick = (sourceId: string) => {
     if (!/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(sourceId)) {

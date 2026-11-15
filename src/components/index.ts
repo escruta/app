@@ -15,7 +15,6 @@ export * from "./SourceChip.tsx";
 export * from "./SourceGroupSection.tsx";
 export * from "./SourcesCard.tsx";
 export * from "./SourceViewer.tsx";
-export * from "./ToolCard.tsx";
 export * from "./ToolResultViewer.tsx";
 export * from "./ToolsCard.tsx";
 export * from "./tools";

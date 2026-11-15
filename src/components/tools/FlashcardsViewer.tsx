@@ -46,7 +46,7 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
     containerRef.current?.focus();
   }, []);
 
-  const { flashcards } = data;
+  const { flashcards = [] } = data;
   const currentCard = flashcards[currentIndex];
   const totalCards = flashcards.length;
   const knownCount = knownCards.size;
