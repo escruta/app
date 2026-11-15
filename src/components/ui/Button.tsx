@@ -64,7 +64,12 @@ export function Button({
       disabled={disabled}
     >
       {icon && (
-        <span className={cn("mr-2 flex items-center justify-center", iconSizeStyles[size])}>
+        <span
+          className={cn(
+            "mr-2 flex shrink-0 items-center justify-center [&>svg]:size-full",
+            iconSizeStyles[size],
+          )}
+        >
           {icon}
         </span>
       )}

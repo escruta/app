@@ -1,23 +1,34 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useLayoutEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useShortcut, useAccessibility } from "@/hooks";
 import { cn } from "@/lib/utils";
-import { ChevronIcon } from "@/components/icons";
+import { ChevronIcon, CloseIcon } from "@/components/icons";
+import { IconButton } from "@/components/ui";
 import type { MindMapResponse, Branch } from "@/interfaces";
 
 interface MindMapViewerProps {
   data: MindMapResponse;
   className?: string;
-  onNodeSelect?: (question: string) => void;
+}
+
+interface SelectedNodeInfo {
+  id: string;
+  label: string;
+  description?: string | null;
+  level: number;
+  path: string[];
+  element: HTMLElement;
 }
 
 interface BranchNodeProps {
   branch: Branch;
+  nodeId: string;
   level: number;
   path: string[];
   expandTrigger: number;
   collapseTrigger: number;
-  onNodeSelect?: (question: string) => void;
+  selectedNodeId: string | null;
+  onSelectNode: (node: SelectedNodeInfo) => void;
 }
 
 const getNodeColors = (level: number, isLeaf: boolean) => {
@@ -36,6 +47,20 @@ const getNodeColors = (level: number, isLeaf: boolean) => {
     "shadow-xs font-medium": !isLeaf,
     "opacity-90": isLeaf,
   });
+};
+
+const getLevelDotColor = (level: number) => {
+  const styles = [
+    "bg-blue-500 dark:bg-blue-400",
+    "bg-blue-500 dark:bg-blue-400",
+    "bg-purple-500 dark:bg-purple-400",
+    "bg-teal-500 dark:bg-teal-400",
+    "bg-orange-500 dark:bg-orange-400",
+    "bg-green-500 dark:bg-green-400",
+    "bg-yellow-500 dark:bg-yellow-400",
+    "bg-red-500 dark:bg-red-400",
+  ];
+  return styles[Math.min(level, styles.length - 1)];
 };
 
 const getLineColor = (level: number) => {
@@ -82,16 +107,20 @@ const getHoverColors = (level: number) => {
 
 function BranchNode({
   branch,
+  nodeId,
   level,
   path,
   expandTrigger,
   collapseTrigger,
-  onNodeSelect,
+  selectedNodeId,
+  onSelectNode,
 }: BranchNodeProps) {
   const { effectiveReducedMotion } = useAccessibility();
   const [isExpanded, setIsExpanded] = useState(false);
+  const nodeRef = useRef<HTMLDivElement>(null);
   const hasChildren = branch.children && branch.children.length > 0;
   const isLeaf = !hasChildren;
+  const isSelected = selectedNodeId === nodeId;
 
   useEffect(() => {
     if (expandTrigger > 0 && hasChildren) setIsExpanded(true);
@@ -102,11 +131,15 @@ function BranchNode({
   }, [collapseTrigger]);
 
   const handleNodeClick = () => {
-    if (onNodeSelect) {
-      const context = path.join(" > ");
-      const question = `Explain in detail the concept of "${branch.label}" considering its context within the topic: ${context}.`;
-      onNodeSelect(question);
-    }
+    if (!nodeRef.current) return;
+    onSelectNode({
+      id: nodeId,
+      label: branch.label,
+      description: branch.description,
+      level,
+      path,
+      element: nodeRef.current,
+    });
   };
 
   const handleNodeKeyDown = useShortcut("dialog-activate", handleNodeClick);
@@ -124,18 +157,19 @@ function BranchNode({
       <div className="flex items-center">
         <div className="z-10 flex items-center gap-1.5">
           <div
+            ref={nodeRef}
             className={cn(
-              "relative flex items-center px-3 py-1.5 rounded-xs border text-sm whitespace-nowrap select-none transition-colors",
+              "relative flex cursor-pointer items-center rounded-xs border px-3 py-1.5 text-sm whitespace-nowrap transition-all select-none",
               getNodeColors(level, isLeaf),
-              {
-                "cursor-pointer": !!onNodeSelect,
-                [getHoverColors(level)]: !!onNodeSelect,
-              },
+              getHoverColors(level),
+              isSelected &&
+                "ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-blue-400 dark:ring-offset-gray-900",
             )}
             onClick={handleNodeClick}
             onKeyDown={handleNodeKeyDown}
             tabIndex={0}
             role="button"
+            aria-pressed={isSelected}
           >
             <span>{branch.label}</span>
           </div>
@@ -204,11 +238,13 @@ function BranchNode({
                   )}
                   <BranchNode
                     branch={child}
+                    nodeId={`${nodeId}.${index}`}
                     level={level + 1}
                     path={[...path, branch.label]}
                     expandTrigger={expandTrigger}
                     collapseTrigger={collapseTrigger}
-                    onNodeSelect={onNodeSelect}
+                    selectedNodeId={selectedNodeId}
+                    onSelectNode={onSelectNode}
                   />
                 </div>
               ))}
@@ -222,20 +258,26 @@ function BranchNode({
 
 function MainBranch({
   branch,
+  nodeId,
   path,
   expandTrigger,
   collapseTrigger,
-  onNodeSelect,
+  selectedNodeId,
+  onSelectNode,
 }: {
   branch: Branch;
+  nodeId: string;
   path: string[];
   expandTrigger: number;
   collapseTrigger: number;
-  onNodeSelect?: (question: string) => void;
+  selectedNodeId: string | null;
+  onSelectNode: (node: SelectedNodeInfo) => void;
 }) {
   const { effectiveReducedMotion } = useAccessibility();
   const [isExpanded, setIsExpanded] = useState(false);
+  const nodeRef = useRef<HTMLDivElement>(null);
   const hasChildren = branch.children && branch.children.length > 0;
+  const isSelected = selectedNodeId === nodeId;
 
   useEffect(() => {
     if (expandTrigger > 0 && hasChildren) setIsExpanded(true);
@@ -246,11 +288,15 @@ function MainBranch({
   }, [collapseTrigger]);
 
   function handleNodeClick() {
-    if (onNodeSelect) {
-      const context = path.join(" > ");
-      const question = `Explain in detail the concept of "${branch.label}" considering its context within the topic: ${context}.`;
-      onNodeSelect(question);
-    }
+    if (!nodeRef.current) return;
+    onSelectNode({
+      id: nodeId,
+      label: branch.label,
+      description: branch.description,
+      level: 1,
+      path,
+      element: nodeRef.current,
+    });
   }
 
   const handleNodeKeyDown = useShortcut("dialog-activate", handleNodeClick);
@@ -266,18 +312,19 @@ function MainBranch({
       <div className="flex items-center">
         <div className="z-10 flex items-center gap-1.5">
           <div
+            ref={nodeRef}
             className={cn(
-              "relative flex items-center px-4 py-2 rounded-xs border select-none transition-colors whitespace-nowrap",
+              "relative flex cursor-pointer items-center rounded-xs border px-4 py-2 whitespace-nowrap transition-all select-none",
               getNodeColors(1, !hasChildren),
-              {
-                "cursor-pointer": !!onNodeSelect,
-                [getHoverColors(1)]: !!onNodeSelect,
-              },
+              getHoverColors(1),
+              isSelected &&
+                "ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-blue-400 dark:ring-offset-gray-900",
             )}
             onClick={handleNodeClick}
             onKeyDown={handleNodeKeyDown}
             tabIndex={0}
             role="button"
+            aria-pressed={isSelected}
           >
             <span>{branch.label}</span>
           </div>
@@ -346,11 +393,13 @@ function MainBranch({
                   )}
                   <BranchNode
                     branch={child}
+                    nodeId={`${nodeId}.${index}`}
                     level={2}
                     path={[...path, branch.label]}
                     expandTrigger={expandTrigger}
                     collapseTrigger={collapseTrigger}
-                    onNodeSelect={onNodeSelect}
+                    selectedNodeId={selectedNodeId}
+                    onSelectNode={onSelectNode}
                   />
                 </div>
               ))}
@@ -362,29 +411,123 @@ function MainBranch({
   );
 }
 
-export function MindMapViewer({ data, className, onNodeSelect }: MindMapViewerProps) {
-  const { central, branches } = data;
+interface PopoverGeometry {
+  left: number;
+  top: number;
+  width: number;
+  arrowLeft: number;
+  placement: "top" | "bottom";
+}
+
+export function MindMapViewer({ data, className }: MindMapViewerProps) {
+  const { effectiveReducedMotion } = useAccessibility();
+  const { central, description: centralDescription, branches } = data;
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const centralNodeRef = useRef<HTMLDivElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const pointerDownPosRef = useRef<{ x: number; y: number } | null>(null);
 
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [selectedNode, setSelectedNode] = useState<SelectedNodeInfo | null>(null);
+  const [popoverGeo, setPopoverGeo] = useState<PopoverGeometry | null>(null);
 
   const [expandTrigger, setExpandTrigger] = useState(0);
   const [collapseTrigger, setCollapseTrigger] = useState(0);
 
   const handleExpandAll = () => setExpandTrigger((prev) => prev + 1);
-  const handleCollapseAll = () => setCollapseTrigger((prev) => prev + 1);
+  const handleCollapseAll = () => {
+    setCollapseTrigger((prev) => prev + 1);
+    if (selectedNode && selectedNode.level > 1) {
+      setSelectedNode(null);
+    }
+  };
 
-  const handleNodeSelect = useCallback(
-    (question: string) => {
-      if (onNodeSelect) onNodeSelect(question);
-    },
-    [onNodeSelect],
-  );
+  const handleSelectNode = useCallback((node: SelectedNodeInfo) => {
+    setSelectedNode((prev) => (prev?.id === node.id ? null : node));
+  }, []);
+
+  const handleSelectCentral = useCallback(() => {
+    if (!centralNodeRef.current) return;
+    handleSelectNode({
+      id: "central",
+      label: central,
+      description: centralDescription,
+      level: 0,
+      path: [],
+      element: centralNodeRef.current,
+    });
+  }, [central, centralDescription, handleSelectNode]);
+
+  const handleCentralKeyDown = useShortcut("dialog-activate", handleSelectCentral);
+
+  useShortcut("dialog-close", () => setSelectedNode(null), {
+    enabled: Boolean(selectedNode),
+    preventDefault: false,
+  });
+
+  const updatePopoverPosition = useCallback(() => {
+    if (!selectedNode || !containerRef.current) {
+      setPopoverGeo(null);
+      return;
+    }
+
+    if (!selectedNode.element.isConnected) {
+      setSelectedNode(null);
+      setPopoverGeo(null);
+      return;
+    }
+
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const nodeRect = selectedNode.element.getBoundingClientRect();
+    const measuredHeight = popoverRef.current?.offsetHeight ?? 124;
+
+    const margin = 12;
+    const gap = 10;
+    const width = Math.min(312, Math.max(200, containerRect.width - margin * 2));
+
+    const nodeCenterX = nodeRect.left - containerRect.left + nodeRect.width / 2;
+    const nodeTop = nodeRect.top - containerRect.top;
+    const nodeBottom = nodeRect.bottom - containerRect.top;
+
+    const left = Math.max(
+      margin,
+      Math.min(nodeCenterX - width / 2, containerRect.width - width - margin),
+    );
+    const arrowLeft = Math.max(16, Math.min(nodeCenterX - left, width - 16));
+
+    const spaceBelow = containerRect.height - nodeBottom - margin;
+    const spaceAbove = nodeTop - margin;
+    const placeBelow = spaceBelow >= measuredHeight + gap || spaceBelow >= spaceAbove;
+
+    const top = placeBelow
+      ? Math.max(margin, Math.min(nodeBottom + gap, containerRect.height - measuredHeight - margin))
+      : Math.max(margin, nodeTop - measuredHeight - gap);
+
+    setPopoverGeo({
+      left,
+      top,
+      width,
+      arrowLeft,
+      placement: placeBelow ? "bottom" : "top",
+    });
+  }, [selectedNode]);
+
+  useLayoutEffect(() => {
+    updatePopoverPosition();
+  }, [updatePopoverPosition, transform]);
 
   useEffect(() => {
+    if (!selectedNode || !containerRef.current) return;
+    const observer = new ResizeObserver(() => updatePopoverPosition());
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [selectedNode, updatePopoverPosition]);
+
+  useEffect(() => {
+    setSelectedNode(null);
     if (containerRef.current && contentRef.current) {
       const container = containerRef.current.getBoundingClientRect();
       const content = contentRef.current.getBoundingClientRect();
@@ -434,6 +577,7 @@ export function MindMapViewer({ data, className, onNodeSelect }: MindMapViewerPr
       const target = e.target as HTMLElement;
       if (target.closest("[role='button']") || target.closest("button")) return;
 
+      pointerDownPosRef.current = { x: e.clientX, y: e.clientY };
       setIsDragging(true);
       setDragStart({ x: e.clientX - transform.x, y: e.clientY - transform.y });
       (e.target as HTMLElement).setPointerCapture(e.pointerId);
@@ -455,9 +599,16 @@ export function MindMapViewer({ data, className, onNodeSelect }: MindMapViewerPr
   );
 
   const handlePointerUp = useCallback((e: React.PointerEvent) => {
+    const downPos = pointerDownPosRef.current;
+    pointerDownPosRef.current = null;
     setIsDragging(false);
+
     if ((e.target as HTMLElement).hasPointerCapture(e.pointerId)) {
       (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+    }
+
+    if (downPos && Math.hypot(e.clientX - downPos.x, e.clientY - downPos.y) < 4) {
+      setSelectedNode(null);
     }
   }, []);
 
@@ -476,13 +627,15 @@ export function MindMapViewer({ data, className, onNodeSelect }: MindMapViewerPr
   if (!central || !branches || branches.length === 0) {
     return (
       <div className="flex items-center justify-center p-8 text-gray-500 dark:text-gray-400">
-        There's no mind map to show here yet.
+        There&apos;s no mind map to show here yet.
       </div>
     );
   }
 
+  const isCentralSelected = selectedNode?.id === "central";
+
   return (
-    <div className={cn("relative size-full", className)}>
+    <div className={cn("relative size-full overflow-hidden", className)}>
       <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
         <div className="flex items-center gap-1.5">
           <button
@@ -572,9 +725,22 @@ export function MindMapViewer({ data, className, onNodeSelect }: MindMapViewerPr
           }}
           transition={isDragging ? { duration: 0 } : { duration: 0.1 }}
           style={{ transformOrigin: "0 0" }}
+          onUpdate={selectedNode ? updatePopoverPosition : undefined}
         >
           <div className="flex items-center">
-            <div className="rounded-xs border border-gray-300 bg-white px-5 py-3 font-semibold whitespace-nowrap text-gray-900 shadow-xs select-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100">
+            <div
+              ref={centralNodeRef}
+              className={cn(
+                "cursor-pointer rounded-xs border border-gray-300 bg-white px-5 py-3 font-semibold whitespace-nowrap text-gray-900 shadow-xs transition-all select-none hover:border-blue-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:hover:border-blue-500",
+                isCentralSelected &&
+                  "ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-blue-400 dark:ring-offset-gray-900",
+              )}
+              onClick={handleSelectCentral}
+              onKeyDown={handleCentralKeyDown}
+              tabIndex={0}
+              role="button"
+              aria-pressed={isCentralSelected}
+            >
               {central}
             </div>
 
@@ -598,10 +764,12 @@ export function MindMapViewer({ data, className, onNodeSelect }: MindMapViewerPr
                   <div className="absolute left-0 h-px w-8 bg-gray-300 dark:bg-gray-600" />
                   <MainBranch
                     branch={branch}
+                    nodeId={`branch-${index}`}
                     path={[central]}
                     expandTrigger={expandTrigger}
                     collapseTrigger={collapseTrigger}
-                    onNodeSelect={handleNodeSelect}
+                    selectedNodeId={selectedNode?.id ?? null}
+                    onSelectNode={handleSelectNode}
                   />
                 </div>
               ))}
@@ -609,6 +777,81 @@ export function MindMapViewer({ data, className, onNodeSelect }: MindMapViewerPr
           </div>
         </motion.div>
       </div>
+
+      <AnimatePresence>
+        {selectedNode && popoverGeo && (
+          <motion.div
+            ref={popoverRef}
+            key={selectedNode.id}
+            role="dialog"
+            aria-label={selectedNode.label}
+            initial={
+              effectiveReducedMotion
+                ? false
+                : { opacity: 0, y: popoverGeo.placement === "bottom" ? -4 : 4 }
+            }
+            animate={{ opacity: 1, y: 0 }}
+            exit={
+              effectiveReducedMotion
+                ? undefined
+                : { opacity: 0, y: popoverGeo.placement === "bottom" ? -4 : 4 }
+            }
+            transition={
+              effectiveReducedMotion ? { duration: 0 } : { duration: 0.14, ease: "easeOut" }
+            }
+            style={{
+              left: popoverGeo.left,
+              top: popoverGeo.top,
+              width: popoverGeo.width,
+            }}
+            className="absolute z-20 rounded-xs border border-gray-300 bg-white shadow-lg ring-1 shadow-gray-500/10 ring-gray-500/5 dark:border-gray-600 dark:bg-gray-900 dark:shadow-black/30 dark:ring-gray-500/10"
+          >
+            <span
+              aria-hidden="true"
+              style={{ left: popoverGeo.arrowLeft }}
+              className={cn(
+                "pointer-events-none absolute size-2.5 -translate-x-1/2 rotate-45 border-gray-300 dark:border-gray-600",
+                popoverGeo.placement === "bottom"
+                  ? "-top-1.5 border-t border-l bg-white dark:bg-gray-900"
+                  : "-bottom-1.5 border-r border-b bg-gray-50 dark:bg-gray-800",
+              )}
+            />
+
+            <div className="relative flex items-start justify-between gap-2.5 px-3.5 py-2.5">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className={cn(
+                      "size-2 shrink-0 rounded-xs",
+                      getLevelDotColor(selectedNode.level),
+                    )}
+                  />
+                  <span className="truncate text-[11px] font-medium text-gray-500 select-none dark:text-gray-400">
+                    {selectedNode.path.length > 0 ? selectedNode.path.join(" / ") : "Central topic"}
+                  </span>
+                </div>
+                <h4 className="mt-0.5 text-sm leading-snug font-semibold text-gray-900 select-text dark:text-gray-100">
+                  {selectedNode.label}
+                </h4>
+              </div>
+              <IconButton
+                icon={<CloseIcon className="size-3.5" />}
+                variant="ghost"
+                size="xs"
+                ariaLabel="Close explanation"
+                onClick={() => setSelectedNode(null)}
+                className="-mt-0.5 -mr-1 shrink-0"
+              />
+            </div>
+
+            <div className="border-t border-gray-200 bg-gray-50 px-3.5 py-2.5 dark:border-gray-700 dark:bg-gray-800/70">
+              <p className="text-xs leading-relaxed text-gray-700 select-text dark:text-gray-200">
+                {selectedNode.description?.trim() || "No explanation available for this node."}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

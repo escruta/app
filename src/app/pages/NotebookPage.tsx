@@ -7,6 +7,8 @@ import type {
   Notebook,
   NotebookContent,
   JobType,
+  JobStatus,
+  GenerationJob,
   Conversation,
   ConversationStatus,
 } from "@/interfaces";
@@ -132,8 +134,6 @@ interface TabPaneContentProps {
   isVisible: boolean;
   sources: Source[];
   selectedSourceIds: string[];
-  chatQuestion: string | null;
-  onClearChatQuestion: () => void;
   onSourceSelectFromChat: (sourceId: string) => void;
   onConversationCreated: (tabKeyStr: string, conversationId: string) => void;
   onTabTitleChange: (tabKeyStr: string, title: string) => void;
@@ -147,7 +147,7 @@ interface TabPaneContentProps {
   onSourceDeleted: (tabKeyStr: string) => void;
   onNoteUpdated: (tabKeyStr: string, updatedNote: Note) => void;
   onNoteDeleted: (tabKeyStr: string) => void;
-  onNodeSelect: (question: string) => void;
+  onOpenToolJob: (job: GenerationJob) => void;
 }
 
 const TabPaneContent = memo(
@@ -159,8 +159,6 @@ const TabPaneContent = memo(
     isVisible,
     sources,
     selectedSourceIds,
-    chatQuestion,
-    onClearChatQuestion,
     onSourceSelectFromChat,
     onConversationCreated,
     onTabTitleChange,
@@ -171,7 +169,7 @@ const TabPaneContent = memo(
     onSourceDeleted,
     onNoteUpdated,
     onNoteDeleted,
-    onNodeSelect,
+    onOpenToolJob,
   }: TabPaneContentProps) {
     const handleClose = useCallback(() => onCloseTab(tabKeyStr), [onCloseTab, tabKeyStr]);
     const handleSourceDelete = useCallback(
@@ -203,8 +201,6 @@ const TabPaneContent = memo(
             sources={sources}
             selectedSourceIds={selectedSourceIds}
             onSourceSelect={onSourceSelectFromChat}
-            externalQuestion={isActive ? chatQuestion : null}
-            onExternalQuestionHandled={onClearChatQuestion}
             autoFocus={isActive}
             initialConversationId={tab.refId === NEW_CHAT_ID ? null : tab.refId}
             initialConversationTitle={tab.refId === NEW_CHAT_ID ? null : tab.title}
@@ -243,10 +239,14 @@ const TabPaneContent = memo(
         return (
           <ToolResultTab
             notebookId={notebookId}
+            jobId={tab.refId}
             toolType={tab.toolType}
             title={tab.title}
+            sources={sources}
+            selectedSourceIds={selectedSourceIds}
             onClose={handleClose}
-            onNodeSelect={onNodeSelect}
+            onTitleChange={handleTitleChange}
+            onOpenNewJob={onOpenToolJob}
           />
         );
     }
@@ -268,8 +268,11 @@ const TabPaneContent = memo(
       case "tool":
         return (
           prev.isVisible === next.isVisible &&
+          prev.tab.refId === next.tab.refId &&
           prev.tab.toolType === next.tab.toolType &&
-          prev.tab.title === next.tab.title
+          prev.tab.title === next.tab.title &&
+          prev.sources === next.sources &&
+          prev.selectedSourceIds === next.selectedSourceIds
         );
       case "chat":
         if (!prev.isVisible && !next.isVisible && prev.tab === next.tab) {
@@ -280,8 +283,7 @@ const TabPaneContent = memo(
           prev.isVisible === next.isVisible &&
           prev.tab === next.tab &&
           prev.sources === next.sources &&
-          prev.selectedSourceIds === next.selectedSourceIds &&
-          (next.isActive ? prev.chatQuestion === next.chatQuestion : true)
+          prev.selectedSourceIds === next.selectedSourceIds
         );
     }
   },
@@ -307,7 +309,6 @@ export default function NotebookPage() {
 
   const [isRenameModalOpen, setIsRenameModalOpen] = useState<boolean>(false);
   const [newTitle, setNewTitle] = useState<string>("");
-  const [chatQuestion, setChatQuestion] = useState<string | null>(null);
   const [selectedSourceIds, setSelectedSourceIds] = useState<string[]>([]);
   const [notesRefreshKey, setNotesRefreshKey] = useState<number>(0);
   const [conversationsRefreshKey, setConversationsRefreshKey] = useState<number>(0);
@@ -315,6 +316,7 @@ export default function NotebookPage() {
   const [conversationStates, setConversationStates] = useState<
     Record<string, { status: ConversationStatus; hasUnseenReply: boolean }>
   >({});
+  const [toolJobStates, setToolJobStates] = useState<Record<string, JobStatus>>({});
   const { value: restoreOpenTabs } = useCookie<boolean>(
     WORKSPACE_RESTORE_TABS_COOKIE_KEY,
     DEFAULT_WORKSPACE_SETTINGS.restoreOpenTabs,
@@ -593,17 +595,9 @@ export default function NotebookPage() {
         }
       }
 
-      const existingIndex = tabs.findIndex((t) => {
-        if (t.kind !== descriptor.kind) return false;
-        if (
-          descriptor.kind === "source" ||
-          descriptor.kind === "note" ||
-          descriptor.kind === "chat"
-        )
-          return t.refId === descriptor.refId;
-        if (descriptor.kind === "tool") return t.toolType === descriptor.toolType;
-        return false;
-      });
+      const existingIndex = tabs.findIndex(
+        (t) => t.kind === descriptor.kind && t.refId === descriptor.refId,
+      );
 
       const shouldAutoSplit = autoSplitContent && descriptor.kind !== "chat";
 
@@ -911,6 +905,11 @@ export default function NotebookPage() {
     return null;
   }, [activeTab]);
 
+  const activeToolJobId = useMemo(() => {
+    if (activeTab?.kind === "tool") return activeTab.refId;
+    return null;
+  }, [activeTab]);
+
   useEffect(() => {
     if (effectiveSplitState !== splitState) {
       setSplitState(effectiveSplitState);
@@ -987,21 +986,6 @@ export default function NotebookPage() {
     );
   }, []);
 
-  const handleNodeSelect = useCallback(
-    (question: string) => {
-      const firstChat = tabs.find((t) => t.kind === "chat");
-      if (firstChat && activeTab?.kind !== "chat") {
-        selectTab(tabKey(firstChat));
-      }
-      setChatQuestion(question);
-    },
-    [tabs, activeTab, selectTab],
-  );
-
-  const handleClearChatQuestion = useCallback(() => {
-    setChatQuestion(null);
-  }, []);
-
   const handleConversationStateChange = useCallback(
     (id: string, state: { status: ConversationStatus; hasUnseenReply: boolean }) => {
       setConversationStates((prev) => ({ ...prev, [id]: state }));
@@ -1063,6 +1047,65 @@ export default function NotebookPage() {
       ),
     );
   }, []);
+
+  const handleOpenToolJob = useCallback(
+    (job: GenerationJob) => {
+      setToolJobStates((prev) => ({ ...prev, [job.id]: job.status }));
+      openTab({
+        kind: "tool",
+        refId: job.id,
+        title: job.title,
+        toolType: job.type,
+      });
+    },
+    [openTab],
+  );
+
+  const handleToolJobRenamed = useCallback((updatedJob: GenerationJob) => {
+    setTabs((prev) =>
+      prev.map((t) =>
+        t.kind === "tool" && t.refId === updatedJob.id ? { ...t, title: updatedJob.title } : t,
+      ),
+    );
+  }, []);
+
+  const handleToolJobDeleted = useCallback(
+    (jobId: string) => {
+      const toolTab = tabs.find((t) => t.kind === "tool" && t.refId === jobId);
+      if (toolTab) closeTab(tabKey(toolTab));
+    },
+    [tabs, closeTab],
+  );
+
+  const handleToolRealtimeUpdated = useCallback(
+    (event: { notebookId?: string; jobId?: string; title?: string; status?: JobStatus }) => {
+      if (event?.notebookId !== notebookId || !event.jobId) return;
+      if (event.status) {
+        setToolJobStates((prev) => ({ ...prev, [event.jobId!]: event.status! }));
+      }
+      if (event.title) {
+        setTabs((prev) =>
+          prev.map((t) =>
+            t.kind === "tool" && t.refId === event.jobId && t.title !== event.title
+              ? { ...t, title: event.title! }
+              : t,
+          ),
+        );
+      }
+    },
+    [notebookId],
+  );
+
+  const handleToolRealtimeDeleted = useCallback(
+    (event: { notebookId?: string; jobId?: string }) => {
+      if (event?.notebookId !== notebookId || !event.jobId) return;
+      handleToolJobDeleted(event.jobId);
+    },
+    [notebookId, handleToolJobDeleted],
+  );
+
+  useRealtimeEvent("tool.updated", handleToolRealtimeUpdated);
+  useRealtimeEvent("tool.deleted", handleToolRealtimeDeleted);
 
   useEffect(() => {
     if (notebook?.title) {
@@ -1462,11 +1505,12 @@ export default function NotebookPage() {
   const toolsListContent = (
     <ToolsCard
       notebookId={notebookId}
-      onNodeSelect={handleNodeSelect}
-      hasSources={(notebook?.sources?.length ?? 0) > 0}
-      onOpenTool={(type: JobType, title: string) =>
-        openTab({ kind: "tool", refId: type, title, toolType: type })
-      }
+      sources={notebook?.sources ?? EMPTY_SOURCES}
+      selectedSourceIds={selectedSourceIds}
+      activeToolJobId={activeToolJobId}
+      onOpenToolJob={handleOpenToolJob}
+      onToolJobRenamed={handleToolJobRenamed}
+      onToolJobDeleted={handleToolJobDeleted}
     />
   );
 
@@ -1475,7 +1519,9 @@ export default function NotebookPage() {
     const isActive = k === effectiveActiveKey;
     const convState =
       t.kind === "chat" && t.refId !== NEW_CHAT_ID ? conversationStates[t.refId] : undefined;
-    const isGenerating = convState?.status === "GENERATING";
+    const toolStatus = t.kind === "tool" ? toolJobStates[t.refId] : undefined;
+    const isGenerating =
+      convState?.status === "GENERATING" || toolStatus === "PENDING" || toolStatus === "PROCESSING";
     const hasUnseen = Boolean(convState?.hasUnseenReply) && !isGenerating && !isActive;
 
     return {
@@ -1656,8 +1702,6 @@ export default function NotebookPage() {
                 isVisible={isVisible}
                 sources={notebook?.sources ?? EMPTY_SOURCES}
                 selectedSourceIds={selectedSourceIds}
-                chatQuestion={isActive ? chatQuestion : null}
-                onClearChatQuestion={handleClearChatQuestion}
                 onSourceSelectFromChat={handleSourceSelectFromChat}
                 onConversationCreated={handleConversationCreated}
                 onTabTitleChange={handleTabTitleChange}
@@ -1668,7 +1712,7 @@ export default function NotebookPage() {
                 onSourceDeleted={handleSourceDeleted}
                 onNoteUpdated={handleNoteUpdated}
                 onNoteDeleted={handleNoteDeleted}
-                onNodeSelect={handleNodeSelect}
+                onOpenToolJob={handleOpenToolJob}
               />
             </div>
           );
