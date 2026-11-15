@@ -55,7 +55,18 @@ export function ChromeTabs({
     >
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gray-200 dark:bg-gray-800" />
 
-      <div className="relative z-10 flex min-w-0 flex-1 items-stretch gap-0.5 overflow-hidden px-2">
+      <div
+        className="relative z-10 flex min-w-0 flex-1 items-stretch gap-0.5 overflow-hidden px-2"
+        onMouseDown={(e: MouseEvent<HTMLDivElement>) => {
+          if (e.button === 1) e.preventDefault();
+        }}
+        onMouseUp={(e: MouseEvent<HTMLDivElement>) => {
+          if (e.button === 1) e.preventDefault();
+        }}
+        onAuxClick={(e: MouseEvent<HTMLDivElement>) => {
+          if (e.button === 1) e.preventDefault();
+        }}
+      >
         {tabs.map((tab, index) => {
           const active = tab.id === activeTabId;
           const closable = tab.closable !== false;
@@ -72,6 +83,9 @@ export function ChromeTabs({
               onPointerDown={(e) => onTabPointerDown?.(e, tab.id)}
               onClick={() => onSelect(tab.id)}
               onMouseDown={(e: MouseEvent<HTMLDivElement>) => {
+                if (e.button === 1) e.preventDefault();
+              }}
+              onMouseUp={(e: MouseEvent<HTMLDivElement>) => {
                 if (e.button === 1) e.preventDefault();
               }}
               onAuxClick={(e: MouseEvent<HTMLDivElement>) => {
