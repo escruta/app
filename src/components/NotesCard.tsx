@@ -248,15 +248,6 @@ export function NotesCard({
         title="Notes"
         actions={
           <>
-            <Tooltip text={addingNote ? "Adding note..." : "Add note"} position="bottom">
-              <IconButton
-                icon={addingNote ? <Spinner /> : <AddIcon />}
-                variant="primary"
-                size="sm"
-                onClick={() => createNote()}
-                disabled={addingNote}
-              />
-            </Tooltip>
             <SortMenu value={sortBy} onChange={setSortPreference} label="notes" />
             <Tooltip text="New group" position="bottom">
               <IconButton
@@ -265,6 +256,15 @@ export function NotesCard({
                 variant="secondary"
                 size="sm"
                 ariaLabel="New group"
+              />
+            </Tooltip>
+            <Tooltip text={addingNote ? "Adding note..." : "Add note"} position="bottom">
+              <IconButton
+                icon={addingNote ? <Spinner /> : <AddIcon />}
+                variant="primary"
+                size="sm"
+                onClick={() => createNote()}
+                disabled={addingNote}
               />
             </Tooltip>
           </>
