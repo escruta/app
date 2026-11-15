@@ -1,9 +1,11 @@
 import { lazy, type ReactNode } from "react";
-import { Alert, Button, Chip } from "@/components/ui";
+import { Alert, Button, Chip, Spinner } from "@/components/ui";
 import { FileIcon, RestartIcon } from "@/components/icons";
+import type { AgentStep } from "@/interfaces";
 import { cn } from "@/lib/utils";
 import { useAccessibility } from "@/hooks";
 import { motion } from "motion/react";
+import { AgentThinkingPanel } from "./AgentThinkingPanel";
 
 const Markdown = lazy(() => import("../Markdown").then((module) => ({ default: module.Markdown })));
 const CodeBlock = lazy(() =>
@@ -24,42 +26,35 @@ export interface Message {
   text: string;
   sender: Sender;
   citedSources?: CitedSource[];
+  thinkingSteps?: AgentStep[];
+  thinkingDurationMs?: number;
+  isStreaming?: boolean;
   error?: true;
   selectedSourcesCount?: number;
 }
 
-function processMessage(
-  message: Message,
+type RenderSegment =
+  | { kind: "agent"; key: string; steps: AgentStep[] }
+  | { kind: "text"; key: string; text: string };
+
+function renderMarkdownText(
+  text: string,
+  citedSources: CitedSource[] | undefined,
   showCitedSources: boolean,
-  onRetry?: () => void,
   onSourceClick?: (sourceId: string) => void,
 ): ReactNode {
-  if (message.error) {
-    return (
-      <div className="flex flex-col gap-3">
-        <Alert message={message.text} variant="danger" />
-        {onRetry && (
-          <Button
-            onClick={onRetry}
-            variant="ghost"
-            size="sm"
-            icon={<RestartIcon className="size-4" />}
-          >
-            Try again
-          </Button>
-        )}
-      </div>
-    );
+  if (!text) {
+    return null;
   }
 
   const codeBlockRegex = /```(\w+)?\n?([\s\S]*?)```/g;
   const parts = [];
   let lastIndex = 0;
-  let match = codeBlockRegex.exec(message.text);
+  let match = codeBlockRegex.exec(text);
 
   while (match !== null) {
     if (match.index > lastIndex) {
-      const beforeCode = message.text.slice(lastIndex, match.index);
+      const beforeCode = text.slice(lastIndex, match.index);
       if (beforeCode.trim()) {
         parts.push({ type: "text", content: beforeCode });
       }
@@ -72,18 +67,18 @@ function processMessage(
     });
 
     lastIndex = match.index + match[0].length;
-    match = codeBlockRegex.exec(message.text);
+    match = codeBlockRegex.exec(text);
   }
 
-  if (lastIndex < message.text.length) {
-    const remaining = message.text.slice(lastIndex);
+  if (lastIndex < text.length) {
+    const remaining = text.slice(lastIndex);
     if (remaining.trim()) {
       parts.push({ type: "text", content: remaining });
     }
   }
 
   if (parts.length === 0) {
-    parts.push({ type: "text", content: message.text });
+    parts.push({ type: "text", content: text });
   }
 
   return parts.map((part, index) => {
@@ -106,7 +101,7 @@ function processMessage(
               ? part.content.replace(/\[source_([a-fA-F0-9-]+)\]/g, "[cite](#cite-$1)")
               : part.content.replace(/\s*\[source_([a-fA-F0-9-]+)\]/g, "")
           }
-          citedSources={showCitedSources ? message.citedSources : undefined}
+          citedSources={showCitedSources ? citedSources : undefined}
           onSourceClick={onSourceClick}
           showLinks={false}
         />
@@ -115,10 +110,64 @@ function processMessage(
   });
 }
 
+function buildSegments(message: Message, showThinking: boolean): RenderSegment[] {
+  const steps = message.thinkingSteps ?? [];
+  const hasInterleavedText = steps.some((s) => s.type === "text" && Boolean(s.detail));
+
+  if (!hasInterleavedText) {
+    const segments: RenderSegment[] = [];
+    if (showThinking && steps.length > 0) {
+      segments.push({ kind: "agent", key: "agent-0", steps });
+    }
+    if (message.text) {
+      segments.push({ kind: "text", key: "text-0", text: message.text });
+    }
+    return segments;
+  }
+
+  const segments: RenderSegment[] = [];
+  let pendingAgentSteps: AgentStep[] = [];
+
+  const flushAgent = () => {
+    if (showThinking && pendingAgentSteps.length > 0) {
+      const hasVisible = pendingAgentSteps.some(
+        (s) =>
+          s.type !== "synthesize" &&
+          s.type !== "analyze" &&
+          (s.type !== "thought" || Boolean(s.detail?.trim())),
+      );
+      if (hasVisible) {
+        segments.push({
+          kind: "agent",
+          key: `agent-${pendingAgentSteps[0].id}`,
+          steps: pendingAgentSteps,
+        });
+      }
+    }
+    pendingAgentSteps = [];
+  };
+
+  for (const step of steps) {
+    if (step.type === "text") {
+      flushAgent();
+      if (step.detail) {
+        segments.push({ kind: "text", key: `text-${step.id}`, text: step.detail });
+      }
+    } else {
+      pendingAgentSteps.push(step);
+    }
+  }
+  flushAgent();
+
+  return segments;
+}
+
 interface ChatMessageProps {
   message: Message;
   index: number;
   showCitedSources?: boolean;
+  showThinking?: boolean;
+  autoExpandThinking?: boolean;
   onRetryFromError: (index: number) => void;
   onSourceClick: (sourceId: string) => void;
 }
@@ -127,11 +176,16 @@ export function ChatMessage({
   message,
   index,
   showCitedSources = true,
+  showThinking = true,
+  autoExpandThinking = true,
   onRetryFromError,
   onSourceClick,
 }: ChatMessageProps) {
   const { effectiveReducedMotion } = useAccessibility();
   const isAI = message.sender === "ai";
+  const segments = isAI && !message.error ? buildSegments(message, showThinking) : [];
+  const showInitialThinkingIndicator =
+    isAI && !message.error && message.isStreaming && segments.length === 0;
 
   return (
     <motion.div
@@ -160,7 +214,7 @@ export function ChatMessage({
       })}
     >
       <div
-        className={cn("w-full flex flex-col gap-4 select-text transition-all duration-200", {
+        className={cn("w-full flex flex-col gap-3 select-none transition-all duration-200", {
           "max-w-[85%] sm:max-w-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 p-4 rounded-xs self-end ml-12 shadow-sm":
             message.sender === "user",
           "max-w-3xl self-start mr-12 py-2": message.sender === "ai" && !message.error,
@@ -168,19 +222,60 @@ export function ChatMessage({
             message.error,
         })}
       >
-        <div
-          className={cn("text-base font-medium leading-relaxed", {
-            "text-gray-900 dark:text-gray-100": message.sender === "user",
-            "text-gray-950 dark:text-gray-50": message.sender === "ai",
-          })}
-        >
-          {processMessage(
-            message,
-            showCitedSources,
-            message.error ? () => onRetryFromError(index) : undefined,
-            onSourceClick,
-          )}
-        </div>
+        {message.error ? (
+          <div className="flex flex-col gap-3">
+            <Alert message={message.text} variant="danger" />
+            <Button
+              onClick={() => onRetryFromError(index)}
+              variant="ghost"
+              size="sm"
+              icon={<RestartIcon className="size-4" />}
+            >
+              Try again
+            </Button>
+          </div>
+        ) : message.sender === "user" ? (
+          <div className="text-base leading-relaxed font-medium text-gray-900 dark:text-gray-100 [&_blockquote]:select-text [&_code]:select-text [&_h1]:select-text [&_h2]:select-text [&_h3]:select-text [&_h4]:select-text [&_h5]:select-text [&_h6]:select-text [&_li]:select-text [&_p]:select-text [&_pre]:select-text [&_td]:select-text [&_th]:select-text">
+            {renderMarkdownText(message.text, undefined, false)}
+          </div>
+        ) : (
+          <>
+            {showInitialThinkingIndicator && (
+              <div className="flex items-center gap-2 py-0.5 text-xs text-gray-500 dark:text-gray-400">
+                <Spinner size={13} className="text-blue-500 dark:text-blue-400" />
+                <span>{showThinking ? "Thinking..." : "Generating..."}</span>
+              </div>
+            )}
+
+            {segments.map((segment) =>
+              segment.kind === "agent" ? (
+                <AgentThinkingPanel
+                  key={segment.key}
+                  steps={segment.steps}
+                  isMessageStreaming={Boolean(message.isStreaming)}
+                  autoExpand={autoExpandThinking}
+                  fallbackDurationMs={
+                    segments.filter((s) => s.kind === "agent").length === 1
+                      ? message.thinkingDurationMs
+                      : undefined
+                  }
+                />
+              ) : (
+                <div
+                  key={segment.key}
+                  className="text-base leading-relaxed font-medium text-gray-950 dark:text-gray-50 [&_blockquote]:select-text [&_code]:select-text [&_h1]:select-text [&_h2]:select-text [&_h3]:select-text [&_h4]:select-text [&_h5]:select-text [&_h6]:select-text [&_li]:select-text [&_p]:select-text [&_pre]:select-text [&_td]:select-text [&_th]:select-text"
+                >
+                  {renderMarkdownText(
+                    segment.text,
+                    message.citedSources,
+                    showCitedSources,
+                    onSourceClick,
+                  )}
+                </div>
+              ),
+            )}
+          </>
+        )}
 
         {showCitedSources &&
           message.sender === "ai" &&

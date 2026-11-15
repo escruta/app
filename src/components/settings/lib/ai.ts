@@ -7,6 +7,8 @@ export const AI_RESPONSE_DETAIL_COOKIE_KEY = "aiResponseDetail";
 export const AI_CUSTOM_INSTRUCTIONS_COOKIE_KEY = "aiCustomInstructions";
 export const AI_SHOW_EXAMPLE_QUESTIONS_COOKIE_KEY = "aiShowExampleQuestions";
 export const AI_SHOW_CITED_SOURCES_COOKIE_KEY = "aiShowCitedSources";
+export const AI_SHOW_THINKING_COOKIE_KEY = "aiShowThinking";
+export const AI_AUTO_EXPAND_THINKING_COOKIE_KEY = "aiAutoExpandThinking";
 export const AI_AUTO_OVERVIEW_COOKIE_KEY = "aiAutoOverview";
 export const AI_AUTO_ADVANCE_FLASHCARDS_COOKIE_KEY = "aiAutoAdvanceFlashcards";
 
@@ -41,6 +43,8 @@ export const DEFAULT_AI_SETTINGS = {
   customInstructions: "",
   showExampleQuestions: true,
   showCitedSources: true,
+  showThinking: true,
+  autoExpandThinking: true,
   autoGenerateOverview: true,
   autoAdvanceFlashcards: true,
 };

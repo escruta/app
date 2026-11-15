@@ -2,8 +2,7 @@ import { useState, useRef, useCallback } from "react";
 import { useCookie } from "./useCookie";
 import { AUTH_TOKEN_KEY, BACKEND_BASE_URL } from "@/config";
 import { appFetch } from "@/lib/http";
-import type { Token } from "@/interfaces";
-import type { ChatMode } from "@/interfaces";
+import type { AgentStep, ChatMode, Token } from "@/interfaces";
 import type { CitedSource } from "@/components/chat/ChatMessage";
 
 export interface ChatStreamData {
@@ -17,10 +16,12 @@ export interface ChatStreamData {
 
 export interface ChatStreamCallbacks {
   onConversation?: (conversationId: string) => void;
+  onStep?: (step: AgentStep) => void;
+  onThought?: (stepId: string, delta: string) => void;
   onToken?: (chunk: string) => void;
   onTitle?: (title: string) => void;
   onSources?: (sources: CitedSource[]) => void;
-  onDone?: () => void;
+  onDone?: (durationMs?: number) => void;
   onError?: (status: number, message: string) => void;
 }
 
@@ -56,6 +57,20 @@ export function useChatStream(endpoint: string, callbacks: ChatStreamCallbacks) 
               if (parsed.conversationId) cb.onConversation?.(parsed.conversationId);
             } catch {}
             break;
+          case "step":
+            try {
+              const step = JSON.parse(payload) as AgentStep;
+              if (step?.id) cb.onStep?.(step);
+            } catch {}
+            break;
+          case "thought":
+            try {
+              const parsed = JSON.parse(payload) as { stepId?: string; delta?: string };
+              if (parsed.stepId && typeof parsed.delta === "string") {
+                cb.onThought?.(parsed.stepId, parsed.delta);
+              }
+            } catch {}
+            break;
           case "token":
             cb.onToken?.(payload);
             break;
@@ -67,9 +82,19 @@ export function useChatStream(endpoint: string, callbacks: ChatStreamCallbacks) 
               cb.onSources?.(JSON.parse(payload) as CitedSource[]);
             } catch {}
             break;
-          case "done":
-            cb.onDone?.();
+          case "done": {
+            let durationMs: number | undefined;
+            if (payload) {
+              try {
+                const parsed = JSON.parse(payload) as { durationMs?: number };
+                if (typeof parsed.durationMs === "number") {
+                  durationMs = parsed.durationMs;
+                }
+              } catch {}
+            }
+            cb.onDone?.(durationMs);
             break;
+          }
           case "error":
             cb.onError?.(0, payload);
             break;

@@ -13,6 +13,8 @@ import {
   AI_RESPONSE_DETAIL_COOKIE_KEY,
   AI_SHOW_CITED_SOURCES_COOKIE_KEY,
   AI_SHOW_EXAMPLE_QUESTIONS_COOKIE_KEY,
+  AI_SHOW_THINKING_COOKIE_KEY,
+  AI_AUTO_EXPAND_THINKING_COOKIE_KEY,
   CHAT_MODE_OPTIONS,
   DEFAULT_AI_SETTINGS,
   RESPONSE_DETAIL_OPTIONS,
@@ -32,6 +34,10 @@ export function AISection() {
   const exampleQuestionsDescId = useId();
   const citedSourcesLabelId = useId();
   const citedSourcesDescId = useId();
+  const thinkingLabelId = useId();
+  const thinkingDescId = useId();
+  const autoExpandThinkingLabelId = useId();
+  const autoExpandThinkingDescId = useId();
   const autoOverviewLabelId = useId();
   const autoOverviewDescId = useId();
   const autoAdvanceLabelId = useId();
@@ -56,6 +62,14 @@ export function AISection() {
   const { value: showCitedSources, setValue: setShowCitedSources } = useCookie<boolean>(
     AI_SHOW_CITED_SOURCES_COOKIE_KEY,
     DEFAULT_AI_SETTINGS.showCitedSources,
+  );
+  const { value: showThinking, setValue: setShowThinking } = useCookie<boolean>(
+    AI_SHOW_THINKING_COOKIE_KEY,
+    DEFAULT_AI_SETTINGS.showThinking,
+  );
+  const { value: autoExpandThinking, setValue: setAutoExpandThinking } = useCookie<boolean>(
+    AI_AUTO_EXPAND_THINKING_COOKIE_KEY,
+    DEFAULT_AI_SETTINGS.autoExpandThinking,
   );
   const { value: autoGenerateOverview, setValue: setAutoGenerateOverview } = useCookie<boolean>(
     AI_AUTO_OVERVIEW_COOKIE_KEY,
@@ -247,6 +261,55 @@ export function AISection() {
               onChange={setShowCitedSources}
               ariaLabelledBy={citedSourcesLabelId}
               ariaDescribedBy={citedSourcesDescId}
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-4 px-4 py-3.5">
+            <div className="min-w-0">
+              <p
+                id={thinkingLabelId}
+                className="text-sm font-medium text-gray-900 dark:text-gray-100"
+              >
+                Show agent thinking & steps
+              </p>
+              <p
+                id={thinkingDescId}
+                className="mt-0.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400"
+              >
+                Display the model&apos;s reasoning process and source search steps during
+                conversations.
+              </p>
+            </div>
+            <Switch
+              checked={showThinking}
+              onChange={setShowThinking}
+              ariaLabelledBy={thinkingLabelId}
+              ariaDescribedBy={thinkingDescId}
+            />
+          </div>
+
+          <div className="flex items-center justify-between gap-4 px-4 py-3.5">
+            <div className="min-w-0">
+              <p
+                id={autoExpandThinkingLabelId}
+                className="text-sm font-medium text-gray-900 dark:text-gray-100"
+              >
+                Auto-expand thinking while generating
+              </p>
+              <p
+                id={autoExpandThinkingDescId}
+                className="mt-0.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400"
+              >
+                Automatically expand thinking blocks while generating a response. Turn off to keep
+                them collapsed unless opened manually.
+              </p>
+            </div>
+            <Switch
+              checked={autoExpandThinking}
+              onChange={setAutoExpandThinking}
+              disabled={!showThinking}
+              ariaLabelledBy={autoExpandThinkingLabelId}
+              ariaDescribedBy={autoExpandThinkingDescId}
             />
           </div>
 
