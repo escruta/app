@@ -4,6 +4,7 @@ import {
   useEffect,
   useCallback,
   useLayoutEffect,
+  useId,
   createContext,
   useContext,
   cloneElement,
@@ -20,8 +21,12 @@ import { motion, AnimatePresence } from "motion/react";
 interface MenuContextType {
   isOpen: boolean;
   setIsOpen: (o: boolean) => void;
+  close: (focusTrigger?: boolean) => void;
+  openWithFocus: (target: "first" | "last") => void;
+  pendingFocusRef: React.MutableRefObject<"first" | "last" | null>;
   triggerRef: React.RefObject<HTMLElement | null>;
   contentRef: React.RefObject<HTMLElement | null>;
+  menuId: string;
 }
 
 const MenuContext = createContext<MenuContextType | null>(null);
@@ -31,8 +36,23 @@ export function Menu({ children, className }: { children: ReactNode; className?:
   const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLElement>(null);
   const contentRef = useRef<HTMLElement>(null);
+  const pendingFocusRef = useRef<"first" | "last" | null>(null);
+  const menuId = `menu-${useId().replace(/:/g, "")}`;
 
-  useShortcut("dialog-close", () => setIsOpen(false), {
+  const close = useCallback((focusTrigger = false) => {
+    pendingFocusRef.current = null;
+    setIsOpen(false);
+    if (focusTrigger) {
+      triggerRef.current?.focus();
+    }
+  }, []);
+
+  const openWithFocus = useCallback((target: "first" | "last") => {
+    pendingFocusRef.current = target;
+    setIsOpen(true);
+  }, []);
+
+  useShortcut("dialog-close", () => close(true), {
     global: true,
     enabled: isOpen,
     preventDefault: false,
@@ -44,15 +64,26 @@ export function Menu({ children, className }: { children: ReactNode; className?:
       const isInsideTrigger = menuRef.current?.contains(target);
       const isInsideContent = contentRef.current?.contains(target);
       if (!isInsideTrigger && !isInsideContent) {
-        setIsOpen(false);
+        close();
       }
     };
     if (isOpen) document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen]);
+  }, [isOpen, close]);
 
   return (
-    <MenuContext.Provider value={{ isOpen, setIsOpen, triggerRef, contentRef }}>
+    <MenuContext.Provider
+      value={{
+        isOpen,
+        setIsOpen,
+        close,
+        openWithFocus,
+        pendingFocusRef,
+        triggerRef,
+        contentRef,
+        menuId,
+      }}
+    >
       <div className={cn("relative inline-block", className)} ref={menuRef}>
         {children}
       </div>
@@ -70,9 +101,20 @@ export function MenuTrigger({
   const context = useContext(MenuContext);
   const localRef = useRef<HTMLSpanElement>(null);
 
-  const handleKeyDown = useShortcut("dialog-activate", () => context?.setIsOpen(true), {
-    enabled: !!context,
-  });
+  const handleActivateKeyDown = useShortcut(
+    "dialog-activate",
+    () => {
+      if (!context) return;
+      if (context.isOpen) {
+        context.close();
+      } else {
+        context.openWithFocus("first");
+      }
+    },
+    {
+      enabled: !!context,
+    },
+  );
 
   const setRefs = useCallback(
     (node: HTMLSpanElement | null) => {
@@ -96,12 +138,30 @@ export function MenuTrigger({
         },
         onKeyDown: (e: KeyboardEvent<HTMLElement>) => {
           children.props.onKeyDown?.(e);
-          handleKeyDown(e);
+          if (e.key === "ArrowDown") {
+            e.preventDefault();
+            context.openWithFocus("first");
+            return;
+          }
+          if (e.key === "ArrowUp") {
+            e.preventDefault();
+            context.openWithFocus("last");
+            return;
+          }
+          handleActivateKeyDown(e);
         },
         "aria-haspopup": "menu",
         "aria-expanded": context.isOpen,
+        "aria-controls": context.isOpen ? context.menuId : undefined,
       })}
     </span>
+  );
+}
+
+function getEnabledMenuItems(container: HTMLElement | null): HTMLButtonElement[] {
+  if (!container) return [];
+  return Array.from(
+    container.querySelectorAll<HTMLButtonElement>('[role="menuitem"]:not([disabled])'),
   );
 }
 
@@ -115,6 +175,8 @@ export function MenuContent({
   className?: string;
 }) {
   const context = useContext(MenuContext);
+  const { effectiveReducedMotion } = useAccessibility();
+  const [placedUp, setPlacedUp] = useState(false);
   const [position, setPosition] = useState<{
     top?: number;
     bottom?: number;
@@ -125,16 +187,18 @@ export function MenuContent({
   const calculatePosition = useCallback(() => {
     if (!context?.triggerRef?.current) return;
     const rect = context.triggerRef.current.getBoundingClientRect();
-    const gap = 8;
-    const estimatedMenuHeight = 320;
+    const gap = 6;
+    const estimatedMenuHeight = 240;
     const spaceBelow = window.innerHeight - rect.bottom - gap;
     const spaceAbove = rect.top - gap;
     const pos: typeof position = {};
 
+    let resolvedUp = false;
     if (spaceBelow >= estimatedMenuHeight || spaceBelow >= spaceAbove) {
       pos.top = rect.bottom + gap;
     } else {
       pos.bottom = window.innerHeight - rect.top + gap;
+      resolvedUp = true;
     }
 
     if (align === "right") {
@@ -143,6 +207,7 @@ export function MenuContent({
       pos.left = Math.max(0, rect.left);
     }
 
+    setPlacedUp(resolvedUp);
     setPosition(pos);
   }, [context?.triggerRef, align]);
 
@@ -165,40 +230,95 @@ export function MenuContent({
     };
   }, [context?.isOpen, calculatePosition]);
 
-  const { effectiveReducedMotion } = useAccessibility();
+  useEffect(() => {
+    if (!context?.isOpen || !context.pendingFocusRef.current) return;
+    const target = context.pendingFocusRef.current;
+    context.pendingFocusRef.current = null;
+    requestAnimationFrame(() => {
+      const items = getEnabledMenuItems(context.contentRef.current);
+      if (items.length === 0) return;
+      const item = target === "last" ? items[items.length - 1] : items[0];
+      item?.focus();
+    });
+  }, [context]);
+
   const setContentRef = useCallback(
     (node: HTMLDivElement | null) => {
-      if (node && context) {
+      if (context) {
         (context.contentRef as React.MutableRefObject<HTMLElement | null>).current = node;
       }
     },
     [context],
   );
 
-  if (!context?.isOpen) return null;
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (!context) return;
+    const items = getEnabledMenuItems(context.contentRef.current);
+    if (items.length === 0) return;
+
+    const currentIndex = items.indexOf(document.activeElement as HTMLButtonElement);
+
+    switch (e.key) {
+      case "ArrowDown": {
+        e.preventDefault();
+        const nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % items.length;
+        items[nextIndex]?.focus();
+        break;
+      }
+      case "ArrowUp": {
+        e.preventDefault();
+        const prevIndex =
+          currentIndex < 0 ? items.length - 1 : (currentIndex - 1 + items.length) % items.length;
+        items[prevIndex]?.focus();
+        break;
+      }
+      case "Home":
+        e.preventDefault();
+        items[0]?.focus();
+        break;
+      case "End":
+        e.preventDefault();
+        items[items.length - 1]?.focus();
+        break;
+      case "Escape":
+        e.preventDefault();
+        context.close(true);
+        break;
+      case "Tab":
+        context.close();
+        break;
+    }
+  };
+
+  if (!context) return null;
 
   const menu = (
     <AnimatePresence>
-      {context?.isOpen && (
+      {context.isOpen && (
         <motion.div
           ref={setContentRef}
+          id={context.menuId}
           role="menu"
-          initial={effectiveReducedMotion ? false : { opacity: 0, y: -4 }}
+          onKeyDown={handleKeyDown}
+          initial={effectiveReducedMotion ? false : { opacity: 0, y: placedUp ? 10 : -10 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={effectiveReducedMotion ? undefined : { opacity: 0, y: -4 }}
-          transition={
-            effectiveReducedMotion ? { duration: 0 } : { duration: 0.15, ease: "easeOut" }
-          }
+          exit={effectiveReducedMotion ? undefined : { opacity: 0, y: placedUp ? 10 : -10 }}
+          transition={effectiveReducedMotion ? { duration: 0 } : { duration: 0.2, ease: "easeOut" }}
           style={{
             position: "fixed",
+            zIndex: 1000,
             ...position,
           }}
           className={cn(
-            "z-40 min-w-40 rounded-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 p-1.5 shadow-lg shadow-gray-500/10 dark:shadow-black/20 ring-1 ring-gray-500/5 dark:ring-gray-500/10",
+            "min-w-40 w-max",
+            "bg-white dark:bg-gray-900",
+            "border border-gray-300 dark:border-gray-600",
+            "rounded-xs shadow-lg shadow-gray-500/10 dark:shadow-black/20 ring-1 ring-gray-500/5 dark:ring-gray-500/10",
+            "max-h-60 overflow-auto max-w-xs sm:max-w-sm",
             className,
           )}
         >
-          {children}
+          <div className="flex flex-col gap-0.5 p-1.5">{children}</div>
         </motion.div>
       )}
     </AnimatePresence>
@@ -241,7 +361,7 @@ export function MenuItem({
     "dialog-activate",
     () => {
       onClick();
-      context?.setIsOpen(false);
+      context?.close();
     },
     {
       enabled: !disabled,
@@ -249,13 +369,13 @@ export function MenuItem({
   );
 
   const baseStyles =
-    "flex w-full items-center gap-2 rounded-xs px-3 py-2 text-sm transition-all duration-200 outline-none select-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none";
+    "relative flex w-full items-center gap-2 rounded-xs px-3 py-2 text-left text-sm font-medium transition-all duration-200 outline-none select-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none";
 
   const variantStyles = {
     default:
-      "text-gray-700 dark:text-gray-200 hover:bg-blue-50 hover:ring-1 hover:ring-blue-300 focus:bg-blue-50 dark:hover:bg-gray-800 dark:focus:bg-gray-800 hover:text-blue-600 dark:hover:text-blue-400 active:bg-blue-100 dark:active:bg-gray-700",
+      "text-gray-700 dark:text-gray-200 hover:bg-blue-50 hover:text-blue-600 hover:ring-1 hover:ring-blue-300 focus-visible:bg-blue-50 focus-visible:text-blue-600 focus-visible:ring-1 focus-visible:ring-blue-300 dark:hover:bg-gray-700 dark:hover:text-blue-400 dark:focus-visible:bg-gray-700 dark:focus-visible:text-blue-400 active:bg-blue-100 dark:active:bg-gray-600",
     danger:
-      "text-red-600 dark:text-red-400 hover:bg-red-50 hover:ring-1 hover:ring-red-300 dark:hover:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/30 focus:ring-red-500 dark:focus:ring-red-400",
+      "text-red-600 dark:text-red-400 hover:bg-red-50 hover:ring-1 hover:ring-red-300 focus-visible:bg-red-50 focus-visible:ring-1 focus-visible:ring-red-300 dark:hover:bg-red-900/20 dark:focus-visible:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/30",
   };
 
   return (
@@ -264,10 +384,20 @@ export function MenuItem({
       role="menuitem"
       disabled={disabled}
       className={cn(baseStyles, variantStyles[variant], className)}
+      onMouseEnter={() => {
+        const active = document.activeElement;
+        if (
+          active instanceof HTMLElement &&
+          context?.contentRef.current?.contains(active) &&
+          active.getAttribute("role") === "menuitem"
+        ) {
+          active.blur();
+        }
+      }}
       onClick={() => {
         if (disabled) return;
         onClick();
-        context?.setIsOpen(false);
+        context?.close();
       }}
       onKeyDown={handleKeyDown}
     >
@@ -276,7 +406,7 @@ export function MenuItem({
           {icon}
         </span>
       )}
-      <span className="flex-1 text-left font-medium">{label}</span>
+      <span className="flex-1 truncate text-left">{label}</span>
     </button>
   );
 }
