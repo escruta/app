@@ -214,7 +214,7 @@ export function AISection() {
       <SettingsDivider />
 
       <SettingsGroup
-        title="Sources & Automation"
+        title="Sources & Citations"
         description="Control starter prompts, citation badges, and automatic summaries inside notebooks."
       >
         <div className="divide-y divide-gray-200 overflow-hidden rounded-xs border border-gray-200 bg-white dark:divide-gray-800 dark:border-gray-800 dark:bg-gray-900/50">
@@ -267,6 +267,39 @@ export function AISection() {
           <div className="flex items-center justify-between gap-4 px-4 py-3.5">
             <div className="min-w-0">
               <p
+                id={autoOverviewLabelId}
+                className="text-sm font-medium text-gray-900 dark:text-gray-100"
+              >
+                Auto-generate notebook overview
+              </p>
+              <p
+                id={autoOverviewDescId}
+                className="mt-0.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400"
+              >
+                Automatically generate or refresh the overview summary when sources finish
+                processing.
+              </p>
+            </div>
+            <Switch
+              checked={autoGenerateOverview}
+              onChange={setAutoGenerateOverview}
+              ariaLabelledBy={autoOverviewLabelId}
+              ariaDescribedBy={autoOverviewDescId}
+            />
+          </div>
+        </div>
+      </SettingsGroup>
+
+      <SettingsDivider />
+
+      <SettingsGroup
+        title="Agent Reasoning"
+        description="Control how the assistant's reasoning process and search steps are displayed."
+      >
+        <div className="divide-y divide-gray-200 overflow-hidden rounded-xs border border-gray-200 bg-white dark:divide-gray-800 dark:border-gray-800 dark:bg-gray-900/50">
+          <div className="flex items-center justify-between gap-4 px-4 py-3.5">
+            <div className="min-w-0">
+              <p
                 id={thinkingLabelId}
                 className="text-sm font-medium text-gray-900 dark:text-gray-100"
               >
@@ -310,30 +343,6 @@ export function AISection() {
               disabled={!showThinking}
               ariaLabelledBy={autoExpandThinkingLabelId}
               ariaDescribedBy={autoExpandThinkingDescId}
-            />
-          </div>
-
-          <div className="flex items-center justify-between gap-4 px-4 py-3.5">
-            <div className="min-w-0">
-              <p
-                id={autoOverviewLabelId}
-                className="text-sm font-medium text-gray-900 dark:text-gray-100"
-              >
-                Auto-generate notebook overview
-              </p>
-              <p
-                id={autoOverviewDescId}
-                className="mt-0.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400"
-              >
-                Automatically generate or refresh the overview summary when sources finish
-                processing.
-              </p>
-            </div>
-            <Switch
-              checked={autoGenerateOverview}
-              onChange={setAutoGenerateOverview}
-              ariaLabelledBy={autoOverviewLabelId}
-              ariaDescribedBy={autoOverviewDescId}
             />
           </div>
         </div>
