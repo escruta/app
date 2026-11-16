@@ -40,7 +40,7 @@ export function SettingsContent() {
 
   return (
     <div className="h-full w-full overflow-y-scroll">
-      <div className="mx-auto flex min-h-full max-w-5xl flex-col md:flex-row">
+      <div className="mx-auto flex min-h-full max-w-5xl flex-col border-gray-200 md:flex-row md:border-x dark:border-gray-800">
         <nav
           aria-label="Settings sections"
           className="sticky top-0 z-10 flex shrink-0 items-center gap-1 overflow-x-auto border-b border-gray-200 bg-white p-2 md:w-56 md:flex-col md:items-stretch md:gap-4 md:self-start md:border-b-0 md:p-3 dark:border-gray-800 dark:bg-gray-950"

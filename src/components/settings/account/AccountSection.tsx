@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Alert, Button, Divider, Modal, Spinner, TextField } from "@/components/ui";
+import { Alert, Button, Modal, Spinner, TextField } from "@/components/ui";
 import { useAuth, useFetch, useAccessibility } from "@/hooks";
 import { CheckIcon, ChevronIcon } from "@/components/icons";
-import { SettingsGroup, SettingsSection } from "../shared/SettingsSection";
+import { SettingsDivider, SettingsGroup, SettingsSection } from "../shared/SettingsSection";
 import { SignOutModal } from "./SignOutModal";
 
 export function AccountSection() {
@@ -110,7 +110,7 @@ export function AccountSection() {
         </div>
       </SettingsGroup>
 
-      <Divider className="my-0" />
+      <SettingsDivider />
 
       <SettingsGroup title="Session" description="End your current session on this device.">
         <div>
@@ -120,7 +120,7 @@ export function AccountSection() {
         </div>
       </SettingsGroup>
 
-      <Divider className="my-0" />
+      <SettingsDivider />
 
       <div className="overflow-hidden rounded-xs border border-gray-200 dark:border-gray-800">
         <button

@@ -1,6 +1,6 @@
 import { useId } from "react";
 import { ChatIcon, StudyIcon } from "@/components/icons";
-import { Button, Divider, Select, Switch, TextField } from "@/components/ui";
+import { Button, Select, Switch, TextField } from "@/components/ui";
 import { useCookie } from "@/hooks";
 import type { ChatMode } from "@/interfaces";
 import { cn } from "@/lib/utils";
@@ -21,7 +21,7 @@ import {
   type ResponseDetail,
 } from "../lib/ai";
 import { PreferenceOptionButton, SelectionIndicator } from "../preferences/PreferenceCard";
-import { SettingsGroup, SettingsSection } from "../shared/SettingsSection";
+import { SettingsDivider, SettingsGroup, SettingsSection } from "../shared/SettingsSection";
 
 const CHAT_MODE_ICONS: Record<ChatMode, React.ReactNode> = {
   NORMAL: <ChatIcon className="size-4" />,
@@ -211,7 +211,7 @@ export function AISection() {
         </div>
       </SettingsGroup>
 
-      <Divider className="my-0" />
+      <SettingsDivider />
 
       <SettingsGroup
         title="Sources & Automation"
@@ -339,7 +339,7 @@ export function AISection() {
         </div>
       </SettingsGroup>
 
-      <Divider className="my-0" />
+      <SettingsDivider />
 
       <SettingsGroup
         title="Learning Tools"
