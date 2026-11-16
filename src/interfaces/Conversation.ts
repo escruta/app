@@ -7,6 +7,7 @@ export type AgentStepType =
   | "search"
   | "read"
   | "context"
+  | "calculate"
   | "synthesize"
   | "text";
 export type AgentStepStatus = "running" | "done" | "error";

@@ -9,6 +9,7 @@ import {
   ChevronIcon,
   CloseIcon,
   FileTextIcon,
+  MathIcon,
   SearchIcon,
   StarsIcon,
 } from "@/components/icons";
@@ -45,6 +46,8 @@ function StepBadgeIcon({ step }: { step: AgentStep }) {
       return <FileTextIcon className="size-3 text-blue-600 dark:text-blue-400" />;
     case "context":
       return <BookOpenIcon className="size-3 text-blue-600 dark:text-blue-400" />;
+    case "calculate":
+      return <MathIcon className="size-3 text-blue-600 dark:text-blue-400" />;
     default:
       return <StarsIcon className="size-3 text-blue-600 dark:text-blue-400" />;
   }
@@ -90,7 +93,9 @@ function ToolItem({ step }: { step: AgentStep }) {
         ? "Read"
         : step.type === "context"
           ? "Checked overview"
-          : step.title;
+          : step.type === "calculate"
+            ? "Calculated"
+            : step.title;
 
   const formattedResult = step.result?.replace(/^Found\s+/, "") ?? null;
 
@@ -231,6 +236,9 @@ export function AgentThinkingPanel({
       }
       if (runningStep.type === "read" && runningStep.detail) {
         return `Reading ${runningStep.detail}`;
+      }
+      if (runningStep.type === "calculate" && runningStep.detail) {
+        return `Calculating ${runningStep.detail}`;
       }
       return runningStep.title;
     }
