@@ -1,5 +1,4 @@
-import { Divider } from "@/components/ui";
-import { SettingsSection } from "../shared/SettingsSection";
+import { SettingsDivider, SettingsSection } from "../shared/SettingsSection";
 import { AccessibilitySettings } from "./AccessibilitySection";
 import { DensitySettings } from "./DensitySection";
 import { DisplaySettings } from "./DisplaySection";
@@ -14,13 +13,13 @@ export function PreferencesSection() {
       className="gap-6"
     >
       <ThemeSettings />
-      <Divider className="my-0" />
+      <SettingsDivider />
       <DisplaySettings />
-      <Divider className="my-0" />
+      <SettingsDivider />
       <DensitySettings />
-      <Divider className="my-0" />
+      <SettingsDivider />
       <WorkspaceSettings />
-      <Divider className="my-0" />
+      <SettingsDivider />
       <AccessibilitySettings />
     </SettingsSection>
   );

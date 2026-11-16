@@ -1,3 +1,4 @@
+import { Divider } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 interface SettingsSectionProps {
@@ -39,4 +40,8 @@ export function SettingsGroup({ title, description, children }: SettingsGroupPro
       {children}
     </div>
   );
+}
+
+export function SettingsDivider({ className }: { className?: string }) {
+  return <Divider className={cn("-mx-4 my-0 md:-mx-6", className)} />;
 }
