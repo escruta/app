@@ -253,7 +253,8 @@ export function AISection() {
                 id={citedSourcesDescId}
                 className="mt-0.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400"
               >
-                Display inline citation links and cited source chips below assistant messages.
+                Display inline citation links and a cited sources toggle in assistant message
+                actions.
               </p>
             </div>
             <Switch
