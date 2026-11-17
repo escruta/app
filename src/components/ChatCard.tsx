@@ -727,28 +727,30 @@ export function ChatCard({
           }}
         />
       )}
-      <div className="flex items-center gap-2 rounded-xs border border-gray-300 bg-white py-1.5 pr-1.5 pl-4 shadow-sm transition-[border-color,box-shadow,background-color,color] focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400">
-        <TextField
-          id="chat-input"
-          value={input}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setInput(e.target.value)}
-          onKeyDown={handleInputKeyDown}
-          placeholder={
-            sourcesCount === 0
-              ? "Add sources to start chatting..."
-              : selectedSourceIds.length > 0
-                ? `Ask a question (${selectedSourceIds.length} source${selectedSourceIds.length !== 1 ? "s" : ""} selected)...`
-                : "Select sources to start chatting..."
-          }
-          className="min-h-0! min-w-0 flex-1 rounded-xs border-0 bg-transparent p-0 leading-6 shadow-none transition-none hover:border-transparent hover:ring-0 hover:ring-offset-0 focus:border-transparent focus:ring-0 focus:ring-offset-0 dark:hover:ring-offset-0 dark:focus:ring-0 dark:focus:ring-offset-0"
-          disabled={isBusy || selectedSourceIds.length === 0}
-          autoFocus={autoFocus}
-          minRows={1}
-          maxRows={8}
-          multiline
-        />
+      <div className="flex items-end gap-2">
+        <div className="flex min-h-10 min-w-0 flex-1 items-center rounded-xs border border-gray-300 bg-white px-4 py-1.75 shadow-sm transition-[border-color,box-shadow,background-color,color] focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400">
+          <TextField
+            id="chat-input"
+            value={input}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setInput(e.target.value)}
+            onKeyDown={handleInputKeyDown}
+            placeholder={
+              sourcesCount === 0
+                ? "Add sources to start chatting..."
+                : selectedSourceIds.length > 0
+                  ? `Ask a question (${selectedSourceIds.length} source${selectedSourceIds.length !== 1 ? "s" : ""} selected)...`
+                  : "Select sources to start chatting..."
+            }
+            className="min-h-0! min-w-0 flex-1 rounded-xs border-0 bg-transparent p-0 leading-6 shadow-none transition-none hover:border-transparent hover:ring-0 hover:ring-offset-0 focus:border-transparent focus:ring-0 focus:ring-offset-0 dark:hover:ring-offset-0 dark:focus:ring-0 dark:focus:ring-offset-0"
+            disabled={isBusy || selectedSourceIds.length === 0}
+            autoFocus={autoFocus}
+            minRows={1}
+            maxRows={8}
+            multiline
+          />
+        </div>
         {isChatLoading ? (
-          <Tooltip text="Stop generating" position="top">
+          <Tooltip text="Stop generating" position="top" className="flex shrink-0">
             <IconButton
               icon={
                 <svg viewBox="0 0 24 24" fill="currentColor" className="size-4">
@@ -757,18 +759,18 @@ export function ChatCard({
               }
               onClick={handleStopStream}
               ariaLabel="Stop generating"
-              size="sm"
+              size="md"
               variant="secondary"
             />
           </Tooltip>
         ) : (
-          <Tooltip text="Send your question" position="top">
+          <Tooltip text="Send your question" position="top" className="flex shrink-0">
             <IconButton
-              icon={<SendIcon />}
+              icon={<SendIcon className="size-4" />}
               onClick={handleSendMessage}
               disabled={isBusy || !input.trim() || selectedSourceIds.length === 0}
               ariaLabel="Send your question"
-              size="sm"
+              size="md"
               variant="primary"
             />
           </Tooltip>
