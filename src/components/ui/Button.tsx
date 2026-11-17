@@ -2,16 +2,13 @@ import { cn } from "@/lib/utils";
 
 type ButtonVariant = "primary" | "secondary" | "danger" | "success" | "ghost";
 
-interface ButtonProps {
+type ButtonProps = Omit<React.ComponentPropsWithRef<"button">, "children" | "onClick"> & {
   children: React.ReactNode;
-  onClick?: () => void;
-  className?: string;
+  onClick?: (() => void) | React.MouseEventHandler<HTMLButtonElement>;
   variant?: ButtonVariant;
-  disabled?: boolean;
   icon?: React.ReactNode;
   size?: "sm" | "md" | "lg";
-  type?: "button" | "submit" | "reset";
-}
+};
 
 export function Button({
   children,
@@ -22,6 +19,7 @@ export function Button({
   icon,
   size = "md",
   type = "button",
+  ...props
 }: ButtonProps) {
   const baseStyles =
     "inline-flex items-center justify-center rounded-xs font-semibold transition-all duration-200 focus-visible:outline-none select-none whitespace-nowrap cursor-pointer";
@@ -56,7 +54,8 @@ export function Button({
 
   return (
     <button
-      onClick={onClick}
+      {...props}
+      onClick={onClick as React.MouseEventHandler<HTMLButtonElement> | undefined}
       className={cn(baseStyles, sizeStyles[size], variantStyles[variant], className, {
         [disabledStyles]: disabled,
       })}

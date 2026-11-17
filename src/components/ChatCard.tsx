@@ -8,10 +8,19 @@ import {
 } from "@/hooks";
 import { FileIcon, SendIcon } from "@/components/icons";
 import { Divider, TextField, IconButton, Tooltip, Spinner } from "@/components/ui";
-import type { AgentStep, ConversationMessages, ConversationStatus, Source } from "@/interfaces";
-import type { ChatMode } from "@/interfaces";
+import type {
+  AgentStep,
+  ChatMode,
+  ConversationMessages,
+  ConversationStatus,
+  Note,
+  Source,
+  Token,
+} from "@/interfaces";
 import { useEffect, useState, useRef, useMemo, useCallback, useLayoutEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { AUTH_TOKEN_KEY, BACKEND_BASE_URL } from "@/config";
+import { appFetch } from "@/lib/http";
 import { getHttpErrorMessage } from "@/lib/utils";
 
 import { ChatMessage, type Message } from "./chat/ChatMessage";
@@ -47,6 +56,34 @@ interface ChatCardProps {
     conversationId: string,
     state: { status: ConversationStatus; hasUnseenReply: boolean },
   ) => void;
+  onNoteCreated?: (note: Note) => void;
+}
+
+function deriveNoteTitle(messages: Message[], messageIndex: number, content: string): string {
+  const prevUserMessage = messages
+    .slice(0, messageIndex)
+    .reverse()
+    .find((m) => m.sender === "user" && m.text.trim().length > 0);
+
+  const rawSource =
+    prevUserMessage?.text ??
+    content
+      .split("\n")
+      .map((line) =>
+        line
+          .replace(/^#{1,6}\s+/, "")
+          .replace(/[*_`~>-]/g, "")
+          .trim(),
+      )
+      .find((line) => line.length > 0) ??
+    "";
+
+  const cleaned = rawSource.replace(/\s+/g, " ").trim();
+  if (!cleaned) return "Note from chat";
+  if (cleaned.length <= 60) return cleaned;
+  const lastSpace = cleaned.lastIndexOf(" ", 60);
+  const cutoff = lastSpace > 20 ? lastSpace : 60;
+  return `${cleaned.slice(0, cutoff).trim()}...`;
 }
 
 export function ChatCard({
@@ -62,8 +99,10 @@ export function ChatCard({
   onConversationCompleted,
   onConversationSeen,
   onConversationStateChange,
+  onNoteCreated,
 }: ChatCardProps) {
   const { effectiveReducedMotion } = useAccessibility();
+  const { value: token } = useCookie<Token>(AUTH_TOKEN_KEY);
   const { value: defaultChatMode } = useCookie<ChatMode>(
     AI_DEFAULT_CHAT_MODE_COOKIE_KEY,
     DEFAULT_AI_SETTINGS.defaultChatMode,
@@ -648,6 +687,37 @@ export function ChatCard({
     [handleStreamChat],
   );
 
+  const handleSaveAsNote = useCallback(
+    async (content: string, messageIndex: number): Promise<boolean> => {
+      const title = deriveNoteTitle(messages, messageIndex, content);
+      try {
+        const response = await appFetch(new URL("/notes", BACKEND_BASE_URL).toString(), {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token?.token ? `Bearer ${token.token}` : "",
+          },
+          body: JSON.stringify({
+            notebookId,
+            title,
+            content,
+          }),
+        });
+        if (!response.ok) {
+          throw new Error(`Failed to save note (${response.status})`);
+        }
+        const createdNote = (await response.json()) as Note;
+        useFetch.clearCache(`/notes?notebookId=${notebookId}`);
+        onNoteCreated?.(createdNote);
+        return true;
+      } catch (error) {
+        console.error("Error saving message as note:", error);
+        return false;
+      }
+    },
+    [messages, notebookId, onNoteCreated, token?.token],
+  );
+
   const computeAlignMetrics = useCallback((currentSpacer: number) => {
     const container = scrollContainerRef.current;
     if (!container) return null;
@@ -818,6 +888,7 @@ export function ChatCard({
                     autoExpandThinking={autoExpandThinking}
                     onRetryFromError={handleRetryFromError}
                     onSourceClick={handleSourceClick}
+                    onSaveAsNote={handleSaveAsNote}
                   />
                 ))}
               </AnimatePresence>

@@ -147,6 +147,7 @@ interface TabPaneContentProps {
   onSourceDeleted: (tabKeyStr: string) => void;
   onNoteUpdated: (tabKeyStr: string, updatedNote: Note) => void;
   onNoteDeleted: (tabKeyStr: string) => void;
+  onNoteCreated: () => void;
   onOpenToolJob: (job: GenerationJob) => void;
 }
 
@@ -169,6 +170,7 @@ const TabPaneContent = memo(
     onSourceDeleted,
     onNoteUpdated,
     onNoteDeleted,
+    onNoteCreated,
     onOpenToolJob,
   }: TabPaneContentProps) {
     const handleClose = useCallback(() => onCloseTab(tabKeyStr), [onCloseTab, tabKeyStr]);
@@ -209,6 +211,7 @@ const TabPaneContent = memo(
             onConversationCompleted={onConversationCompleted}
             onConversationSeen={onConversationSeen}
             onConversationStateChange={onConversationStateChange}
+            onNoteCreated={onNoteCreated}
           />
         );
       case "source":
@@ -1018,6 +1021,10 @@ export default function NotebookPage() {
     [closeTab],
   );
 
+  const handleNoteCreated = useCallback(() => {
+    setNotesRefreshKey((prev) => prev + 1);
+  }, []);
+
   const handleNoteRenamedFromList = useCallback((updatedNote: Note) => {
     setTabs((prev) =>
       prev.map((t) =>
@@ -1712,6 +1719,7 @@ export default function NotebookPage() {
                 onSourceDeleted={handleSourceDeleted}
                 onNoteUpdated={handleNoteUpdated}
                 onNoteDeleted={handleNoteDeleted}
+                onNoteCreated={handleNoteCreated}
                 onOpenToolJob={handleOpenToolJob}
               />
             </div>

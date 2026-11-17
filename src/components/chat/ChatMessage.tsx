@@ -1,10 +1,31 @@
-import { lazy, type ReactNode } from "react";
-import { Alert, Button, Chip, Spinner } from "@/components/ui";
-import { FileIcon, RestartIcon } from "@/components/icons";
+import { lazy, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  Alert,
+  Button,
+  Chip,
+  IconButton,
+  Menu,
+  MenuContent,
+  MenuItem,
+  MenuLabel,
+  MenuTrigger,
+  Spinner,
+  Tooltip,
+} from "@/components/ui";
+import {
+  CheckIcon,
+  ChevronIcon,
+  CopyIcon,
+  FileIcon,
+  FileTextIcon,
+  NoteIcon,
+  RestartIcon,
+} from "@/components/icons";
 import type { AgentStep } from "@/interfaces";
+import { writeClipboardText } from "@/lib/clipboard";
 import { cn } from "@/lib/utils";
 import { useAccessibility } from "@/hooks";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { AgentThinkingPanel } from "./AgentThinkingPanel";
 
 const Markdown = lazy(() => import("../Markdown").then((module) => ({ default: module.Markdown })));
@@ -36,6 +57,10 @@ export interface Message {
 type RenderSegment =
   | { kind: "agent"; key: string; steps: AgentStep[] }
   | { kind: "text"; key: string; text: string };
+
+function stripSourceCitations(text: string): string {
+  return text.replace(/[ \t]*\[source_([a-fA-F0-9-]+)\]/g, "").trim();
+}
 
 function renderMarkdownText(
   text: string,
@@ -99,7 +124,7 @@ function renderMarkdownText(
           text={
             showCitedSources
               ? part.content.replace(/\[source_([a-fA-F0-9-]+)\]/g, "[cite](#cite-$1)")
-              : part.content.replace(/\s*\[source_([a-fA-F0-9-]+)\]/g, "")
+              : part.content.replace(/[ \t]*\[source_([a-fA-F0-9-]+)\]/g, "")
           }
           citedSources={showCitedSources ? citedSources : undefined}
           onSourceClick={onSourceClick}
@@ -170,6 +195,7 @@ interface ChatMessageProps {
   autoExpandThinking?: boolean;
   onRetryFromError: (index: number) => void;
   onSourceClick: (sourceId: string) => void;
+  onSaveAsNote?: (content: string, index: number) => Promise<boolean> | boolean;
 }
 
 export function ChatMessage({
@@ -180,12 +206,66 @@ export function ChatMessage({
   autoExpandThinking = true,
   onRetryFromError,
   onSourceClick,
+  onSaveAsNote,
 }: ChatMessageProps) {
   const { effectiveReducedMotion } = useAccessibility();
   const isAI = message.sender === "ai";
+  const [copied, setCopied] = useState(false);
+  const [saveNoteState, setSaveNoteState] = useState<"idle" | "saving" | "saved">("idle");
+
   const segments = isAI && !message.error ? buildSegments(message, showThinking) : [];
   const showInitialThinkingIndicator =
     isAI && !message.error && message.isStreaming && segments.length === 0;
+
+  const cleanMessageText = useMemo(() => stripSourceCitations(message.text), [message.text]);
+
+  const uniqueCitedSources = useMemo(() => {
+    if (!message.citedSources?.length) return [];
+    const seen = new Set<string>();
+    const result: CitedSource[] = [];
+    for (const source of message.citedSources) {
+      if (!seen.has(source.documentId)) {
+        seen.add(source.documentId);
+        result.push(source);
+      }
+    }
+    return result;
+  }, [message.citedSources]);
+
+  useEffect(() => {
+    if (!copied) return;
+    const timeout = window.setTimeout(() => setCopied(false), 2000);
+    return () => window.clearTimeout(timeout);
+  }, [copied]);
+
+  useEffect(() => {
+    if (saveNoteState !== "saved") return;
+    const timeout = window.setTimeout(() => setSaveNoteState("idle"), 2500);
+    return () => window.clearTimeout(timeout);
+  }, [saveNoteState]);
+
+  const handleCopyMessage = () => {
+    if (!cleanMessageText) return;
+    void writeClipboardText(cleanMessageText).catch((error) => {
+      console.warn("Clipboard write failed:", error);
+    });
+    setCopied(true);
+  };
+
+  const handleSaveNote = async () => {
+    if (!onSaveAsNote || !cleanMessageText || saveNoteState === "saving") return;
+    setSaveNoteState("saving");
+    try {
+      const ok = await onSaveAsNote(cleanMessageText, index);
+      setSaveNoteState(ok ? "saved" : "idle");
+    } catch {
+      setSaveNoteState("idle");
+    }
+  };
+
+  const showAIActions =
+    isAI && !message.error && !message.isStreaming && cleanMessageText.length > 0;
+  const hasVisibleCitedSources = showCitedSources && uniqueCitedSources.length > 0;
 
   return (
     <motion.div
@@ -194,21 +274,19 @@ export function ChatMessage({
         effectiveReducedMotion
           ? false
           : isAI
-            ? { opacity: 0, y: -5, clipPath: "inset(0 0 100% 0)" }
+            ? { opacity: 0, y: -5 }
             : { opacity: 0, y: 15, scale: 0.98 }
       }
-      animate={
-        isAI ? { opacity: 1, y: 0, clipPath: "inset(0 0 0% 0)" } : { opacity: 1, y: 0, scale: 1 }
-      }
+      animate={isAI ? { opacity: 1, y: 0 } : { opacity: 1, y: 0, scale: 1 }}
       exit={effectiveReducedMotion ? undefined : { opacity: 0, y: -10, scale: 0.98 }}
       transition={
         effectiveReducedMotion
           ? { duration: 0 }
           : isAI
-            ? { duration: 0.7, ease: [0.2, 0.65, 0.3, 0.9] }
+            ? { duration: 0.35, ease: [0.2, 0.65, 0.3, 0.9] }
             : { type: "spring", stiffness: 250, damping: 25 }
       }
-      className={cn("message-item scroll-mt-4 flex flex-col mb-4", {
+      className={cn("message-item group scroll-mt-4 flex flex-col mb-4", {
         "justify-end items-end": message.sender === "user",
         "justify-start items-start": message.sender === "ai",
       })}
@@ -277,51 +355,141 @@ export function ChatMessage({
           </>
         )}
 
-        {showCitedSources &&
-          message.sender === "ai" &&
-          message.citedSources &&
-          message.citedSources.length > 0 && (
-            <div className="border-t border-gray-200/65 pt-4 dark:border-gray-800/65">
-              <div className="mb-3 text-xs font-bold tracking-widest text-gray-500 uppercase select-none dark:text-gray-400">
-                Cited sources
-              </div>
-              <div className="flex flex-wrap gap-2 px-1">
-                {Object.values(
-                  message.citedSources.reduce(
-                    (acc, source) => {
-                      if (!acc[source.documentId]) {
-                        acc[source.documentId] = source;
-                      }
-                      return acc;
-                    },
-                    {} as Record<string, CitedSource>,
-                  ),
-                ).map((source, idx) => (
-                  <Chip
-                    key={source.documentId}
-                    onClick={() => onSourceClick(source.documentId)}
-                    title={source.title}
+        {showAIActions && (
+          <div className="flex flex-wrap items-center gap-2 pt-1 select-none">
+            <Tooltip text={copied ? "Copied" : "Copy"} position="top">
+              <IconButton
+                variant="secondary"
+                size="sm"
+                className="border p-2"
+                onClick={handleCopyMessage}
+                ariaLabel={copied ? "Copied response" : "Copy response"}
+                icon={
+                  <AnimatePresence mode="wait" initial={false}>
+                    <motion.span
+                      key={copied ? "check" : "copy"}
+                      initial={effectiveReducedMotion ? false : { opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={effectiveReducedMotion ? undefined : { opacity: 0, scale: 0.8 }}
+                      transition={effectiveReducedMotion ? { duration: 0 } : { duration: 0.15 }}
+                      className="flex size-full items-center justify-center [&>svg]:size-full"
+                    >
+                      {copied ? <CheckIcon className="text-green-500" /> : <CopyIcon />}
+                    </motion.span>
+                  </AnimatePresence>
+                }
+              />
+            </Tooltip>
+
+            {onSaveAsNote && (
+              <Tooltip
+                text={
+                  saveNoteState === "saving"
+                    ? "Saving note..."
+                    : saveNoteState === "saved"
+                      ? "Saved to notes"
+                      : "Save as note"
+                }
+                position="top"
+              >
+                <IconButton
+                  variant="secondary"
+                  size="sm"
+                  className="border p-2"
+                  onClick={() => void handleSaveNote()}
+                  disabled={saveNoteState === "saving"}
+                  ariaLabel="Save response as note"
+                  icon={
+                    saveNoteState === "saving" ? (
+                      <Spinner size={14} />
+                    ) : (
+                      <AnimatePresence mode="wait" initial={false}>
+                        <motion.span
+                          key={saveNoteState}
+                          initial={effectiveReducedMotion ? false : { opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={effectiveReducedMotion ? undefined : { opacity: 0, scale: 0.8 }}
+                          transition={effectiveReducedMotion ? { duration: 0 } : { duration: 0.15 }}
+                          className="flex size-full items-center justify-center [&>svg]:size-full"
+                        >
+                          {saveNoteState === "saved" ? (
+                            <CheckIcon className="text-green-500" />
+                          ) : (
+                            <NoteIcon />
+                          )}
+                        </motion.span>
+                      </AnimatePresence>
+                    )
+                  }
+                />
+              </Tooltip>
+            )}
+
+            {hasVisibleCitedSources && (
+              <Menu>
+                <MenuTrigger>
+                  <Button
+                    variant="secondary"
                     size="sm"
-                    className="max-w-full"
+                    icon={<FileTextIcon />}
+                    className="px-2.5"
+                    title="Cited sources"
                   >
-                    <span className="max-w-44 truncate">{source.title || `Source ${idx + 1}`}</span>
-                  </Chip>
-                ))}
-              </div>
-            </div>
-          )}
+                    <span className="flex items-center gap-1.5">
+                      <span>
+                        {uniqueCitedSources.length} source
+                        {uniqueCitedSources.length === 1 ? "" : "s"}
+                      </span>
+                      <ChevronIcon
+                        direction="down"
+                        className="size-3 opacity-70 transition-transform duration-150 in-aria-expanded:rotate-180"
+                      />
+                    </span>
+                  </Button>
+                </MenuTrigger>
+                <MenuContent align="left">
+                  <MenuLabel>Cited sources</MenuLabel>
+                  {uniqueCitedSources.map((source, idx) => (
+                    <MenuItem
+                      key={source.documentId}
+                      icon={<FileTextIcon />}
+                      label={source.title || `Source ${idx + 1}`}
+                      onClick={() => onSourceClick(source.documentId)}
+                    />
+                  ))}
+                </MenuContent>
+              </Menu>
+            )}
+          </div>
+        )}
       </div>
 
-      {message.sender === "user" &&
-        message.selectedSourcesCount !== undefined &&
-        message.selectedSourcesCount > 0 && (
-          <div className="mt-2 mr-1 flex justify-end">
+      {message.sender === "user" && (
+        <div className="mt-1.5 mr-1 flex min-h-6 items-center justify-end gap-1.5">
+          <Tooltip text={copied ? "Copied" : "Copy"} position="top">
+            <IconButton
+              variant="secondary"
+              size="xs"
+              className={cn(
+                "border transition-opacity duration-150",
+                copied
+                  ? "opacity-100"
+                  : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100",
+              )}
+              onClick={handleCopyMessage}
+              ariaLabel={copied ? "Copied message" : "Copy message"}
+              icon={copied ? <CheckIcon className="text-green-500" /> : <CopyIcon />}
+            />
+          </Tooltip>
+
+          {message.selectedSourcesCount !== undefined && message.selectedSourcesCount > 0 && (
             <Chip size="sm" icon={<FileIcon className="size-2.5" />}>
               {message.selectedSourcesCount} source
               {message.selectedSourcesCount !== 1 ? "s" : ""} selected
             </Chip>
-          </div>
-        )}
+          )}
+        </div>
+      )}
     </motion.div>
   );
 }

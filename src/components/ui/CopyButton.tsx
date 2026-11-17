@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { IconButton } from "./IconButton";
 import { CopyIcon, CheckIcon } from "@/components/icons";
 import { useAccessibility } from "@/hooks";
+import { writeClipboardText } from "@/lib/clipboard";
 import { motion, AnimatePresence } from "motion/react";
 
 interface CopyButtonProps {
@@ -9,6 +10,7 @@ interface CopyButtonProps {
   tooltipText?: string;
   className?: string;
   disabled?: boolean;
+  size?: "xs" | "sm" | "md" | "lg";
 }
 
 export function CopyButton({
@@ -16,6 +18,7 @@ export function CopyButton({
   tooltipText = "Copy",
   className,
   disabled,
+  size = "sm",
 }: CopyButtonProps) {
   const { effectiveReducedMotion } = useAccessibility();
   const [copied, setCopied] = useState(false);
@@ -28,7 +31,9 @@ export function CopyButton({
   }, [copied]);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(textToCopy);
+    void writeClipboardText(textToCopy).catch((error) => {
+      console.warn("Clipboard write failed:", error);
+    });
     setCopied(true);
   };
 
@@ -49,7 +54,7 @@ export function CopyButton({
         </AnimatePresence>
       }
       variant="ghost"
-      size="sm"
+      size={size}
       onClick={handleCopy}
       disabled={disabled}
       className={className}

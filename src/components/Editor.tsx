@@ -66,6 +66,10 @@ interface EditorProps {
   scrollable?: boolean;
 }
 
+function looksLikeHtml(value: string): boolean {
+  return /^\s*<[a-z][\w-]*(\s[^>]*)?>/i.test(value);
+}
+
 export function Editor({
   initialContent = "",
   onContentChange,
@@ -74,6 +78,7 @@ export function Editor({
   scrollable = true,
 }: EditorProps) {
   const isUpdatingRef = useRef(false);
+  const lastExternalContentRef = useRef(initialContent);
   const [, setForceUpdate] = useState(0);
 
   const [promptState, setPromptState] = useState<{
@@ -254,6 +259,7 @@ export function Editor({
       },
     },
     content: initialContent,
+    contentType: initialContent && !looksLikeHtml(initialContent) ? "markdown" : "html",
     onUpdate: ({ editor }) => {
       isUpdatingRef.current = true;
       onContentChange?.(editor.getHTML());
@@ -265,12 +271,18 @@ export function Editor({
   });
 
   useEffect(() => {
-    if (editor && initialContent !== editor.getHTML()) {
-      if (isUpdatingRef.current) {
-        isUpdatingRef.current = false;
-        return;
-      }
-      editor.commands.setContent(initialContent);
+    if (!editor) return;
+    if (isUpdatingRef.current) {
+      isUpdatingRef.current = false;
+      return;
+    }
+    if (initialContent === lastExternalContentRef.current) return;
+    lastExternalContentRef.current = initialContent;
+    if (initialContent !== editor.getHTML()) {
+      editor.commands.setContent(
+        initialContent,
+        initialContent && !looksLikeHtml(initialContent) ? { contentType: "markdown" } : undefined,
+      );
     }
   }, [editor, initialContent]);
 
