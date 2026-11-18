@@ -2,7 +2,6 @@ import { lazy, useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   Alert,
   Button,
-  Chip,
   IconButton,
   Menu,
   MenuContent,
@@ -16,7 +15,6 @@ import {
   CheckIcon,
   ChevronIcon,
   CopyIcon,
-  FileIcon,
   FileTextIcon,
   NoteIcon,
   RestartIcon,
@@ -291,202 +289,209 @@ export function ChatMessage({
         "justify-start items-start": message.sender === "ai",
       })}
     >
-      <div
-        className={cn("w-full flex flex-col gap-3 select-none transition-all duration-200", {
-          "max-w-[85%] sm:max-w-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 p-4 rounded-xs self-end ml-12 shadow-sm":
-            message.sender === "user",
-          "max-w-3xl self-start mr-12 py-2": message.sender === "ai" && !message.error,
-          "max-w-2xl bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/50 p-4 rounded-xs self-start mr-12":
-            message.error,
-        })}
-      >
-        {message.error ? (
-          <div className="flex flex-col gap-3">
-            <Alert message={message.text} variant="danger" />
-            <Button
-              onClick={() => onRetryFromError(index)}
-              variant="ghost"
-              size="sm"
-              icon={<RestartIcon className="size-4" />}
-            >
-              Try again
-            </Button>
-          </div>
-        ) : message.sender === "user" ? (
-          <div className="text-base leading-relaxed font-medium text-gray-900 dark:text-gray-100 [&_blockquote]:select-text [&_code]:select-text [&_h1]:select-text [&_h2]:select-text [&_h3]:select-text [&_h4]:select-text [&_h5]:select-text [&_h6]:select-text [&_li]:select-text [&_p]:select-text [&_pre]:select-text [&_td]:select-text [&_th]:select-text">
-            {renderMarkdownText(message.text, undefined, false)}
-          </div>
-        ) : (
-          <>
-            {showInitialThinkingIndicator && (
-              <div className="flex items-center gap-2 py-0.5 text-xs text-gray-500 dark:text-gray-400">
-                <Spinner size={13} className="text-blue-500 dark:text-blue-400" />
-                <span>{showThinking ? "Thinking..." : "Generating..."}</span>
-              </div>
-            )}
-
-            {segments.map((segment) =>
-              segment.kind === "agent" ? (
-                <AgentThinkingPanel
-                  key={segment.key}
-                  steps={segment.steps}
-                  isMessageStreaming={Boolean(message.isStreaming)}
-                  autoExpand={autoExpandThinking}
-                  fallbackDurationMs={
-                    segments.filter((s) => s.kind === "agent").length === 1
-                      ? message.thinkingDurationMs
-                      : undefined
-                  }
-                />
-              ) : (
-                <div
-                  key={segment.key}
-                  className="text-base leading-relaxed font-medium text-gray-950 dark:text-gray-50 [&_blockquote]:select-text [&_code]:select-text [&_h1]:select-text [&_h2]:select-text [&_h3]:select-text [&_h4]:select-text [&_h5]:select-text [&_h6]:select-text [&_li]:select-text [&_p]:select-text [&_pre]:select-text [&_td]:select-text [&_th]:select-text"
-                >
-                  {renderMarkdownText(
-                    segment.text,
-                    message.citedSources,
-                    showCitedSources,
-                    onSourceClick,
-                  )}
-                </div>
-              ),
-            )}
-          </>
-        )}
-
-        {showAIActions && (
-          <div className="flex flex-wrap items-center gap-2 pt-1 select-none">
+      {message.sender === "user" ? (
+        <div className="flex w-full flex-col items-end">
+          <div className="flex w-full items-center justify-end gap-1.5">
             <Tooltip text={copied ? "Copied" : "Copy"} position="top">
               <IconButton
-                variant="secondary"
-                size="sm"
-                className="border p-2"
+                variant="ghost"
+                size="xs"
+                className={cn(
+                  "shrink-0 transition-opacity duration-150",
+                  copied
+                    ? "opacity-100"
+                    : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100",
+                )}
                 onClick={handleCopyMessage}
-                ariaLabel={copied ? "Copied response" : "Copy response"}
-                icon={
-                  <AnimatePresence mode="wait" initial={false}>
-                    <motion.span
-                      key={copied ? "check" : "copy"}
-                      initial={effectiveReducedMotion ? false : { opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={effectiveReducedMotion ? undefined : { opacity: 0, scale: 0.8 }}
-                      transition={effectiveReducedMotion ? { duration: 0 } : { duration: 0.15 }}
-                      className="flex size-full items-center justify-center [&>svg]:size-full"
-                    >
-                      {copied ? <CheckIcon className="text-green-500" /> : <CopyIcon />}
-                    </motion.span>
-                  </AnimatePresence>
-                }
+                ariaLabel={copied ? "Copied message" : "Copy message"}
+                icon={copied ? <CheckIcon className="text-green-500" /> : <CopyIcon />}
               />
             </Tooltip>
 
-            {onSaveAsNote && (
-              <Tooltip
-                text={
-                  saveNoteState === "saving"
-                    ? "Saving note..."
-                    : saveNoteState === "saved"
-                      ? "Saved to notes"
-                      : "Save as note"
-                }
-                position="top"
+            <div className="user-message-bubble w-fit max-w-[85%] min-w-0 rounded-xs border border-blue-300/80 bg-blue-100 px-3.5 py-2.5 transition-colors duration-200 select-text sm:max-w-xl dark:border-blue-700/60 dark:bg-blue-900/45">
+              <div className="text-base leading-relaxed font-medium wrap-break-word text-gray-900 dark:text-gray-100 [&_code:not(.block)]:bg-blue-200/70 [&_code:not(.block)]:text-blue-950 dark:[&_code:not(.block)]:bg-blue-800/60 dark:[&_code:not(.block)]:text-blue-100">
+                {renderMarkdownText(message.text, undefined, false)}
+              </div>
+            </div>
+          </div>
+
+          {message.selectedSourcesCount !== undefined && message.selectedSourcesCount > 0 && (
+            <span className="mt-1.5 inline-flex items-center gap-1 rounded-xs border border-blue-200 bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-600 select-none dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300">
+              <FileTextIcon className="size-3 shrink-0" />
+              <span>
+                {message.selectedSourcesCount} source
+                {message.selectedSourcesCount !== 1 ? "s" : ""}
+              </span>
+            </span>
+          )}
+        </div>
+      ) : (
+        <div
+          className={cn("flex w-full flex-col gap-3 transition-all duration-200 select-none", {
+            "mr-12 max-w-3xl self-start py-2": !message.error,
+            "mr-12 max-w-2xl self-start rounded-xs border border-red-100 bg-red-50 p-4 dark:border-red-900/50 dark:bg-red-950/40":
+              message.error,
+          })}
+        >
+          {message.error ? (
+            <div className="flex flex-col gap-3">
+              <Alert message={message.text} variant="danger" />
+              <Button
+                onClick={() => onRetryFromError(index)}
+                variant="ghost"
+                size="sm"
+                icon={<RestartIcon className="size-4" />}
               >
+                Try again
+              </Button>
+            </div>
+          ) : (
+            <>
+              {showInitialThinkingIndicator && (
+                <div className="flex items-center gap-2 py-0.5 text-xs text-gray-500 dark:text-gray-400">
+                  <Spinner size={13} className="text-blue-500 dark:text-blue-400" />
+                  <span>{showThinking ? "Thinking..." : "Generating..."}</span>
+                </div>
+              )}
+
+              {segments.map((segment) =>
+                segment.kind === "agent" ? (
+                  <AgentThinkingPanel
+                    key={segment.key}
+                    steps={segment.steps}
+                    isMessageStreaming={Boolean(message.isStreaming)}
+                    autoExpand={autoExpandThinking}
+                    fallbackDurationMs={
+                      segments.filter((s) => s.kind === "agent").length === 1
+                        ? message.thinkingDurationMs
+                        : undefined
+                    }
+                  />
+                ) : (
+                  <div
+                    key={segment.key}
+                    className="text-base leading-relaxed font-medium text-gray-950 dark:text-gray-50 [&_blockquote]:select-text [&_code]:select-text [&_h1]:select-text [&_h2]:select-text [&_h3]:select-text [&_h4]:select-text [&_h5]:select-text [&_h6]:select-text [&_li]:select-text [&_p]:select-text [&_pre]:select-text [&_td]:select-text [&_th]:select-text"
+                  >
+                    {renderMarkdownText(
+                      segment.text,
+                      message.citedSources,
+                      showCitedSources,
+                      onSourceClick,
+                    )}
+                  </div>
+                ),
+              )}
+            </>
+          )}
+
+          {showAIActions && (
+            <div className="flex flex-wrap items-center gap-2 pt-1 select-none">
+              <Tooltip text={copied ? "Copied" : "Copy"} position="top">
                 <IconButton
                   variant="secondary"
                   size="sm"
                   className="border p-2"
-                  onClick={() => void handleSaveNote()}
-                  disabled={saveNoteState === "saving"}
-                  ariaLabel="Save response as note"
+                  onClick={handleCopyMessage}
+                  ariaLabel={copied ? "Copied response" : "Copy response"}
                   icon={
-                    saveNoteState === "saving" ? (
-                      <Spinner size={14} />
-                    ) : (
-                      <AnimatePresence mode="wait" initial={false}>
-                        <motion.span
-                          key={saveNoteState}
-                          initial={effectiveReducedMotion ? false : { opacity: 0, scale: 0.8 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={effectiveReducedMotion ? undefined : { opacity: 0, scale: 0.8 }}
-                          transition={effectiveReducedMotion ? { duration: 0 } : { duration: 0.15 }}
-                          className="flex size-full items-center justify-center [&>svg]:size-full"
-                        >
-                          {saveNoteState === "saved" ? (
-                            <CheckIcon className="text-green-500" />
-                          ) : (
-                            <NoteIcon />
-                          )}
-                        </motion.span>
-                      </AnimatePresence>
-                    )
+                    <AnimatePresence mode="wait" initial={false}>
+                      <motion.span
+                        key={copied ? "check" : "copy"}
+                        initial={effectiveReducedMotion ? false : { opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={effectiveReducedMotion ? undefined : { opacity: 0, scale: 0.8 }}
+                        transition={effectiveReducedMotion ? { duration: 0 } : { duration: 0.15 }}
+                        className="flex size-full items-center justify-center [&>svg]:size-full"
+                      >
+                        {copied ? <CheckIcon className="text-green-500" /> : <CopyIcon />}
+                      </motion.span>
+                    </AnimatePresence>
                   }
                 />
               </Tooltip>
-            )}
 
-            {hasVisibleCitedSources && (
-              <Menu>
-                <MenuTrigger>
-                  <Button
+              {onSaveAsNote && (
+                <Tooltip
+                  text={
+                    saveNoteState === "saving"
+                      ? "Saving note..."
+                      : saveNoteState === "saved"
+                        ? "Saved to notes"
+                        : "Save as note"
+                  }
+                  position="top"
+                >
+                  <IconButton
                     variant="secondary"
                     size="sm"
-                    icon={<FileTextIcon />}
-                    className="px-2.5"
-                    title="Cited sources"
-                  >
-                    <span className="flex items-center gap-1.5">
-                      <span>
-                        {uniqueCitedSources.length} source
-                        {uniqueCitedSources.length === 1 ? "" : "s"}
-                      </span>
-                      <ChevronIcon
-                        direction="down"
-                        className="size-3 opacity-70 transition-transform duration-150 in-aria-expanded:rotate-180"
-                      />
-                    </span>
-                  </Button>
-                </MenuTrigger>
-                <MenuContent align="left">
-                  <MenuLabel>Cited sources</MenuLabel>
-                  {uniqueCitedSources.map((source, idx) => (
-                    <MenuItem
-                      key={source.documentId}
-                      icon={<FileTextIcon />}
-                      label={source.title || `Source ${idx + 1}`}
-                      onClick={() => onSourceClick(source.documentId)}
-                    />
-                  ))}
-                </MenuContent>
-              </Menu>
-            )}
-          </div>
-        )}
-      </div>
-
-      {message.sender === "user" && (
-        <div className="mt-1.5 mr-1 flex min-h-6 items-center justify-end gap-1.5">
-          <Tooltip text={copied ? "Copied" : "Copy"} position="top">
-            <IconButton
-              variant="secondary"
-              size="xs"
-              className={cn(
-                "border transition-opacity duration-150",
-                copied
-                  ? "opacity-100"
-                  : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100",
+                    className="border p-2"
+                    onClick={() => void handleSaveNote()}
+                    disabled={saveNoteState === "saving"}
+                    ariaLabel="Save response as note"
+                    icon={
+                      saveNoteState === "saving" ? (
+                        <Spinner size={14} />
+                      ) : (
+                        <AnimatePresence mode="wait" initial={false}>
+                          <motion.span
+                            key={saveNoteState}
+                            initial={effectiveReducedMotion ? false : { opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={effectiveReducedMotion ? undefined : { opacity: 0, scale: 0.8 }}
+                            transition={
+                              effectiveReducedMotion ? { duration: 0 } : { duration: 0.15 }
+                            }
+                            className="flex size-full items-center justify-center [&>svg]:size-full"
+                          >
+                            {saveNoteState === "saved" ? (
+                              <CheckIcon className="text-green-500" />
+                            ) : (
+                              <NoteIcon />
+                            )}
+                          </motion.span>
+                        </AnimatePresence>
+                      )
+                    }
+                  />
+                </Tooltip>
               )}
-              onClick={handleCopyMessage}
-              ariaLabel={copied ? "Copied message" : "Copy message"}
-              icon={copied ? <CheckIcon className="text-green-500" /> : <CopyIcon />}
-            />
-          </Tooltip>
 
-          {message.selectedSourcesCount !== undefined && message.selectedSourcesCount > 0 && (
-            <Chip size="sm" icon={<FileIcon className="size-2.5" />}>
-              {message.selectedSourcesCount} source
-              {message.selectedSourcesCount !== 1 ? "s" : ""} selected
-            </Chip>
+              {hasVisibleCitedSources && (
+                <Menu>
+                  <MenuTrigger>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      icon={<FileTextIcon />}
+                      className="px-2.5"
+                      title="Cited sources"
+                    >
+                      <span className="flex items-center gap-1.5">
+                        <span>
+                          {uniqueCitedSources.length} source
+                          {uniqueCitedSources.length === 1 ? "" : "s"}
+                        </span>
+                        <ChevronIcon
+                          direction="down"
+                          className="size-3 opacity-70 transition-transform duration-150 in-aria-expanded:rotate-180"
+                        />
+                      </span>
+                    </Button>
+                  </MenuTrigger>
+                  <MenuContent align="left">
+                    <MenuLabel>Cited sources</MenuLabel>
+                    {uniqueCitedSources.map((source, idx) => (
+                      <MenuItem
+                        key={source.documentId}
+                        icon={<FileTextIcon />}
+                        label={source.title || `Source ${idx + 1}`}
+                        onClick={() => onSourceClick(source.documentId)}
+                      />
+                    ))}
+                  </MenuContent>
+                </Menu>
+              )}
+            </div>
           )}
         </div>
       )}

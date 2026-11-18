@@ -36,6 +36,18 @@ html.dark *::selection {
   color: var(--color-white);
 }
 
+.user-message-bubble::selection,
+.user-message-bubble *::selection {
+  background-color: var(--color-blue-300);
+  color: var(--color-blue-950);
+}
+
+html.dark .user-message-bubble::selection,
+html.dark .user-message-bubble *::selection {
+  background-color: color-mix(in oklab, var(--color-blue-500) 55%, transparent);
+  color: var(--color-white);
+}
+
 @theme {
   --font-sans: "Raleway", sans-serif;
   --font-mono: "Fira Code", monospace;
