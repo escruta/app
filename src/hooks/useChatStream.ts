@@ -6,22 +6,41 @@ import type { AgentStep, ChatMode, Token } from "@/interfaces";
 import type { CitedSource } from "@/components/chat/ChatMessage";
 
 export interface ChatStreamData {
-  userInput: string;
-  conversationId: string | null;
+  userInput?: string;
+  conversationId?: string | null;
   selectedSourceIds: string[];
   mode: ChatMode;
   responseDetail?: string;
   customInstructions?: string;
 }
 
+export interface ChatStreamDonePayload {
+  durationMs?: number;
+  userMessageId?: number;
+  assistantMessageId?: number;
+  userSiblingIds?: number[];
+  assistantSiblingIds?: number[];
+}
+
+export interface ChatStreamUserMessagePayload {
+  id: number;
+  siblingIds?: number[];
+}
+
+export interface ChatStreamRequestOptions {
+  endpoint?: string;
+  method?: "POST" | "PUT" | "PATCH";
+}
+
 export interface ChatStreamCallbacks {
   onConversation?: (conversationId: string) => void;
+  onUserMessage?: (payload: ChatStreamUserMessagePayload) => void;
   onStep?: (step: AgentStep) => void;
   onThought?: (stepId: string, delta: string) => void;
   onToken?: (chunk: string) => void;
   onTitle?: (title: string) => void;
   onSources?: (sources: CitedSource[]) => void;
-  onDone?: (durationMs?: number) => void;
+  onDone?: (payload?: ChatStreamDonePayload) => void;
   onError?: (status: number, message: string) => void;
 }
 
@@ -33,8 +52,10 @@ export function useChatStream(endpoint: string, callbacks: ChatStreamCallbacks) 
   callbacksRef.current = callbacks;
 
   const stream = useCallback(
-    async (data: ChatStreamData) => {
-      const url = new URL(endpoint, BACKEND_BASE_URL);
+    async (data: ChatStreamData, options?: ChatStreamRequestOptions) => {
+      const targetEndpoint = options?.endpoint ?? endpoint;
+      const method = options?.method ?? "POST";
+      const url = new URL(targetEndpoint, BACKEND_BASE_URL);
       abortControllerRef.current?.abort();
       const controller = new AbortController();
       abortControllerRef.current = controller;
@@ -55,6 +76,17 @@ export function useChatStream(endpoint: string, callbacks: ChatStreamCallbacks) 
             try {
               const parsed = JSON.parse(payload);
               if (parsed.conversationId) cb.onConversation?.(parsed.conversationId);
+            } catch {}
+            break;
+          case "userMessage":
+            try {
+              const parsed = JSON.parse(payload) as { id?: number; siblingIds?: number[] };
+              if (typeof parsed.id === "number") {
+                cb.onUserMessage?.({
+                  id: parsed.id,
+                  siblingIds: Array.isArray(parsed.siblingIds) ? parsed.siblingIds : undefined,
+                });
+              }
             } catch {}
             break;
           case "step":
@@ -83,16 +115,28 @@ export function useChatStream(endpoint: string, callbacks: ChatStreamCallbacks) 
             } catch {}
             break;
           case "done": {
-            let durationMs: number | undefined;
+            let result: ChatStreamDonePayload | undefined;
             if (payload) {
               try {
-                const parsed = JSON.parse(payload) as { durationMs?: number };
-                if (typeof parsed.durationMs === "number") {
-                  durationMs = parsed.durationMs;
-                }
+                const parsed = JSON.parse(payload) as ChatStreamDonePayload;
+                result = {
+                  durationMs: typeof parsed.durationMs === "number" ? parsed.durationMs : undefined,
+                  userMessageId:
+                    typeof parsed.userMessageId === "number" ? parsed.userMessageId : undefined,
+                  assistantMessageId:
+                    typeof parsed.assistantMessageId === "number"
+                      ? parsed.assistantMessageId
+                      : undefined,
+                  userSiblingIds: Array.isArray(parsed.userSiblingIds)
+                    ? parsed.userSiblingIds
+                    : undefined,
+                  assistantSiblingIds: Array.isArray(parsed.assistantSiblingIds)
+                    ? parsed.assistantSiblingIds
+                    : undefined,
+                };
               } catch {}
             }
-            cb.onDone?.(durationMs);
+            cb.onDone?.(result);
             break;
           }
           case "error":
@@ -117,7 +161,7 @@ export function useChatStream(endpoint: string, callbacks: ChatStreamCallbacks) 
 
       try {
         const response = await appFetch(url.toString(), {
-          method: "POST",
+          method,
           headers: {
             "Content-Type": "application/json",
             Authorization: token?.token ? `Bearer ${token.token}` : "",
