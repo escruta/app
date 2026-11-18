@@ -59,6 +59,26 @@ interface ChatCardProps {
   onNoteCreated?: (note: Note) => void;
 }
 
+function mapConversationMessages(
+  conversationId: string | null,
+  data: ConversationMessages,
+): Message[] {
+  return data.messages
+    .filter((m) => m.type === "USER" || m.type === "ASSISTANT")
+    .map((m, index) => ({
+      id: m.id !== undefined ? `${conversationId}-${m.id}` : `${conversationId}-${index}`,
+      messageId: m.id,
+      parentId: m.parentId ?? null,
+      siblingIds: m.siblingIds,
+      text: m.content,
+      sender: m.type === "USER" ? ("user" as Sender) : ("ai" as Sender),
+      citedSources: m.citedSources?.length ? m.citedSources : undefined,
+      selectedSourcesCount: m.selectedSourcesCount ?? undefined,
+      thinkingSteps: m.thinkingSteps?.length ? m.thinkingSteps : undefined,
+      thinkingDurationMs: m.thinkingDurationMs ?? undefined,
+    }));
+}
+
 function deriveNoteTitle(messages: Message[], messageIndex: number, content: string): string {
   const prevUserMessage = messages
     .slice(0, messageIndex)
@@ -199,6 +219,8 @@ export function ChatCard({
   const [conversationToLoadId, setConversationToLoadId] = useState<string | null>(null);
   const [pendingConversationTitle, setPendingConversationTitle] = useState<string | null>(null);
   const [isBackendGenerating, setIsBackendGenerating] = useState<boolean>(false);
+  const [isSwitchingVersion, setIsSwitchingVersion] = useState<boolean>(false);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const autoFocusRef = useRef(autoFocus);
   autoFocusRef.current = autoFocus;
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -210,6 +232,8 @@ export function ChatCard({
   const [pendingAlign, setPendingAlign] = useState(false);
   const scrollTargetRef = useRef<number | null>(null);
   const extraBottomSpacerRef = useRef(0);
+  const savedScrollTopRef = useRef<number | null>(null);
+  const anchorMessageIdRef = useRef<string | null>(null);
 
   const [conversationToMarkSeenId, setConversationToMarkSeenId] = useState<string | null>(null);
 
@@ -286,20 +310,13 @@ export function ChatCard({
       method: "GET" as const,
       skipCache: true,
       onSuccess: (data: ConversationMessages) => {
-        const loadedMessages: Message[] = data.messages
-          .filter((m) => m.type === "USER" || m.type === "ASSISTANT")
-          .map((m, index) => ({
-            id: `${conversationToLoadId}-${index}`,
-            text: m.content,
-            sender: m.type === "USER" ? ("user" as Sender) : ("ai" as Sender),
-            citedSources: m.citedSources?.length ? m.citedSources : undefined,
-            selectedSourcesCount: m.selectedSourcesCount ?? undefined,
-            thinkingSteps: m.thinkingSteps?.length ? m.thinkingSteps : undefined,
-            thinkingDurationMs: m.thinkingDurationMs ?? undefined,
-          }));
+        const loadedMessages = mapConversationMessages(conversationToLoadId, data);
 
         setExtraBottomSpacer(0);
         setPendingAlign(false);
+        savedScrollTopRef.current = null;
+        anchorMessageIdRef.current = null;
+        setEditingMessageId(null);
         scrollTargetRef.current = null;
 
         setMessages(loadedMessages);
@@ -365,6 +382,7 @@ export function ChatCard({
   };
 
   const streamingMessageIdRef = useRef<string | null>(null);
+  const streamingUserMessageIdRef = useRef<string | null>(null);
 
   const {
     stream: streamChat,
@@ -376,6 +394,17 @@ export function ChatCard({
         setConversationId(id);
       }
       onConversationCreated?.(id);
+    },
+    onUserMessage: ({ id: userMessageId, siblingIds }) => {
+      const userClientId = streamingUserMessageIdRef.current;
+      if (!userClientId) return;
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === userClientId
+            ? { ...m, messageId: userMessageId, siblingIds: siblingIds ?? m.siblingIds }
+            : m,
+        ),
+      );
     },
     onStep: (step) => {
       const id = streamingMessageIdRef.current;
@@ -476,26 +505,38 @@ export function ChatCard({
       }
       onTitleChange?.(title);
     },
-    onDone: (durationMs) => {
+    onDone: (result) => {
       const id = streamingMessageIdRef.current;
-      if (id) {
+      const userClientId = streamingUserMessageIdRef.current;
+      if (id || userClientId) {
         setMessages((prev) =>
-          prev.map((m) =>
-            m.id === id
-              ? {
-                  ...m,
-                  isStreaming: false,
-                  thinkingDurationMs: durationMs ?? m.thinkingDurationMs,
-                  thinkingSteps: m.thinkingSteps?.map((s) =>
-                    s.status === "running" ? { ...s, status: "done" } : s,
-                  ),
-                }
-              : m,
-          ),
+          prev.map((m) => {
+            if (m.id === userClientId) {
+              return {
+                ...m,
+                messageId: result?.userMessageId ?? m.messageId,
+                siblingIds: result?.userSiblingIds ?? m.siblingIds,
+              };
+            }
+            if (m.id === id) {
+              return {
+                ...m,
+                messageId: result?.assistantMessageId ?? m.messageId,
+                siblingIds: result?.assistantSiblingIds ?? m.siblingIds,
+                isStreaming: false,
+                thinkingDurationMs: result?.durationMs ?? m.thinkingDurationMs,
+                thinkingSteps: m.thinkingSteps?.map((s) =>
+                  s.status === "running" ? { ...s, status: "done" } : s,
+                ),
+              };
+            }
+            return m;
+          }),
         );
       }
       pendingMessageRef.current = null;
       streamingMessageIdRef.current = null;
+      streamingUserMessageIdRef.current = null;
       setIsBackendGenerating(false);
       onConversationCompleted?.();
     },
@@ -517,6 +558,7 @@ export function ChatCard({
         );
       }
       streamingMessageIdRef.current = null;
+      streamingUserMessageIdRef.current = null;
       setIsBackendGenerating(false);
     },
   });
@@ -644,6 +686,7 @@ export function ChatCard({
       );
     }
     streamingMessageIdRef.current = null;
+    streamingUserMessageIdRef.current = null;
     setIsBackendGenerating(false);
   }, [abortChatStream]);
 
@@ -658,9 +701,13 @@ export function ChatCard({
       selectedSourcesCount: selectedSourceIds.length,
     };
 
+    setEditingMessageId(null);
+    savedScrollTopRef.current = scrollContainerRef.current?.scrollTop ?? null;
+    anchorMessageIdRef.current = userMessage.id;
     setMessages((prevMessages) => [...prevMessages, userMessage]);
     setInput("");
     pendingMessageRef.current = userText;
+    streamingUserMessageIdRef.current = userMessage.id;
     setPendingAlign(true);
 
     await handleStreamChat();
@@ -676,15 +723,242 @@ export function ChatCard({
     },
   );
 
+  const handleStartEdit = useCallback(
+    (messageIndex: number) => {
+      if (isBusy) return;
+      const target = messages[messageIndex];
+      if (!target || target.sender !== "user") return;
+      setEditingMessageId(target.id);
+    },
+    [isBusy, messages],
+  );
+
+  const handleCancelEdit = useCallback(() => {
+    setEditingMessageId(null);
+  }, []);
+
+  const handleSubmitEdit = useCallback(
+    async (messageIndex: number, newText: string) => {
+      const trimmed = newText.trim();
+      if (isBusy || !trimmed) return;
+      const targetUserMessage = messages[messageIndex];
+      if (!targetUserMessage || targetUserMessage.sender !== "user") return;
+
+      setEditingMessageId(null);
+
+      const effectiveSelectedCount =
+        selectedSourceIds.length > 0
+          ? selectedSourceIds.length
+          : targetUserMessage.selectedSourcesCount;
+      const updatedUserMessage: Message = {
+        ...targetUserMessage,
+        siblingIds: undefined,
+        text: trimmed,
+        selectedSourcesCount: effectiveSelectedCount,
+      };
+
+      const aiClientId = (Date.now() + 1).toString();
+      streamingUserMessageIdRef.current = targetUserMessage.id;
+      streamingMessageIdRef.current = aiClientId;
+      pendingMessageRef.current = trimmed;
+
+      savedScrollTopRef.current = scrollContainerRef.current?.scrollTop ?? null;
+      anchorMessageIdRef.current = targetUserMessage.id;
+      setMessages((prev) => [
+        ...prev.slice(0, messageIndex),
+        updatedUserMessage,
+        {
+          id: aiClientId,
+          text: "",
+          sender: "ai",
+          isStreaming: true,
+          thinkingSteps: [],
+        },
+      ]);
+      setPendingAlign(true);
+
+      const preferences = {
+        responseDetail: responseDetail !== "balanced" ? responseDetail : undefined,
+        customInstructions: customInstructions?.trim() ? customInstructions.trim() : undefined,
+      };
+
+      if (conversationId && targetUserMessage.messageId !== undefined) {
+        await streamChat(
+          {
+            userInput: trimmed,
+            selectedSourceIds,
+            mode,
+            ...preferences,
+          },
+          {
+            endpoint: `notebooks/${notebookId}/conversations/${conversationId}/messages/${targetUserMessage.messageId}/stream`,
+            method: "PUT",
+          },
+        );
+      } else {
+        await streamChat({
+          userInput: trimmed,
+          conversationId,
+          selectedSourceIds,
+          mode,
+          ...preferences,
+        });
+      }
+    },
+    [
+      isBusy,
+      messages,
+      selectedSourceIds,
+      responseDetail,
+      customInstructions,
+      conversationId,
+      notebookId,
+      mode,
+      streamChat,
+    ],
+  );
+
+  const regenerateAt = useCallback(
+    async (aiIndex: number) => {
+      if (isBusy) return;
+      const targetAiMessage = messages[aiIndex];
+      if (!targetAiMessage || targetAiMessage.sender !== "ai") return;
+
+      let userIndex = -1;
+      for (let i = aiIndex - 1; i >= 0; i--) {
+        if (messages[i].sender === "user") {
+          userIndex = i;
+          break;
+        }
+      }
+      if (userIndex < 0) return;
+
+      const userMessage = messages[userIndex];
+      setEditingMessageId(null);
+
+      const effectiveSelectedCount =
+        selectedSourceIds.length > 0 ? selectedSourceIds.length : userMessage.selectedSourcesCount;
+      const updatedUserMessage: Message = {
+        ...userMessage,
+        selectedSourcesCount: effectiveSelectedCount,
+      };
+
+      const aiClientId = (Date.now() + 1).toString();
+      streamingUserMessageIdRef.current = userMessage.id;
+      streamingMessageIdRef.current = aiClientId;
+      pendingMessageRef.current = userMessage.text;
+
+      savedScrollTopRef.current = scrollContainerRef.current?.scrollTop ?? null;
+      anchorMessageIdRef.current = userMessage.id;
+      setMessages((prev) => [
+        ...prev.slice(0, userIndex),
+        updatedUserMessage,
+        {
+          id: aiClientId,
+          text: "",
+          sender: "ai",
+          isStreaming: true,
+          thinkingSteps: [],
+        },
+      ]);
+      setPendingAlign(true);
+
+      const preferences = {
+        responseDetail: responseDetail !== "balanced" ? responseDetail : undefined,
+        customInstructions: customInstructions?.trim() ? customInstructions.trim() : undefined,
+      };
+
+      const targetBackendMessageId = targetAiMessage.messageId ?? userMessage.messageId;
+      if (conversationId && targetBackendMessageId !== undefined) {
+        await streamChat(
+          {
+            selectedSourceIds,
+            mode,
+            ...preferences,
+          },
+          {
+            endpoint: `notebooks/${notebookId}/conversations/${conversationId}/messages/${targetBackendMessageId}/regenerate/stream`,
+            method: "POST",
+          },
+        );
+      } else {
+        await streamChat({
+          userInput: userMessage.text,
+          conversationId,
+          selectedSourceIds,
+          mode,
+          ...preferences,
+        });
+      }
+    },
+    [
+      isBusy,
+      messages,
+      selectedSourceIds,
+      responseDetail,
+      customInstructions,
+      conversationId,
+      notebookId,
+      mode,
+      streamChat,
+    ],
+  );
+
   const handleRetryFromError = useCallback(
     (messageIndex: number) => {
-      if (!pendingMessageRef.current) return;
-
-      setMessages((prevMessages) => prevMessages.slice(0, messageIndex));
-      setPendingAlign(true);
-      handleStreamChat();
+      void regenerateAt(messageIndex);
     },
-    [handleStreamChat],
+    [regenerateAt],
+  );
+
+  const handleSelectVersion = useCallback(
+    async (targetMessageId: number) => {
+      if (!conversationId || isBusy || isSwitchingVersion) return;
+      setIsSwitchingVersion(true);
+      setEditingMessageId(null);
+      try {
+        const response = await appFetch(
+          new URL(
+            `notebooks/${notebookId}/conversations/${conversationId}/messages/${targetMessageId}/select`,
+            BACKEND_BASE_URL,
+          ).toString(),
+          {
+            method: "PATCH",
+            headers: {
+              Authorization: token?.token ? `Bearer ${token.token}` : "",
+            },
+          },
+        );
+        if (!response.ok) {
+          throw new Error(`Failed to switch message version (${response.status})`);
+        }
+        const data = (await response.json()) as ConversationMessages;
+        const nextMessages = mapConversationMessages(conversationId, data);
+        const switchedIndex = nextMessages.findIndex((m) => m.messageId === targetMessageId);
+        let anchorClientId: string | null = null;
+        if (switchedIndex >= 0) {
+          if (nextMessages[switchedIndex].sender === "user") {
+            anchorClientId = nextMessages[switchedIndex].id;
+          } else {
+            for (let i = switchedIndex - 1; i >= 0; i--) {
+              if (nextMessages[i].sender === "user") {
+                anchorClientId = nextMessages[i].id;
+                break;
+              }
+            }
+          }
+        }
+        savedScrollTopRef.current = scrollContainerRef.current?.scrollTop ?? null;
+        anchorMessageIdRef.current = anchorClientId;
+        setMessages(nextMessages);
+        setPendingAlign(true);
+      } catch (error) {
+        console.error("Error switching message version:", error);
+      } finally {
+        setIsSwitchingVersion(false);
+      }
+    },
+    [conversationId, isBusy, isSwitchingVersion, notebookId, token?.token],
   );
 
   const handleSaveAsNote = useCallback(
@@ -718,16 +992,39 @@ export function ChatCard({
     [messages, notebookId, onNoteCreated, token?.token],
   );
 
+  const lastUserMessageId = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].sender === "user") return messages[i].id;
+    }
+    return null;
+  }, [messages]);
+
+  const lastUserMessageIdRef = useRef<string | null>(null);
+  lastUserMessageIdRef.current = lastUserMessageId;
+
   const computeAlignMetrics = useCallback((currentSpacer: number) => {
     const container = scrollContainerRef.current;
     if (!container) return null;
 
-    const userMessageElements = container.querySelectorAll<HTMLElement>('[data-sender="user"]');
-    const lastUserMessageElement = userMessageElements[userMessageElements.length - 1];
-    if (!lastUserMessageElement) return null;
+    const anchorId = anchorMessageIdRef.current;
+    let anchorElement: HTMLElement | null = anchorId
+      ? container.querySelector<HTMLElement>(`[data-message-id="${CSS.escape(anchorId)}"]`)
+      : null;
+
+    if (!anchorElement && lastUserMessageIdRef.current) {
+      anchorElement = container.querySelector<HTMLElement>(
+        `[data-message-id="${CSS.escape(lastUserMessageIdRef.current)}"]`,
+      );
+    }
+
+    if (!anchorElement) {
+      const userMessageElements = container.querySelectorAll<HTMLElement>('[data-sender="user"]');
+      anchorElement = userMessageElements[userMessageElements.length - 1] ?? null;
+    }
+    if (!anchorElement) return null;
 
     const paddingTop = parseFloat(getComputedStyle(container).scrollPaddingTop) || 0;
-    const target = Math.max(0, lastUserMessageElement.offsetTop - container.offsetTop - paddingTop);
+    const target = Math.max(0, anchorElement.offsetTop - container.offsetTop - paddingTop);
 
     const contentHeight = container.scrollHeight - currentSpacer;
     const needed = Math.max(0, target - (contentHeight - container.clientHeight));
@@ -753,7 +1050,13 @@ export function ChatCard({
 
     const container = scrollContainerRef.current;
     if (container && scrollTargetRef.current !== null) {
-      container.scrollTo({ top: scrollTargetRef.current, behavior: "smooth" });
+      if (savedScrollTopRef.current !== null) {
+        container.scrollTo({ top: savedScrollTopRef.current, behavior: "instant" });
+        savedScrollTopRef.current = null;
+      }
+      if (Math.abs(container.scrollTop - scrollTargetRef.current) > 1) {
+        container.scrollTo({ top: scrollTargetRef.current, behavior: "smooth" });
+      }
     }
     setPendingAlign(false);
   }, [pendingAlign, extraBottomSpacer, computeAlignMetrics]);
@@ -877,7 +1180,7 @@ export function ChatCard({
             className="absolute inset-0 scroll-pt-4 scrollbar-gutter-stable overflow-y-auto scroll-smooth px-4 py-4 md:px-6"
           >
             <div className="space-y-4 *:mx-auto *:max-w-3xl">
-              <AnimatePresence initial={false}>
+              <AnimatePresence initial={false} onExitComplete={settleSpacer}>
                 {messages.map((message, index) => (
                   <ChatMessage
                     key={message.id}
@@ -886,6 +1189,15 @@ export function ChatCard({
                     showCitedSources={showCitedSources}
                     showThinking={showThinking}
                     autoExpandThinking={autoExpandThinking}
+                    isEditing={!isBusy && !isSwitchingVersion && editingMessageId === message.id}
+                    canEdit={!isBusy && !isSwitchingVersion}
+                    canRegenerate={!isBusy && !isSwitchingVersion}
+                    canSwitchVersion={!isBusy && !isSwitchingVersion}
+                    onStartEdit={handleStartEdit}
+                    onCancelEdit={handleCancelEdit}
+                    onSubmitEdit={handleSubmitEdit}
+                    onRegenerate={regenerateAt}
+                    onSelectVersion={(targetId) => void handleSelectVersion(targetId)}
                     onRetryFromError={handleRetryFromError}
                     onSourceClick={handleSourceClick}
                     onSaveAsNote={handleSaveAsNote}

@@ -42,6 +42,9 @@ interface CitedSource {
 }
 
 interface ConversationMessage {
+  id?: number;
+  parentId?: number | null;
+  siblingIds?: number[];
   content: string;
   type: "USER" | "ASSISTANT";
   citedSources?: CitedSource[];
