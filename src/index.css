@@ -337,7 +337,9 @@ body.resizing * {
 }
 
 body.tab-dragging,
-body.tab-dragging * {
+body.tab-dragging *,
+body.dragging,
+body.dragging * {
   cursor: grabbing !important;
   user-select: none !important;
 }
