@@ -34,7 +34,9 @@ import {
 } from "@/components/icons";
 import type { Folder, Notebook, NotebooksPageResponse } from "@/interfaces";
 import {
+  DEFAULT_SHOW_FOLDER_NOTEBOOKS,
   getSortedItems,
+  SHOW_FOLDER_NOTEBOOKS_COOKIE_KEY,
   SORT_LABELS,
   type SortOption,
   type ViewMode,
@@ -73,6 +75,10 @@ export default function HomePage() {
     "Newest",
   );
   const { value: globalNotebookViewMode } = useCookie<ViewMode>(VIEW_MODE_COOKIE_KEY, "grid");
+  const { value: showFolderNotebooks } = useCookie<boolean>(
+    SHOW_FOLDER_NOTEBOOKS_COOKIE_KEY,
+    DEFAULT_SHOW_FOLDER_NOTEBOOKS,
+  );
 
   const [isCreateNotebookOpen, setIsCreateNotebookOpen] = useState(false);
   const [newNotebookTitle, setNewNotebookTitle] = useState("");
@@ -261,9 +267,21 @@ export default function HomePage() {
   }, [allNotebooks, getEffectiveFolderId]);
 
   const filteredNotebooks = useMemo(() => {
-    if (!activeFolder) return getSortedItems(allNotebooks, sortBy);
-    return getSortedItems(notebooksByFolder.get(activeFolder.id) ?? [], sortBy);
-  }, [activeFolder, allNotebooks, notebooksByFolder, sortBy]);
+    if (activeFolder) {
+      return getSortedItems(notebooksByFolder.get(activeFolder.id) ?? [], sortBy);
+    }
+    const homeNotebooks = showFolderNotebooks
+      ? allNotebooks
+      : allNotebooks.filter((notebook) => !getEffectiveFolderId(notebook));
+    return getSortedItems(homeNotebooks, sortBy);
+  }, [
+    activeFolder,
+    allNotebooks,
+    notebooksByFolder,
+    showFolderNotebooks,
+    getEffectiveFolderId,
+    sortBy,
+  ]);
 
   const displayedNotebooks = showAllNotebooks
     ? filteredNotebooks
@@ -866,13 +884,22 @@ export default function HomePage() {
                       </button>
                     )}
                   </>
-                ) : (
+                ) : activeFolder ? (
                   <div className="flex w-full flex-col items-center justify-center gap-1 rounded-xs border-2 border-dashed border-gray-400/30 bg-gray-50/60 px-6 py-8 text-center dark:border-gray-600/30 dark:bg-gray-900/30">
                     <h3 className="text-foreground text-md font-semibold">
-                      {activeFolder ? `"${activeFolder.title}" is empty` : "This folder is empty"}
+                      "{activeFolder.title}" is empty
                     </h3>
                     <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
                       Create a new notebook here or move an existing one from its card menu.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex w-full flex-col items-center justify-center gap-1 rounded-xs border-2 border-dashed border-gray-400/30 bg-gray-50/60 px-6 py-8 text-center dark:border-gray-600/30 dark:bg-gray-900/30">
+                    <h3 className="text-foreground text-md font-semibold">
+                      All notebooks are in folders
+                    </h3>
+                    <p className="text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                      Open a folder above to view them, or create a new notebook outside a folder.
                     </p>
                   </div>
                 )}
