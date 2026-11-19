@@ -4,7 +4,9 @@ import {
   ContextMenuTrigger,
   ContextMenuContent,
   ContextMenuItem,
+  IconButton,
   Menu,
+  Skeleton,
   Tooltip,
   MenuTrigger,
   MenuContent,
@@ -16,33 +18,54 @@ import { cn } from "@/lib/utils";
 
 interface FolderCardProps {
   folder: Folder;
-  isExpanded?: boolean;
   notebookCount?: number;
-  onToggle?: () => void;
+  isDropTarget?: boolean;
+  onOpen?: () => void;
   onEditFolder?: () => void;
   onDeleteFolder?: () => void;
 }
 
+export function FolderCardSkeleton() {
+  return (
+    <div className="flex h-16 w-full items-center gap-3 rounded-xs border border-gray-200 bg-white px-3.5 dark:border-gray-700 dark:bg-gray-900">
+      <Skeleton variant="rectangle" width={32} height={32} className="shrink-0" />
+      <div className="min-w-0 flex-1 space-y-1.5">
+        <Skeleton variant="rectangle" width="70%" height={14} />
+        <Skeleton variant="rectangle" width="42%" height={10} />
+      </div>
+    </div>
+  );
+}
+
 export function FolderCard({
   folder,
-  isExpanded = false,
   notebookCount,
-  onToggle,
+  isDropTarget = false,
+  onOpen,
   onEditFolder,
   onDeleteFolder,
 }: FolderCardProps) {
   const handleCardClick = () => {
-    onToggle?.();
+    onOpen?.();
   };
 
   const handleCardKeyDown = useShortcut("dialog-activate", () => {
-    onToggle?.();
+    onOpen?.();
   });
 
   const handleMenuWrapperKeyDown = useShortcut("dialog-activate", () => {}, {
     preventDefault: false,
     stopPropagation: true,
   });
+
+  const countLabel =
+    typeof notebookCount === "number"
+      ? notebookCount === 0
+        ? "Empty"
+        : notebookCount === 1
+          ? "1 notebook"
+          : `${notebookCount} notebooks`
+      : null;
 
   const renderMenuItems = () => (
     <>
@@ -90,69 +113,60 @@ export function FolderCard({
         <div
           role="button"
           tabIndex={0}
-          aria-pressed={onToggle ? isExpanded : undefined}
+          data-drop-folder-id={folder.id}
           className={cn(
-            "group relative inline-flex h-9 shrink-0 items-center gap-2 rounded-xs border px-3 text-sm font-medium transition-all duration-200 ease-out select-none cursor-pointer",
+            "group relative flex h-16 w-full cursor-pointer items-center justify-between gap-2 rounded-xs border px-3.5 transition-all duration-200 ease-out select-none",
+            isDropTarget
+              ? "border-blue-300 bg-blue-50/80 shadow-sm ring-1 ring-blue-400/50 dark:border-blue-600 dark:bg-blue-950/50 dark:ring-blue-500/40"
+              : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/60 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-gray-500 dark:hover:bg-gray-800",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-gray-900",
-            isExpanded
-              ? "border-blue-400 bg-blue-50 text-blue-900 ring-1 ring-blue-400/50 dark:border-blue-500 dark:bg-blue-950/60 dark:text-blue-100 dark:ring-blue-500/40"
-              : "border-gray-200 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50/70 hover:text-blue-900 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:border-gray-500 dark:hover:bg-gray-800 dark:hover:text-blue-100",
           )}
           onClick={handleCardClick}
           onKeyDown={handleCardKeyDown}
         >
-          <div
-            className={cn(
-              "flex size-5 shrink-0 items-center justify-center rounded-xs transition-colors",
-              isExpanded
-                ? "bg-blue-500 text-white dark:bg-blue-500 dark:text-white"
-                : "bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400",
-            )}
-          >
-            <FolderIcon className="size-3" />
-          </div>
-
-          <span className="max-w-44 truncate font-semibold">{folder.title}</span>
-
-          {typeof notebookCount === "number" && notebookCount > 0 && (
-            <span
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <div
               className={cn(
-                "shrink-0 rounded-xs px-1.5 py-0.5 text-[11px] leading-none font-semibold transition-colors",
-                isExpanded
-                  ? "bg-blue-200/70 text-blue-800 dark:bg-blue-900/80 dark:text-blue-200"
-                  : "bg-gray-100 text-gray-600 group-hover:bg-blue-100/80 group-hover:text-blue-700 dark:bg-gray-800 dark:text-gray-400 dark:group-hover:bg-gray-700 dark:group-hover:text-gray-200",
+                "flex size-8 shrink-0 items-center justify-center rounded-xs transition-colors duration-200",
+                isDropTarget
+                  ? "bg-blue-500 text-white dark:bg-blue-500 dark:text-white"
+                  : "bg-blue-50 text-blue-600 group-hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:group-hover:bg-blue-900/50",
               )}
             >
-              {notebookCount}
-            </span>
-          )}
+              <FolderIcon className="size-4" />
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <h4
+                title={folder.title}
+                className="truncate text-sm font-semibold text-gray-900 transition-colors duration-200 group-hover:text-blue-900 dark:text-gray-100 dark:group-hover:text-blue-100"
+              >
+                {folder.title}
+              </h4>
+              {countLabel && (
+                <p className="truncate text-xs text-gray-500 dark:text-gray-400">{countLabel}</p>
+              )}
+            </div>
+          </div>
 
           {(onEditFolder || onDeleteFolder) && (
             <div
-              role="button"
-              tabIndex={0}
               onClick={(e) => e.stopPropagation()}
               onKeyDown={handleMenuWrapperKeyDown}
-              className="-mr-1 flex items-center"
+              className="-mr-1 shrink-0 opacity-100 transition-opacity duration-150 has-[[aria-expanded=true]]:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100"
             >
               <Menu>
-                <Tooltip text="Folder settings" position="top">
+                <Tooltip text="Folder options" position="top">
                   <MenuTrigger>
-                    <button
-                      type="button"
-                      aria-label="Folder settings"
-                      className={cn(
-                        "flex size-5 items-center justify-center rounded-xs transition-colors cursor-pointer",
-                        isExpanded
-                          ? "text-blue-600 hover:bg-blue-200/60 hover:text-blue-900 dark:text-blue-300 dark:hover:bg-blue-900/60 dark:hover:text-white"
-                          : "text-gray-400 hover:bg-blue-100 hover:text-blue-700 dark:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-200",
-                      )}
-                    >
-                      <DotsVerticalIcon className="size-3.5" />
-                    </button>
+                    <IconButton
+                      icon={<DotsVerticalIcon />}
+                      size="sm"
+                      ariaLabel="Folder options"
+                      variant="ghost"
+                    />
                   </MenuTrigger>
                 </Tooltip>
-                <MenuContent align="left">{renderMenuItems()}</MenuContent>
+                <MenuContent>{renderMenuItems()}</MenuContent>
               </Menu>
             </div>
           )}

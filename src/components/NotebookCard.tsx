@@ -38,6 +38,8 @@ interface NotebookCardProps {
   folders?: Folder[];
   folderTitle?: string;
   onChange?: () => void;
+  isDragging?: boolean;
+  onPointerDown?: (e: React.PointerEvent<HTMLDivElement>, notebook: Notebook) => void;
 }
 
 export function NotebookCard({
@@ -46,6 +48,8 @@ export function NotebookCard({
   folders,
   folderTitle,
   onChange,
+  isDragging = false,
+  onPointerDown,
 }: NotebookCardProps) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState<string>("");
@@ -214,7 +218,7 @@ export function NotebookCard({
   }
 
   const baseClasses = cn(
-    "group z-10 rounded-xs border cursor-pointer transition-all duration-300 ease-out",
+    "group z-10 rounded-xs border cursor-pointer select-none transition-all duration-300 ease-out",
     "bg-white dark:bg-gray-900",
     "border-gray-200 dark:border-gray-700",
     "hover:bg-blue-50 dark:hover:bg-gray-800",
@@ -267,7 +271,13 @@ export function NotebookCard({
   );
 
   const renderMenu = () => (
-    <div role="button" tabIndex={0} onClick={handleMenuClick} onKeyDown={handleMenuKeyDown}>
+    <div
+      role="button"
+      tabIndex={0}
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={handleMenuClick}
+      onKeyDown={handleMenuKeyDown}
+    >
       <Menu>
         <Tooltip text="More options" position="top">
           <MenuTrigger>
@@ -285,7 +295,7 @@ export function NotebookCard({
   );
 
   const renderFolderBadge = () => {
-    if (!notebook.folderId || !folderTitle) return null;
+    if (!folderTitle) return null;
     return (
       <div
         onPointerDown={(e) => e.stopPropagation()}
@@ -310,9 +320,11 @@ export function NotebookCard({
         <div
           role="button"
           tabIndex={0}
+          onPointerDown={(e) => onPointerDown?.(e, notebook)}
           className={cn(baseClasses, {
             [gridClasses]: viewMode === "grid",
             [listClasses]: viewMode === "list",
+            "opacity-40": isDragging,
           })}
           onClick={handleCardClick}
           onKeyDown={handleCardKeyDown}
