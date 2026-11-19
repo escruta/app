@@ -1,8 +1,16 @@
+import { useId } from "react";
 import { GridIcon, ListIcon } from "@/components/icons";
+import { Switch } from "@/components/ui";
 import { useCookie } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { SettingsGroup } from "../shared/SettingsSection";
-import { VIEW_MODE_COOKIE_KEY, VIEW_MODE_LABELS, type ViewMode } from "../lib/view-mode";
+import {
+  DEFAULT_SHOW_FOLDER_NOTEBOOKS,
+  SHOW_FOLDER_NOTEBOOKS_COOKIE_KEY,
+  VIEW_MODE_COOKIE_KEY,
+  VIEW_MODE_LABELS,
+  type ViewMode,
+} from "../lib/view-mode";
 import { PreferenceOptionButton, SelectionIndicator } from "./PreferenceCard";
 
 function GridLayoutPreview({ selected }: { selected: boolean }) {
@@ -81,9 +89,16 @@ const DISPLAY_OPTIONS: {
 ];
 
 export function DisplaySettings() {
+  const showFolderNotebooksLabelId = useId();
+  const showFolderNotebooksDescId = useId();
+
   const { value: viewMode, setValue: setViewMode } = useCookie<ViewMode>(
     VIEW_MODE_COOKIE_KEY,
     "grid",
+  );
+  const { value: showFolderNotebooks, setValue: setShowFolderNotebooks } = useCookie<boolean>(
+    SHOW_FOLDER_NOTEBOOKS_COOKIE_KEY,
+    DEFAULT_SHOW_FOLDER_NOTEBOOKS,
   );
 
   return (
@@ -149,6 +164,32 @@ export function DisplaySettings() {
             </PreferenceOptionButton>
           );
         })}
+      </div>
+
+      <div className="divide-y divide-gray-200 overflow-hidden rounded-xs border border-gray-200 bg-white dark:divide-gray-800 dark:border-gray-800 dark:bg-gray-900/50">
+        <div className="flex items-center justify-between gap-4 px-4 py-3.5">
+          <div className="min-w-0">
+            <p
+              id={showFolderNotebooksLabelId}
+              className="text-sm font-medium text-gray-900 dark:text-gray-100"
+            >
+              Show notebooks in folders on Home
+            </p>
+            <p
+              id={showFolderNotebooksDescId}
+              className="mt-0.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400"
+            >
+              Include notebooks that belong to a folder in the Home notebooks list. Turn off to only
+              show notebooks outside of folders.
+            </p>
+          </div>
+          <Switch
+            checked={showFolderNotebooks}
+            onChange={setShowFolderNotebooks}
+            ariaLabelledBy={showFolderNotebooksLabelId}
+            ariaDescribedBy={showFolderNotebooksDescId}
+          />
+        </div>
       </div>
     </SettingsGroup>
   );
