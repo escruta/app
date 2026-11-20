@@ -18,7 +18,13 @@ import {
   TextField,
   Tooltip,
 } from "@/components/ui";
-import { FolderCard, FolderCardSkeleton, NotebookCard, TopBar } from "@/components";
+import {
+  DitherHalftoneBackground,
+  FolderCard,
+  FolderCardSkeleton,
+  NotebookCard,
+  TopBar,
+} from "@/components";
 import {
   AddIcon,
   ChevronIcon,
@@ -568,6 +574,8 @@ export default function HomePage() {
     setFolderTitle("");
   };
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
   const hasFolders = folderItems.length > 0;
   const showFoldersSection = !activeFolder && ((foldersLoading && !folders) || hasFolders);
 
@@ -579,7 +587,11 @@ export default function HomePage() {
     <div className="flex h-screen max-h-full w-full flex-col">
       <title>Home - Escruta</title>
       <TopBar />
-      <div className="relative size-full overflow-auto overflow-y-scroll">
+      <div
+        ref={scrollContainerRef}
+        className="relative min-h-0 flex-1 overflow-auto overflow-y-scroll"
+      >
+        <DitherHalftoneBackground interactionTargetRef={scrollContainerRef} />
         <div className="relative z-10 mx-auto flex max-w-5xl flex-col gap-6 px-6 py-8 md:py-12">
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -605,6 +617,7 @@ export default function HomePage() {
             onChange={(e) => handleSearch(e.target.value)}
             onClear={() => handleSearch("")}
             placeholder="Search all notebooks..."
+            className="bg-white/85 dark:bg-gray-950/85"
             search
           />
 
