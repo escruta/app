@@ -37,7 +37,10 @@ export function Switch({
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-blue-400 dark:focus-visible:ring-offset-gray-950",
         checked
           ? "border-blue-600 bg-blue-500 dark:border-blue-500 dark:bg-blue-600"
-          : "border-gray-300 bg-gray-200 hover:border-gray-400 dark:border-gray-600 dark:bg-gray-800 dark:hover:border-gray-500",
+          : "border-gray-300 bg-gray-200 dark:border-gray-600 dark:bg-gray-800",
+        !checked &&
+          !disabled &&
+          "hover:border-gray-400 group-hover:border-gray-400 dark:hover:border-gray-500 dark:group-hover:border-gray-500",
         disabled && "cursor-not-allowed opacity-50",
         className,
       )}

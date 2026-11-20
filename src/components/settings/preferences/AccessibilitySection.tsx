@@ -1,8 +1,6 @@
-import { useId } from "react";
-import { Switch } from "@/components/ui";
 import { useAccessibility } from "@/hooks";
 import { cn } from "@/lib/utils";
-import { SettingsGroup } from "../shared/SettingsSection";
+import { SettingsGroup, SettingsSwitchRow } from "../shared/SettingsSection";
 import { PreferenceOptionButton, SelectionIndicator } from "./PreferenceCard";
 
 function MotionPreview({
@@ -75,11 +73,6 @@ export function AccessibilitySettings() {
     setEnhancedFocus,
   } = useAccessibility();
 
-  const reduceTransparencyLabelId = useId();
-  const reduceTransparencyDescId = useId();
-  const enhancedFocusLabelId = useId();
-  const enhancedFocusDescId = useId();
-
   const motionOptions = [
     {
       value: MotionOptions.System,
@@ -151,51 +144,19 @@ export function AccessibilitySettings() {
       </div>
 
       <div className="divide-y divide-gray-200 overflow-hidden rounded-xs border border-gray-200 bg-white dark:divide-gray-800 dark:border-gray-800 dark:bg-gray-900/50">
-        <div className="flex items-center justify-between gap-4 px-4 py-3.5">
-          <div className="min-w-0">
-            <p
-              id={reduceTransparencyLabelId}
-              className="text-sm font-medium text-gray-900 dark:text-gray-100"
-            >
-              Reduce transparency
-            </p>
-            <p
-              id={reduceTransparencyDescId}
-              className="mt-0.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400"
-            >
-              Disable backdrop blur on modals, tooltips, and overlays for sharper contrast.
-            </p>
-          </div>
-          <Switch
-            checked={reduceTransparency}
-            onChange={setReduceTransparency}
-            ariaLabelledBy={reduceTransparencyLabelId}
-            ariaDescribedBy={reduceTransparencyDescId}
-          />
-        </div>
+        <SettingsSwitchRow
+          title="Reduce transparency"
+          description="Disable backdrop blur on modals, tooltips, and overlays for sharper contrast."
+          checked={reduceTransparency}
+          onChange={setReduceTransparency}
+        />
 
-        <div className="flex items-center justify-between gap-4 px-4 py-3.5">
-          <div className="min-w-0">
-            <p
-              id={enhancedFocusLabelId}
-              className="text-sm font-medium text-gray-900 dark:text-gray-100"
-            >
-              Enhanced focus outlines
-            </p>
-            <p
-              id={enhancedFocusDescId}
-              className="mt-0.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400"
-            >
-              Display stronger high-contrast outlines when navigating with the keyboard.
-            </p>
-          </div>
-          <Switch
-            checked={enhancedFocus}
-            onChange={setEnhancedFocus}
-            ariaLabelledBy={enhancedFocusLabelId}
-            ariaDescribedBy={enhancedFocusDescId}
-          />
-        </div>
+        <SettingsSwitchRow
+          title="Enhanced focus outlines"
+          description="Display stronger high-contrast outlines when navigating with the keyboard."
+          checked={enhancedFocus}
+          onChange={setEnhancedFocus}
+        />
       </div>
     </SettingsGroup>
   );

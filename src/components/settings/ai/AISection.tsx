@@ -1,6 +1,6 @@
 import { useId } from "react";
 import { ChatIcon, StudyIcon } from "@/components/icons";
-import { Button, Select, Switch, TextField } from "@/components/ui";
+import { Button, Select, TextField } from "@/components/ui";
 import { useCookie } from "@/hooks";
 import type { ChatMode } from "@/interfaces";
 import { cn } from "@/lib/utils";
@@ -21,7 +21,12 @@ import {
   type ResponseDetail,
 } from "../lib/ai";
 import { PreferenceOptionButton, SelectionIndicator } from "../preferences/PreferenceCard";
-import { SettingsDivider, SettingsGroup, SettingsSection } from "../shared/SettingsSection";
+import {
+  SettingsDivider,
+  SettingsGroup,
+  SettingsSection,
+  SettingsSwitchRow,
+} from "../shared/SettingsSection";
 
 const CHAT_MODE_ICONS: Record<ChatMode, React.ReactNode> = {
   NORMAL: <ChatIcon className="size-4" />,
@@ -30,18 +35,6 @@ const CHAT_MODE_ICONS: Record<ChatMode, React.ReactNode> = {
 
 export function AISection() {
   const instructionsId = useId();
-  const exampleQuestionsLabelId = useId();
-  const exampleQuestionsDescId = useId();
-  const citedSourcesLabelId = useId();
-  const citedSourcesDescId = useId();
-  const thinkingLabelId = useId();
-  const thinkingDescId = useId();
-  const autoExpandThinkingLabelId = useId();
-  const autoExpandThinkingDescId = useId();
-  const autoOverviewLabelId = useId();
-  const autoOverviewDescId = useId();
-  const autoAdvanceLabelId = useId();
-  const autoAdvanceDescId = useId();
 
   const { value: defaultChatMode, setValue: setDefaultChatMode } = useCookie<ChatMode>(
     AI_DEFAULT_CHAT_MODE_COOKIE_KEY,
@@ -218,76 +211,26 @@ export function AISection() {
         description="Control starter prompts, citation badges, and automatic summaries inside notebooks."
       >
         <div className="divide-y divide-gray-200 overflow-hidden rounded-xs border border-gray-200 bg-white dark:divide-gray-800 dark:border-gray-800 dark:bg-gray-900/50">
-          <div className="flex items-center justify-between gap-4 px-4 py-3.5">
-            <div className="min-w-0">
-              <p
-                id={exampleQuestionsLabelId}
-                className="text-sm font-medium text-gray-900 dark:text-gray-100"
-              >
-                Suggested starter questions
-              </p>
-              <p
-                id={exampleQuestionsDescId}
-                className="mt-0.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400"
-              >
-                Show AI-generated starter questions above the input in empty conversations.
-              </p>
-            </div>
-            <Switch
-              checked={showExampleQuestions}
-              onChange={setShowExampleQuestions}
-              ariaLabelledBy={exampleQuestionsLabelId}
-              ariaDescribedBy={exampleQuestionsDescId}
-            />
-          </div>
+          <SettingsSwitchRow
+            title="Suggested starter questions"
+            description="Show AI-generated starter questions above the input in empty conversations."
+            checked={showExampleQuestions}
+            onChange={setShowExampleQuestions}
+          />
 
-          <div className="flex items-center justify-between gap-4 px-4 py-3.5">
-            <div className="min-w-0">
-              <p
-                id={citedSourcesLabelId}
-                className="text-sm font-medium text-gray-900 dark:text-gray-100"
-              >
-                Show cited sources
-              </p>
-              <p
-                id={citedSourcesDescId}
-                className="mt-0.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400"
-              >
-                Display inline citation links and a cited sources toggle in assistant message
-                actions.
-              </p>
-            </div>
-            <Switch
-              checked={showCitedSources}
-              onChange={setShowCitedSources}
-              ariaLabelledBy={citedSourcesLabelId}
-              ariaDescribedBy={citedSourcesDescId}
-            />
-          </div>
+          <SettingsSwitchRow
+            title="Show cited sources"
+            description="Display inline citation links and a cited sources toggle in assistant message actions."
+            checked={showCitedSources}
+            onChange={setShowCitedSources}
+          />
 
-          <div className="flex items-center justify-between gap-4 px-4 py-3.5">
-            <div className="min-w-0">
-              <p
-                id={autoOverviewLabelId}
-                className="text-sm font-medium text-gray-900 dark:text-gray-100"
-              >
-                Auto-generate notebook overview
-              </p>
-              <p
-                id={autoOverviewDescId}
-                className="mt-0.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400"
-              >
-                Automatically generate or refresh the overview summary when sources finish
-                processing.
-              </p>
-            </div>
-            <Switch
-              checked={autoGenerateOverview}
-              onChange={setAutoGenerateOverview}
-              ariaLabelledBy={autoOverviewLabelId}
-              ariaDescribedBy={autoOverviewDescId}
-            />
-          </div>
+          <SettingsSwitchRow
+            title="Auto-generate notebook overview"
+            description="Automatically generate or refresh the overview summary when sources finish processing."
+            checked={autoGenerateOverview}
+            onChange={setAutoGenerateOverview}
+          />
         </div>
       </SettingsGroup>
 
@@ -298,54 +241,20 @@ export function AISection() {
         description="Control how the assistant's reasoning process and search steps are displayed."
       >
         <div className="divide-y divide-gray-200 overflow-hidden rounded-xs border border-gray-200 bg-white dark:divide-gray-800 dark:border-gray-800 dark:bg-gray-900/50">
-          <div className="flex items-center justify-between gap-4 px-4 py-3.5">
-            <div className="min-w-0">
-              <p
-                id={thinkingLabelId}
-                className="text-sm font-medium text-gray-900 dark:text-gray-100"
-              >
-                Show agent thinking & steps
-              </p>
-              <p
-                id={thinkingDescId}
-                className="mt-0.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400"
-              >
-                Display the model&apos;s reasoning process and source search steps during
-                conversations.
-              </p>
-            </div>
-            <Switch
-              checked={showThinking}
-              onChange={setShowThinking}
-              ariaLabelledBy={thinkingLabelId}
-              ariaDescribedBy={thinkingDescId}
-            />
-          </div>
+          <SettingsSwitchRow
+            title="Show agent thinking & steps"
+            description="Display the model's reasoning process and source search steps during conversations."
+            checked={showThinking}
+            onChange={setShowThinking}
+          />
 
-          <div className="flex items-center justify-between gap-4 px-4 py-3.5">
-            <div className="min-w-0">
-              <p
-                id={autoExpandThinkingLabelId}
-                className="text-sm font-medium text-gray-900 dark:text-gray-100"
-              >
-                Auto-expand thinking while generating
-              </p>
-              <p
-                id={autoExpandThinkingDescId}
-                className="mt-0.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400"
-              >
-                Automatically expand thinking blocks while generating a response. Turn off to keep
-                them collapsed unless opened manually.
-              </p>
-            </div>
-            <Switch
-              checked={autoExpandThinking}
-              onChange={setAutoExpandThinking}
-              disabled={!showThinking}
-              ariaLabelledBy={autoExpandThinkingLabelId}
-              ariaDescribedBy={autoExpandThinkingDescId}
-            />
-          </div>
+          <SettingsSwitchRow
+            title="Auto-expand thinking while generating"
+            description="Automatically expand thinking blocks while generating a response. Turn off to keep them collapsed unless opened manually."
+            checked={autoExpandThinking}
+            onChange={setAutoExpandThinking}
+            disabled={!showThinking}
+          />
         </div>
       </SettingsGroup>
 
@@ -356,28 +265,12 @@ export function AISection() {
         description="Customize how generated study tools behave during review sessions."
       >
         <div className="divide-y divide-gray-200 overflow-hidden rounded-xs border border-gray-200 bg-white dark:divide-gray-800 dark:border-gray-800 dark:bg-gray-900/50">
-          <div className="flex items-center justify-between gap-4 px-4 py-3.5">
-            <div className="min-w-0">
-              <p
-                id={autoAdvanceLabelId}
-                className="text-sm font-medium text-gray-900 dark:text-gray-100"
-              >
-                Auto-advance flashcards
-              </p>
-              <p
-                id={autoAdvanceDescId}
-                className="mt-0.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400"
-              >
-                Automatically move to the next card after marking a flashcard as known.
-              </p>
-            </div>
-            <Switch
-              checked={autoAdvanceFlashcards}
-              onChange={setAutoAdvanceFlashcards}
-              ariaLabelledBy={autoAdvanceLabelId}
-              ariaDescribedBy={autoAdvanceDescId}
-            />
-          </div>
+          <SettingsSwitchRow
+            title="Auto-advance flashcards"
+            description="Automatically move to the next card after marking a flashcard as known."
+            checked={autoAdvanceFlashcards}
+            onChange={setAutoAdvanceFlashcards}
+          />
         </div>
       </SettingsGroup>
     </SettingsSection>
