@@ -2,6 +2,7 @@ export * from "./AppIcon.tsx";
 export * from "./ChatCard.tsx";
 export * from "./ConversationChip.tsx";
 export * from "./ConversationHistory.tsx";
+export * from "./DitherHalftoneBackground.tsx";
 export * from "./FolderCard.tsx";
 export * from "./Logotype.tsx";
 export * from "./NotebookCard.tsx";
