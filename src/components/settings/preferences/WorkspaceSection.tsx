@@ -1,8 +1,7 @@
-import { useId } from "react";
 import { BookOpenIcon, ChatIcon, FileTextIcon, NoteIcon, ToolsIcon } from "@/components/icons";
-import { Select, Switch, type SelectOption } from "@/components/ui";
+import { Select, type SelectOption } from "@/components/ui";
 import { useCookie } from "@/hooks";
-import { SettingsGroup } from "../shared/SettingsSection";
+import { SettingsGroup, SettingsSwitchRow } from "../shared/SettingsSection";
 import {
   DEFAULT_WORKSPACE_SETTINGS,
   SIDEBAR_BEHAVIOR_OPTIONS,
@@ -32,11 +31,6 @@ const SIDEBAR_TAB_SELECT_OPTIONS: SelectOption<SidebarTabId>[] = SIDEBAR_TAB_OPT
 );
 
 export function WorkspaceSettings() {
-  const restoreTabsLabelId = useId();
-  const restoreTabsDescId = useId();
-  const autoSplitLabelId = useId();
-  const autoSplitDescId = useId();
-
   const { value: defaultSidebarTab, setValue: setDefaultSidebarTab } = useCookie<SidebarTabId>(
     WORKSPACE_DEFAULT_SIDEBAR_TAB_COOKIE_KEY,
     DEFAULT_WORKSPACE_SETTINGS.defaultSidebarTab,
@@ -102,52 +96,19 @@ export function WorkspaceSettings() {
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-4 px-4 py-3.5">
-          <div className="min-w-0">
-            <p
-              id={restoreTabsLabelId}
-              className="text-sm font-medium text-gray-900 dark:text-gray-100"
-            >
-              Restore open tabs
-            </p>
-            <p
-              id={restoreTabsDescId}
-              className="mt-0.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400"
-            >
-              Reopen your previous tabs and split layout when returning to a notebook.
-            </p>
-          </div>
-          <Switch
-            checked={restoreOpenTabs}
-            onChange={setRestoreOpenTabs}
-            ariaLabelledBy={restoreTabsLabelId}
-            ariaDescribedBy={restoreTabsDescId}
-          />
-        </div>
+        <SettingsSwitchRow
+          title="Restore open tabs"
+          description="Reopen your previous tabs and split layout when returning to a notebook."
+          checked={restoreOpenTabs}
+          onChange={setRestoreOpenTabs}
+        />
 
-        <div className="flex items-center justify-between gap-4 px-4 py-3.5">
-          <div className="min-w-0">
-            <p
-              id={autoSplitLabelId}
-              className="text-sm font-medium text-gray-900 dark:text-gray-100"
-            >
-              Open content in split view
-            </p>
-            <p
-              id={autoSplitDescId}
-              className="mt-0.5 text-xs leading-relaxed text-gray-500 dark:text-gray-400"
-            >
-              Automatically open sources, notes, and learning tools in a right pane beside your
-              active tab.
-            </p>
-          </div>
-          <Switch
-            checked={autoSplitContent}
-            onChange={setAutoSplitContent}
-            ariaLabelledBy={autoSplitLabelId}
-            ariaDescribedBy={autoSplitDescId}
-          />
-        </div>
+        <SettingsSwitchRow
+          title="Open content in split view"
+          description="Automatically open sources, notes, and learning tools in a right pane beside your active tab."
+          checked={autoSplitContent}
+          onChange={setAutoSplitContent}
+        />
       </div>
     </SettingsGroup>
   );

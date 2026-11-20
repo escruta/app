@@ -1,4 +1,5 @@
-import { Divider } from "@/components/ui";
+import { useId } from "react";
+import { Divider, Switch } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 interface SettingsSectionProps {
@@ -44,4 +45,59 @@ export function SettingsGroup({ title, description, children }: SettingsGroupPro
 
 export function SettingsDivider({ className }: { className?: string }) {
   return <Divider className={cn("-mx-4 my-0 md:-mx-6", className)} />;
+}
+
+interface SettingsSwitchRowProps {
+  title: string;
+  description: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  disabled?: boolean;
+  className?: string;
+}
+
+export function SettingsSwitchRow({
+  title,
+  description,
+  checked,
+  onChange,
+  disabled = false,
+  className,
+}: SettingsSwitchRowProps) {
+  const switchId = useId();
+  const labelId = useId();
+  const descriptionId = useId();
+
+  return (
+    <label
+      htmlFor={switchId}
+      className={cn(
+        "group flex items-center justify-between gap-4 px-4 py-3.5 transition-colors select-none",
+        disabled
+          ? "cursor-not-allowed"
+          : "cursor-pointer hover:bg-gray-50/80 dark:hover:bg-gray-800/40",
+        className,
+      )}
+    >
+      <span className={cn("block min-w-0", disabled && "opacity-50")}>
+        <span id={labelId} className="block text-sm font-medium text-gray-900 dark:text-gray-100">
+          {title}
+        </span>
+        <span
+          id={descriptionId}
+          className="mt-0.5 block text-xs leading-relaxed text-gray-500 dark:text-gray-400"
+        >
+          {description}
+        </span>
+      </span>
+      <Switch
+        id={switchId}
+        checked={checked}
+        onChange={onChange}
+        disabled={disabled}
+        ariaLabelledBy={labelId}
+        ariaDescribedBy={descriptionId}
+      />
+    </label>
+  );
 }
