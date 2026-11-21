@@ -13,6 +13,7 @@ import type {
   ConversationStatus,
 } from "@/interfaces";
 import {
+  DitherHalftoneBackground,
   SourcesCard,
   NotesCard,
   ChatCard,
@@ -367,6 +368,7 @@ export default function NotebookPage() {
   const [containerWidth, setContainerWidth] = useState<number>(0);
   const [activeResizer, setActiveResizer] = useState<"left" | "split" | null>(null);
   const sectionRef = useRef<HTMLElement>(null);
+  const tabsBarRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const { value: splitRatio, setValue: setSplitRatio } = useCookie<number>(
@@ -1434,7 +1436,10 @@ export default function NotebookPage() {
           }
         />
         <div className="relative flex-1 overflow-hidden">
-          <NotebookErrorState error={{ status: 404, message: "Invalid notebook link" }} />
+          <DitherHalftoneBackground />
+          <div className="relative z-10 h-full">
+            <NotebookErrorState error={{ status: 404, message: "Invalid notebook link" }} />
+          </div>
         </div>
       </div>
     );
@@ -1454,7 +1459,10 @@ export default function NotebookPage() {
           }
         />
         <div className="relative flex-1 overflow-hidden">
-          <NotebookErrorState error={error} />
+          <DitherHalftoneBackground />
+          <div className="relative z-10 h-full">
+            <NotebookErrorState error={error} />
+          </div>
         </div>
       </div>
     );
@@ -1474,7 +1482,8 @@ export default function NotebookPage() {
           }
         />
         <div className="relative flex flex-1 items-center justify-center overflow-hidden">
-          <Spinner />
+          <DitherHalftoneBackground />
+          <Spinner className="relative z-10" />
         </div>
       </div>
     );
@@ -1608,9 +1617,13 @@ export default function NotebookPage() {
 
   const centerColumn = (
     <div ref={centerRef} className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
-      <div className="flex h-12 shrink-0 overflow-hidden bg-white dark:bg-gray-950">
+      <div
+        ref={tabsBarRef}
+        className="relative flex h-12 shrink-0 overflow-hidden bg-gray-50/60 dark:bg-gray-900/40"
+      >
+        <DitherHalftoneBackground variant="tabs" interactionTargetRef={tabsBarRef} />
         <div
-          className="min-w-0 shrink-0 overflow-hidden"
+          className="relative z-1 min-w-0 shrink-0 overflow-hidden"
           style={{ width: splitActive ? `${effectiveSplitRatio}%` : "100%" }}
         >
           <ChromeTabs
@@ -1622,7 +1635,7 @@ export default function NotebookPage() {
             onClose={closeTab}
             onTabPointerDown={handleTabPointerDown}
             renderTabContextMenu={renderTabContextMenu}
-            className="h-12"
+            className="h-12 bg-transparent dark:bg-transparent"
             activeIndicatorClassName={
               splitActive
                 ? tabActiveIndicatorFor(!rightGroupKeys.includes(effectiveActiveKey))
@@ -1632,8 +1645,8 @@ export default function NotebookPage() {
         </div>
         {splitActive && effectiveSplitState && (
           <>
-            <div className="w-px shrink-0 bg-gray-200 dark:bg-gray-800" />
-            <div className="min-w-0 flex-1 overflow-hidden">
+            <div className="relative z-1 w-px shrink-0 bg-gray-200 dark:bg-gray-800" />
+            <div className="relative z-1 min-w-0 flex-1 overflow-hidden">
               <ChromeTabs
                 tabs={rightStripItems}
                 activeTabId={effectiveSplitState.rightKey}
@@ -1641,7 +1654,7 @@ export default function NotebookPage() {
                 onClose={closeTab}
                 onTabPointerDown={handleTabPointerDown}
                 renderTabContextMenu={renderTabContextMenu}
-                className="h-12"
+                className="h-12 bg-transparent dark:bg-transparent"
                 activeIndicatorClassName={tabActiveIndicatorFor(
                   rightGroupKeys.includes(effectiveActiveKey),
                 )}
