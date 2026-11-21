@@ -13,7 +13,6 @@ const BAYER_8 = [
   [63, 31, 55, 23, 61, 29, 53, 21],
 ] as const;
 
-const CELL_PX = 9.5;
 const LEVELS = 4;
 const FIELD_SCALE_PX = 420;
 const INV_SQRT2 = Math.SQRT1_2;
@@ -21,12 +20,14 @@ const TWO_PI = Math.PI * 2;
 const IDLE_FRAME_MS = 55;
 const ACTIVE_FRAME_MS = 33;
 
-const RADII = [
-  Math.sqrt(1 / LEVELS) * CELL_PX * 0.31,
-  Math.sqrt(2 / LEVELS) * CELL_PX * 0.31,
-  Math.sqrt(3 / LEVELS) * CELL_PX * 0.31,
-  Math.sqrt(4 / LEVELS) * CELL_PX * 0.31,
-] as const;
+function buildRadii(cellPx: number): readonly [number, number, number, number] {
+  return [
+    Math.sqrt(1 / LEVELS) * cellPx * 0.31,
+    Math.sqrt(2 / LEVELS) * cellPx * 0.31,
+    Math.sqrt(3 / LEVELS) * cellPx * 0.31,
+    Math.sqrt(4 / LEVELS) * cellPx * 0.31,
+  ] as const;
+}
 
 // Escruta blue palette ramp tuned to stay whisper-subtle behind workspace UI.
 const LIGHT_STYLES = [
@@ -42,6 +43,118 @@ const DARK_STYLES = [
   "rgba(3, 136, 252, 0.24)",
   "rgba(75, 171, 253, 0.26)",
 ] as const;
+
+const CRISP_LIGHT_STYLES = [
+  "rgba(133, 197, 255, 0.18)",
+  "rgba(75, 171, 253, 0.24)",
+  "rgba(39, 154, 253, 0.31)",
+  "rgba(3, 136, 252, 0.38)",
+] as const;
+
+const CRISP_DARK_STYLES = [
+  "rgba(1, 69, 129, 0.28)",
+  "rgba(2, 113, 211, 0.32)",
+  "rgba(3, 136, 252, 0.36)",
+  "rgba(75, 171, 253, 0.42)",
+] as const;
+
+export type DitherHalftoneVariant = "default" | "settings" | "tabs";
+
+interface HalftoneVariantConfig {
+  containerClassName: string;
+  cellPx: number;
+  lightStyles: readonly [string, string, string, string];
+  darkStyles: readonly [string, string, string, string];
+  baseHorizonNarrow: number;
+  baseHorizonWide: number;
+  sideSwellNarrow: number;
+  sideSwellWide: number;
+  anchorDepthNarrow: number;
+  anchorDepthWide: number;
+  topAnchorStrength: number;
+  topFadeEnd: number;
+  bottomFadeStart: number;
+  clearCenterX: number;
+  clearScaleXNarrow: number;
+  clearScaleXWide: number;
+  clearCenterY: number;
+  clearScaleY: number;
+  clearanceMin: number;
+  fieldGain: number;
+  pointerGain: number;
+}
+
+const VARIANT_CONFIGS: Record<DitherHalftoneVariant, HalftoneVariantConfig> = {
+  default: {
+    containerClassName: "inset-x-0 top-0 h-[36vh] min-h-48 max-h-80",
+    cellPx: 9.5,
+    lightStyles: LIGHT_STYLES,
+    darkStyles: DARK_STYLES,
+    baseHorizonNarrow: 0.38,
+    baseHorizonWide: 0.44,
+    sideSwellNarrow: 0.1,
+    sideSwellWide: 0.18,
+    anchorDepthNarrow: 0.16,
+    anchorDepthWide: 0.22,
+    topAnchorStrength: 0.08,
+    topFadeEnd: 0,
+    bottomFadeStart: 0.72,
+    clearCenterX: 0.5,
+    clearScaleXNarrow: 1.0,
+    clearScaleXWide: 1.35,
+    clearCenterY: 0.32,
+    clearScaleY: 1.4,
+    clearanceMin: 0.32,
+    fieldGain: 0.58,
+    pointerGain: 0.11,
+  },
+  settings: {
+    containerClassName: "inset-0 h-full",
+    cellPx: 9.5,
+    lightStyles: CRISP_LIGHT_STYLES,
+    darkStyles: CRISP_DARK_STYLES,
+    baseHorizonNarrow: 0.48,
+    baseHorizonWide: 0.56,
+    sideSwellNarrow: 0.24,
+    sideSwellWide: 0.36,
+    anchorDepthNarrow: 0.16,
+    anchorDepthWide: 0.22,
+    topAnchorStrength: 0.14,
+    topFadeEnd: 0,
+    bottomFadeStart: 0.8,
+    clearCenterX: 0.5,
+    clearScaleXNarrow: 1.0,
+    clearScaleXWide: 1.35,
+    clearCenterY: 0.42,
+    clearScaleY: 1.3,
+    clearanceMin: 0.2,
+    fieldGain: 0.78,
+    pointerGain: 0.18,
+  },
+  tabs: {
+    containerClassName: "inset-0 h-full",
+    cellPx: 7.5,
+    lightStyles: CRISP_LIGHT_STYLES,
+    darkStyles: CRISP_DARK_STYLES,
+    baseHorizonNarrow: 0.78,
+    baseHorizonWide: 0.84,
+    sideSwellNarrow: 0.14,
+    sideSwellWide: 0.22,
+    anchorDepthNarrow: 0.32,
+    anchorDepthWide: 0.38,
+    topAnchorStrength: 0.14,
+    topFadeEnd: 0,
+    bottomFadeStart: 0.84,
+    clearCenterX: 0.18,
+    clearScaleXNarrow: 1.1,
+    clearScaleXWide: 1.4,
+    clearCenterY: 0.5,
+    clearScaleY: 0.9,
+    clearanceMin: 0.62,
+    fieldGain: 0.78,
+    pointerGain: 0.22,
+  },
+};
 
 interface HalftoneGrid {
   width: number;
@@ -69,14 +182,19 @@ function mix(a: number, b: number, t: number): number {
   return a + (b - a) * t;
 }
 
-function buildHalftoneGrid(width: number, height: number): HalftoneGrid {
+function buildHalftoneGrid(
+  width: number,
+  height: number,
+  config: HalftoneVariantConfig,
+): HalftoneGrid {
   const isWide = smoothstep(520, 1100, width);
-  const baseHorizon = mix(0.38, 0.44, isWide);
-  const sideSwellMax = mix(0.1, 0.18, isWide);
-  const anchorDepth = mix(0.16, 0.22, isWide);
-  const clearScaleX = mix(1.0, 1.35, isWide);
+  const baseHorizon = mix(config.baseHorizonNarrow, config.baseHorizonWide, isWide);
+  const sideSwellMax = mix(config.sideSwellNarrow, config.sideSwellWide, isWide);
+  const anchorDepth = mix(config.anchorDepthNarrow, config.anchorDepthWide, isWide);
+  const clearScaleX = mix(config.clearScaleXNarrow, config.clearScaleXWide, isWide);
 
-  const k = INV_SQRT2 / CELL_PX;
+  const cellPx = config.cellPx;
+  const k = INV_SQRT2 / cellPx;
   const minCol = Math.floor(-height * k) - 1;
   const maxCol = Math.ceil(width * k) + 1;
   const minRow = -1;
@@ -100,10 +218,10 @@ function buildHalftoneGrid(width: number, height: number): HalftoneGrid {
 
     for (let col = minCol; col <= maxCol; col++) {
       const cx = col + 0.5;
-      const x = (cx + cy) * CELL_PX * INV_SQRT2;
-      const y = (cy - cx) * CELL_PX * INV_SQRT2;
+      const x = (cx + cy) * cellPx * INV_SQRT2;
+      const y = (cy - cx) * cellPx * INV_SQRT2;
 
-      if (x < -CELL_PX || x > width + CELL_PX || y < -CELL_PX || y > height + CELL_PX) {
+      if (x < -cellPx || x > width + cellPx || y < -cellPx || y > height + cellPx) {
         continue;
       }
 
@@ -115,13 +233,18 @@ function buildHalftoneGrid(width: number, height: number): HalftoneGrid {
       const sideSwell = Math.pow(edgeDist, 1.75) * sideSwellMax;
       const baseReach = baseHorizon + sideSwell;
 
-      const dxClear = (uvX - 0.5) * clearScaleX;
-      const dyClear = (topUv - 0.32) * 1.4;
+      const dxClear = (uvX - config.clearCenterX) * clearScaleX;
+      const dyClear = (topUv - config.clearCenterY) * config.clearScaleY;
       const clearDist = Math.hypot(dxClear, dyClear);
-      const clearance = mix(0.32, 1.0, smoothstep(0.24, 0.78, clearDist));
+      const clearance = mix(config.clearanceMin, 1.0, smoothstep(0.24, 0.78, clearDist));
 
-      const topAnchor = (1 - smoothstep(0, anchorDepth, topUv)) * 0.08;
-      const edgeFade = 1 - smoothstep(0.72, 0.96, topUv);
+      const topAnchor =
+        anchorDepth > 0 && config.topAnchorStrength > 0
+          ? (1 - smoothstep(0, anchorDepth, topUv)) * config.topAnchorStrength
+          : 0;
+      const topFade = config.topFadeEnd > 0 ? smoothstep(0, config.topFadeEnd, topUv) : 1;
+      const bottomFade = 1 - smoothstep(config.bottomFadeStart, 0.96, topUv);
+      const edgeFade = topFade * bottomFade;
 
       xs.push(x);
       ys.push(y);
@@ -158,12 +281,15 @@ function buildHalftoneGrid(width: number, height: number): HalftoneGrid {
 interface DitherHalftoneBackgroundProps {
   className?: string;
   interactionTargetRef?: RefObject<HTMLElement | null>;
+  variant?: DitherHalftoneVariant;
 }
 
 export function DitherHalftoneBackground({
   className,
   interactionTargetRef,
+  variant = "default",
 }: DitherHalftoneBackgroundProps) {
+  const config = VARIANT_CONFIGS[variant];
   const rootRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { effectiveTheme } = useTheme();
@@ -192,6 +318,7 @@ export function DitherHalftoneBackground({
     let startTime = performance.now();
     let lastDrawTime = 0;
 
+    const radii = buildRadii(config.cellPx);
     const buckets: [number[], number[], number[], number[]] = [[], [], [], []];
 
     const pointer = {
@@ -219,7 +346,7 @@ export function DitherHalftoneBackground({
         canvas.height = nextH;
       }
 
-      grid = buildHalftoneGrid(width, height);
+      grid = buildHalftoneGrid(width, height, config);
     };
 
     const renderFrame = (timeSec: number) => {
@@ -258,7 +385,7 @@ export function DitherHalftoneBackground({
       const hasPointer = pointer.active > 0.004;
       const pointerX = pointer.x;
       const pointerY = pointer.y;
-      const pointerStrength = pointer.active * 0.11;
+      const pointerStrength = pointer.active * config.pointerGain;
 
       const tHorizon1 = timeSec * 0.24;
       const tHorizon2 = timeSec * 0.16;
@@ -313,7 +440,10 @@ export function DitherHalftoneBackground({
         let field = 0;
         if (verticalMask > 0.001 || topAnchor[i] > 0.001) {
           const contour = 0.5 + 0.5 * Math.sin(n1 * 4.6 + n2 * 1.35 - cellTopUv * 4.6 + tContour);
-          field = (verticalMask * (0.32 + 0.68 * contour) + topAnchor[i]) * clearance[i] * 0.58;
+          field =
+            (verticalMask * (0.32 + 0.68 * contour) + topAnchor[i]) *
+            clearance[i] *
+            config.fieldGain;
         }
 
         field = (field + mouseGlow) * fade;
@@ -332,13 +462,13 @@ export function DitherHalftoneBackground({
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, width, height);
 
-      const styles = isDarkRef.current ? DARK_STYLES : LIGHT_STYLES;
+      const styles = isDarkRef.current ? config.darkStyles : config.lightStyles;
 
       for (let levelIndex = 0; levelIndex < LEVELS; levelIndex++) {
         const points = buckets[levelIndex];
         if (!points.length) continue;
 
-        const radius = RADII[levelIndex];
+        const radius = radii[levelIndex];
         ctx.fillStyle = styles[levelIndex];
         ctx.beginPath();
         for (let j = 0; j < points.length; j += 2) {
@@ -463,7 +593,7 @@ export function DitherHalftoneBackground({
         targetEl.removeEventListener("pointerleave", handlePointerLeave);
       }
     };
-  }, [effectiveReducedMotion, interactionTargetRef]);
+  }, [effectiveReducedMotion, interactionTargetRef, config]);
 
   useEffect(() => {
     redrawRef.current?.();
@@ -474,7 +604,8 @@ export function DitherHalftoneBackground({
       ref={rootRef}
       aria-hidden="true"
       className={cn(
-        "pointer-events-none absolute inset-x-0 top-0 z-0 h-[36vh] min-h-48 max-h-80 overflow-hidden select-none",
+        "pointer-events-none absolute z-0 overflow-hidden select-none",
+        config.containerClassName,
         !effectiveReducedMotion && "transition-opacity duration-700 ease-out",
         isReady ? "opacity-100" : "opacity-0",
         className,

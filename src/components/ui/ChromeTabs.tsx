@@ -56,7 +56,7 @@ export function ChromeTabs({
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gray-200 dark:bg-gray-800" />
 
       <div
-        className="relative z-10 flex min-w-0 flex-1 items-stretch gap-0.5 overflow-hidden px-2"
+        className="relative z-10 flex min-w-0 flex-1 items-stretch overflow-hidden px-2"
         onMouseDown={(e: MouseEvent<HTMLDivElement>) => {
           if (e.button === 1) e.preventDefault();
         }}
@@ -99,11 +99,11 @@ export function ChromeTabs({
               onMouseEnter={() => setHoveredId(tab.id)}
               onMouseLeave={() => setHoveredId((current) => (current === tab.id ? null : current))}
               className={cn(
-                "relative flex h-full min-w-0 max-w-56 flex-1 cursor-pointer touch-none items-center gap-2 rounded-t-xs border border-b-0 px-3 py-1 text-sm font-medium transition-[background-color,border-color,color] duration-200 select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-inset dark:focus-visible:ring-blue-500",
+                "relative flex h-full min-w-0 max-w-56 flex-1 cursor-pointer touch-none items-center gap-2 rounded-t-xs border px-3 py-1 text-sm font-medium transition-[background-color,border-color,color] duration-200 select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-inset dark:focus-visible:ring-blue-500",
                 {
-                  "border-gray-200 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100":
+                  "border-b-0 border-gray-200 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100":
                     active,
-                  "border-transparent text-gray-500 hover:bg-gray-200/50 hover:text-gray-800 dark:text-gray-400 dark:hover:bg-gray-800/40 dark:hover:text-gray-200":
+                  "border-transparent border-b-gray-200 bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-800 dark:border-b-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200":
                     !active,
                 },
               )}
@@ -111,7 +111,7 @@ export function ChromeTabs({
               {hasSeparator && (
                 <span
                   className={cn(
-                    "pointer-events-none absolute top-1/2 -left-0.5 h-4 w-px -translate-y-1/2 bg-gray-300 transition-opacity duration-200 dark:bg-gray-700",
+                    "pointer-events-none absolute top-1/2 -left-px h-4 w-px -translate-y-1/2 bg-gray-300 transition-opacity duration-200 dark:bg-gray-700",
                     { "opacity-0": separatorHidden, "opacity-100": !separatorHidden },
                   )}
                 />
