@@ -207,6 +207,7 @@ export function OverviewPanel({
                   size="sm"
                   onClick={() => regenerateSummary()}
                   disabled={isSummaryRegenerating}
+                  ariaLabel={isSummaryRegenerating ? "Regenerating summary" : "Regenerate summary"}
                 />
               </Tooltip>
             </>
@@ -266,7 +267,9 @@ export function OverviewPanel({
                 <StarsIcon />
               </div>
             </div>
-            <h3 className="text-foreground mb-2 text-lg font-semibold">No overview yet</h3>
+            <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
+              No overview yet
+            </h3>
             <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
               Summarize all the information gathered from your sources into one clear overview.
             </p>
@@ -308,7 +311,7 @@ export function OverviewPanel({
                   type="button"
                   onClick={item.onOpen}
                   title={item.title}
-                  className="group flex w-full items-center gap-2 rounded-sm px-1 py-1.5 text-left transition-colors hover:bg-gray-100/70 dark:hover:bg-gray-800/50"
+                  className="group flex w-full cursor-pointer items-center gap-2 rounded-xs px-1.5 py-1.5 text-left transition-colors duration-150 hover:bg-gray-100/70 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none focus-visible:ring-inset dark:hover:bg-gray-800/60 dark:focus-visible:ring-blue-400"
                 >
                   <span className="flex size-3.5 shrink-0 items-center justify-center text-gray-400 transition-colors group-hover:text-blue-500 dark:text-gray-500 dark:group-hover:text-blue-400">
                     {item.icon}

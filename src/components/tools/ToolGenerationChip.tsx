@@ -125,14 +125,13 @@ export function ToolGenerationChip({
     <>
       <div
         className={cn(
-          "group flex items-center gap-2.5 rounded-xs border p-2.5 transition-colors cursor-pointer select-none",
-          {
-            "bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700": isActive,
-            "bg-red-50/40 dark:bg-red-950/20 border-red-200 dark:border-red-800/60 hover:bg-red-50/70 dark:hover:bg-red-950/30":
-              !isActive && isFailed,
-            "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 hover:bg-gray-100/65 dark:hover:bg-gray-800":
-              !isActive && !isFailed,
-          },
+          "group flex cursor-pointer items-center gap-2.5 rounded-xs border p-2.5 transition-colors duration-150 select-none",
+          "focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none focus-visible:ring-inset dark:focus-visible:ring-blue-400",
+          isActive
+            ? "border-blue-300 bg-blue-50/70 dark:border-blue-700 dark:bg-blue-950/40"
+            : isFailed
+              ? "border-red-300 bg-red-50/40 hover:bg-red-50/70 dark:border-red-800/70 dark:bg-red-950/20 dark:hover:bg-red-950/30"
+              : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/60 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-600 dark:hover:bg-gray-800",
         )}
         onClick={handleActivate}
         onKeyDown={handleSelectKeyDown}
@@ -141,14 +140,14 @@ export function ToolGenerationChip({
       >
         <div
           className={cn(
-            "flex size-8 shrink-0 items-center justify-center rounded-xs transition-colors",
+            "flex size-8 shrink-0 items-center justify-center rounded-xs transition-colors duration-150",
             isGenerating
               ? "bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400"
               : isFailed
                 ? "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400"
                 : isActive
                   ? "bg-blue-100 text-blue-600 dark:bg-blue-900/60 dark:text-blue-300"
-                  : "bg-white text-blue-600 ring-1 ring-gray-200 dark:bg-gray-900 dark:text-blue-400 dark:ring-gray-700",
+                  : "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
           )}
         >
           {isGenerating ? (
@@ -161,7 +160,7 @@ export function ToolGenerationChip({
         </div>
 
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
+          <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
             {job.title || toolDef.title}
           </p>
           <p
@@ -177,7 +176,7 @@ export function ToolGenerationChip({
         </div>
 
         <div
-          className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"
+          className="shrink-0 opacity-100 transition-opacity duration-150 has-aria-expanded:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100"
           onClick={(e) => e.stopPropagation()}
         >
           <Menu>

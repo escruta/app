@@ -5,6 +5,7 @@ import { useFetch, useShortcut } from "@/hooks";
 import type { Note } from "@/interfaces";
 import { DeleteIcon, DotsVerticalIcon } from "@/components/icons";
 import {
+  Alert,
   Button,
   IconButton,
   Modal,
@@ -207,7 +208,9 @@ export function NoteEditor({
           </div>
         )}
         {error && (
-          <div className="text-sm text-red-500">We couldn't load this note: {error.message}</div>
+          <div className="p-4">
+            <Alert variant="danger" message={`We couldn't load this note: ${error.message}`} />
+          </div>
         )}
         {fullNote && !loading && !error && (
           <div className="flex flex-1 flex-col overflow-hidden">

@@ -15,7 +15,7 @@ type ResizeDirection =
   | "West";
 
 const WINDOW_BUTTON_CLASS =
-  "grid h-14 w-12 shrink-0 place-items-center text-gray-600 transition-colors hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 dark:text-gray-300 dark:hover:bg-gray-800";
+  "grid h-14 w-12 shrink-0 cursor-pointer place-items-center text-gray-600 transition-colors duration-150 hover:bg-gray-100 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100 dark:focus-visible:ring-blue-400";
 
 const RESIZE_HANDLES = [
   { direction: "North", className: "top-0 right-1 left-1 h-1 cursor-n-resize" },
@@ -123,7 +123,7 @@ function WindowButtons({
         type="button"
         className={cn(
           WINDOW_BUTTON_CLASS,
-          "hover:bg-red-600 hover:text-white dark:hover:bg-red-600 dark:hover:text-white",
+          "hover:bg-red-500 hover:text-white active:bg-red-600 dark:hover:bg-red-600 dark:hover:text-white dark:active:bg-red-700",
         )}
         aria-label="Close"
         title="Close"

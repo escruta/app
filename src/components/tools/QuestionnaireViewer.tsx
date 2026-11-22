@@ -154,23 +154,23 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
 
   return (
     <div className={cn("flex flex-col h-full", className)}>
-      <div className="flex shrink-0 flex-col gap-3 border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+      <div className="flex shrink-0 flex-col gap-3 border-b border-gray-200 px-6 py-4 dark:border-gray-800">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="flex flex-col">
               <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Progress</span>
-              <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+              <span className="text-sm font-semibold text-gray-900 tabular-nums dark:text-gray-100">
                 {score.answered} / {score.total}
               </span>
             </div>
 
-            <div className="h-8 w-px bg-gray-200 dark:bg-gray-600" />
+            <div className="h-8 w-px bg-gray-200 dark:bg-gray-800" />
 
             <div className="flex flex-col">
               <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Correct</span>
               <div className="flex items-center gap-1.5">
-                <CheckIcon className="size-3 text-green-500" />
-                <span className="text-sm font-semibold text-green-600 dark:text-green-400">
+                <CheckIcon className="size-3 text-green-600 dark:text-green-400" />
+                <span className="text-sm font-semibold text-green-600 tabular-nums dark:text-green-400">
                   {score.correct}
                 </span>
               </div>
@@ -184,7 +184,7 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
                 variant="ghost"
                 size="xs"
                 onClick={resetQuiz}
-                className="text-gray-500 hover:text-blue-500"
+                ariaLabel="Restart quiz"
               />
             </Tooltip>
           )}
@@ -224,7 +224,7 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
                 }
                 className="flex flex-col gap-4"
               >
-                <div className="rounded-xs border border-gray-200 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-800">
+                <div className="rounded-xs border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-900">
                   <div className="mb-3 flex items-center justify-between">
                     <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
                       Results
@@ -311,17 +311,17 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
       </div>
 
       {!showResults && (
-        <div className="shrink-0 border-t border-gray-200 px-6 py-3 dark:border-gray-700">
+        <div className="shrink-0 border-t border-gray-200 px-6 py-3 dark:border-gray-800">
           <div className="mx-auto grid max-w-3xl grid-cols-[1fr_auto_1fr] items-center">
             <div className="flex justify-start">
               <Tooltip text="Previous question" position="top">
                 <IconButton
                   icon={<ChevronIcon direction="left" className="size-4" />}
-                  variant="ghost"
+                  variant="secondary"
                   size="sm"
                   onClick={handlePrev}
                   disabled={currentIndex === 0}
-                  className="rounded-xs border border-gray-200 hover:border-blue-300 hover:bg-blue-50 disabled:opacity-30 disabled:hover:border-gray-200 disabled:hover:bg-transparent dark:border-gray-600 dark:hover:border-blue-500 dark:hover:bg-blue-900/20 dark:disabled:hover:border-gray-600"
+                  ariaLabel="Previous question"
                 />
               </Tooltip>
             </div>
@@ -336,7 +336,7 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
                       setDirection(idx > currentIndex ? 1 : -1);
                       setCurrentIndex(idx);
                     }}
-                    className="group p-0.5"
+                    className="group cursor-pointer rounded-xs p-0.5 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none dark:focus-visible:ring-blue-400"
                     aria-label={`Go to question ${idx + 1}`}
                   >
                     <div
@@ -385,11 +385,11 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
                 <Tooltip text="Next question" position="top">
                   <IconButton
                     icon={<ChevronIcon direction="right" className="size-4" />}
-                    variant="ghost"
+                    variant="secondary"
                     size="sm"
                     onClick={handleNext}
                     disabled={currentIndex === totalQuestions - 1}
-                    className="rounded-xs border border-gray-200 hover:border-blue-300 hover:bg-blue-50 disabled:opacity-30 disabled:hover:border-gray-200 disabled:hover:bg-transparent dark:border-gray-600 dark:hover:border-blue-500 dark:hover:bg-blue-900/20 dark:disabled:hover:border-gray-600"
+                    ariaLabel="Next question"
                   />
                 </Tooltip>
               )}
@@ -463,14 +463,16 @@ function QuestionContent({
         <AnimatePresence>
           {state.answered && state.isCorrect !== null && (
             <motion.span
-              initial={{ opacity: 0, scale: 0.8 }}
+              initial={effectiveReducedMotion ? false : { opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
+              transition={
+                effectiveReducedMotion ? { duration: 0 } : { duration: 0.15, ease: "easeOut" }
+              }
               className={cn(
-                "shrink-0 flex items-center gap-1 px-2 py-1 rounded-xs text-xs font-medium",
+                "flex shrink-0 items-center gap-1 rounded-xs px-2 py-1 text-xs font-medium",
                 state.isCorrect
-                  ? "bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300"
-                  : "bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300",
+                  ? "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300"
+                  : "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300",
               )}
             >
               {state.isCorrect ? (
@@ -499,40 +501,40 @@ function QuestionContent({
                 onClick={() => !state.answered && onMultipleChoiceSelect(oIndex)}
                 disabled={state.answered}
                 className={cn(
-                  "text-left p-3 rounded-xs border transition-all duration-200 group/option",
+                  "group/option rounded-xs border p-3 text-left transition-colors duration-150 focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/25 focus-visible:outline-none dark:focus-visible:border-blue-400 dark:focus-visible:ring-blue-400/25",
                   state.answered
                     ? oIndex === question.correctAnswerIndex
-                      ? "border-green-400 dark:border-green-500 bg-green-50 dark:bg-green-900/30"
+                      ? "border-green-400 bg-green-50 dark:border-green-500 dark:bg-green-900/30"
                       : oIndex === state.selectedOption
-                        ? "border-red-400 dark:border-red-500 bg-red-50 dark:bg-red-900/30"
-                        : "border-gray-100 dark:border-gray-700 opacity-40"
-                    : "border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 cursor-pointer",
+                        ? "border-red-400 bg-red-50 dark:border-red-500 dark:bg-red-900/30"
+                        : "border-gray-200 opacity-40 dark:border-gray-800"
+                    : "cursor-pointer border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/50 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-blue-500 dark:hover:bg-blue-950/30",
                 )}
               >
                 <div className="flex items-center gap-3">
                   <span
                     className={cn(
-                      "w-6 h-6 flex items-center justify-center rounded-xs border text-xs font-medium transition-all duration-200",
+                      "flex size-6 items-center justify-center rounded-xs border text-xs font-medium transition-colors duration-150",
                       state.answered && oIndex === question.correctAnswerIndex
                         ? "border-green-500 bg-green-500 text-white"
                         : state.answered && oIndex === state.selectedOption
                           ? "border-red-500 bg-red-500 text-white"
-                          : "border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 group-hover/option:border-blue-400 dark:group-hover/option:border-blue-500 group-hover/option:text-blue-500",
+                          : "border-gray-300 text-gray-500 group-hover/option:border-blue-400 group-hover/option:text-blue-500 dark:border-gray-600 dark:text-gray-400 dark:group-hover/option:border-blue-500",
                     )}
                   >
                     {state.answered && oIndex === question.correctAnswerIndex ? (
-                      <CheckIcon className="h-3.5 w-3.5" />
+                      <CheckIcon className="size-3.5" />
                     ) : state.answered && oIndex === state.selectedOption ? (
-                      <CloseIcon className="h-3.5 w-3.5" />
+                      <CloseIcon className="size-3.5" />
                     ) : (
                       String.fromCharCode(65 + oIndex)
                     )}
                   </span>
                   <span
                     className={cn(
-                      "text-sm transition-colors duration-200",
+                      "text-sm transition-colors duration-150",
                       state.answered && oIndex === question.correctAnswerIndex
-                        ? "text-green-700 dark:text-green-300 font-medium"
+                        ? "font-medium text-green-700 dark:text-green-300"
                         : state.answered && oIndex === state.selectedOption
                           ? "text-red-700 dark:text-red-300"
                           : "text-gray-700 dark:text-gray-200",
@@ -555,14 +557,14 @@ function QuestionContent({
                 onClick={() => !state.answered && onTrueFalseSelect(value)}
                 disabled={state.answered}
                 className={cn(
-                  "flex-1 p-3 rounded-xs border font-medium text-sm transition-all duration-200",
+                  "flex-1 rounded-xs border p-3 text-sm font-medium transition-colors duration-150 focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/25 focus-visible:outline-none dark:focus-visible:border-blue-400 dark:focus-visible:ring-blue-400/25",
                   state.answered
                     ? value === question.correctAnswerBoolean
-                      ? "border-green-400 dark:border-green-500 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300"
+                      ? "border-green-400 bg-green-50 text-green-700 dark:border-green-500 dark:bg-green-900/30 dark:text-green-300"
                       : value === state.selectedBoolean
-                        ? "border-red-400 dark:border-red-500 bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300"
-                        : "border-gray-100 dark:border-gray-700 opacity-40 text-gray-500 dark:text-gray-400"
-                    : "border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 cursor-pointer text-gray-700 dark:text-gray-200",
+                        ? "border-red-400 bg-red-50 text-red-700 dark:border-red-500 dark:bg-red-900/30 dark:text-red-300"
+                        : "border-gray-200 text-gray-500 opacity-40 dark:border-gray-800 dark:text-gray-400"
+                    : "cursor-pointer border-gray-200 bg-white text-gray-700 hover:border-blue-300 hover:bg-blue-50/50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:border-blue-500 dark:hover:bg-blue-950/30",
                 )}
               >
                 <div className="flex items-center justify-center gap-2">
@@ -587,12 +589,9 @@ function QuestionContent({
               disabled={state.answered}
               placeholder="Type your answer..."
               className={cn(
-                "w-full p-3 rounded-xs border resize-none text-sm transition-all duration-200",
-                "bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100",
-                "border-gray-200 dark:border-gray-600",
-                "placeholder:text-gray-400 dark:placeholder:text-gray-500",
-                "focus:outline-none focus:border-blue-400 dark:focus:border-blue-500 focus:ring-1 focus:ring-blue-400/30 dark:focus:ring-blue-500/30",
-                { "opacity-60 cursor-not-allowed": state.answered },
+                "w-full resize-none rounded-xs border border-gray-300 bg-white p-3 text-sm text-gray-900 shadow-xs transition-[border-color,box-shadow] duration-150 placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-blue-400 dark:focus:ring-blue-400/20",
+                !state.answered && "hover:border-gray-400 dark:hover:border-gray-600",
+                state.answered && "cursor-not-allowed bg-gray-50 opacity-50 dark:bg-gray-950",
               )}
               rows={3}
             />

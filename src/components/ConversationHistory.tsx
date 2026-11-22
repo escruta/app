@@ -297,6 +297,7 @@ export function ConversationHistory({
               variant="primary"
               size="sm"
               onClick={onNewConversation}
+              ariaLabel="New conversation"
             />
           </Tooltip>
         </>
@@ -329,7 +330,9 @@ export function ConversationHistory({
                 <SearchIcon />
               </div>
             </div>
-            <h3 className="text-foreground mb-2 text-lg font-semibold">No results</h3>
+            <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
+              No results
+            </h3>
             <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
               No conversations match that, try another search.
             </p>
@@ -341,7 +344,9 @@ export function ConversationHistory({
                 <ChatIcon />
               </div>
             </div>
-            <h3 className="text-foreground mb-2 text-lg font-semibold">No conversations yet</h3>
+            <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
+              No conversations yet
+            </h3>
             <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
               Start a new conversation to chat with your documents.
             </p>

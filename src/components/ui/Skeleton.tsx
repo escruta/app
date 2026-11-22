@@ -36,10 +36,10 @@ interface ShimmerProps {
 function Shimmer({ className, animate = true, delay = 0, style }: ShimmerProps) {
   return (
     <div
+      aria-hidden="true"
       className={cn(
-        "relative overflow-hidden bg-gray-200/80 dark:bg-gray-800/80",
-        "rounded-xs isolate",
-        { "animate-pulse": animate },
+        "relative isolate overflow-hidden rounded-xs bg-gray-200/80 dark:bg-gray-800/80",
+        animate && "animate-pulse",
         className,
       )}
       style={{
@@ -49,10 +49,8 @@ function Shimmer({ className, animate = true, delay = 0, style }: ShimmerProps) 
     >
       {animate && (
         <div
-          className="animate-shimmer absolute inset-0 z-10"
+          className="animate-shimmer absolute inset-0 z-10 bg-linear-to-r from-transparent via-white/50 to-transparent dark:via-white/10"
           style={{
-            background:
-              "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%)",
             animationDelay: `${delay}s`,
           }}
         />
@@ -165,14 +163,15 @@ interface CardSkeletonProps {
 }
 
 export function CardSkeleton({ viewMode = "grid" }: CardSkeletonProps) {
-  const baseClasses = cn(
-    "rounded-xs border bg-white dark:bg-gray-900",
-    "border-gray-200 dark:border-gray-700",
-  );
+  const baseClasses =
+    "rounded-xs border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900";
 
   if (viewMode === "grid") {
     return (
-      <div className={cn(baseClasses, "h-40 w-full p-4 flex flex-col justify-between")}>
+      <div
+        aria-hidden="true"
+        className={cn(baseClasses, "flex h-40 w-full flex-col justify-between p-4")}
+      >
         <div className="flex items-start justify-between">
           <Shimmer style={{ width: 32, height: 32 }} />
           <Shimmer style={{ width: 20, height: 20 }} delay={0.05} />
@@ -187,7 +186,10 @@ export function CardSkeleton({ viewMode = "grid" }: CardSkeletonProps) {
   }
 
   return (
-    <div className={cn(baseClasses, "h-20 w-full p-4 flex flex-row items-center justify-between")}>
+    <div
+      aria-hidden="true"
+      className={cn(baseClasses, "flex h-20 w-full flex-row items-center justify-between p-4")}
+    >
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <Shimmer style={{ width: 32, height: 32 }} />
         <div className="min-w-0 flex-1">

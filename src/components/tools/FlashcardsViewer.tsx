@@ -123,23 +123,23 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
       onKeyDown={handleKeyDown}
       tabIndex={0}
     >
-      <div className="flex shrink-0 flex-col gap-3 border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+      <div className="flex shrink-0 flex-col gap-3 border-b border-gray-200 px-6 py-4 dark:border-gray-800">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="flex flex-col">
               <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Progress</span>
-              <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+              <span className="text-sm font-semibold text-gray-900 tabular-nums dark:text-gray-100">
                 {currentIndex + 1} / {totalCards}
               </span>
             </div>
 
-            <div className="h-8 w-px bg-gray-200 dark:bg-gray-600" />
+            <div className="h-8 w-px bg-gray-200 dark:bg-gray-800" />
 
             <div className="flex flex-col">
               <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Learned</span>
               <div className="flex items-center gap-1.5">
-                <CheckIcon className="size-3 text-green-500" />
-                <span className="text-sm font-semibold text-green-600 dark:text-green-400">
+                <CheckIcon className="size-3 text-green-600 dark:text-green-400" />
+                <span className="text-sm font-semibold text-green-600 tabular-nums dark:text-green-400">
                   {knownCount}
                 </span>
               </div>
@@ -153,7 +153,7 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
                 variant="ghost"
                 size="xs"
                 onClick={handleRestart}
-                className="text-gray-500 hover:text-blue-500"
+                ariaLabel="Restart deck"
               />
             </Tooltip>
           )}
@@ -211,12 +211,11 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
               >
                 <div
                   className={cn(
-                    "absolute inset-0 backface-hidden rounded-xs border-2 p-6",
-                    "bg-white dark:bg-gray-800",
-                    "flex flex-col items-center justify-center text-center",
+                    "absolute inset-0 rounded-xs border bg-white p-6 transition-colors duration-150 backface-hidden dark:bg-gray-900",
+                    "flex flex-col items-center justify-center text-center shadow-xs",
                     knownCards.has(currentIndex)
-                      ? "border-green-400 dark:border-green-500"
-                      : "border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500",
+                      ? "border-green-500 dark:border-green-500"
+                      : "border-gray-200 hover:border-blue-300 dark:border-gray-700 dark:hover:border-blue-500",
                   )}
                 >
                   <div className="absolute top-3 left-3 flex items-center gap-2">
@@ -249,8 +248,8 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
 
                 <div
                   className={cn(
-                    "absolute inset-0 backface-hidden rounded-xs rotate-y-180 border-2 p-6",
-                    "bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-600",
+                    "absolute inset-0 rotate-y-180 rounded-xs border p-6 backface-hidden shadow-xs",
+                    "border-blue-300 bg-blue-50 dark:border-blue-600 dark:bg-blue-950/30",
                     "flex flex-col items-center justify-center text-center",
                   )}
                 >
@@ -270,17 +269,17 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
         </div>
       </div>
 
-      <div className="flex shrink-0 flex-col items-center gap-3 border-t border-gray-200 px-6 py-3 dark:border-gray-700">
+      <div className="flex shrink-0 flex-col items-center gap-3 border-t border-gray-200 px-6 py-3 dark:border-gray-800">
         <div className="mx-auto grid w-full max-w-2xl grid-cols-[1fr_auto_1fr] items-center">
           <div className="flex justify-start">
             <Tooltip text="Previous card" position="top">
               <IconButton
                 icon={<ChevronIcon direction="left" className="size-4" />}
-                variant="ghost"
+                variant="secondary"
                 size="sm"
                 onClick={handlePrev}
                 disabled={currentIndex === 0}
-                className="rounded-xs border border-gray-200 hover:border-blue-300 hover:bg-blue-50 disabled:opacity-30 disabled:hover:border-gray-200 disabled:hover:bg-transparent dark:border-gray-600 dark:hover:border-blue-500 dark:hover:bg-blue-900/20 dark:disabled:hover:border-gray-600"
+                ariaLabel="Previous card"
               />
             </Tooltip>
           </div>
@@ -301,11 +300,11 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
             <Tooltip text="Next card" position="top">
               <IconButton
                 icon={<ChevronIcon direction="right" className="size-4" />}
-                variant="ghost"
+                variant="secondary"
                 size="sm"
                 onClick={handleNext}
                 disabled={currentIndex === totalCards - 1}
-                className="rounded-xs border border-gray-200 hover:border-blue-300 hover:bg-blue-50 disabled:opacity-30 disabled:hover:border-gray-200 disabled:hover:bg-transparent dark:border-gray-600 dark:hover:border-blue-500 dark:hover:bg-blue-900/20 dark:disabled:hover:border-gray-600"
+                ariaLabel="Next card"
               />
             </Tooltip>
           </div>
@@ -321,7 +320,7 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
                 setCurrentIndex(idx);
                 setIsFlipped(false);
               }}
-              className="group p-0.5"
+              className="group cursor-pointer rounded-xs p-0.5 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none dark:focus-visible:ring-blue-400"
               aria-label={`Go to card ${idx + 1}`}
             >
               <div

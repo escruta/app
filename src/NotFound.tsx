@@ -1,14 +1,16 @@
-import { Link } from "react-router";
+import { useNavigate } from "react-router";
 import { Button } from "@/components/ui";
 import { useAccessibility } from "@/hooks";
+import { EASE_OUT } from "@/lib/motion";
 import { motion } from "motion/react";
 
 export function NotFound() {
+  const navigate = useNavigate();
   const { effectiveReducedMotion } = useAccessibility();
   const fadeInSlight = {
     initial: { opacity: 0, y: 10 },
     animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.4, ease: "easeOut" },
+    transition: { duration: 0.35, ease: EASE_OUT },
   } as const;
 
   return (
@@ -54,9 +56,9 @@ export function NotFound() {
           }
           className="pt-2"
         >
-          <Link to="/">
-            <Button variant="secondary">Return to the application</Button>
-          </Link>
+          <Button variant="secondary" onClick={() => navigate("/")}>
+            Return to the application
+          </Button>
         </motion.div>
       </div>
     </main>

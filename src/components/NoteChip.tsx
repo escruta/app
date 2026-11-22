@@ -233,14 +233,12 @@ export function NoteChip({
     <>
       <div
         className={cn(
-          "group relative overflow-hidden rounded-xs border cursor-pointer",
-          "transition-all duration-300 ease-out select-none",
-          "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1",
-          "dark:focus:ring-offset-gray-900",
+          "group relative cursor-pointer overflow-hidden rounded-xs border",
+          "transition-colors duration-150 select-none",
+          "focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none focus-visible:ring-inset dark:focus-visible:ring-blue-400",
           "bg-white dark:bg-gray-900",
-          "border-gray-200 dark:border-gray-700",
-          "hover:bg-blue-50 dark:hover:bg-gray-800",
-          "hover:border-blue-300 dark:hover:border-gray-500",
+          "border-gray-200 dark:border-gray-800",
+          "hover:border-blue-300 hover:bg-blue-50/60 dark:hover:border-gray-600 dark:hover:bg-gray-800",
           { "opacity-40": isDragging },
           className,
         )}
@@ -284,7 +282,7 @@ export function NoteChip({
           </div>
           {(notebookId || onRename || onDelete) && (
             <div
-              className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"
+              className="shrink-0 opacity-100 transition-opacity duration-150 has-aria-expanded:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100"
               onClick={(e) => e.stopPropagation()}
             >
               <Menu>

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback, useLayoutEffect, useId } from
 import { createPortal } from "react-dom";
 import { useShortcut, useAccessibility } from "@/hooks";
 import { cn } from "@/lib/utils";
+import { EASE_OUT } from "@/lib/motion";
 import { motion, AnimatePresence } from "motion/react";
 import { CheckIcon, ChevronIcon } from "@/components/icons";
 
@@ -44,7 +45,9 @@ export function Dropdown<T>({
   const menuRef = useRef<HTMLDivElement>(null);
   const typeaheadRef = useRef("");
   const typeaheadTimeoutRef = useRef<number | null>(null);
-  const listboxId = `dropdown-${useId().replace(/:/g, "")}-listbox`;
+  const baseId = useId().replace(/:/g, "");
+  const labelId = `dropdown-${baseId}-label`;
+  const listboxId = `dropdown-${baseId}-listbox`;
   const optionId = (index: number) => `${listboxId}-option-${index}`;
   const [position, setPosition] = useState<{
     top?: number;
@@ -129,10 +132,11 @@ export function Dropdown<T>({
       }
     }
 
+    const viewportPadding = 8;
     if (align === "right") {
-      pos.right = Math.max(0, window.innerWidth - rect.right);
+      pos.right = Math.max(viewportPadding, window.innerWidth - rect.right);
     } else {
-      pos.left = Math.max(0, rect.left);
+      pos.left = Math.max(viewportPadding, rect.left);
     }
 
     setPlacedUp(resolvedUp);
@@ -296,7 +300,10 @@ export function Dropdown<T>({
   return (
     <div className={cn("flex items-center gap-3", className)}>
       {label && (
-        <p className="text-sm font-medium whitespace-nowrap text-gray-700 select-none dark:text-gray-200">
+        <p
+          id={labelId}
+          className="text-sm font-medium whitespace-nowrap text-gray-700 select-none dark:text-gray-200"
+        >
           {label}
         </p>
       )}
@@ -310,53 +317,42 @@ export function Dropdown<T>({
           disabled={disabled}
           role="combobox"
           aria-label={ariaLabel}
+          aria-labelledby={!ariaLabel && label ? labelId : undefined}
           aria-haspopup="listbox"
           aria-expanded={isOpen}
           aria-controls={isOpen ? listboxId : undefined}
           aria-activedescendant={isOpen && activeIndex >= 0 ? optionId(activeIndex) : undefined}
           className={cn(
-            "relative w-full text-left",
-            "bg-white dark:bg-gray-900",
-            "border border-gray-300 dark:border-gray-600",
-            "rounded-xs",
-            "text-gray-900 dark:text-gray-100",
-            "focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900",
-            "transition-all duration-200 ease-in-out",
-            "select-none",
-            {
-              "h-8 px-2 pr-7 text-xs": size === "sm",
-              "h-10 px-3 pr-10 text-sm": size === "md",
-              "hover:border-blue-500 hover:ring-1 hover:ring-blue-300 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-gray-900 dark:hover:border-blue-400 cursor-pointer":
-                !disabled,
-              "opacity-50 cursor-not-allowed bg-gray-50 dark:bg-gray-900 hover:ring-0": disabled,
-              "ring-2 ring-blue-500 dark:ring-blue-400 border-blue-500 dark:border-blue-400 ring-offset-2 ring-offset-white dark:ring-offset-gray-900":
-                isOpen && !disabled,
-            },
+            "relative w-full rounded-xs border border-gray-300 bg-white text-left text-gray-900 shadow-xs select-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100",
+            "transition-[background-color,border-color,color,box-shadow] duration-150",
+            "focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/25 focus-visible:outline-none dark:focus-visible:border-blue-400 dark:focus-visible:ring-blue-400/25",
+            size === "sm" ? "h-8 px-2.5 pr-7 text-xs" : "h-10 px-3 pr-9 text-sm",
+            !disabled && "cursor-pointer hover:border-gray-400 dark:hover:border-gray-600",
+            disabled && "cursor-not-allowed bg-gray-50 opacity-50 dark:bg-gray-950",
+            isOpen &&
+              !disabled &&
+              "border-blue-500 ring-2 ring-blue-500/20 dark:border-blue-400 dark:ring-blue-400/20",
           )}
         >
           <span
             className={cn(
               "block truncate [&_svg]:inline-block [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:align-middle",
-              {
-                "text-gray-500 dark:text-gray-400 font-normal": selectedOption == null,
-              },
+              selectedOption == null && "font-normal text-gray-400 dark:text-gray-500",
             )}
           >
             {selectedOption != null ? renderOption(selectedOption as T) : placeholder}
           </span>
 
           <span
-            className={cn("pointer-events-none absolute inset-y-0 right-0 flex items-center", {
-              "pr-2": size === "sm",
-              "pr-3": size !== "sm",
-            })}
+            className={cn(
+              "pointer-events-none absolute inset-y-0 right-0 flex items-center",
+              size === "sm" ? "pr-2" : "pr-2.5",
+            )}
           >
             <ChevronIcon
+              aria-hidden="true"
               direction={isOpen !== up ? "up" : "down"}
-              className={cn("text-gray-400 transition-transform duration-200 dark:text-gray-400", {
-                "size-4": size === "sm",
-                "size-5": size !== "sm",
-              })}
+              className="size-4 text-gray-400 transition-transform duration-150 dark:text-gray-500"
             />
           </span>
         </button>
@@ -370,16 +366,11 @@ export function Dropdown<T>({
                 role="listbox"
                 aria-label={ariaLabel ?? label}
                 aria-activedescendant={activeIndex >= 0 ? optionId(activeIndex) : undefined}
-                initial={effectiveReducedMotion ? false : { opacity: 0, y: placedUp ? 10 : -10 }}
+                initial={effectiveReducedMotion ? false : { opacity: 0, y: placedUp ? 6 : -6 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={effectiveReducedMotion ? undefined : { opacity: 0, y: placedUp ? 10 : -10 }}
+                exit={effectiveReducedMotion ? undefined : { opacity: 0, y: placedUp ? 6 : -6 }}
                 transition={
-                  effectiveReducedMotion
-                    ? { duration: 0 }
-                    : {
-                        duration: 0.2,
-                        ease: "easeOut",
-                      }
+                  effectiveReducedMotion ? { duration: 0 } : { duration: 0.14, ease: EASE_OUT }
                 }
                 style={{
                   position: "fixed",
@@ -387,11 +378,10 @@ export function Dropdown<T>({
                   ...position,
                 }}
                 className={cn(
-                  "min-w-40 w-max",
-                  "bg-white dark:bg-gray-900",
-                  "border border-gray-300 dark:border-gray-600",
-                  "rounded-xs shadow-lg shadow-gray-500/10 dark:shadow-black/20 ring-1 ring-gray-500/5 dark:ring-gray-500/10",
-                  "max-h-60 overflow-auto max-w-xs sm:max-w-sm",
+                  "max-h-60 w-max max-w-xs overflow-auto rounded-xs sm:max-w-sm",
+                  size === "sm" ? "min-w-32" : "min-w-36",
+                  "border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900",
+                  "shadow-lg ring-1 shadow-gray-950/10 ring-black/5 dark:shadow-black/40 dark:ring-white/5",
                 )}
               >
                 <div className="flex flex-col gap-0.5 p-1.5">
@@ -410,18 +400,16 @@ export function Dropdown<T>({
                         onMouseEnter={() => setActiveIndex(index)}
                         onClick={() => handleSelect(option)}
                         className={cn(
-                          "relative flex w-full items-center gap-2 text-left font-medium",
-                          "text-gray-700 dark:text-gray-200",
-                          "transition-all duration-200 outline-none select-none cursor-pointer rounded-xs",
-                          "active:bg-blue-100 dark:active:bg-gray-600",
-                          {
-                            "px-2 py-1.5 text-xs": size === "sm",
-                            "px-3 py-2 text-sm": size !== "sm",
-                            "bg-blue-50 text-blue-600 ring-1 ring-blue-300 dark:bg-gray-700 dark:text-blue-400":
-                              isActive && !isSelected,
-                            "bg-blue-100 text-blue-700 dark:bg-gray-700 dark:text-blue-300":
-                              isSelected,
-                          },
+                          "relative flex w-full cursor-pointer items-center gap-2 rounded-xs text-left font-medium transition-colors duration-150 outline-none select-none",
+                          "active:bg-blue-100 dark:active:bg-gray-700",
+                          size === "sm" ? "px-2 py-1.5 text-xs" : "px-3 py-2 text-sm",
+                          isSelected
+                            ? isActive
+                              ? "bg-blue-100/80 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300"
+                              : "bg-blue-50/80 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
+                            : isActive
+                              ? "bg-blue-50 text-blue-600 dark:bg-gray-800 dark:text-blue-400"
+                              : "text-gray-700 dark:text-gray-200",
                         )}
                       >
                         <span className="flex-1 truncate pr-5 [&_svg]:inline-block [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:align-middle">
@@ -429,9 +417,7 @@ export function Dropdown<T>({
                         </span>
                         {isSelected && (
                           <span className="absolute inset-y-0 right-0 flex items-center pr-2 text-blue-600 dark:text-blue-400">
-                            <CheckIcon
-                              className={cn({ "size-4": size === "sm", "size-5": size !== "sm" })}
-                            />
+                            <CheckIcon aria-hidden="true" className="size-4" />
                           </span>
                         )}
                       </button>

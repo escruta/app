@@ -108,7 +108,7 @@ export function SourceGroupSection({
         <button
           type="button"
           onClick={() => setCollapsed(!collapsed)}
-          className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-xs px-1 py-1.5 text-left outline-none"
+          className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-xs px-1.5 py-1.5 text-left transition-colors duration-150 hover:bg-gray-100/70 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none focus-visible:ring-inset dark:hover:bg-gray-800/60 dark:focus-visible:ring-blue-400"
           aria-expanded={!collapsed}
         >
           <span className="shrink-0 text-gray-400 dark:text-gray-500">
@@ -121,7 +121,10 @@ export function SourceGroupSection({
             {group.title}
           </span>
         </button>
-        <div onClick={(e) => e.stopPropagation()}>
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="shrink-0 opacity-100 transition-opacity duration-150 has-aria-expanded:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100"
+        >
           <Menu>
             <Tooltip text="Group options" position="top">
               <MenuTrigger>
@@ -130,7 +133,6 @@ export function SourceGroupSection({
                   size="sm"
                   ariaLabel="Group options"
                   variant="ghost"
-                  className="opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
                 />
               </MenuTrigger>
             </Tooltip>

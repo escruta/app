@@ -836,7 +836,7 @@ export default function HomePage() {
                             data-drop-folder-root="true"
                             onClick={handleExitFolder}
                             className={cn(
-                              "-ml-1.5 inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xs px-1.5 py-0.5 transition-colors focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:outline-none",
+                              "-ml-1.5 inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xs px-1.5 py-0.5 transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none dark:focus-visible:ring-blue-400",
                               notebookDrag?.targetFolderId === null
                                 ? "bg-blue-50 text-blue-600 ring-1 ring-blue-400 dark:bg-blue-950/60 dark:text-blue-400 dark:ring-blue-500"
                                 : "text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400",

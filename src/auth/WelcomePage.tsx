@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth, useShortcut } from "@/hooks";
-import { Button, Divider, Spinner, TextField } from "@/components/ui";
+import { Alert, Button, Divider, Spinner, TextField } from "@/components/ui";
 import { BACKEND_BASE_URL } from "@/config";
 import { appFetch } from "@/lib/http";
 
@@ -299,11 +299,7 @@ export function WelcomePage() {
           </div>
         )}
 
-        {error && (
-          <p className="mt-3 text-sm text-red-500" role="alert">
-            {error}
-          </p>
-        )}
+        {error && <Alert variant="danger" message={error} className="mt-3" />}
       </div>
     </div>
   );

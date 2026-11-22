@@ -448,7 +448,7 @@ export function ChatMessage({
                     <IconButton
                       variant="ghost"
                       size="xs"
-                      className="shrink-0 opacity-0 transition-opacity duration-150 group-focus-within:opacity-100 group-hover:opacity-100"
+                      className="shrink-0 opacity-100 transition-opacity duration-150 sm:opacity-0 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100"
                       onClick={() => onStartEdit(index)}
                       ariaLabel="Edit message"
                       icon={<EditIcon />}
@@ -464,11 +464,17 @@ export function ChatMessage({
                       "shrink-0 transition-opacity duration-150",
                       copied
                         ? "opacity-100"
-                        : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100",
+                        : "opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100",
                     )}
                     onClick={handleCopyMessage}
                     ariaLabel={copied ? "Copied message" : "Copy message"}
-                    icon={copied ? <CheckIcon className="text-green-500" /> : <CopyIcon />}
+                    icon={
+                      copied ? (
+                        <CheckIcon className="text-green-600 dark:text-green-400" />
+                      ) : (
+                        <CopyIcon />
+                      )
+                    }
                   />
                 </Tooltip>
               </div>
@@ -574,7 +580,6 @@ export function ChatMessage({
                   <IconButton
                     variant="secondary"
                     size="sm"
-                    className="border p-2"
                     onClick={handleCopyMessage}
                     ariaLabel={copied ? "Copied response" : "Copy response"}
                     icon={
@@ -587,7 +592,11 @@ export function ChatMessage({
                           transition={effectiveReducedMotion ? { duration: 0 } : { duration: 0.15 }}
                           className="flex size-full items-center justify-center [&>svg]:size-full"
                         >
-                          {copied ? <CheckIcon className="text-green-500" /> : <CopyIcon />}
+                          {copied ? (
+                            <CheckIcon className="text-green-600 dark:text-green-400" />
+                          ) : (
+                            <CopyIcon />
+                          )}
                         </motion.span>
                       </AnimatePresence>
                     }
@@ -609,7 +618,6 @@ export function ChatMessage({
                   <IconButton
                     variant="secondary"
                     size="sm"
-                    className="border p-2"
                     onClick={() => void handleSaveNote()}
                     disabled={saveNoteState === "saving"}
                     ariaLabel="Save response as note"
@@ -629,7 +637,7 @@ export function ChatMessage({
                             className="flex size-full items-center justify-center [&>svg]:size-full"
                           >
                             {saveNoteState === "saved" ? (
-                              <CheckIcon className="text-green-500" />
+                              <CheckIcon className="text-green-600 dark:text-green-400" />
                             ) : (
                               <NoteIcon />
                             )}
@@ -646,7 +654,6 @@ export function ChatMessage({
                   <IconButton
                     variant="secondary"
                     size="sm"
-                    className="border p-2"
                     onClick={() => onRegenerate(index)}
                     disabled={!canRegenerate}
                     ariaLabel="Regenerate response"

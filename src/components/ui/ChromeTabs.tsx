@@ -56,6 +56,7 @@ export function ChromeTabs({
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gray-200 dark:bg-gray-800" />
 
       <div
+        role="tablist"
         className="relative z-10 flex min-w-0 flex-1 items-stretch overflow-hidden px-2"
         onMouseDown={(e: MouseEvent<HTMLDivElement>) => {
           if (e.button === 1) e.preventDefault();
@@ -99,7 +100,7 @@ export function ChromeTabs({
               onMouseEnter={() => setHoveredId(tab.id)}
               onMouseLeave={() => setHoveredId((current) => (current === tab.id ? null : current))}
               className={cn(
-                "relative flex h-full min-w-0 max-w-56 flex-1 cursor-pointer touch-none items-center gap-2 rounded-t-xs border px-3 py-1 text-sm font-medium transition-[background-color,border-color,color] duration-200 select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-inset dark:focus-visible:ring-blue-500",
+                "relative flex h-full min-w-0 max-w-56 flex-1 cursor-pointer touch-none items-center gap-2 rounded-t-xs border px-3 py-1 text-sm font-medium transition-[background-color,border-color,color] duration-150 select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset dark:focus-visible:ring-blue-400",
                 {
                   "border-b-0 border-gray-200 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-100":
                     active,
@@ -110,19 +111,19 @@ export function ChromeTabs({
             >
               {hasSeparator && (
                 <span
+                  aria-hidden="true"
                   className={cn(
-                    "pointer-events-none absolute top-1/2 -left-px h-4 w-px -translate-y-1/2 bg-gray-300 transition-opacity duration-200 dark:bg-gray-700",
+                    "pointer-events-none absolute top-1/2 -left-px h-4 w-px -translate-y-1/2 bg-gray-300 transition-opacity duration-150 dark:bg-gray-700",
                     { "opacity-0": separatorHidden, "opacity-100": !separatorHidden },
                   )}
                 />
               )}
               {active && (
                 <span
+                  aria-hidden="true"
                   className={cn(
                     "pointer-events-none absolute -inset-x-px -top-px h-0.5 rounded-t-xs",
-                    {
-                      "bg-blue-500 dark:bg-blue-400": !activeIndicatorClassName,
-                    },
+                    activeIndicatorClassName ?? "bg-blue-500 dark:bg-blue-400",
                   )}
                 />
               )}
@@ -153,8 +154,8 @@ export function ChromeTabs({
                     variant="ghost"
                     size="xs"
                     onClick={() => onClose(tab.id)}
-                    aria-label="Close tab"
-                    className="hover:ring-0 hover:ring-offset-0 focus-visible:ring-offset-0 focus-visible:ring-inset"
+                    ariaLabel="Close tab"
+                    className="focus-visible:ring-inset"
                   />
                 </span>
               )}

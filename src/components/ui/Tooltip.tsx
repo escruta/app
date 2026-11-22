@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { useState, useRef, useLayoutEffect, useEffect, isValidElement } from "react";
 import { useAccessibility } from "@/hooks";
 import { cn } from "@/lib/utils";
+import { EASE_OUT } from "@/lib/motion";
 import { createPortal } from "react-dom";
 
 interface TooltipProps {
@@ -31,8 +32,8 @@ export function Tooltip({
   const [arrowOffset, setArrowOffset] = useState({ x: 0, y: 0 });
   const triggerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
-  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const showTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hideTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const showTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showTooltip = () => {
     if (hideTimeoutRef.current) {
@@ -216,11 +217,12 @@ export function Tooltip({
             <motion.div
               ref={tooltipRef}
               key="tooltip"
+              role="tooltip"
               initial={effectiveReducedMotion ? false : animationProps.initial}
               animate={animationProps.animate}
               exit={effectiveReducedMotion ? undefined : animationProps.exit}
               transition={
-                effectiveReducedMotion ? { duration: 0 } : { duration: 0.15, ease: "easeOut" }
+                effectiveReducedMotion ? { duration: 0 } : { duration: 0.12, ease: EASE_OUT }
               }
               onMouseEnter={showTooltip}
               onMouseLeave={hideTooltip}
@@ -229,20 +231,15 @@ export function Tooltip({
                 left: coords.x,
                 top: coords.y,
                 zIndex: 99999,
-                filter: "drop-shadow(0 4px 10px rgba(0, 0, 0, 0.08))",
+                filter: "drop-shadow(0 4px 10px rgba(0, 0, 0, 0.12))",
               }}
               className={cn(
-                "pointer-events-auto rounded-xs select-text",
-                "w-max max-w-xs md:max-w-sm",
-                "bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100",
-                "backdrop-blur-md",
-                "border border-gray-200 dark:border-gray-800",
+                "pointer-events-auto w-max max-w-xs rounded-xs select-text md:max-w-sm",
+                "border border-gray-200 bg-white text-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100",
                 "ring-1 ring-black/5 dark:ring-white/5",
-                {
-                  "px-3 py-1.5 text-center text-sm font-medium whitespace-normal wrap-break-word":
-                    typeof text === "string",
-                  "flex flex-col overflow-hidden text-left p-0": typeof text !== "string",
-                },
+                typeof text === "string"
+                  ? "px-2.5 py-1 text-center text-xs font-medium whitespace-normal wrap-break-word"
+                  : "flex flex-col overflow-hidden p-0 text-left",
               )}
             >
               {text}

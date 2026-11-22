@@ -49,7 +49,7 @@ export function CopyButton({
             transition={effectiveReducedMotion ? { duration: 0 } : { duration: 0.15 }}
             className="flex size-full items-center justify-center [&>svg]:size-full"
           >
-            {copied ? <CheckIcon className="text-green-500" /> : <CopyIcon />}
+            {copied ? <CheckIcon className="text-green-600 dark:text-green-400" /> : <CopyIcon />}
           </motion.div>
         </AnimatePresence>
       }
@@ -58,7 +58,7 @@ export function CopyButton({
       onClick={handleCopy}
       disabled={disabled}
       className={className}
-      aria-label={tooltipText}
+      ariaLabel={copied ? "Copied" : tooltipText}
     />
   );
 }

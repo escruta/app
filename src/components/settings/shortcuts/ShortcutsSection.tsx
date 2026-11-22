@@ -16,7 +16,7 @@ function KeyCaps({ keys, isMac }: { keys: readonly string[]; isMac: boolean }) {
         <kbd
           key={`${key}-${index}`}
           title={keys[index]}
-          className="inline-flex h-6 min-w-6 items-center justify-center rounded-xs border border-gray-300 bg-gray-50 px-1.5 font-sans text-[11px] font-medium text-gray-700 shadow-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+          className="inline-flex h-6 min-w-6 items-center justify-center rounded-xs border border-gray-200 bg-gray-50 px-1.5 font-sans text-[11px] font-medium text-gray-700 shadow-xs select-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
         >
           {key}
         </kbd>

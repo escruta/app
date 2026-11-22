@@ -140,10 +140,10 @@ export function SelectSourcesModal({
                     }
                   }}
                   className={cn(
-                    "flex cursor-pointer items-center justify-between gap-3 rounded-xs border p-2.5 transition-colors select-none",
+                    "flex cursor-pointer items-center justify-between gap-3 rounded-xs border p-2.5 transition-colors duration-150 select-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none focus-visible:ring-inset dark:focus-visible:ring-blue-400",
                     checked
                       ? "border-blue-500 bg-blue-50/60 dark:border-blue-400 dark:bg-blue-950/30"
-                      : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50/60 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-gray-600 dark:hover:bg-gray-800/60",
+                      : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50/60 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-600 dark:hover:bg-gray-800/60",
                   )}
                 >
                   <div className="flex min-w-0 flex-1 items-center gap-2.5">

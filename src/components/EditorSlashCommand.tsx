@@ -267,31 +267,35 @@ function SlashCommandList({ items, command, loading, keyDownRef }: SlashCommandL
   return (
     <div
       ref={containerRef}
-      className="z-50 max-h-72 max-w-64 min-w-56 overflow-y-auto rounded-xs border border-gray-300 bg-white p-1 shadow-lg ring-1 shadow-gray-500/10 ring-gray-500/5 dark:border-gray-600 dark:bg-gray-900 dark:shadow-black/20 dark:ring-gray-500/10"
+      role="listbox"
+      className="z-50 flex max-h-72 max-w-64 min-w-56 flex-col gap-0.5 overflow-y-auto rounded-xs border border-gray-200 bg-white p-1.5 shadow-lg ring-1 shadow-gray-950/10 ring-black/5 dark:border-gray-700 dark:bg-gray-900 dark:shadow-black/40 dark:ring-white/5"
     >
       {loading && items.length === 0 && (
-        <div className="px-2 py-1 text-xs text-gray-500 dark:text-gray-400">Loading…</div>
+        <div className="px-2.5 py-1.5 text-xs text-gray-500 select-none dark:text-gray-400">
+          Loading…
+        </div>
       )}
 
       {!loading && items.length === 0 && (
-        <div className="px-2 py-1 text-xs text-gray-500 dark:text-gray-400">No results</div>
+        <div className="px-2.5 py-1.5 text-xs text-gray-500 select-none dark:text-gray-400">
+          No results
+        </div>
       )}
 
       {items.map((item, index) => (
         <button
           key={item.title}
           type="button"
+          role="option"
+          aria-selected={index === selectedIndex}
           data-index={index}
           onClick={() => command(item)}
           onMouseEnter={() => setSelectedIndex(index)}
           className={cn(
-            "flex w-full cursor-pointer items-center gap-2 rounded-xs px-2 py-1 text-left text-sm transition-colors duration-150 select-none",
-            {
-              "bg-blue-50 text-blue-600 dark:bg-gray-800 dark:text-blue-400":
-                index === selectedIndex,
-              "text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800/60":
-                index !== selectedIndex,
-            },
+            "flex w-full cursor-pointer items-center gap-2 rounded-xs px-2.5 py-1.5 text-left text-sm transition-colors duration-150 outline-none select-none",
+            index === selectedIndex
+              ? "bg-blue-50 text-blue-600 dark:bg-gray-800 dark:text-blue-400"
+              : "text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800/60",
           )}
         >
           <span

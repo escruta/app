@@ -164,6 +164,7 @@ export function SearchSourcesModal({
               icon={isSearching ? <Spinner /> : <SearchIcon className="size-4" />}
               onClick={handleSearch}
               disabled={isSearching || !searchTerm.trim()}
+              ariaLabel="Search"
               className="shrink-0"
             />
           </Tooltip>
@@ -177,38 +178,53 @@ export function SearchSourcesModal({
               {isAllSelected ? "Deselect all results" : "Select all results"}
             </Button>
 
-            {results.map((result) => (
-              <div
-                key={result.link}
-                className={cn(
-                  "flex cursor-pointer items-start gap-3 rounded-xs border p-3 transition-colors",
-                  selectedLinks.has(result.link)
-                    ? "border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-950/30"
-                    : "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600",
-                )}
-                onClick={() => toggleSource(result.link)}
-              >
-                <div className="max-w-full min-w-0 flex-1">
-                  <div className="font-medium text-gray-900 dark:text-gray-100">{result.title}</div>
-                  <a
-                    href={result.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block w-fit max-w-full truncate text-sm text-blue-600 hover:underline dark:text-blue-400"
-                  >
-                    {result.link}
-                  </a>
-                  <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    {result.snippet}
+            {results.map((result) => {
+              const checked = selectedLinks.has(result.link);
+              return (
+                <div
+                  key={result.link}
+                  role="checkbox"
+                  aria-checked={checked}
+                  tabIndex={0}
+                  className={cn(
+                    "flex cursor-pointer items-start gap-3 rounded-xs border p-3 transition-colors duration-150 select-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none focus-visible:ring-inset dark:focus-visible:ring-blue-400",
+                    checked
+                      ? "border-blue-500 bg-blue-50/60 dark:border-blue-400 dark:bg-blue-950/30"
+                      : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50/60 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-600 dark:hover:bg-gray-800/60",
+                  )}
+                  onClick={() => toggleSource(result.link)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      toggleSource(result.link);
+                    }
+                  }}
+                >
+                  <div className="max-w-full min-w-0 flex-1">
+                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {result.title}
+                    </div>
+                    <a
+                      href={result.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="block w-fit max-w-full truncate text-xs text-blue-600 hover:underline dark:text-blue-400"
+                    >
+                      {result.link}
+                    </a>
+                    <div className="mt-1 text-xs leading-relaxed text-gray-600 dark:text-gray-400">
+                      {result.snippet}
+                    </div>
                   </div>
+                  <Checkbox
+                    checked={checked}
+                    onChange={() => toggleSource(result.link)}
+                    className="pointer-events-none shrink-0"
+                  />
                 </div>
-                <Checkbox
-                  checked={selectedLinks.has(result.link)}
-                  onChange={() => toggleSource(result.link)}
-                  className="pointer-events-none shrink-0"
-                />
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

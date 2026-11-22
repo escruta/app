@@ -265,6 +265,7 @@ export function NotesCard({
                 size="sm"
                 onClick={() => createNote()}
                 disabled={addingNote}
+                ariaLabel={addingNote ? "Adding note" : "Add note"}
               />
             </Tooltip>
           </>
@@ -343,7 +344,9 @@ export function NotesCard({
                 <EditIcon />
               </div>
             </div>
-            <h3 className="text-foreground mb-2 text-lg font-semibold">No notes yet</h3>
+            <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
+              No notes yet
+            </h3>
             <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
               Create your first note to start capturing ideas and insights from your sources.
             </p>

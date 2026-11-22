@@ -1101,7 +1101,7 @@ export function ChatCard({
         />
       )}
       <div className="flex items-end gap-2">
-        <div className="flex min-h-10 min-w-0 flex-1 items-center rounded-xs border border-gray-300 bg-white px-4 py-1.75 shadow-sm transition-[border-color,box-shadow,background-color,color] focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400">
+        <div className="flex min-h-10 min-w-0 flex-1 items-center rounded-xs border border-gray-300 bg-white px-3.5 py-1.75 shadow-xs transition-[border-color,box-shadow,background-color] duration-150 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 hover:border-gray-400 dark:border-gray-700 dark:bg-gray-900 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400/20 dark:hover:border-gray-600">
           <TextField
             id="chat-input"
             value={input}
@@ -1114,7 +1114,7 @@ export function ChatCard({
                   ? `Ask a question (${selectedSourceIds.length} source${selectedSourceIds.length !== 1 ? "s" : ""} selected)...`
                   : "Select sources to start chatting..."
             }
-            className="min-h-0! min-w-0 flex-1 rounded-xs border-0 bg-transparent p-0 leading-6 shadow-none transition-none hover:border-transparent hover:ring-0 hover:ring-offset-0 focus:border-transparent focus:ring-0 focus:ring-offset-0 dark:hover:ring-offset-0 dark:focus:ring-0 dark:focus:ring-offset-0"
+            className="min-h-0! min-w-0 flex-1 rounded-xs border-0 bg-transparent p-0 leading-6 shadow-none transition-none focus:border-transparent focus:ring-0 dark:bg-transparent dark:focus:ring-0"
             disabled={isBusy || selectedSourceIds.length === 0}
             autoFocus={autoFocus}
             minRows={1}
@@ -1231,7 +1231,7 @@ export function ChatCard({
                       <FileIcon />
                     </div>
                   </div>
-                  <h3 className="text-foreground mb-2 text-lg font-semibold">
+                  <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
                     No sources here yet
                   </h3>
                   <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">

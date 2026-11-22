@@ -387,7 +387,12 @@ export function SourcesCard({
             <Menu>
               <Tooltip text="Add source" position="bottom">
                 <MenuTrigger>
-                  <IconButton icon={<AddIcon />} variant="primary" size="sm" />
+                  <IconButton
+                    icon={<AddIcon />}
+                    variant="primary"
+                    size="sm"
+                    ariaLabel="Add source"
+                  />
                 </MenuTrigger>
               </Tooltip>
               <MenuContent>
@@ -498,7 +503,9 @@ export function SourcesCard({
                   <UploadIcon />
                 </div>
               </div>
-              <h3 className="text-foreground mb-2 text-lg font-semibold">No sources yet</h3>
+              <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                No sources yet
+              </h3>
               <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
                 Add your first source to start gathering information. You can upload PDFs, add web
                 links or paste text.

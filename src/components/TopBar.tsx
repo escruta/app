@@ -43,9 +43,10 @@ export function TopBar({ title }: TopBarProps = {}) {
           ) : (
             <NavLink
               to="/"
-              className="app-region-no-drag group grid h-10 w-10 shrink-0 place-items-center"
+              aria-label="Home"
+              className="app-region-no-drag group grid size-10 shrink-0 place-items-center rounded-xs focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none dark:focus-visible:ring-blue-400"
             >
-              <AppIcon className="size-8 fill-gray-800 transition-all duration-300 group-hover:fill-blue-500 dark:fill-gray-50 dark:group-hover:fill-blue-400" />
+              <AppIcon className="size-8 fill-gray-800 transition-colors duration-150 group-hover:fill-blue-500 dark:fill-gray-50 dark:group-hover:fill-blue-400" />
             </NavLink>
           )}
         </div>

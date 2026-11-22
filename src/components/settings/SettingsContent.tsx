@@ -68,10 +68,10 @@ export function SettingsContent() {
                     onClick={() => setActiveSection(section.id)}
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "flex shrink-0 cursor-pointer items-center gap-2.5 rounded-xs px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors",
+                      "flex shrink-0 cursor-pointer items-center gap-2.5 rounded-xs px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors duration-150 select-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none focus-visible:ring-inset dark:focus-visible:ring-blue-400",
                       active
                         ? "bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300"
-                        : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800",
+                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-gray-100",
                     )}
                   >
                     {section.icon}

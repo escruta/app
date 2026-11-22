@@ -59,8 +59,8 @@ export function PreferenceOptionButton({
       aria-checked={selected}
       onClick={onSelect}
       className={cn(
-        "group relative flex cursor-pointer flex-col text-left rounded-xs border p-3 transition-all duration-200 select-none",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-blue-400 dark:focus-visible:ring-offset-gray-950",
+        "group relative flex cursor-pointer flex-col rounded-xs border p-3 text-left transition-colors duration-150 select-none",
+        "focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/25 focus-visible:outline-none dark:focus-visible:border-blue-400 dark:focus-visible:ring-blue-400/25",
         selected
           ? "border-blue-500 bg-blue-50/50 ring-1 ring-blue-500/25 dark:border-blue-400 dark:bg-blue-950/30 dark:ring-blue-400/25"
           : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/30 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-600 dark:hover:bg-gray-800/70",

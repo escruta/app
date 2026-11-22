@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Alert, Button, Skeleton } from "@/components/ui";
 import { RestartIcon, StarsIcon } from "@/components/icons";
 import { useAccessibility } from "@/hooks";
+import { EASE_OUT } from "@/lib/motion";
 import { getHttpErrorMessage } from "@/lib/utils";
 
 interface ExampleQuestionsProps {
@@ -57,7 +58,7 @@ export function ExampleQuestions({
             animate={{ opacity: 1, y: 0 }}
             exit={effectiveReducedMotion ? undefined : { opacity: 0, y: 4 }}
             transition={
-              effectiveReducedMotion ? { duration: 0 } : { duration: 0.15, ease: "easeInOut" }
+              effectiveReducedMotion ? { duration: 0 } : { duration: 0.15, ease: EASE_OUT }
             }
             className="flex flex-col"
           >
@@ -73,10 +74,10 @@ export function ExampleQuestions({
                   key={index}
                   type="button"
                   onClick={() => onQuestionSelect(question)}
-                  className="group flex w-full items-center gap-2 rounded-sm px-1 py-1.5 text-left transition-colors hover:bg-gray-100/70 dark:hover:bg-gray-800/50"
+                  className="group flex w-full cursor-pointer items-center gap-2 rounded-xs px-1.5 py-1.5 text-left transition-colors duration-150 hover:bg-gray-100/70 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none focus-visible:ring-inset dark:hover:bg-gray-800/60 dark:focus-visible:ring-blue-400"
                 >
-                  <StarsIcon className="size-3.5 shrink-0 text-gray-300 transition-colors group-hover:text-blue-400 dark:text-gray-600 dark:group-hover:text-blue-400" />
-                  <span className="text-[13px] leading-relaxed text-gray-500 transition-colors group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-200">
+                  <StarsIcon className="size-3.5 shrink-0 text-gray-300 transition-colors duration-150 group-hover:text-blue-500 dark:text-gray-600 dark:group-hover:text-blue-400" />
+                  <span className="text-[13px] leading-relaxed text-gray-500 transition-colors duration-150 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100">
                     {question}
                   </span>
                 </button>

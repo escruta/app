@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect, useLayoutEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useShortcut, useAccessibility } from "@/hooks";
+import { EASE_OUT } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { ChevronIcon, CloseIcon } from "@/components/icons";
 import { IconButton } from "@/components/ui";
@@ -159,11 +160,11 @@ function BranchNode({
           <div
             ref={nodeRef}
             className={cn(
-              "relative flex cursor-pointer items-center rounded-xs border px-3 py-1.5 text-sm whitespace-nowrap transition-all select-none",
+              "relative flex cursor-pointer items-center rounded-xs border px-3 py-1.5 text-sm whitespace-nowrap transition-colors duration-150 select-none focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/25 focus-visible:outline-none dark:focus-visible:border-blue-400 dark:focus-visible:ring-blue-400/25",
               getNodeColors(level, isLeaf),
               getHoverColors(level),
               isSelected &&
-                "ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-blue-400 dark:ring-offset-gray-900",
+                "border-blue-500 ring-2 ring-blue-500/30 dark:border-blue-400 dark:ring-blue-400/35",
             )}
             onClick={handleNodeClick}
             onKeyDown={handleNodeKeyDown}
@@ -176,7 +177,7 @@ function BranchNode({
           {hasChildren && (
             <div
               className={cn(
-                "flex size-5 cursor-pointer items-center justify-center rounded-xs transition-colors",
+                "flex size-5 cursor-pointer items-center justify-center rounded-xs transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none dark:focus-visible:ring-blue-400",
                 getChevronColors(level),
                 getHoverColors(level),
               )}
@@ -187,10 +188,13 @@ function BranchNode({
               onKeyDown={handleChevronKeyDown}
               tabIndex={0}
               role="button"
+              aria-expanded={isExpanded}
+              aria-label={isExpanded ? `Collapse ${branch.label}` : `Expand ${branch.label}`}
             >
               <ChevronIcon
+                aria-hidden="true"
                 direction={isExpanded ? "left" : "right"}
-                className="size-3.5 transition-transform duration-200"
+                className="size-3.5 transition-transform duration-150"
               />
             </div>
           )}
@@ -314,11 +318,11 @@ function MainBranch({
           <div
             ref={nodeRef}
             className={cn(
-              "relative flex cursor-pointer items-center rounded-xs border px-4 py-2 whitespace-nowrap transition-all select-none",
+              "relative flex cursor-pointer items-center rounded-xs border px-4 py-2 whitespace-nowrap transition-colors duration-150 select-none focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/25 focus-visible:outline-none dark:focus-visible:border-blue-400 dark:focus-visible:ring-blue-400/25",
               getNodeColors(1, !hasChildren),
               getHoverColors(1),
               isSelected &&
-                "ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-blue-400 dark:ring-offset-gray-900",
+                "border-blue-500 ring-2 ring-blue-500/30 dark:border-blue-400 dark:ring-blue-400/35",
             )}
             onClick={handleNodeClick}
             onKeyDown={handleNodeKeyDown}
@@ -331,7 +335,7 @@ function MainBranch({
           {hasChildren && (
             <div
               className={cn(
-                "flex size-6 cursor-pointer items-center justify-center rounded-xs transition-colors",
+                "flex size-6 cursor-pointer items-center justify-center rounded-xs transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none dark:focus-visible:ring-blue-400",
                 getChevronColors(1),
                 getHoverColors(1),
               )}
@@ -342,10 +346,13 @@ function MainBranch({
               onKeyDown={handleChevronKeyDown}
               tabIndex={0}
               role="button"
+              aria-expanded={isExpanded}
+              aria-label={isExpanded ? `Collapse ${branch.label}` : `Expand ${branch.label}`}
             >
               <ChevronIcon
+                aria-hidden="true"
                 direction={isExpanded ? "left" : "right"}
-                className="size-4 transition-transform duration-200"
+                className="size-4 transition-transform duration-150"
               />
             </div>
           )}
@@ -636,49 +643,51 @@ export function MindMapViewer({ data, className }: MindMapViewerProps) {
 
   return (
     <div className={cn("relative size-full overflow-hidden", className)}>
-      <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+      <div className="absolute top-4 right-4 z-10 flex items-center gap-2 select-none">
         <div className="flex items-center gap-1.5">
           <button
             type="button"
             onClick={handleExpandAll}
-            className="flex h-7 items-center justify-center rounded-xs border border-gray-200 bg-white px-2.5 text-xs font-medium text-gray-600 shadow-xs transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            className="flex h-7 cursor-pointer items-center justify-center rounded-xs border border-gray-200 bg-white px-2.5 text-xs font-medium text-gray-700 shadow-xs transition-colors duration-150 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/25 focus-visible:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:border-gray-600 dark:hover:bg-gray-800 dark:hover:text-white dark:focus-visible:border-blue-400 dark:focus-visible:ring-blue-400/25"
           >
             Expand all
           </button>
           <button
             type="button"
             onClick={handleCollapseAll}
-            className="flex h-7 items-center justify-center rounded-xs border border-gray-200 bg-white px-2.5 text-xs font-medium text-gray-600 shadow-xs transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            className="flex h-7 cursor-pointer items-center justify-center rounded-xs border border-gray-200 bg-white px-2.5 text-xs font-medium text-gray-700 shadow-xs transition-colors duration-150 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/25 focus-visible:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:border-gray-600 dark:hover:bg-gray-800 dark:hover:text-white dark:focus-visible:border-blue-400 dark:focus-visible:ring-blue-400/25"
           >
             Collapse all
           </button>
         </div>
-        <div className="h-4 w-px bg-gray-200 dark:bg-gray-600" />
-        <div className="flex h-7 items-center rounded-xs border border-gray-200 bg-white shadow-xs dark:border-gray-600 dark:bg-gray-800">
+        <div className="h-4 w-px bg-gray-200 dark:bg-gray-800" />
+        <div className="flex h-7 items-center rounded-xs border border-gray-200 bg-white shadow-xs dark:border-gray-700 dark:bg-gray-900">
           <button
             type="button"
+            aria-label="Zoom in"
             onClick={() =>
               setTransform((prev) => ({
                 ...prev,
                 scale: Math.min(prev.scale * 1.2, 2),
               }))
             }
-            className="flex h-full items-center justify-center rounded-l-xs px-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
+            className="flex h-full cursor-pointer items-center justify-center rounded-l-xs px-2.5 text-sm font-medium text-gray-700 transition-colors duration-150 hover:bg-gray-50 hover:text-gray-900 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none focus-visible:ring-inset dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white dark:focus-visible:ring-blue-400"
           >
             +
           </button>
-          <span className="flex h-full min-w-12 items-center justify-center border-x border-gray-200 px-2 text-center text-xs font-medium text-gray-600 dark:border-gray-600 dark:text-gray-300">
+          <span className="flex h-full min-w-12 items-center justify-center border-x border-gray-200 px-2 text-center text-xs font-medium text-gray-600 tabular-nums dark:border-gray-700 dark:text-gray-300">
             {Math.round(transform.scale * 100)}%
           </span>
           <button
             type="button"
+            aria-label="Zoom out"
             onClick={() =>
               setTransform((prev) => ({
                 ...prev,
                 scale: Math.max(prev.scale * 0.8, 0.25),
               }))
             }
-            className="flex h-full items-center justify-center rounded-r-xs px-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-700"
+            className="flex h-full cursor-pointer items-center justify-center rounded-r-xs px-2.5 text-sm font-medium text-gray-700 transition-colors duration-150 hover:bg-gray-50 hover:text-gray-900 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none focus-visible:ring-inset dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-white dark:focus-visible:ring-blue-400"
           >
             -
           </button>
@@ -686,7 +695,7 @@ export function MindMapViewer({ data, className }: MindMapViewerProps) {
         <button
           type="button"
           onClick={resetView}
-          className="flex h-7 items-center justify-center rounded-xs border border-gray-200 bg-white px-2.5 text-xs font-medium text-gray-600 shadow-xs transition-colors hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+          className="flex h-7 cursor-pointer items-center justify-center rounded-xs border border-gray-200 bg-white px-2.5 text-xs font-medium text-gray-700 shadow-xs transition-colors duration-150 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900 focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/25 focus-visible:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:border-gray-600 dark:hover:bg-gray-800 dark:hover:text-white dark:focus-visible:border-blue-400 dark:focus-visible:ring-blue-400/25"
         >
           Reset
         </button>
@@ -731,9 +740,9 @@ export function MindMapViewer({ data, className }: MindMapViewerProps) {
             <div
               ref={centralNodeRef}
               className={cn(
-                "cursor-pointer rounded-xs border border-gray-300 bg-white px-5 py-3 font-semibold whitespace-nowrap text-gray-900 shadow-xs transition-all select-none hover:border-blue-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:hover:border-blue-500",
+                "cursor-pointer rounded-xs border border-gray-300 bg-white px-5 py-3 font-semibold whitespace-nowrap text-gray-900 shadow-xs transition-colors duration-150 select-none hover:border-blue-400 focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/25 focus-visible:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:hover:border-blue-500 dark:focus-visible:border-blue-400 dark:focus-visible:ring-blue-400/25",
                 isCentralSelected &&
-                  "ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-blue-400 dark:ring-offset-gray-900",
+                  "border-blue-500 ring-2 ring-blue-500/30 dark:border-blue-400 dark:ring-blue-400/35",
               )}
               onClick={handleSelectCentral}
               onKeyDown={handleCentralKeyDown}
@@ -797,20 +806,20 @@ export function MindMapViewer({ data, className }: MindMapViewerProps) {
                 : { opacity: 0, y: popoverGeo.placement === "bottom" ? -4 : 4 }
             }
             transition={
-              effectiveReducedMotion ? { duration: 0 } : { duration: 0.14, ease: "easeOut" }
+              effectiveReducedMotion ? { duration: 0 } : { duration: 0.14, ease: EASE_OUT }
             }
             style={{
               left: popoverGeo.left,
               top: popoverGeo.top,
               width: popoverGeo.width,
             }}
-            className="absolute z-20 rounded-xs border border-gray-300 bg-white shadow-lg ring-1 shadow-gray-500/10 ring-gray-500/5 dark:border-gray-600 dark:bg-gray-900 dark:shadow-black/30 dark:ring-gray-500/10"
+            className="absolute z-20 rounded-xs border border-gray-200 bg-white shadow-lg ring-1 shadow-gray-950/10 ring-black/5 dark:border-gray-700 dark:bg-gray-900 dark:shadow-black/40 dark:ring-white/5"
           >
             <span
               aria-hidden="true"
               style={{ left: popoverGeo.arrowLeft }}
               className={cn(
-                "pointer-events-none absolute size-2.5 -translate-x-1/2 rotate-45 border-gray-300 dark:border-gray-600",
+                "pointer-events-none absolute size-2.5 -translate-x-1/2 rotate-45 border-gray-200 dark:border-gray-700",
                 popoverGeo.placement === "bottom"
                   ? "-top-1.5 border-t border-l bg-white dark:bg-gray-900"
                   : "-bottom-1.5 border-r border-b bg-gray-50 dark:bg-gray-800",
@@ -844,7 +853,7 @@ export function MindMapViewer({ data, className }: MindMapViewerProps) {
               />
             </div>
 
-            <div className="border-t border-gray-200 bg-gray-50 px-3.5 py-2.5 dark:border-gray-700 dark:bg-gray-800/70">
+            <div className="border-t border-gray-200 bg-gray-50 px-3.5 py-2.5 dark:border-gray-800 dark:bg-gray-800/70">
               <p className="text-xs leading-relaxed text-gray-700 select-text dark:text-gray-200">
                 {selectedNode.description?.trim() || "No explanation available for this node."}
               </p>

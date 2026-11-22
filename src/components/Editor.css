@@ -124,7 +124,7 @@ html.dark .ProseMirror blockquote {
   border-radius: var(--radius-xs);
   padding: 1rem;
   margin: 1.5rem 0;
-  font-family: monospace;
+  font-family: var(--font-mono);
   font-size: 0.875rem;
   font-weight: 500;
   line-height: 1.5;
@@ -142,14 +142,14 @@ html.dark .ProseMirror blockquote {
 @media (prefers-color-scheme: dark) {
   html:not(.dark):not(.light) .ProseMirror pre {
     background-color: var(--color-gray-900);
-    border-color: var(--color-gray-700);
+    border-color: var(--color-gray-800);
     color: var(--color-gray-100);
   }
 }
 
 html.dark .ProseMirror pre {
   background-color: var(--color-gray-900);
-  border-color: var(--color-gray-700);
+  border-color: var(--color-gray-800);
   color: var(--color-gray-100);
 }
 
@@ -166,12 +166,12 @@ html.dark .ProseMirror pre {
 
 @media (prefers-color-scheme: dark) {
   html:not(.dark):not(.light) .ProseMirror hr {
-    border-top-color: var(--color-gray-700);
+    border-top-color: var(--color-gray-800);
   }
 }
 
 html.dark .ProseMirror hr {
-  border-top-color: var(--color-gray-700);
+  border-top-color: var(--color-gray-800);
 }
 
 .ProseMirror ul[data-type="taskList"] {
@@ -195,18 +195,26 @@ html.dark .ProseMirror hr {
 .ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"] {
   appearance: none;
   -webkit-appearance: none;
-  background-color: var(--color-gray-50);
+  background-color: var(--color-white);
   margin: 0;
   margin-top: 0.15rem;
   width: 1.25rem;
   height: 1.25rem;
-  border: 2px solid var(--color-gray-300);
+  border: 1px solid var(--color-gray-300);
   border-radius: var(--radius-xs);
   cursor: pointer;
   display: grid;
   place-content: center;
-  transition: all 0.2s ease-in-out;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
   flex-shrink: 0;
+}
+
+.ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"]:focus-visible {
+  border-color: var(--color-blue-500);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-blue-500) 25%, transparent);
+  outline: none;
 }
 
 .ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"]:hover {
@@ -215,13 +223,18 @@ html.dark .ProseMirror hr {
 
 .ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"]:checked {
   background-color: var(--color-blue-500);
-  border-color: var(--color-blue-500);
+  border-color: var(--color-blue-600);
+}
+
+.ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"]:checked:hover {
+  background-color: var(--color-blue-600);
+  border-color: var(--color-blue-700);
 }
 
 .ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"]:checked::before {
   content: "";
-  width: 0.4rem;
-  height: 0.65rem;
+  width: 0.375rem;
+  height: 0.625rem;
   border: solid white;
   border-width: 0 2px 2px 0;
   transform: rotate(45deg) translateY(-1px);
@@ -252,7 +265,7 @@ html.dark .ProseMirror hr {
     li
     > label
     input[type="checkbox"] {
-    background-color: var(--color-gray-800);
+    background-color: var(--color-gray-900);
     border-color: var(--color-gray-600);
   }
 
@@ -261,8 +274,18 @@ html.dark .ProseMirror hr {
     ul[data-type="taskList"]
     li
     > label
+    input[type="checkbox"]:focus-visible {
+    border-color: var(--color-blue-400);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-blue-400) 25%, transparent);
+  }
+
+  html:not(.dark):not(.light)
+    .ProseMirror
+    ul[data-type="taskList"]
+    li
+    > label
     input[type="checkbox"]:checked {
-    background-color: var(--color-blue-500);
+    background-color: var(--color-blue-600);
     border-color: var(--color-blue-500);
   }
 
@@ -277,13 +300,23 @@ html.dark .ProseMirror hr {
 }
 
 html.dark .ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"] {
-  background-color: var(--color-gray-800);
+  background-color: var(--color-gray-900);
   border-color: var(--color-gray-600);
 }
 
+html.dark .ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"]:focus-visible {
+  border-color: var(--color-blue-400);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-blue-400) 25%, transparent);
+}
+
 html.dark .ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"]:checked {
-  background-color: var(--color-blue-500);
+  background-color: var(--color-blue-600);
   border-color: var(--color-blue-500);
+}
+
+html.dark .ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"]:checked:hover {
+  background-color: var(--color-blue-500);
+  border-color: var(--color-blue-400);
 }
 
 html.dark .ProseMirror ul[data-type="taskList"] li[data-checked="true"] > div > p {

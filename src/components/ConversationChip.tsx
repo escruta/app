@@ -127,12 +127,11 @@ export function ConversationChip({
     <>
       <div
         className={cn(
-          "group flex items-center justify-between rounded-xs border p-2.5 transition-colors cursor-pointer",
-          {
-            "bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700": isActive,
-            "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 hover:bg-gray-100/65 dark:hover:bg-gray-800":
-              !isActive,
-          },
+          "group flex cursor-pointer items-center justify-between rounded-xs border p-2.5 transition-colors duration-150 select-none",
+          "focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none focus-visible:ring-inset dark:focus-visible:ring-blue-400",
+          isActive
+            ? "border-blue-300 bg-blue-50/70 dark:border-blue-700 dark:bg-blue-950/40"
+            : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/60 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-600 dark:hover:bg-gray-800",
           className,
         )}
         onClick={() => onSelect?.(conversation)}
@@ -142,7 +141,7 @@ export function ConversationChip({
       >
         <div className="mr-2 min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <p className="min-w-0 flex-1 truncate text-sm font-medium text-gray-900 dark:text-white">
+            <p className="min-w-0 flex-1 truncate text-sm font-medium text-gray-900 dark:text-gray-100">
               {displayTitle}
             </p>
             {isGenerating ? (
@@ -183,7 +182,7 @@ export function ConversationChip({
           </p>
         </div>
         <div
-          className="shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100"
+          className="shrink-0 opacity-100 transition-opacity duration-150 has-aria-expanded:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100"
           onClick={(e) => e.stopPropagation()}
         >
           <Menu>

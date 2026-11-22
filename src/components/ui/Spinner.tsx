@@ -33,7 +33,7 @@ export function Spinner({
       }}
       style={hasCustomSize ? { width: size, height: size } : undefined}
     >
-      <LoadingIcon className="size-full" />
+      <LoadingIcon aria-hidden="true" className="size-full" />
     </motion.div>
   );
 }

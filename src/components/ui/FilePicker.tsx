@@ -14,11 +14,17 @@ type FilePickerProps = {
   value?: File | null;
 };
 
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+}
+
 export function FilePicker({
   id,
   label,
   onChange,
-  className = "",
+  className,
   placeholder = "Choose a file...",
   disabled = false,
   accept,
@@ -60,32 +66,34 @@ export function FilePicker({
     }
   };
 
-  const baseStyles = cn(
-    "relative w-full border-2 rounded-xs transition-all duration-200 cursor-pointer",
-    "border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800",
-    "hover:border-blue-400 hover:bg-blue-50 hover:ring-1 hover:ring-blue-300 hover:ring-offset-1 hover:ring-offset-white dark:hover:ring-offset-gray-900 active:bg-blue-100 dark:hover:border-blue-500 dark:hover:bg-gray-700 dark:active:bg-gray-600",
-    "shadow-sm shadow-gray-500/5 dark:shadow-black/10",
-    {
-      "border-dashed": !value,
-      "border-solid border-blue-500 bg-blue-50/50 dark:bg-blue-950/20": !!value,
-      "opacity-50 cursor-not-allowed hover:border-gray-300 hover:bg-gray-50 hover:ring-0 dark:hover:border-gray-600 dark:hover:bg-gray-800":
-        disabled,
-      "border-blue-500 bg-blue-50 dark:bg-gray-700 ring-1 ring-blue-400 ring-offset-1 ring-offset-white dark:ring-offset-gray-900":
-        dragOver,
-    },
+  const dropzoneClassName = cn(
+    "relative w-full rounded-xs border transition-[background-color,border-color,box-shadow] duration-150",
+    "border-gray-300 bg-gray-50/60 dark:border-gray-700 dark:bg-gray-900/60",
+    "focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400/20",
+    !disabled &&
+      "cursor-pointer hover:border-blue-400 hover:bg-blue-50/40 dark:hover:border-blue-500 dark:hover:bg-gray-800/60",
+    !value && "border-dashed",
+    Boolean(value) &&
+      "border-solid border-blue-500 bg-blue-50/40 dark:border-blue-400 dark:bg-blue-950/20",
+    dragOver &&
+      "border-blue-500 bg-blue-50/80 ring-2 ring-blue-500/20 dark:border-blue-400 dark:bg-blue-950/30 dark:ring-blue-400/20",
+    disabled && "cursor-not-allowed opacity-50",
     className,
   );
 
   return (
-    <div className={cn({ "mb-4": label })}>
+    <div className={cn(label && "mb-4")}>
       {label && (
-        <label className="mb-2 block text-gray-700 select-none dark:text-gray-300" htmlFor={id}>
+        <label
+          className="mb-1.5 block text-sm font-medium text-gray-700 select-none dark:text-gray-300"
+          htmlFor={id}
+        >
           {label}
         </label>
       )}
 
       <div
-        className={baseStyles}
+        className={dropzoneClassName}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -94,33 +102,42 @@ export function FilePicker({
           type="file"
           id={id}
           onChange={handleFileChange}
-          className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
+          className={cn(
+            "absolute inset-0 z-10 h-full w-full opacity-0",
+            disabled ? "cursor-not-allowed" : "cursor-pointer",
+          )}
           disabled={disabled}
           accept={accept}
           multiple={multiple}
         />
 
-        <div className="pointer-events-none flex h-full min-h-50 flex-col items-center justify-center p-12 text-center">
+        <div className="pointer-events-none flex h-full min-h-48 flex-col items-center justify-center p-10 text-center select-none">
           <div className="relative mb-3">
             {value ? (
               <div className="relative inline-flex">
-                <FileIcon className="h-10 w-10 text-blue-500 dark:text-blue-400" />
-                <div className="absolute -right-1 -bottom-1 rounded-full border border-gray-100 bg-white p-0.5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-                  <CheckIcon className="h-3.5 w-3.5 text-green-500" />
+                <FileIcon aria-hidden="true" className="size-10 text-blue-500 dark:text-blue-400" />
+                <div className="absolute -right-1 -bottom-1 rounded-full border border-gray-200 bg-white p-0.5 shadow-xs dark:border-gray-700 dark:bg-gray-900">
+                  <CheckIcon
+                    aria-hidden="true"
+                    className="size-3.5 text-green-600 dark:text-green-400"
+                  />
                 </div>
               </div>
             ) : (
-              <UploadIcon className="mx-auto h-10 w-10 text-gray-400" />
+              <UploadIcon
+                aria-hidden="true"
+                className="mx-auto size-10 text-gray-400 dark:text-gray-500"
+              />
             )}
           </div>
 
           {value ? (
             <div className="text-sm">
-              <div className="max-w-62.5 truncate font-semibold text-gray-900 dark:text-gray-100">
+              <div className="max-w-64 truncate font-semibold text-gray-900 dark:text-gray-100">
                 {value.name}
               </div>
-              <div className="mt-1 text-gray-500 dark:text-gray-400">
-                {(value.size / 1024 / 1024).toFixed(2)} MB
+              <div className="mt-1 text-xs text-gray-500 tabular-nums dark:text-gray-400">
+                {formatFileSize(value.size)}
               </div>
             </div>
           ) : (
@@ -128,7 +145,7 @@ export function FilePicker({
               <div className="font-medium text-gray-900 dark:text-gray-100">
                 Click to upload or drag and drop
               </div>
-              <div className="mt-1 text-gray-500 dark:text-gray-400">{placeholder}</div>
+              <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">{placeholder}</div>
             </div>
           )}
         </div>

@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { NodeViewContent, NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { cn } from "@/lib/utils";
-import { Dropdown, IconButton } from "./ui";
-import { CopyIcon, CheckIcon } from "@/components/icons";
+import { CopyButton, Dropdown, Tooltip } from "./ui";
 
 interface Language {
   value: string;
@@ -51,35 +50,28 @@ const languages: Language[] = [
 
 export function EditorCodeBlock({ node, updateAttributes }: NodeViewProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(node.textContent);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
 
   const currentLanguageLabel =
     languages.find((l) => l.value === (node.attrs.language || "plaintext"))?.label || "Plain Text";
 
   return (
-    <NodeViewWrapper className={cn("relative group my-4", { "z-50": isDropdownOpen })}>
+    <NodeViewWrapper className={cn("group relative my-4", { "z-50": isDropdownOpen })}>
       <div
-        className={cn("absolute right-2 top-2 transition-opacity z-10 flex gap-2 items-center", {
-          "opacity-100": isDropdownOpen,
-          "opacity-0 group-hover:opacity-100": !isDropdownOpen,
-        })}
+        className={cn(
+          "absolute top-2 right-2 z-10 flex items-center gap-1.5 transition-opacity duration-150",
+          isDropdownOpen
+            ? "opacity-100"
+            : "opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100",
+        )}
         contentEditable={false}
       >
-        <IconButton
-          icon={copied ? <CheckIcon className="size-4" /> : <CopyIcon className="size-4" />}
-          onClick={handleCopy}
-          size="xs"
-          variant="ghost"
-        />
+        <Tooltip text="Copy code" position="top">
+          <CopyButton textToCopy={node.textContent} tooltipText="Copy code" size="xs" />
+        </Tooltip>
         <Dropdown
           align="right"
           size="sm"
+          ariaLabel="Code language"
           options={languages.map((l) => l.label)}
           selectedOption={currentLanguageLabel}
           onSelect={(label) => {
@@ -91,7 +83,7 @@ export function EditorCodeBlock({ node, updateAttributes }: NodeViewProps) {
       </div>
       <pre
         className={cn(
-          "block bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xs p-4 overflow-x-auto font-mono text-sm font-medium leading-normal whitespace-pre",
+          "block overflow-x-auto rounded-xs border border-gray-200 bg-gray-50 p-4 font-mono text-sm leading-normal font-medium whitespace-pre text-gray-900 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-100",
         )}
       >
         <NodeViewContent

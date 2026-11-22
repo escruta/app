@@ -25,6 +25,7 @@ import {
   MenuItem,
   ViewerFrame,
 } from "@/components/ui";
+import { writeClipboardText } from "@/lib/clipboard";
 import { getYouTubeVideoId, getHttpErrorMessage } from "@/lib/utils";
 import { Markdown } from "./Markdown";
 
@@ -313,7 +314,9 @@ export const SourceViewer = memo(function SourceViewer({
                       source.type === "YouTube Video"
                         ? fullSource?.link || source.link
                         : fullSource?.content || "";
-                    navigator.clipboard.writeText(textToCopy);
+                    void writeClipboardText(textToCopy).catch((err) => {
+                      console.warn("Clipboard write failed:", err);
+                    });
                   }}
                 />
                 {source.type === "Website" && (
@@ -342,15 +345,15 @@ export const SourceViewer = memo(function SourceViewer({
           </div>
         )}
         {error && (
-          <div className="px-6 text-sm text-red-500">
-            We couldn't load this source: {error.message}
+          <div className="p-4">
+            <Alert variant="danger" message={`We couldn't load this source: ${error.message}`} />
           </div>
         )}
         {fullSource && !loading && !error && (
           <div ref={scrollContainerRef} className="w-full flex-1 overflow-y-auto">
             <div className="mx-auto flex w-full max-w-3xl flex-col">
               <div className="px-6 pt-4">
-                <Card className="border-gray-200 bg-gray-50 shadow-sm ring-0 dark:border-gray-700 dark:bg-gray-800/60">
+                <Card className="bg-gray-50/70 dark:bg-gray-800/50">
                   <div className="mb-4 flex items-center justify-between">
                     <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">
                       Summary of this source
@@ -363,14 +366,18 @@ export const SourceViewer = memo(function SourceViewer({
                               icon={<DotsVerticalIcon />}
                               variant="ghost"
                               size="sm"
-                              aria-label="More options"
+                              ariaLabel="More options"
                             />
                           </MenuTrigger>
                           <MenuContent>
                             <MenuItem
                               icon={<CopyIcon />}
                               label="Copy summary"
-                              onClick={() => navigator.clipboard.writeText(sourceSummary)}
+                              onClick={() => {
+                                void writeClipboardText(sourceSummary).catch((err) => {
+                                  console.warn("Clipboard write failed:", err);
+                                });
+                              }}
                               disabled={
                                 isSummaryLoading || isRegeneratingSummary || isSummaryGenerating
                               }

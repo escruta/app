@@ -28,8 +28,9 @@ export function SelectList({
 
   return (
     <div
+      role="listbox"
       className={cn(
-        "flex flex-col gap-0.5 rounded-xs border border-gray-200 dark:border-gray-700 bg-gray-50/40 dark:bg-gray-900/40 p-1.5 max-h-64 overflow-auto",
+        "flex max-h-64 flex-col gap-0.5 overflow-auto rounded-xs border border-gray-200 bg-gray-50/50 p-1.5 dark:border-gray-800 dark:bg-gray-900/50",
         className,
       )}
     >
@@ -44,23 +45,23 @@ export function SelectList({
             <button
               key={option.id}
               type="button"
+              role="option"
+              aria-selected={isSelected}
               onClick={() => onSelect(isSelected ? null : option.id)}
               className={cn(
-                "group flex w-full items-center gap-2.5 rounded-xs px-3 py-2 text-sm font-medium transition-all duration-200 outline-none select-none cursor-pointer",
-                {
-                  "bg-blue-50 text-blue-700 dark:bg-gray-800 dark:text-blue-300": isSelected,
-                  "text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800/60":
-                    !isSelected,
-                },
+                "group flex w-full cursor-pointer items-center gap-2.5 rounded-xs px-3 py-2 text-sm font-medium transition-colors duration-150 select-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none focus-visible:ring-inset dark:focus-visible:ring-blue-400",
+                isSelected
+                  ? "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
+                  : "text-gray-700 hover:bg-white hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-800/70 dark:hover:text-gray-100",
               )}
             >
               {option.icon && (
                 <span
                   className={cn(
-                    "flex size-4 shrink-0 items-center justify-center transition-colors duration-200 [&_svg]:size-4 [&_svg]:shrink-0",
+                    "flex size-4 shrink-0 items-center justify-center transition-colors duration-150 [&_svg]:size-4 [&_svg]:shrink-0",
                     isSelected
                       ? "text-blue-600 dark:text-blue-400"
-                      : "text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300",
+                      : "text-gray-400 group-hover:text-gray-600 dark:text-gray-500 dark:group-hover:text-gray-300",
                   )}
                 >
                   {option.icon}
@@ -82,7 +83,7 @@ export function SelectList({
                       }
                       className="text-blue-600 dark:text-blue-400"
                     >
-                      <CheckIcon className="size-4" />
+                      <CheckIcon aria-hidden="true" className="size-4" />
                     </motion.span>
                   )}
                 </AnimatePresence>

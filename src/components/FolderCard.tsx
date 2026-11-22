@@ -27,7 +27,10 @@ interface FolderCardProps {
 
 export function FolderCardSkeleton() {
   return (
-    <div className="flex h-16 w-full items-center gap-3 rounded-xs border border-gray-200 bg-white px-3.5 dark:border-gray-700 dark:bg-gray-900">
+    <div
+      aria-hidden="true"
+      className="flex h-16 w-full items-center gap-3 rounded-xs border border-gray-200 bg-white px-3.5 dark:border-gray-800 dark:bg-gray-900"
+    >
       <Skeleton variant="rectangle" width={32} height={32} className="shrink-0" />
       <div className="min-w-0 flex-1 space-y-1.5">
         <Skeleton variant="rectangle" width="70%" height={14} />
@@ -115,11 +118,11 @@ export function FolderCard({
           tabIndex={0}
           data-drop-folder-id={folder.id}
           className={cn(
-            "group relative flex h-16 w-full cursor-pointer items-center justify-between gap-2 rounded-xs border px-3.5 transition-all duration-200 ease-out select-none",
+            "group relative flex h-16 w-full cursor-pointer items-center justify-between gap-2 rounded-xs border px-3.5 transition-colors duration-150 select-none",
             isDropTarget
-              ? "border-blue-300 bg-blue-50/80 shadow-sm ring-1 ring-blue-400/50 dark:border-blue-600 dark:bg-blue-950/50 dark:ring-blue-500/40"
-              : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/60 dark:border-gray-700 dark:bg-gray-900 dark:hover:border-gray-500 dark:hover:bg-gray-800",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-gray-900",
+              ? "border-blue-400 bg-blue-50/80 shadow-xs ring-1 ring-blue-400/50 dark:border-blue-500 dark:bg-blue-950/50 dark:ring-blue-500/40"
+              : "border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50/60 dark:border-gray-800 dark:bg-gray-900 dark:hover:border-gray-600 dark:hover:bg-gray-800",
+            "focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/25 focus-visible:outline-none dark:focus-visible:border-blue-400 dark:focus-visible:ring-blue-400/25",
           )}
           onClick={handleCardClick}
           onKeyDown={handleCardKeyDown}
@@ -153,7 +156,7 @@ export function FolderCard({
             <div
               onClick={(e) => e.stopPropagation()}
               onKeyDown={handleMenuWrapperKeyDown}
-              className="-mr-1 shrink-0 opacity-100 transition-opacity duration-150 has-[[aria-expanded=true]]:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100"
+              className="-mr-1 shrink-0 opacity-100 transition-opacity duration-150 has-aria-expanded:opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100"
             >
               <Menu>
                 <Tooltip text="Folder options" position="top">

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Alert, Button, Modal, Spinner, TextField } from "@/components/ui";
 import { useAuth, useFetch, useAccessibility } from "@/hooks";
+import { EASE_OUT } from "@/lib/motion";
 import { CheckIcon, ChevronIcon } from "@/components/icons";
 import { SettingsDivider, SettingsGroup, SettingsSection } from "../shared/SettingsSection";
 import { SignOutModal } from "./SignOutModal";
@@ -127,7 +128,7 @@ export function AccountSection() {
           type="button"
           onClick={() => setIsDangerZoneOpen((prev) => !prev)}
           aria-expanded={isDangerZoneOpen}
-          className="flex w-full cursor-pointer items-center justify-between gap-4 px-4 py-3 text-left transition-colors hover:bg-gray-50 dark:hover:bg-gray-900/50"
+          className="flex w-full cursor-pointer items-center justify-between gap-4 px-4 py-3 text-left transition-colors duration-150 select-none hover:bg-gray-50 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none focus-visible:ring-inset dark:hover:bg-gray-900/50 dark:focus-visible:ring-blue-400"
         >
           <div className="min-w-0">
             <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Danger zone</h3>
@@ -136,8 +137,9 @@ export function AccountSection() {
             </p>
           </div>
           <ChevronIcon
+            aria-hidden="true"
             direction={isDangerZoneOpen ? "up" : "down"}
-            className="size-4 shrink-0 text-gray-400 transition-transform duration-200 dark:text-gray-500"
+            className="size-4 shrink-0 text-gray-400 transition-transform duration-150 dark:text-gray-500"
           />
         </button>
 
@@ -148,7 +150,7 @@ export function AccountSection() {
               animate={{ height: "auto", opacity: 1 }}
               exit={effectiveReducedMotion ? undefined : { height: 0, opacity: 0 }}
               transition={
-                effectiveReducedMotion ? { duration: 0 } : { duration: 0.2, ease: "easeOut" }
+                effectiveReducedMotion ? { duration: 0 } : { duration: 0.18, ease: EASE_OUT }
               }
               className="overflow-hidden"
             >
@@ -207,7 +209,7 @@ export function AccountSection() {
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
           />
-          {errorNameMessage && <div className="text-sm text-red-500">{errorNameMessage}</div>}
+          {errorNameMessage && <Alert variant="danger" message={errorNameMessage} />}
         </div>
       </Modal>
 

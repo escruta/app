@@ -69,7 +69,7 @@ const STATIC_COMPONENTS: Partial<Components> = {
     );
   },
   pre: ({ children }) => <>{children}</>,
-  hr: () => <hr className="my-8 border-0 border-t border-gray-200 dark:border-gray-700" />,
+  hr: () => <hr className="my-8 border-0 border-t border-gray-200 dark:border-gray-800" />,
   strong: ({ children }) => <strong className="font-semibold text-inherit">{children}</strong>,
   em: ({ children }) => <em className="text-inherit italic">{children}</em>,
   u: ({ children }) => (
@@ -83,10 +83,10 @@ const STATIC_COMPONENTS: Partial<Components> = {
   thead: ({ children }) => <thead className="bg-gray-100 dark:bg-gray-800">{children}</thead>,
   tbody: ({ children }) => <tbody>{children}</tbody>,
   tr: ({ children }) => (
-    <tr className="border-b border-gray-200 dark:border-gray-700">{children}</tr>
+    <tr className="border-b border-gray-200 dark:border-gray-800">{children}</tr>
   ),
   th: ({ children }) => (
-    <th className="border-b border-gray-300 px-3 py-2 text-left font-semibold dark:border-gray-600">
+    <th className="border-b border-gray-300 px-3 py-2 text-left font-semibold dark:border-gray-700">
       {children}
     </th>
   ),

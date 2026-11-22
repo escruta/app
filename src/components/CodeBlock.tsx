@@ -1,9 +1,8 @@
-import { memo, useMemo, useState } from "react";
+import { memo, useMemo } from "react";
 import { createLowlight, common } from "lowlight";
 import { cn } from "@/lib/utils";
 import type { RootContent } from "hast";
-import { CopyIcon, CheckIcon } from "@/components/icons";
-import { IconButton } from "./ui";
+import { CopyButton, Tooltip } from "./ui";
 
 const lowlight = createLowlight(common);
 
@@ -75,8 +74,6 @@ interface CodeBlockProps {
 }
 
 export const CodeBlock = memo(function CodeBlock({ children, className, inline }: CodeBlockProps) {
-  const [copied, setCopied] = useState(false);
-
   const text = useMemo(() => (children ? String(children) : ""), [children]);
   const language = useMemo(() => {
     const match = /language-(\w+)/.exec(className || "");
@@ -96,26 +93,17 @@ export const CodeBlock = memo(function CodeBlock({ children, className, inline }
     );
   }
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   return (
     <div
       className={cn(
-        "relative group my-4 block bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-xs overflow-hidden",
+        "group relative my-4 block overflow-hidden rounded-xs border border-gray-200 bg-gray-50 text-gray-900 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-100",
         className,
       )}
     >
-      <div className="absolute top-2 right-2 z-10 opacity-0 transition-opacity group-hover:opacity-100">
-        <IconButton
-          icon={copied ? <CheckIcon className="size-4" /> : <CopyIcon className="size-4" />}
-          onClick={handleCopy}
-          size="xs"
-          variant="ghost"
-        />
+      <div className="absolute top-2 right-2 z-10 opacity-100 transition-opacity duration-150 sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100">
+        <Tooltip text="Copy code" position="top">
+          <CopyButton textToCopy={text} tooltipText="Copy code" size="xs" />
+        </Tooltip>
       </div>
       <div className="overflow-x-auto p-4">
         {highlightedHtml !== null ? (

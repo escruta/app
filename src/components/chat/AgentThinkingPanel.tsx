@@ -271,7 +271,7 @@ export function AgentThinkingPanel({
         }}
         aria-expanded={isExpanded}
         className={cn(
-          "group inline-flex max-w-full cursor-pointer items-center gap-2 rounded-xs border px-2.5 py-1 text-left text-xs transition-colors select-none",
+          "group inline-flex max-w-full cursor-pointer items-center gap-2 rounded-xs border px-2.5 py-1 text-left text-xs transition-colors duration-150 select-none focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500/25 focus-visible:outline-none dark:focus-visible:border-blue-400 dark:focus-visible:ring-blue-400/25",
           isGroupRunning
             ? "border-blue-200 bg-blue-50/70 text-gray-900 hover:border-blue-300 hover:bg-blue-100/70 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-gray-100 dark:hover:border-blue-800/70 dark:hover:bg-blue-950/50"
             : "border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300 hover:bg-gray-100 hover:text-gray-900 dark:border-gray-800 dark:bg-gray-900/60 dark:text-gray-300 dark:hover:border-gray-700 dark:hover:bg-gray-800/80 dark:hover:text-gray-100",

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAccessibility } from "@/hooks";
+import { EASE_OUT } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { ChevronIcon } from "@/components/icons";
 import type { StudyGuideResponse } from "@/interfaces";
@@ -27,24 +28,26 @@ function CollapsibleSection({
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className="overflow-hidden rounded-xs border border-gray-200 dark:border-gray-600">
+    <div className="overflow-hidden rounded-xs border border-gray-200 dark:border-gray-800">
       <button
         type="button"
+        aria-expanded={isOpen}
         onClick={() => setIsOpen((prev) => !prev)}
-        className="flex w-full items-center justify-between bg-gray-50 p-4 transition-colors duration-200 hover:bg-blue-50/50 dark:bg-gray-800 dark:hover:bg-gray-700"
+        className="flex w-full cursor-pointer items-center justify-between bg-gray-50 p-4 text-left transition-colors duration-150 select-none hover:bg-blue-50/50 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none focus-visible:ring-inset dark:bg-gray-900 dark:hover:bg-gray-800/80 dark:focus-visible:ring-blue-400"
       >
         <div className="flex items-center gap-3">
-          <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100">{title}</h3>
+          <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
           {badge !== undefined && (
-            <span className="rounded-xs bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-600 dark:bg-blue-900/50 dark:text-blue-300">
+            <span className="rounded-xs bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-600 tabular-nums dark:bg-blue-900/50 dark:text-blue-300">
               {badge}
             </span>
           )}
         </div>
 
         <ChevronIcon
+          aria-hidden="true"
           direction={isOpen ? "up" : "down"}
-          className="size-3.5 text-gray-400 transition-transform duration-200 dark:text-gray-500"
+          className="size-4 text-gray-400 transition-transform duration-150 dark:text-gray-500"
         />
       </button>
       <AnimatePresence initial={false}>
@@ -54,11 +57,11 @@ function CollapsibleSection({
             animate={{ height: "auto", opacity: 1 }}
             exit={effectiveReducedMotion ? undefined : { height: 0, opacity: 0 }}
             transition={
-              effectiveReducedMotion ? { duration: 0 } : { duration: 0.25, ease: "easeOut" }
+              effectiveReducedMotion ? { duration: 0 } : { duration: 0.2, ease: EASE_OUT }
             }
-            className="overflow-hidden"
+            className="overflow-hidden border-t border-gray-200 dark:border-gray-800"
           >
-            <div className="bg-white p-4 dark:bg-gray-900">{children}</div>
+            <div className="bg-white p-4 dark:bg-gray-950">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -86,7 +89,7 @@ export function StudyGuideViewer({ data, className }: StudyGuideViewerProps) {
             {keyConcepts.map((concept, index) => (
               <div
                 key={index}
-                className="flex flex-col rounded-xs border border-gray-100 bg-gray-50 p-3 sm:flex-row sm:gap-4 dark:border-gray-700 dark:bg-gray-800"
+                className="flex flex-col rounded-xs border border-gray-200 bg-gray-50/60 p-3 sm:flex-row sm:gap-4 dark:border-gray-800 dark:bg-gray-900"
               >
                 <dt className="shrink-0 text-base font-medium text-blue-600 select-text sm:max-w-45 sm:min-w-45 dark:text-blue-400">
                   {concept.term}
@@ -128,7 +131,7 @@ export function StudyGuideViewer({ data, className }: StudyGuideViewerProps) {
           <ul className="flex flex-col gap-2">
             {connections.map((connection, index) => (
               <li key={index} className="flex items-start gap-3">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-xs bg-blue-100 text-xs font-medium text-blue-600 dark:bg-blue-900/50 dark:text-blue-300">
+                <span className="flex size-5 shrink-0 items-center justify-center rounded-xs bg-blue-100 text-xs font-medium text-blue-600 tabular-nums dark:bg-blue-900/50 dark:text-blue-300">
                   {index + 1}
                 </span>
                 <span className="pt-0.5 text-base leading-relaxed text-gray-700 select-text dark:text-gray-200">
@@ -149,7 +152,7 @@ export function StudyGuideViewer({ data, className }: StudyGuideViewerProps) {
           <ol className="flex flex-col gap-3">
             {reviewQuestions.map((question, index) => (
               <li key={index} className="flex items-start gap-3">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-xs bg-green-100 text-xs font-medium text-green-600 dark:bg-green-900/50 dark:text-green-300">
+                <span className="flex size-6 shrink-0 items-center justify-center rounded-xs bg-green-100 text-xs font-medium text-green-600 tabular-nums dark:bg-green-900/50 dark:text-green-300">
                   {index + 1}
                 </span>
                 <span className="pt-0.5 text-base leading-relaxed text-gray-700 select-text dark:text-gray-200">

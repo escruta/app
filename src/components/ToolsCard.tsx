@@ -258,7 +258,9 @@ export function ToolsCard({
                 <ToolsIcon />
               </div>
             </div>
-            <h3 className="text-foreground mb-2 text-lg font-semibold">No generations yet</h3>
+            <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
+              No generations yet
+            </h3>
             <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
               {hasReadySources
                 ? "Use the + button above to choose a study tool, customize its metrics, and generate."
@@ -272,7 +274,9 @@ export function ToolsCard({
                 <SearchIcon />
               </div>
             </div>
-            <h3 className="text-foreground mb-2 text-lg font-semibold">No results</h3>
+            <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-gray-100">
+              No results
+            </h3>
             <p className="max-w-xs text-sm leading-relaxed text-gray-500 dark:text-gray-400">
               No generations match that filter or search.
             </p>

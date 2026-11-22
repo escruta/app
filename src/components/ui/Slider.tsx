@@ -223,10 +223,9 @@ export function Slider({
             style={{ left: `${percentage}%` }}
             className={cn(
               "z-10 absolute top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 rounded-xs border-2 border-blue-600 bg-white shadow-xs transition-shadow duration-150 dark:border-blue-400 dark:bg-gray-950",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-blue-400 dark:focus-visible:ring-offset-gray-900",
-              !disabled &&
-                "group-hover:ring-2 group-hover:ring-blue-300 dark:group-hover:ring-blue-500/40",
-              isDragging && "ring-2 ring-blue-400 dark:ring-blue-400/60",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/35 dark:focus-visible:ring-blue-400/40",
+              !disabled && "group-hover:border-blue-700 dark:group-hover:border-blue-300",
+              isDragging && "ring-2 ring-blue-500/35 dark:ring-blue-400/40",
             )}
           />
         </div>
@@ -244,12 +243,12 @@ export function Slider({
                   onClick={() => onChange(mark.value)}
                   style={{ left: `${markPct}%` }}
                   className={cn(
-                    "absolute top-0 -translate-x-1/2 cursor-pointer rounded-xs px-1 py-0.5 text-[11px] font-medium tabular-nums transition-colors",
-                    "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500",
+                    "absolute top-0 -translate-x-1/2 cursor-pointer rounded-xs px-1 py-0.5 text-[11px] font-medium tabular-nums transition-colors duration-150",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400",
                     isSelected
                       ? "font-semibold text-blue-600 dark:text-blue-400"
                       : "text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300",
-                    disabled && "pointer-events-none",
+                    disabled && "pointer-events-none opacity-50",
                   )}
                 >
                   {mark.label}
