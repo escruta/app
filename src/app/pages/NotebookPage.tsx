@@ -1824,19 +1824,6 @@ export default function NotebookPage() {
                         readySourcesCount={
                           (notebook?.sources ?? []).filter((s) => s.status === "READY").length
                         }
-                        sources={notebook?.sources ?? []}
-                        notes={notebook?.notes ?? []}
-                        onOpenSource={(source) =>
-                          openTab({
-                            kind: "source",
-                            refId: source.id,
-                            title: source.title,
-                            source,
-                          })
-                        }
-                        onOpenNote={(note) =>
-                          openTab({ kind: "note", refId: note.id, title: note.title, note })
-                        }
                       />
                     ),
                   },

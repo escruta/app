@@ -15,31 +15,15 @@ import {
   PanelList,
   PanelListItem,
 } from "@/components/ui";
-import { NoteIcon, RestartIcon, StarsIcon } from "@/components/icons";
-import { getHttpErrorMessage, getSourceIcon, timeAgo } from "@/lib/utils";
+import { RestartIcon, StarsIcon } from "@/components/icons";
+import { getHttpErrorMessage } from "@/lib/utils";
 import { panelSwitchTransition } from "@/lib/motion";
 import { AI_AUTO_OVERVIEW_COOKIE_KEY, DEFAULT_AI_SETTINGS } from "@/components/settings/lib/ai";
-import type { Note, Source } from "@/interfaces";
 
 interface OverviewPanelProps {
   notebookId: string;
   readySourcesCount: number;
-  sources: Source[];
-  notes: Note[];
-  createdAt?: Date;
-  onOpenSource: (source: Source) => void;
-  onOpenNote: (note: Note) => void;
 }
-
-interface RecentItem {
-  id: string;
-  title: string;
-  date: Date;
-  icon: ReactNode;
-  onOpen: () => void;
-}
-
-const MAX_RECENT_ITEMS = 4;
 
 function SectionLabel({ children }: { children: ReactNode }) {
   return (
@@ -49,14 +33,7 @@ function SectionLabel({ children }: { children: ReactNode }) {
   );
 }
 
-export function OverviewPanel({
-  notebookId,
-  readySourcesCount,
-  sources,
-  notes,
-  onOpenSource,
-  onOpenNote,
-}: OverviewPanelProps) {
+export function OverviewPanel({ notebookId, readySourcesCount }: OverviewPanelProps) {
   const { effectiveReducedMotion } = useAccessibility();
   const { value: autoGenerateOverview } = useCookie<boolean>(
     AI_AUTO_OVERVIEW_COOKIE_KEY,
@@ -160,28 +137,6 @@ export function OverviewPanel({
     isSummaryLoading || isSummaryRegenerating || isSummaryGenerating || isAutoRegenerating;
 
   const keyTopics = notebookSummaryData?.topics ?? [];
-  const recentItems = useMemo<RecentItem[]>(() => {
-    const items: RecentItem[] = [
-      ...sources.map((source) => ({
-        id: `source-${source.id}`,
-        title: source.title,
-        date: new Date(source.createdAt),
-        icon: getSourceIcon(source.type),
-        onOpen: () => onOpenSource(source),
-      })),
-      ...notes.map((note) => ({
-        id: `note-${note.id}`,
-        title: note.title,
-        date: new Date(note.createdAt),
-        icon: <NoteIcon />,
-        onOpen: () => onOpenNote(note),
-      })),
-    ];
-
-    return items.sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, MAX_RECENT_ITEMS);
-  }, [sources, notes, onOpenSource, onOpenNote]);
-
-  const showActivity = recentItems.length > 0 && !isLoading && !summaryGenerateError;
 
   return (
     <SidePanel
@@ -295,34 +250,6 @@ export function OverviewPanel({
                 <Chip size="sm" title={topic} className="select-text">
                   {topic}
                 </Chip>
-              </PanelListItem>
-            ))}
-          </PanelList>
-        </div>
-      )}
-
-      {showActivity && (
-        <div>
-          <SectionLabel>Recently added</SectionLabel>
-          <PanelList className="flex flex-col">
-            {recentItems.map((item) => (
-              <PanelListItem key={item.id}>
-                <button
-                  type="button"
-                  onClick={item.onOpen}
-                  title={item.title}
-                  className="group flex w-full cursor-pointer items-center gap-2 rounded-xs px-1.5 py-1.5 text-left transition-colors duration-150 hover:bg-gray-100/70 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none focus-visible:ring-inset dark:hover:bg-gray-800/60 dark:focus-visible:ring-blue-400"
-                >
-                  <span className="flex size-3.5 shrink-0 items-center justify-center text-gray-400 transition-colors group-hover:text-blue-500 dark:text-gray-500 dark:group-hover:text-blue-400">
-                    {item.icon}
-                  </span>
-                  <span className="min-w-0 flex-1 truncate text-[13px] text-gray-600 transition-colors group-hover:text-gray-900 dark:text-gray-300 dark:group-hover:text-gray-100">
-                    {item.title}
-                  </span>
-                  <span className="shrink-0 text-[11px] text-gray-400 dark:text-gray-500">
-                    {timeAgo(item.date)}
-                  </span>
-                </button>
               </PanelListItem>
             ))}
           </PanelList>
