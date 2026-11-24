@@ -42,6 +42,7 @@ import {
 import { TOOL_DEFINITIONS, getToolMetricBadges } from "@/components/tools/toolConfig";
 
 interface ToolResultViewerProps {
+  notebookId?: string;
   title: string;
   type: JobType;
   content: string;
@@ -79,6 +80,7 @@ function parseContent(content: string, type: JobType): ParsedContent {
 }
 
 export function ToolResultViewer({
+  notebookId,
   title,
   type,
   content,
@@ -227,9 +229,13 @@ export function ToolResultViewer({
 
     switch (parsedContent.type) {
       case "FLASHCARDS":
-        return <FlashcardsViewer key={contentKey} data={parsedContent.data} />;
+        return (
+          <FlashcardsViewer key={contentKey} data={parsedContent.data} notebookId={notebookId} />
+        );
       case "QUESTIONNAIRE":
-        return <QuestionnaireViewer key={contentKey} data={parsedContent.data} />;
+        return (
+          <QuestionnaireViewer key={contentKey} data={parsedContent.data} notebookId={notebookId} />
+        );
       case "STUDY_GUIDE":
         return <StudyGuideViewer key={contentKey} data={parsedContent.data} />;
       case "MIND_MAP":

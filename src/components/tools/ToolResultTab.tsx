@@ -138,6 +138,7 @@ export function ToolResultTab({
   return (
     <>
       <ToolResultViewer
+        notebookId={notebookId}
         title={effectiveTitle}
         type={effectiveType}
         content={result ?? ""}

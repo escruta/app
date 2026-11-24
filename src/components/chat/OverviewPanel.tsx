@@ -6,6 +6,7 @@ import {
   Alert,
   Button,
   Chip,
+  Divider,
   IconButton,
   Tooltip,
   Skeleton,
@@ -19,6 +20,7 @@ import { RestartIcon, StarsIcon } from "@/components/icons";
 import { getHttpErrorMessage } from "@/lib/utils";
 import { panelSwitchTransition } from "@/lib/motion";
 import { AI_AUTO_OVERVIEW_COOKIE_KEY, DEFAULT_AI_SETTINGS } from "@/components/settings/lib/ai";
+import { LearningMemorySection } from "./LearningMemorySection";
 
 interface OverviewPanelProps {
   notebookId: string;
@@ -255,6 +257,10 @@ export function OverviewPanel({ notebookId, readySourcesCount }: OverviewPanelPr
           </PanelList>
         </div>
       )}
+
+      <Divider className="my-0" />
+
+      <LearningMemorySection notebookId={notebookId} />
     </SidePanel>
   );
 }

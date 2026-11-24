@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { useShortcuts, useAccessibility, useCookie } from "@/hooks";
+import { useShortcuts, useAccessibility, useCookie, useLearningSignal } from "@/hooks";
 import {
   AI_AUTO_ADVANCE_FLASHCARDS_COOKIE_KEY,
   DEFAULT_AI_SETTINGS,
@@ -12,6 +12,7 @@ import type { FlashcardsResponse } from "@/interfaces";
 
 interface FlashcardsViewerProps {
   data: FlashcardsResponse;
+  notebookId?: string;
   className?: string;
 }
 
@@ -30,8 +31,9 @@ const slideVariants = {
   }),
 };
 
-export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
+export function FlashcardsViewer({ data, notebookId, className }: FlashcardsViewerProps) {
   const { effectiveReducedMotion } = useAccessibility();
+  const { recordSignal } = useLearningSignal(notebookId);
   const { value: autoAdvanceFlashcards } = useCookie<boolean>(
     AI_AUTO_ADVANCE_FLASHCARDS_COOKIE_KEY,
     DEFAULT_AI_SETTINGS.autoAdvanceFlashcards,
@@ -40,6 +42,7 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
   const [isFlipped, setIsFlipped] = useState(false);
   const [direction, setDirection] = useState(0);
   const [knownCards, setKnownCards] = useState<Set<number>>(new Set());
+  const [reviewCards, setReviewCards] = useState<Set<number>>(new Set());
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -82,10 +85,58 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
       }
       return newSet;
     });
-    if (!isCurrentlyKnown && autoAdvanceFlashcards && currentIndex < totalCards - 1) {
-      setDirection(1);
-      setCurrentIndex((prev) => prev + 1);
-      setIsFlipped(false);
+    if (!isCurrentlyKnown) {
+      setReviewCards((prev) => {
+        if (!prev.has(currentIndex)) return prev;
+        const next = new Set(prev);
+        next.delete(currentIndex);
+        return next;
+      });
+      if (currentCard?.front) {
+        void recordSignal({
+          source: "FLASHCARD",
+          outcome: "MASTERED",
+          topic: currentCard.front,
+        });
+      }
+      if (autoAdvanceFlashcards && currentIndex < totalCards - 1) {
+        setDirection(1);
+        setCurrentIndex((prev) => prev + 1);
+        setIsFlipped(false);
+      }
+    }
+  }
+
+  function handleMarkNeedsReview() {
+    const isCurrentlyReview = reviewCards.has(currentIndex);
+    setReviewCards((prev) => {
+      const next = new Set(prev);
+      if (isCurrentlyReview) {
+        next.delete(currentIndex);
+      } else {
+        next.add(currentIndex);
+      }
+      return next;
+    });
+    if (!isCurrentlyReview) {
+      setKnownCards((prev) => {
+        if (!prev.has(currentIndex)) return prev;
+        const next = new Set(prev);
+        next.delete(currentIndex);
+        return next;
+      });
+      if (currentCard?.front) {
+        void recordSignal({
+          source: "FLASHCARD",
+          outcome: "STRUGGLING",
+          topic: currentCard.front,
+        });
+      }
+      if (autoAdvanceFlashcards && currentIndex < totalCards - 1) {
+        setDirection(1);
+        setCurrentIndex((prev) => prev + 1);
+        setIsFlipped(false);
+      }
     }
   }
 
@@ -94,6 +145,7 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
     setIsFlipped(false);
     setDirection(-1);
     setKnownCards(new Set());
+    setReviewCards(new Set());
   }
 
   const handleKeyDown = useShortcuts([
@@ -146,7 +198,7 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
             </div>
           </div>
 
-          {knownCount > 0 && (
+          {(knownCount > 0 || reviewCards.size > 0) && (
             <Tooltip text="Restart deck" position="bottom">
               <IconButton
                 icon={<RestartIcon />}
@@ -215,7 +267,9 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
                     "flex flex-col items-center justify-center text-center shadow-xs",
                     knownCards.has(currentIndex)
                       ? "border-green-500 dark:border-green-500"
-                      : "border-gray-200 hover:border-blue-300 dark:border-gray-700 dark:hover:border-blue-500",
+                      : reviewCards.has(currentIndex)
+                        ? "border-amber-400 dark:border-amber-500"
+                        : "border-gray-200 hover:border-blue-300 dark:border-gray-700 dark:hover:border-blue-500",
                   )}
                 >
                   <div className="absolute top-3 left-3 flex items-center gap-2">
@@ -235,6 +289,20 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
                       >
                         <CheckIcon className="size-3" />
                         Learned
+                      </motion.span>
+                    )}
+                    {reviewCards.has(currentIndex) && (
+                      <motion.span
+                        initial={effectiveReducedMotion ? false : { opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={
+                          effectiveReducedMotion
+                            ? { duration: 0 }
+                            : { duration: 0.2, ease: "easeOut" }
+                        }
+                        className="flex items-center gap-1 rounded-xs bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-900/50 dark:text-amber-300"
+                      >
+                        Needs review
                       </motion.span>
                     )}
                   </div>
@@ -284,7 +352,18 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
             </Tooltip>
           </div>
 
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center gap-2">
+            <Button
+              onClick={handleMarkNeedsReview}
+              variant="secondary"
+              size="sm"
+              className={cn(
+                reviewCards.has(currentIndex) &&
+                  "border-amber-400 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/60",
+              )}
+            >
+              Needs review
+            </Button>
             <Button
               onClick={handleMarkKnown}
               variant={knownCards.has(currentIndex) ? "success" : "primary"}
@@ -329,10 +408,14 @@ export function FlashcardsViewer({ data, className }: FlashcardsViewerProps) {
                   idx === currentIndex
                     ? knownCards.has(idx)
                       ? "bg-green-500 scale-125 ring-2 ring-green-500/30"
-                      : "bg-blue-500 scale-125 ring-2 ring-blue-500/30"
+                      : reviewCards.has(idx)
+                        ? "bg-amber-500 scale-125 ring-2 ring-amber-500/30"
+                        : "bg-blue-500 scale-125 ring-2 ring-blue-500/30"
                     : knownCards.has(idx)
                       ? "bg-green-500"
-                      : "bg-gray-300 dark:bg-gray-600 group-hover:bg-gray-400 dark:group-hover:bg-gray-500",
+                      : reviewCards.has(idx)
+                        ? "bg-amber-500"
+                        : "bg-gray-300 dark:bg-gray-600 group-hover:bg-gray-400 dark:group-hover:bg-gray-500",
                 )}
               />
             </button>

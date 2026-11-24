@@ -25,6 +25,7 @@ interface TextFieldSingleLineProps extends TextFieldBaseProps {
   type?: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
 }
 
 interface TextFieldMultiLineProps extends TextFieldBaseProps {
@@ -32,6 +33,7 @@ interface TextFieldMultiLineProps extends TextFieldBaseProps {
   type?: never;
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+  onBlur?: (e: React.FocusEvent<HTMLTextAreaElement>) => void;
 }
 
 export function TextField({
@@ -41,6 +43,7 @@ export function TextField({
   value,
   onChange,
   onKeyDown,
+  onBlur,
   className = "",
   placeholder,
   required = false,
@@ -108,6 +111,7 @@ export function TextField({
         (onChange as (e: React.ChangeEvent<HTMLTextAreaElement>) => void)(e);
       }}
       onKeyDown={onKeyDown as ((e: React.KeyboardEvent<HTMLTextAreaElement>) => void) | undefined}
+      onBlur={onBlur as ((e: React.FocusEvent<HTMLTextAreaElement>) => void) | undefined}
       className={inputClassName}
       placeholder={placeholder}
       required={required}
@@ -129,6 +133,7 @@ export function TextField({
         value={value}
         onChange={onChange as (e: React.ChangeEvent<HTMLInputElement>) => void}
         onKeyDown={onKeyDown as ((e: React.KeyboardEvent<HTMLInputElement>) => void) | undefined}
+        onBlur={onBlur as ((e: React.FocusEvent<HTMLInputElement>) => void) | undefined}
         className={inputClassName}
         placeholder={placeholder}
         required={required}

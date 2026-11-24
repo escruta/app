@@ -2,6 +2,7 @@ export type * from "./Conversation";
 export type * from "./FlashcardsResponse";
 export type * from "./Folder";
 export type * from "./GenerationJob";
+export type * from "./LearningMemory";
 export type * from "./MindMapResponse";
 export type * from "./Note";
 export type * from "./NoteGroup";

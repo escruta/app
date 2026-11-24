@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { useAccessibility } from "@/hooks";
+import { useAccessibility, useLearningSignal } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { Button, IconButton, Tooltip } from "@/components/ui";
 import { CheckIcon, CloseIcon, ChevronIcon, RestartIcon } from "@/components/icons";
@@ -8,6 +8,7 @@ import type { QuestionnaireResponse, Question } from "@/interfaces";
 
 interface QuestionnaireViewerProps {
   data: QuestionnaireResponse;
+  notebookId?: string;
   className?: string;
 }
 
@@ -35,10 +36,11 @@ const slideVariants = {
   }),
 };
 
-export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProps) {
+export function QuestionnaireViewer({ data, notebookId, className }: QuestionnaireViewerProps) {
   const { questions = [] } = data;
 
   const { effectiveReducedMotion } = useAccessibility();
+  const { recordSignal } = useLearningSignal(notebookId);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const [showResults, setShowResults] = useState(false);
@@ -73,6 +75,14 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
       isCorrect,
       showExplanation: true,
     });
+
+    if (question?.question) {
+      void recordSignal({
+        source: "QUESTIONNAIRE",
+        outcome: isCorrect ? "MASTERED" : "STRUGGLING",
+        topic: question.question,
+      });
+    }
   }
 
   function handleTrueFalseSelect(selected: boolean) {
@@ -85,6 +95,14 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
       isCorrect,
       showExplanation: true,
     });
+
+    if (question?.question) {
+      void recordSignal({
+        source: "QUESTIONNAIRE",
+        outcome: isCorrect ? "MASTERED" : "STRUGGLING",
+        topic: question.question,
+      });
+    }
   }
 
   function handleShortAnswerSubmit() {
@@ -92,6 +110,20 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
       answered: true,
       showExplanation: true,
     });
+  }
+
+  function handleShortAnswerSelfGrade(understood: boolean) {
+    const question = questions[currentIndex];
+    updateQuestionState(currentIndex, {
+      isCorrect: understood,
+    });
+    if (question?.question) {
+      void recordSignal({
+        source: "QUESTIONNAIRE",
+        outcome: understood ? "MASTERED" : "STRUGGLING",
+        topic: question.question,
+      });
+    }
   }
 
   function handleTextChange(text: string) {
@@ -301,6 +333,7 @@ export function QuestionnaireViewer({ data, className }: QuestionnaireViewerProp
                     onMultipleChoiceSelect={handleMultipleChoiceSelect}
                     onTrueFalseSelect={handleTrueFalseSelect}
                     onShortAnswerSubmit={handleShortAnswerSubmit}
+                    onShortAnswerSelfGrade={handleShortAnswerSelfGrade}
                     onTextChange={handleTextChange}
                   />
                 </motion.div>
@@ -409,6 +442,7 @@ interface QuestionContentProps {
   onMultipleChoiceSelect: (optionIndex: number) => void;
   onTrueFalseSelect: (selected: boolean) => void;
   onShortAnswerSubmit: () => void;
+  onShortAnswerSelfGrade: (understood: boolean) => void;
   onTextChange: (text: string) => void;
 }
 
@@ -420,6 +454,7 @@ function QuestionContent({
   onMultipleChoiceSelect,
   onTrueFalseSelect,
   onShortAnswerSubmit,
+  onShortAnswerSelfGrade,
   onTextChange,
 }: QuestionContentProps) {
   const { effectiveReducedMotion } = useAccessibility();
@@ -628,6 +663,22 @@ function QuestionContent({
                 </motion.div>
               )}
             </AnimatePresence>
+            {state.answered && state.isCorrect === null && (
+              <div className="mt-3 flex items-center justify-end gap-2">
+                <span className="text-xs text-gray-500 dark:text-gray-400">How did you do?</span>
+                <Button variant="secondary" size="sm" onClick={() => onShortAnswerSelfGrade(false)}>
+                  Needs review
+                </Button>
+                <Button
+                  variant="success"
+                  size="sm"
+                  icon={<CheckIcon />}
+                  onClick={() => onShortAnswerSelfGrade(true)}
+                >
+                  Got it
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </div>

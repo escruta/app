@@ -12,6 +12,7 @@ import {
   MathIcon,
   SearchIcon,
   StarsIcon,
+  StudyIcon,
 } from "@/components/icons";
 import { Markdown } from "../Markdown";
 
@@ -48,6 +49,8 @@ function StepBadgeIcon({ step }: { step: AgentStep }) {
       return <BookOpenIcon className="size-3 text-blue-600 dark:text-blue-400" />;
     case "calculate":
       return <MathIcon className="size-3 text-blue-600 dark:text-blue-400" />;
+    case "memory":
+      return <StudyIcon className="size-3 text-blue-600 dark:text-blue-400" />;
     default:
       return <StarsIcon className="size-3 text-blue-600 dark:text-blue-400" />;
   }
@@ -95,7 +98,11 @@ function ToolItem({ step }: { step: AgentStep }) {
           ? "Checked overview"
           : step.type === "calculate"
             ? "Calculated"
-            : step.title;
+            : step.type === "memory"
+              ? step.title.toLowerCase().startsWith("checking")
+                ? "Checked learning memory"
+                : "Updated learning memory"
+              : step.title;
 
   const formattedResult = step.result?.replace(/^Found\s+/, "") ?? null;
 
