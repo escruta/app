@@ -268,7 +268,7 @@ export function FlashcardsViewer({ data, notebookId, className }: FlashcardsView
                     knownCards.has(currentIndex)
                       ? "border-green-500 dark:border-green-500"
                       : reviewCards.has(currentIndex)
-                        ? "border-amber-400 dark:border-amber-500"
+                        ? "border-orange-400 dark:border-orange-500"
                         : "border-gray-200 hover:border-blue-300 dark:border-gray-700 dark:hover:border-blue-500",
                   )}
                 >
@@ -300,7 +300,7 @@ export function FlashcardsViewer({ data, notebookId, className }: FlashcardsView
                             ? { duration: 0 }
                             : { duration: 0.2, ease: "easeOut" }
                         }
-                        className="flex items-center gap-1 rounded-xs bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-900/50 dark:text-amber-300"
+                        className="flex items-center gap-1 rounded-xs bg-orange-100 px-2 py-0.5 text-[10px] font-medium text-orange-700 dark:bg-orange-900/50 dark:text-orange-300"
                       >
                         Needs review
                       </motion.span>
@@ -359,7 +359,7 @@ export function FlashcardsViewer({ data, notebookId, className }: FlashcardsView
               size="sm"
               className={cn(
                 reviewCards.has(currentIndex) &&
-                  "border-amber-400 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:hover:bg-amber-950/60",
+                  "border-orange-400 bg-orange-50 text-orange-700 hover:bg-orange-100 dark:border-orange-600 dark:bg-orange-950/40 dark:text-orange-300 dark:hover:bg-orange-950/60",
               )}
             >
               Needs review
@@ -409,12 +409,12 @@ export function FlashcardsViewer({ data, notebookId, className }: FlashcardsView
                     ? knownCards.has(idx)
                       ? "bg-green-500 scale-125 ring-2 ring-green-500/30"
                       : reviewCards.has(idx)
-                        ? "bg-amber-500 scale-125 ring-2 ring-amber-500/30"
+                        ? "bg-orange-500 scale-125 ring-2 ring-orange-500/30"
                         : "bg-blue-500 scale-125 ring-2 ring-blue-500/30"
                     : knownCards.has(idx)
                       ? "bg-green-500"
                       : reviewCards.has(idx)
-                        ? "bg-amber-500"
+                        ? "bg-orange-500"
                         : "bg-gray-300 dark:bg-gray-600 group-hover:bg-gray-400 dark:group-hover:bg-gray-500",
                 )}
               />

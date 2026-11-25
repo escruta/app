@@ -48,6 +48,8 @@ interface ChatCardProps {
   autoFocus?: boolean;
   initialConversationId?: string | null;
   initialConversationTitle?: string | null;
+  initialMode?: ChatMode;
+  initialPrompt?: string | null;
   onConversationCreated?: (conversationId: string) => void;
   onTitleChange?: (title: string) => void;
   onConversationCompleted?: () => void;
@@ -114,6 +116,8 @@ export function ChatCard({
   autoFocus = true,
   initialConversationId,
   initialConversationTitle,
+  initialMode,
+  initialPrompt,
   onConversationCreated,
   onTitleChange,
   onConversationCompleted,
@@ -208,8 +212,9 @@ export function ChatCard({
   useRealtimeEvent("summary.updated", handleSummaryUpdated);
 
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState<string>("");
-  const [mode, setMode] = useState<ChatMode>(defaultChatMode ?? "NORMAL");
+  const [input, setInput] = useState<string>(initialPrompt?.trim() ?? "");
+  const [mode, setMode] = useState<ChatMode>(initialMode ?? defaultChatMode ?? "NORMAL");
+  const appliedPromptRef = useRef<string | null>(initialPrompt?.trim() || null);
   const [conversationId, setConversationId] = useState<string | null>(
     initialConversationId ?? null,
   );
@@ -712,6 +717,19 @@ export function ChatCard({
 
     await handleStreamChat();
   };
+
+  useEffect(() => {
+    const trimmed = initialPrompt?.trim();
+    if (!trimmed || initialConversationId) return;
+    if (appliedPromptRef.current === trimmed) return;
+
+    appliedPromptRef.current = trimmed;
+    if (initialMode) {
+      setMode(initialMode);
+    }
+    setInput(trimmed);
+    focusInputAfterRender();
+  }, [initialPrompt, initialMode, initialConversationId, focusInputAfterRender]);
 
   const handleInputKeyDown = useShortcut(
     "chat-send",

@@ -2,6 +2,7 @@ import { memo, useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useLoaderData } from "react-router";
 import { useFetch, useCookie, useRealtimeEvent, useShortcut, useShortcuts } from "@/hooks";
 import type {
+  ChatMode,
   Note,
   Source,
   Notebook,
@@ -74,6 +75,8 @@ type TabDescriptor = {
   source?: Source | undefined;
   note?: Note | undefined;
   toolType?: JobType | undefined;
+  initialChatMode?: ChatMode | undefined;
+  initialChatPrompt?: string | undefined;
 };
 
 type SplitState = { leftKey: string; rightKey: string; rightGroup: string[] };
@@ -122,6 +125,8 @@ function sanitizeTabsForCookie(tabs: TabDescriptor[]): TabDescriptor[] {
     ...t,
     source: t.source ? { ...t.source, content: undefined } : undefined,
     note: t.note ? { ...t.note, content: "" } : undefined,
+    initialChatMode: undefined,
+    initialChatPrompt: undefined,
   }));
 }
 
@@ -207,6 +212,8 @@ const TabPaneContent = memo(
             autoFocus={isActive}
             initialConversationId={tab.refId === NEW_CHAT_ID ? null : tab.refId}
             initialConversationTitle={tab.refId === NEW_CHAT_ID ? null : tab.title}
+            initialMode={tab.initialChatMode}
+            initialPrompt={tab.initialChatPrompt}
             onConversationCreated={handleConvCreated}
             onTitleChange={handleTitleChange}
             onConversationCompleted={onConversationCompleted}
@@ -595,7 +602,22 @@ export default function NotebookPage() {
       if (descriptor.kind === "chat" && descriptor.refId === NEW_CHAT_ID) {
         const existingNewChat = tabs.find((t) => t.kind === "chat" && t.refId === NEW_CHAT_ID);
         if (existingNewChat) {
-          selectTab(tabKey(existingNewChat));
+          const existingKey = tabKey(existingNewChat);
+          if (descriptor.initialChatPrompt || descriptor.initialChatMode) {
+            setTabs((prev) =>
+              prev.map((t) =>
+                tabKey(t) === existingKey
+                  ? {
+                      ...t,
+                      title: descriptor.title || t.title,
+                      initialChatMode: descriptor.initialChatMode ?? t.initialChatMode,
+                      initialChatPrompt: descriptor.initialChatPrompt ?? t.initialChatPrompt,
+                    }
+                  : t,
+              ),
+            );
+          }
+          selectTab(existingKey);
           return;
         }
       }
@@ -811,6 +833,30 @@ export default function NotebookPage() {
     openTab({ kind: "chat", refId: NEW_CHAT_ID, title: "New conversation" });
   }, [openTab]);
 
+  const handleReviewWithTutor = useCallback(
+    (concepts: string[]) => {
+      const cleaned = concepts.map((c) => c.trim()).filter(Boolean);
+      if (cleaned.length === 0) return;
+      const preview = cleaned.slice(0, 6);
+      const prompt =
+        preview.length === 1
+          ? `Help me review and truly understand "${preview[0]}" step by step based on the sources.`
+          : `Help me review these concepts I've been struggling with, step by step based on the sources: ${preview.join(", ")}.`;
+      const title =
+        preview.length === 1
+          ? `Review: ${preview[0].length > 36 ? `${preview[0].slice(0, 33).trim()}...` : preview[0]}`
+          : "Review weak spots";
+      openTab({
+        kind: "chat",
+        refId: NEW_CHAT_ID,
+        title,
+        initialChatMode: "LEARNING",
+        initialChatPrompt: prompt,
+      });
+    },
+    [openTab],
+  );
+
   const createChatTabSilent = useCallback(() => {
     const seq = tabSeqRef.current++;
     const candidate: TabDescriptor = {
@@ -924,8 +970,8 @@ export default function NotebookPage() {
     setTabs((prev) =>
       prev.map((t) => {
         if (tabKey(t) !== tabKeyStr) return t;
-        if (t.refId === conversationId) return t;
-        return { ...t, refId: conversationId };
+        if (t.refId === conversationId && !t.initialChatPrompt) return t;
+        return { ...t, refId: conversationId, initialChatPrompt: undefined };
       }),
     );
   }, []);
@@ -1824,6 +1870,10 @@ export default function NotebookPage() {
                         readySourcesCount={
                           (notebook?.sources ?? []).filter((s) => s.status === "READY").length
                         }
+                        sources={notebook?.sources ?? EMPTY_SOURCES}
+                        selectedSourceIds={selectedSourceIds}
+                        onReviewWithTutor={handleReviewWithTutor}
+                        onOpenToolJob={handleOpenToolJob}
                       />
                     ),
                   },

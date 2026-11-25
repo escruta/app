@@ -74,6 +74,37 @@ async function callToolsApi<T>(
   return (await response.text()) as T;
 }
 
+export async function startToolGeneration(
+  notebookId: string,
+  authToken: string | undefined,
+  payload: GenerationRequestPayload,
+): Promise<GenerationJob> {
+  const started = await callToolsApi<JobStartedResponse>(
+    `/notebooks/${notebookId}/tools/generate`,
+    authToken,
+    {
+      method: "POST",
+      body: payload,
+    },
+  );
+
+  return (
+    started.job ?? {
+      id: started.jobId,
+      notebookId,
+      type: payload.type,
+      title: payload.title?.trim() || TOOL_DEFINITIONS[payload.type].title,
+      status: "PENDING",
+      options: payload.options ?? null,
+      result: null,
+      errorMessage: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      completedAt: null,
+    }
+  );
+}
+
 function mergeJobFromEvent(
   existing: GenerationJob | null,
   event: ToolUpdatedEvent,
@@ -190,29 +221,7 @@ export function useToolGenerations(notebookId: string) {
       setStartingTypes((prev) => ({ ...prev, [payload.type]: true }));
 
       try {
-        const data = await callToolsApi<JobStartedResponse>(
-          `/notebooks/${notebookId}/tools/generate`,
-          bearerToken,
-          {
-            method: "POST",
-            body: payload,
-          },
-        );
-
-        const created: GenerationJob = data.job ?? {
-          id: data.jobId,
-          notebookId,
-          type: payload.type,
-          title: payload.title?.trim() || TOOL_DEFINITIONS[payload.type].title,
-          status: "PENDING",
-          options: payload.options ?? null,
-          result: null,
-          errorMessage: null,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          completedAt: null,
-        };
-
+        const created = await startToolGeneration(notebookId, bearerToken, payload);
         upsertJob(created);
         return created;
       } catch (err) {
@@ -410,27 +419,7 @@ export function useGenerationJob(
       setIsMutating(true);
       setError(null);
       try {
-        const started = await callToolsApi<JobStartedResponse>(
-          `/notebooks/${notebookId}/tools/generate`,
-          bearerToken,
-          {
-            method: "POST",
-            body: payload,
-          },
-        );
-        const created: GenerationJob = started.job ?? {
-          id: started.jobId,
-          notebookId,
-          type: payload.type,
-          title: payload.title?.trim() || TOOL_DEFINITIONS[payload.type].title,
-          status: "PENDING",
-          options: payload.options ?? null,
-          result: null,
-          errorMessage: null,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          completedAt: null,
-        };
+        const created = await startToolGeneration(notebookId, bearerToken, payload);
         if (isLegacy) {
           setJob(created);
         }
