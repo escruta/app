@@ -1101,7 +1101,7 @@ export function ChatCard({
         />
       )}
       <div className="flex items-end gap-2">
-        <div className="flex min-h-10 min-w-0 flex-1 items-center rounded-xs border border-gray-300 bg-white px-3.5 py-1.75 shadow-xs transition-[border-color,box-shadow,background-color] duration-150 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 hover:border-gray-400 dark:border-gray-700 dark:bg-gray-900 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400/20 dark:hover:border-gray-600">
+        <div className="flex min-h-11 min-w-0 flex-1 items-center rounded-xs border border-gray-300 bg-white px-3.5 py-2.25 shadow-xs transition-[border-color,box-shadow,background-color] duration-150 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 hover:border-gray-400 dark:border-gray-700 dark:bg-gray-900 dark:focus-within:border-blue-400 dark:focus-within:ring-blue-400/20 dark:hover:border-gray-600">
           <TextField
             id="chat-input"
             value={input}
@@ -1114,7 +1114,7 @@ export function ChatCard({
                   ? `Ask a question (${selectedSourceIds.length} source${selectedSourceIds.length !== 1 ? "s" : ""} selected)...`
                   : "Select sources to start chatting..."
             }
-            className="min-h-0! min-w-0 flex-1 rounded-xs border-0 bg-transparent p-0 leading-6 shadow-none transition-none focus:border-transparent focus:ring-0 dark:bg-transparent dark:focus:ring-0"
+            className="min-h-0! min-w-0 flex-1 rounded-xs border-0 bg-transparent p-0 text-base leading-6 shadow-none transition-none focus:border-transparent focus:ring-0 dark:bg-transparent dark:focus:ring-0"
             disabled={isBusy || selectedSourceIds.length === 0}
             autoFocus={autoFocus}
             minRows={1}
@@ -1126,24 +1126,26 @@ export function ChatCard({
           <Tooltip text="Stop generating" position="top" className="flex shrink-0">
             <IconButton
               icon={
-                <svg viewBox="0 0 24 24" fill="currentColor" className="size-4">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="size-4.5">
                   <rect x="6" y="6" width="12" height="12" rx="1.5" />
                 </svg>
               }
               onClick={handleStopStream}
               ariaLabel="Stop generating"
               size="md"
+              className="size-11"
               variant="secondary"
             />
           </Tooltip>
         ) : (
           <Tooltip text="Send your question" position="top" className="flex shrink-0">
             <IconButton
-              icon={<SendIcon className="size-4" />}
+              icon={<SendIcon className="size-4.5" />}
               onClick={handleSendMessage}
               disabled={isBusy || !input.trim() || selectedSourceIds.length === 0}
               ariaLabel="Send your question"
               size="md"
+              className="size-11"
               variant="primary"
             />
           </Tooltip>
