@@ -58,7 +58,7 @@ const CRISP_DARK_STYLES = [
   "rgba(75, 171, 253, 0.42)",
 ] as const;
 
-export type DitherHalftoneVariant = "default" | "settings" | "tabs";
+export type DitherHalftoneVariant = "default" | "settings" | "tabs" | "welcome";
 
 interface HalftoneVariantConfig {
   containerClassName: string;
@@ -149,10 +149,33 @@ const VARIANT_CONFIGS: Record<DitherHalftoneVariant, HalftoneVariantConfig> = {
     clearScaleXNarrow: 1.1,
     clearScaleXWide: 1.4,
     clearCenterY: 0.5,
-    clearScaleY: 0.9,
-    clearanceMin: 0.62,
-    fieldGain: 0.78,
-    pointerGain: 0.22,
+    clearScaleY: 1.35,
+    clearanceMin: 0.24,
+    fieldGain: 0.72,
+    pointerGain: 0.16,
+  },
+  welcome: {
+    containerClassName: "inset-0 h-full",
+    cellPx: 9,
+    lightStyles: CRISP_LIGHT_STYLES,
+    darkStyles: CRISP_DARK_STYLES,
+    baseHorizonNarrow: 0.52,
+    baseHorizonWide: 0.62,
+    sideSwellNarrow: 0.28,
+    sideSwellWide: 0.4,
+    anchorDepthNarrow: 0.2,
+    anchorDepthWide: 0.26,
+    topAnchorStrength: 0.18,
+    topFadeEnd: 0,
+    bottomFadeStart: 0.85,
+    clearCenterX: 0.5,
+    clearScaleXNarrow: 0.95,
+    clearScaleXWide: 1.25,
+    clearCenterY: 0.5,
+    clearScaleY: 1.15,
+    clearanceMin: 0.26,
+    fieldGain: 0.82,
+    pointerGain: 0.2,
   },
 };
 

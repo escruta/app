@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { useAuth, useShortcut } from "@/hooks";
+import { DitherHalftoneBackground } from "@/components";
 import { Alert, Button, Divider, Spinner, TextField } from "@/components/ui";
 import { BACKEND_BASE_URL } from "@/config";
 import { appFetch } from "@/lib/http";
@@ -21,6 +22,7 @@ async function parseError(response: Response): Promise<string> {
 
 export function WelcomePage() {
   const navigate = useNavigate();
+  const containerRef = useRef<HTMLDivElement>(null);
   const { setSessionToken } = useAuth();
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
@@ -181,12 +183,14 @@ export function WelcomePage() {
 
   return (
     <div
+      ref={containerRef}
       data-tauri-drag-region
-      className="app-region-drag flex h-screen flex-col items-center justify-center gap-10 bg-white px-6 select-none dark:bg-gray-950"
+      className="app-region-drag relative flex h-screen flex-col items-center justify-center gap-10 overflow-hidden bg-white px-6 select-none dark:bg-gray-950"
     >
       <title>Welcome - Escruta</title>
+      <DitherHalftoneBackground variant="welcome" interactionTargetRef={containerRef} />
 
-      <div className="app-region-no-drag w-full max-w-xs text-left">
+      <div className="app-region-no-drag relative z-10 w-full max-w-xs text-left">
         {step === "email" && (
           <div className="flex flex-col gap-2">
             <div className="mb-2 flex flex-col gap-1">
