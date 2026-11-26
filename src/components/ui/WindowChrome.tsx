@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { getCurrentWindow, type Window as TauriWindow } from "@tauri-apps/api/window";
 import { CloseIcon, MaximizeIcon, MinimizeIcon, RestoreIcon } from "@/components/icons";
 import { isDesktop, isLinuxDesktop, isMacDesktop } from "@/lib/desktop";
+import { useAuth } from "@/hooks";
 import { cn } from "@/lib/utils";
 
 type ResizeDirection =
@@ -138,11 +139,17 @@ function WindowButtons({
 function DesktopWindowChrome() {
   const appWindow = useMemo(() => getCurrentWindow(), []);
   const isMaximized = useMaximizedState(appWindow);
+  const { isAuthenticated } = useAuth();
 
   return (
     <>
       {isLinuxDesktop && !isMaximized && <ResizeHandles appWindow={appWindow} />}
-      <div className="pointer-events-none fixed top-0 right-0 z-50 h-14 w-36 border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950" />
+      <div
+        className={cn(
+          "pointer-events-none fixed top-0 right-0 z-50 h-14 w-36 bg-white dark:bg-gray-950",
+          isAuthenticated() && "border-b border-gray-200 dark:border-gray-800",
+        )}
+      />
       <div className="fixed top-0 right-0 z-1000">
         <WindowButtons appWindow={appWindow} isMaximized={isMaximized} />
       </div>
