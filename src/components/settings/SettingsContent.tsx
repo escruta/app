@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { DevicesIcon, KeyboardIcon, PaletteIcon, StarsIcon, UserIcon } from "@/components/icons";
 import { cn } from "@/lib/utils";
 import { AccountSection } from "./account/AccountSection";
@@ -37,9 +37,15 @@ const SECTION_GROUPS: { id: string; label: string; items: SectionItem[] }[] = [
 
 export function SettingsContent() {
   const [activeSection, setActiveSection] = useState<SectionId>("preferences");
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleSelectSection = (sectionId: SectionId) => {
+    setActiveSection(sectionId);
+    scrollContainerRef.current?.scrollTo({ top: 0, behavior: "instant" });
+  };
 
   return (
-    <div className="relative z-10 h-full w-full overflow-y-scroll">
+    <div ref={scrollContainerRef} className="relative z-10 h-full w-full overflow-y-scroll">
       <div className="mx-auto flex min-h-full max-w-5xl flex-col border-gray-200 bg-white md:flex-row md:border-x dark:border-gray-800 dark:bg-gray-950">
         <nav
           aria-label="Settings sections"
@@ -65,7 +71,7 @@ export function SettingsContent() {
                   <button
                     key={section.id}
                     type="button"
-                    onClick={() => setActiveSection(section.id)}
+                    onClick={() => handleSelectSection(section.id)}
                     aria-current={active ? "page" : undefined}
                     className={cn(
                       "flex shrink-0 cursor-pointer items-center gap-2.5 rounded-xs px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors duration-150 select-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none focus-visible:ring-inset dark:focus-visible:ring-blue-400",
