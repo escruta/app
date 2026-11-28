@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-type IconButtonVariant = "primary" | "secondary" | "danger" | "ghost";
+export type IconButtonVariant = "primary" | "secondary" | "danger" | "ghost";
 type IconButtonSize = "xs" | "sm" | "md" | "lg";
 
 type IconButtonProps = Omit<React.ComponentPropsWithRef<"button">, "children"> & {

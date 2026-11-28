@@ -164,6 +164,7 @@ export function OverviewPanel({
                   <CopyButton
                     textToCopy={notebookSummary}
                     tooltipText="Copy summary"
+                    variant="secondary"
                     disabled={isLoading}
                   />
                 </Tooltip>
@@ -173,7 +174,7 @@ export function OverviewPanel({
                 >
                   <IconButton
                     icon={isSummaryRegenerating ? <Spinner /> : <RestartIcon />}
-                    variant="ghost"
+                    variant="secondary"
                     size="sm"
                     onClick={() => regenerateSummary()}
                     disabled={isSummaryRegenerating}
@@ -194,7 +195,7 @@ export function OverviewPanel({
             <Tooltip text="Learning memory" position="bottom">
               <IconButton
                 icon={<StudyIcon />}
-                variant="ghost"
+                variant="secondary"
                 size="sm"
                 onClick={() => setIsMemoryModalOpen(true)}
                 ariaLabel="Learning memory"

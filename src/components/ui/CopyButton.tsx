@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { IconButton } from "./IconButton";
+import { IconButton, type IconButtonVariant } from "./IconButton";
 import { CopyIcon, CheckIcon } from "@/components/icons";
 import { useAccessibility } from "@/hooks";
 import { writeClipboardText } from "@/lib/clipboard";
@@ -11,6 +11,7 @@ interface CopyButtonProps {
   className?: string;
   disabled?: boolean;
   size?: "xs" | "sm" | "md" | "lg";
+  variant?: IconButtonVariant;
 }
 
 export function CopyButton({
@@ -19,6 +20,7 @@ export function CopyButton({
   className,
   disabled,
   size = "sm",
+  variant = "ghost",
 }: CopyButtonProps) {
   const { effectiveReducedMotion } = useAccessibility();
   const [copied, setCopied] = useState(false);
@@ -53,7 +55,7 @@ export function CopyButton({
           </motion.div>
         </AnimatePresence>
       }
-      variant="ghost"
+      variant={variant}
       size={size}
       onClick={handleCopy}
       disabled={disabled}
